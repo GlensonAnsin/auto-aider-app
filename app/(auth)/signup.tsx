@@ -2,7 +2,7 @@ import Checkbox from "expo-checkbox";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { FlatList, Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import SelectDropdown from "react-native-select-dropdown";
@@ -22,6 +22,7 @@ const Signup = () => {
   const [page, setPage] = useState("");
   const [region, setRegion] = useState<Region | undefined>(undefined);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [modalVisible, isModalVisible] = useState(false);
 
   const roles = [
     { title: "Car Owner", icon: "car-outline" },
@@ -261,8 +262,8 @@ const Signup = () => {
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity style={styles.signupBtn} onPress={() => router.push("/(auth)/login")}>
-                <Text style={styles.signupBtnTxt}>SIGN UP</Text>
+              <TouchableOpacity style={styles.button} onPress={() => router.push("/(auth)/login")}>
+                <Text style={styles.buttonTxt}>SIGN UP</Text>
               </TouchableOpacity>
             </>
           )}
@@ -363,8 +364,8 @@ const Signup = () => {
                 />
               </View>
 
-              <TouchableOpacity style={styles.nextBtn} onPress={() => setPage("Location")}>
-                <Text style={styles.nextBtnTxt}>NEXT</Text>
+              <TouchableOpacity style={styles.button} onPress={() => setPage("Location")}>
+                <Text style={styles.buttonTxt}>NEXT</Text>
               </TouchableOpacity>
             </>
           )}
@@ -397,8 +398,8 @@ const Signup = () => {
                 )}
               </MapView>
               
-              <TouchableOpacity style={styles.nextBtn} onPress={() => setPage("Services Offered")}>
-                <Text style={styles.nextBtnTxt}>NEXT</Text>
+              <TouchableOpacity style={styles.button} onPress={() => setPage("Services Offered")}>
+                <Text style={styles.buttonTxt}>NEXT</Text>
               </TouchableOpacity>
             </>
           )}
@@ -427,9 +428,30 @@ const Signup = () => {
                 )}
               />
 
-              <TouchableOpacity style={styles.nextBtn}>
-                <Text style={styles.nextBtnTxt}>SUBMIT</Text>
+              <TouchableOpacity style={styles.button} onPress={() => isModalVisible(true)}>
+                <Text style={styles.buttonTxt}>SUBMIT</Text>
               </TouchableOpacity>
+
+              <Modal
+                animationType="fade"
+                backdropColor={"rgba(0, 0, 0, 0.5)"}
+                visible={modalVisible}
+                onRequestClose={() => isModalVisible(!modalVisible)}
+              >
+                <View style={styles.centeredView}>
+                  <View style={styles.modalView}>
+                    <Text style={styles.modalTxt}>Thank you for registering! Please wait for admin approval. An update will be sent via SMS.</Text>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => {
+                        isModalVisible(!isModalVisible)
+                        router.push("/(auth)/login");
+                      }}>
+                      <Text style={styles.buttonTxt}>OK</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Modal>
             </>
           )}
         </View>
@@ -567,7 +589,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 30,
   },
-  signupBtn: {
+  button: {
     width: 150,
     height: 45,
     backgroundColor: "#000B58",
@@ -576,7 +598,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginTop: 20,
   },
-  signupBtnTxt: {
+  buttonTxt: {
     color: "#fff",
     fontSize: 16,
     fontFamily: "LeagueSpartan",
@@ -590,21 +612,6 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     fontFamily: "LeagueSpartan",
-  },
-  nextBtn: {
-    width: 150,
-    height: 45,
-    backgroundColor: "#000B58",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
-    marginTop: 20,
-  },
-  nextBtnTxt: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "LeagueSpartan",
-    fontWeight: "bold",
   },
   map: {
     width: "100%",
@@ -634,6 +641,32 @@ const styles = StyleSheet.create({
   checkboxTxt: {
     fontSize: 16,
     fontFamily: "LeagueSpartan",
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTxt: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontFamily: "LeagueSpartan",
+    fontSize: 16,
   },
 })
 

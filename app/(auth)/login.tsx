@@ -23,7 +23,7 @@ export default function Login() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={styles.container}>
           <Image 
-            source={require("../../assets/images/screen-design.png")}
+            source={require("../../assets/images/screen-design-1.png")}
             style={styles.screenDesign}
           />
 
@@ -91,8 +91,11 @@ export default function Login() {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.loginBtn}>
-              <Text style={styles.loginBtnTxt}>LOG IN</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => router.push("/car-owner/co-dashboard")}
+            >
+              <Text style={styles.buttonTxt}>LOG IN</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -207,7 +210,7 @@ const styles = StyleSheet.create({
     gap: 5,
     alignItems: "center",
   },
-  loginBtn: {
+  button: {
     width: 150,
     height: 45,
     backgroundColor: "#D9D9D9",
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginTop: 20,
   },
-  loginBtnTxt: {
+  buttonTxt: {
     fontSize: 16,
     fontFamily: "LeagueSpartan",
     fontWeight: "bold",

@@ -14,8 +14,9 @@ export default function RootLayout() {
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)/login" />
-        <Stack.Screen name="(auth)/signup" />
+        <Stack.Screen name="(auth)/login" options={{ animation: "none" }} />
+        <Stack.Screen name="(auth)/signup" options={{ animation: "none" }} />
+        <Stack.Screen name="car-owner/co-dashboard" options={{ animation: "none" }} />
       </Stack>
       <StatusBar style="dark" />
     </>
