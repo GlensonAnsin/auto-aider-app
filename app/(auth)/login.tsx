@@ -93,7 +93,7 @@ export default function Login() {
 
             <TouchableOpacity
               style={styles.button}
-              onPress={() => router.push("/car-owner/co-dashboard")}
+              onPress={() => router.push("/car-owner/(tabs)")}
             >
               <Text style={styles.buttonTxt}>LOG IN</Text>
             </TouchableOpacity>
