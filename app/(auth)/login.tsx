@@ -9,9 +9,9 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 export default function Login() {
   const router = useRouter();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [_role, setRole] = useState("");
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [_role, setRole] = useState<string>("");
   
   const roles = [
     { title: "Car Owner", icon: "car-outline" },
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   dropdownMenuStyle: {
     backgroundColor: "#EAEAEA",
     borderRadius: 10,
-    marginTop: -37,
+    marginTop: -1,
   },
   dropdownItemStyle: {
     width: "100%",

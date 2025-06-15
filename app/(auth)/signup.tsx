@@ -11,18 +11,18 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 const Signup = () => {
   const router = useRouter();
 
-  const [firstname, setFirstname] = useState("");
-  const [lastname, setLastname] = useState("");
-  const [_gender, setGender] = useState("");
-  const [mobileNum, setMobileNum] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [_role, setRole] = useState("");
-  const [shopName, setShopName] = useState("");
-  const [page, setPage] = useState("");
+  const [firstname, setFirstname] = useState<string>("");
+  const [lastname, setLastname] = useState<string>("");
+  const [_gender, setGender] = useState<string>("");
+  const [mobileNum, setMobileNum] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [_role, setRole] = useState<string>("");
+  const [shopName, setShopName] = useState<string>("");
+  const [page, setPage] = useState<string>("");
   const [region, setRegion] = useState<Region | undefined>(undefined);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [modalVisible, isModalVisible] = useState(false);
+  const [modalVisible, isModalVisible] = useState<boolean>(false);
 
   const roles = [
     { title: "Car Owner", icon: "car-outline" },
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
   dropdownMenuStyle: {
     backgroundColor: "#EAEAEA",
     borderRadius: 10,
-    marginTop: -37,
+    marginTop: -1,
   },
   dropdownItemStyle: {
     width: "100%",
