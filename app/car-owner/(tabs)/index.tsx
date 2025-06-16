@@ -1,5 +1,6 @@
+import { verifyCar } from '@/services/geminiApi';
 import { useState } from 'react';
-import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -11,11 +12,40 @@ import RunDiagnosticIcon from "../../../assets/images/teenyicons_scan-outline.sv
 
 export default function Home() {
     const [addVehicleModalVisible, isAddVehicleModalVisible] = useState(false);
+    const [addSuccessModalVisible, isAddSuccessModalVisible] = useState(false);
     const [selectedMake, setSelectedMake] = useState<string>("");
     const [model, setModel] = useState<string>("");
     const [year, setYear] = useState<string>("");
+    const [error, setError] = useState<string>("");
+    const [loading, isLoading] = useState(false);
 
     const targetMakes = ["Acura", "Audi", "BMW", "Chevrolet", "Dodge", "Chrysler", "Jeep", "Ford", "Foton", "Geely", "Honda", "Hyundai", "Infiniti", "Isuzu", "Jaguar", "Kia", "Land Rover", "Lexus", "Mazda", "Mercedes-Benz", "MG", "Mitsubishi", "Nissan", "RAM", "Subaru", "Suzuki", "Toyota", "Volkswagen"]
+
+    const handleCarVerification = async () => {
+        if (!selectedMake || !model || !year) {
+            setError("Please fill in all fields.")
+            return;
+        }
+        setError("")
+        try {
+            isLoading(true);
+            const result = await verifyCar(selectedMake, model, year);
+            if (result === "false") {
+                setError("Invalid car details. Please check and try again.")
+            } else {
+                setSelectedMake("");
+                setModel("");
+                setYear("");
+                setError("");
+                isAddVehicleModalVisible(!addVehicleModalVisible);
+                isAddSuccessModalVisible(true);
+            }
+        } catch (e) {
+            setError("An error occurred while verifying the car.")
+        } finally {
+            isLoading(false);
+        }
+    }
 
     return (
         <SafeAreaProvider>
@@ -50,7 +80,7 @@ export default function Home() {
                 <View style={styles.featuresContainer}>
                     <View style={styles.row}>
                         <TouchableOpacity style={styles.feature}>
-                            <DiagnosticHistoryIcon width={50} height={50} color="#fff" />
+                            <DiagnosticHistoryIcon width={50} height={50} />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>DIAGNOSTIC HISTORY</Text>
                                 <Text style={styles.featureDescription}>View past diagnostic checks and repair information</Text>
@@ -58,7 +88,7 @@ export default function Home() {
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.feature} onPress={() => isAddVehicleModalVisible(true)}>
-                            <AddVehicleIcon width={50} height={50} color="#fff" />
+                            <AddVehicleIcon width={50} height={50} />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>ADD VEHICLE</Text>
                                 <Text style={styles.featureDescription}>Register or add a new vehicle</Text>
@@ -68,7 +98,7 @@ export default function Home() {
 
                     <View style={styles.row}>
                         <TouchableOpacity style={styles.feature}>
-                            <RunDiagnosticIcon width={40} height={40} color="#fff" />
+                            <RunDiagnosticIcon width={40} height={40} />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>RUN DIAGNOSTICS</Text>
                                 <Text style={styles.featureDescription}>Perform a quick system diagnostic</Text>
@@ -76,7 +106,7 @@ export default function Home() {
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.feature}>
-                            <ProfileIcon width={50} height={50} color="#fff" />
+                            <ProfileIcon width={50} height={50} />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>MY PROFILE</Text>
                                 <Text style={styles.featureDescription}>Manage your account details and preferences</Text>
@@ -86,7 +116,7 @@ export default function Home() {
 
                     <View style={[styles.row, {alignSelf: "flex-start", marginLeft: 5}]}>
                         <TouchableOpacity style={styles.feature}>
-                            <LocationIcon width={50} height={50} color="#fff" />
+                            <LocationIcon width={50} height={50} />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>REPAIR SHOPS</Text>
                                 <Text style={styles.featureDescription}>Locate nearby repair shops</Text>
@@ -103,10 +133,11 @@ export default function Home() {
                             setSelectedMake("");
                             setModel("");
                             setYear("");
+                            setError("");
                         }}
                     >
                         <View style={styles.centeredView}>
-                            <View style={styles.modalView}>
+                            <View style={styles.addCarModalView}>
                                 <Text style={styles.modalHeader}>ADD VEHICLE</Text>
 
                                 <View style={styles.textInputContainer}>
@@ -147,7 +178,7 @@ export default function Home() {
                                 </View>
 
                                 <View style={styles.textInputContainer}>
-                                    <Text style={styles.textInputLbl}>Model</Text>
+                                    <Text style={styles.textInputLbl}>Year</Text>
                                     <TextInput 
                                         value={year}
                                         onChangeText={setYear}
@@ -159,8 +190,44 @@ export default function Home() {
                                     />
                                 </View>
 
-                                <TouchableOpacity style={styles.button}>
-                                    <Text style={styles.buttonTxt}>ADD</Text>
+                                {error.length > 0 && (
+                                    <View style={styles.errorContainer}>
+                                        <Text style={styles.errorMessage}>{error}</Text>
+                                    </View>
+                                )}
+
+                                {loading === true && (
+                                    <ActivityIndicator style={{ marginTop: 20 }} size="small" color="#fff" />
+                                )}
+
+                                <TouchableOpacity style={styles.addCarButton} onPress={() => {
+                                    if (parseInt(year) < 1996) {
+                                        setError("OBD2 scanners only support vehicles manufactured in 1996 and newer.");
+                                    } else {
+                                        handleCarVerification();
+                                    }
+                                }}>
+                                    <Text style={styles.addCarButtonTxt}>ADD</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
+
+                    <Modal
+                        animationType="fade"
+                        backdropColor={"rgba(0, 0, 0, 0.5)"}
+                        visible={addSuccessModalVisible}
+                        onRequestClose={() => isAddSuccessModalVisible(!addSuccessModalVisible)}
+                    >
+                        <View style={styles.centeredView}>
+                            <View style={styles.addSuccessModalView}>
+                                <Text style={styles.modalTxt}>Car added successfully!</Text>
+                                <TouchableOpacity
+                                    style={styles.addSuccessButton}
+                                    onPress={() => {
+                                    isAddSuccessModalVisible(!addSuccessModalVisible)
+                                    }}>
+                                        <Text style={styles.addSuccessButtonTxt}>OK</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -282,89 +349,135 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  modalView: {
-    margin: 20,
-    backgroundColor: '#000B58',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  modalHeader: {
-    fontSize: 24,
-    fontFamily: "LeagueSpartan",
-    color: "#fff",
-    fontWeight: "bold", 
-  },
-  textInputContainer: {
-    gap: 10,
-    marginTop: 10,
-  },
-  textInputLbl: {
-    fontSize: 16,
-    fontFamily: "LeagueSpartan",
-    color: "#fff",
-  },
-  dropdownButtonStyle: {
-    width: 250,
-    height: 45,
-    backgroundColor: "#EAEAEA",
-    borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 10,
-  },
-  dropdownButtonTxtStyle: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: "LeagueSpartan",
-  },
-  dropdownButtonArrowStyle: {
-    fontSize: 24,
-  },
-  dropdownItemStyle: {
-    width: "100%",
-    flexDirection: "row",
-    paddingHorizontal: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  dropdownItemTxtStyle: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: "LeagueSpartan",
-  },
-  input: {
-    backgroundColor: "#EAEAEA",
-    width: 250,
-    height: 45,
-    borderRadius: 10,
-    padding: 10,
-    fontSize: 16,
-    fontFamily: "LeagueSpartan",
-  },
-  button: {
-    width: 150,
-    height: 45,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
-    marginTop: 20,
-  },
-  buttonTxt: {
-    fontSize: 16,
-    fontFamily: "LeagueSpartan",
-    fontWeight: "bold",
-  },
+    addCarModalView: {
+        margin: 20,
+        backgroundColor: '#000B58',
+        borderRadius: 20,
+        padding: 35,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+        width: 0,
+        height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    modalHeader: {
+        fontSize: 24,
+        fontFamily: "LeagueSpartan",
+        color: "#fff",
+        fontWeight: "bold", 
+    },
+    textInputContainer: {
+        gap: 10,
+        marginTop: 10,
+    },
+    textInputLbl: {
+        fontSize: 16,
+        fontFamily: "LeagueSpartan",
+        color: "#fff",
+    },
+    dropdownButtonStyle: {
+        width: 250,
+        height: 45,
+        backgroundColor: "#EAEAEA",
+        borderRadius: 10,
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 10,
+    },
+    dropdownButtonTxtStyle: {
+        flex: 1,
+        fontSize: 16,
+        fontFamily: "LeagueSpartan",
+    },
+    dropdownButtonArrowStyle: {
+        fontSize: 24,
+    },
+    dropdownItemStyle: {
+        width: "100%",
+        flexDirection: "row",
+        paddingHorizontal: 10,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingVertical: 8,
+    },
+    dropdownItemTxtStyle: {
+        flex: 1,
+        fontSize: 16,
+        fontFamily: "LeagueSpartan",
+    },
+    input: {
+        backgroundColor: "#EAEAEA",
+        width: 250,
+        height: 45,
+        borderRadius: 10,
+        padding: 10,
+        fontSize: 16,
+        fontFamily: "LeagueSpartan",
+    },
+    addCarButton: {
+        width: 150,
+        height: 45,
+        backgroundColor: "#fff",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 20,
+        marginTop: 20,
+    },
+    addCarButtonTxt: {
+        fontSize: 16,
+        fontFamily: "LeagueSpartan",
+        fontWeight: "bold",
+    },
+    errorContainer: {
+        backgroundColor: "#fff",
+        borderRadius: 5,
+        padding: 10,
+        marginTop: 20,
+    },
+    errorMessage: {
+        fontFamily: "LeagueSpartan",
+        color: "red",
+        textAlign: "center",
+    },
+    addSuccessModalView: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: 25,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+        width: 0,
+        height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    modalTxt: {
+        marginBottom: 15,
+        textAlign: 'center',
+        fontFamily: "LeagueSpartan",
+        fontSize: 16,
+    },
+    addSuccessButton: {
+        width: 100,
+        height: 45,
+        backgroundColor: "#000B58",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 20,
+        marginTop: 20,
+    },
+    addSuccessButtonTxt: {
+        fontSize: 16,
+        fontFamily: "LeagueSpartan",
+        fontWeight: "bold",
+        color: "#fff",
+    },
 });
