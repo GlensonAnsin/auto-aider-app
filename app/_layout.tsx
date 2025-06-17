@@ -5,6 +5,7 @@ import { StatusBar } from "react-native";
 export default function RootLayout() {
   const [loaded] = useFonts({
     LeagueSpartan: require("../assets/fonts/LeagueSpartan-Regular.ttf"),
+    LeagueSpartan_Bold : require("../assets/fonts/LeagueSpartan-Bold.ttf"),
   });
 
   if (!loaded) {

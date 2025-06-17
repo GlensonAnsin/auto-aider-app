@@ -29,7 +29,6 @@ export default function Login() {
 
           <View style={styles.formContainer}>
             <Text style={styles.header}>LOG IN</Text>
-
             <View style={styles.textInputContainer}>
               <Text style={styles.textInputLbl}>Username</Text>
               <TextInput
@@ -44,14 +43,13 @@ export default function Login() {
               <TextInput
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry={true}
+                secureTextEntry
                 style={styles.input}
               />
             </View>
 
             <View style={styles.textInputContainer}>
               <Text style={styles.textInputLbl}>Log In as</Text>
-
               <SelectDropdown
                 data={roles}
                 onSelect={(selectedItem) => setRole(selectedItem.title)}
@@ -123,8 +121,7 @@ const styles = StyleSheet.create({
   header: {
     color: "#fff",
     fontSize: 24,
-    fontWeight: "bold",
-    fontFamily: "LeagueSpartan",
+    fontFamily: "LeagueSpartan_Bold",
   },
   textInputContainer: {
     gap: 10,
@@ -201,8 +198,7 @@ const styles = StyleSheet.create({
   signupLbl: {
     color: "#fff",
     fontSize: 14,
-    fontFamily: "LeagueSpartan",
-    fontWeight: "bold",
+    fontFamily: "LeagueSpartan_Bold",
     textDecorationLine: "underline",
   },
   signupContainer: {
@@ -221,7 +217,6 @@ const styles = StyleSheet.create({
   },
   buttonTxt: {
     fontSize: 16,
-    fontFamily: "LeagueSpartan",
-    fontWeight: "bold",
+    fontFamily: "LeagueSpartan_Bold",
   },
 })

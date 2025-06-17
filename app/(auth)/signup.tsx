@@ -126,14 +126,12 @@ const Signup = () => {
       <SafeAreaView style={styles.container}>
         <View style={styles.upperBox}>
           <Text style={styles.welcomeTxt}>WELCOME TO</Text>
-
           <Image 
             source={require("../../assets/images/logo.png")}
           />
 
           <View style={styles.textInputContainer}>
             <Text style={styles.upperTextInputLbl}>Register as</Text>
-
             <SelectDropdown
               data={roles}
               onSelect={(selectedItem) => {
@@ -170,10 +168,9 @@ const Signup = () => {
           {page === "Car Owner" && (
             <>
               <Text style={styles.header}>CREATE ACCOUNT</Text>
-
               <View style={styles.row}>
                 <View style={styles.textInputContainer}>
-                  <Text style={styles.textInputLbl}>First name</Text>
+                  <Text style={styles.textInputLbl}>First Name</Text>
                   <TextInput
                     value={firstname}
                     onChangeText={setFirstname}
@@ -182,7 +179,7 @@ const Signup = () => {
                 </View>
 
                 <View style={styles.textInputContainer}>
-                  <Text style={styles.textInputLbl}>Last name</Text>
+                  <Text style={styles.textInputLbl}>Last Name</Text>
                   <TextInput
                     value={lastname}
                     onChangeText={setLastname}
@@ -194,7 +191,6 @@ const Signup = () => {
               <View style={styles.row}>
                 <View style={styles.textInputContainer}>
                   <Text style={styles.textInputLbl}>Gender</Text>
-
                   <SelectDropdown
                     data={genders}
                     onSelect={(selectedItem) => setGender(selectedItem.title)}
@@ -224,7 +220,7 @@ const Signup = () => {
                 </View>
 
                 <View style={styles.textInputContainer}>
-                  <Text style={styles.textInputLbl}>Mobile number</Text>
+                  <Text style={styles.textInputLbl}>Mobile Number</Text>
                   <TextInput
                     value={mobileNum}
                     onChangeText={setMobileNum}
@@ -240,17 +236,17 @@ const Signup = () => {
                     value={password}
                     onChangeText={setPassword}
                     style={styles.input}
-                    secureTextEntry={true}
+                    secureTextEntry
                   />
                 </View>
 
                 <View style={styles.textInputContainer}>
-                  <Text style={styles.textInputLbl}>Confirm password</Text>
+                  <Text style={styles.textInputLbl}>Confirm Password</Text>
                   <TextInput
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     style={styles.input}
-                    secureTextEntry={true}
+                    secureTextEntry
                   />
                 </View>
               </View>
@@ -271,10 +267,9 @@ const Signup = () => {
           {page === "Repair Shop" && (
             <>
               <Text style={styles.header}>CREATE ACCOUNT</Text>
-
               <View style={styles.row}>
                 <View style={styles.textInputContainer}>
-                  <Text style={styles.textInputLbl}>First name</Text>
+                  <Text style={styles.textInputLbl}>First Name</Text>
                   <TextInput
                     value={firstname}
                     onChangeText={setFirstname}
@@ -283,7 +278,7 @@ const Signup = () => {
                 </View>
 
                 <View style={styles.textInputContainer}>
-                  <Text style={styles.textInputLbl}>Last name</Text>
+                  <Text style={styles.textInputLbl}>Last Name</Text>
                   <TextInput
                     value={lastname}
                     onChangeText={setLastname}
@@ -324,7 +319,7 @@ const Signup = () => {
                 </View>
 
                 <View style={styles.textInputContainer}>
-                  <Text style={styles.textInputLbl}>Mobile number</Text>
+                  <Text style={styles.textInputLbl}>Mobile Number</Text>
                   <TextInput
                     value={mobileNum}
                     onChangeText={setMobileNum}
@@ -340,23 +335,23 @@ const Signup = () => {
                     value={password}
                     onChangeText={setPassword}
                     style={styles.input}
-                    secureTextEntry={true}
+                    secureTextEntry
                   />
                 </View>
 
                 <View style={styles.textInputContainer}>
-                  <Text style={styles.textInputLbl}>Confirm password</Text>
+                  <Text style={styles.textInputLbl}>Confirm Password</Text>
                   <TextInput
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     style={styles.input}
-                    secureTextEntry={true}
+                    secureTextEntry
                   />
                 </View>
               </View>
 
               <View style={styles.textInputContainer}>
-                <Text style={styles.textInputLbl}>Shop name</Text>
+                <Text style={styles.textInputLbl}>Shop Name</Text>
                 <TextInput
                   value={shopName}
                   onChangeText={setShopName}
@@ -411,7 +406,6 @@ const Signup = () => {
               </TouchableOpacity>
 
               <Text style={styles.header}>SERVICES OFFERED</Text>
-
               <FlatList
                 style={styles.servicesList}
                 data={services}
@@ -481,9 +475,8 @@ const styles = StyleSheet.create({
   welcomeTxt: {
     color: "#fff",
     fontSize: 30,
-    fontFamily: "LeagueSpartan",
+    fontFamily: "LeagueSpartan_Bold",
     marginBottom: 10,
-    fontWeight: "bold",
   },
   upperTextInputLbl: {
     color: "#fff",
@@ -503,8 +496,7 @@ const styles = StyleSheet.create({
   header: {
     color: "#000B58",
     fontSize: 24,
-    fontFamily: "LeagueSpartan",
-    fontWeight: "bold",
+    fontFamily: "LeagueSpartan_Bold",
   },
   textInputContainer: {
     gap: 10,
@@ -579,8 +571,7 @@ const styles = StyleSheet.create({
   },
   loginLbl: {
     fontSize: 14,
-    fontFamily: "LeagueSpartan",
-    fontWeight: "bold",
+    fontFamily: "LeagueSpartan_Bold",
     textDecorationLine: "underline",
   },
   loginContainer: {
@@ -601,8 +592,7 @@ const styles = StyleSheet.create({
   buttonTxt: {
     color: "#fff",
     fontSize: 16,
-    fontFamily: "LeagueSpartan",
-    fontWeight: "bold",
+    fontFamily: "LeagueSpartan_Bold",
   },
   shopNameInput: {
     backgroundColor: "#EAEAEA",
@@ -620,7 +610,7 @@ const styles = StyleSheet.create({
   },
   arrowWrapper: {
     top: 15,
-    right: 325,
+    right: 320,
     position: "absolute",
   },
   arrowBack: {

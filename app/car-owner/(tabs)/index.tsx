@@ -1,6 +1,7 @@
 import { verifyCar } from '@/services/geminiApi';
+import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -50,189 +51,190 @@ export default function Home() {
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
-                <Image
-                    source={require("../../../assets/images/screen-design-2.png")}
-                    style={styles.screenDesign}
-                />
-                <Image
-                    source={require("../../../assets/images/logo.png")}
-                    style={styles.logo}
-                    width={200}
-                    height={25}
-                />
+                <ScrollView>
+                    <Image
+                        source={require("../../../assets/images/screen-design-2.png")}
+                        style={styles.screenDesign}
+                    />
+                    <Image
+                        source={require("../../../assets/images/logo.png")}
+                        style={styles.logo}
+                        width={200}
+                        height={25}
+                    />
 
-                <View style={styles.userContainer}>
-                    <View style={styles.userNameContainer}>
-                        <Text style={styles.header}>HELLO,</Text>
-                        <Text style={styles.userName}>Glenson Ansin</Text>
-                    </View>
+                    <View style={styles.userContainer}>
+                        <View style={styles.userNameContainer}>
+                            <Text style={styles.header}>HELLO,</Text>
+                            <Text style={styles.userName}>Glenson Ansin</Text>
+                        </View>
 
-                    <TouchableOpacity style={styles.profileWrapper}>
-                        <Text style={styles.userInitials}>GA</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.introTxtContainer}>
-                    <Text style={styles.introHeader}>Let's Get Started</Text>
-                    <Text style={styles.introBody}>Start your experience to easier vehicle maintenance.</Text>
-                </View>
-
-                <View style={styles.featuresContainer}>
-                    <View style={styles.row}>
-                        <TouchableOpacity style={styles.feature}>
-                            <DiagnosticHistoryIcon width={50} height={50} />
-                            <View style={styles.featureTxtWrapper}>
-                                <Text style={styles.featureHeader}>DIAGNOSTIC HISTORY</Text>
-                                <Text style={styles.featureDescription}>View past diagnostic checks and repair information</Text>
-                            </View>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.feature} onPress={() => isAddVehicleModalVisible(true)}>
-                            <AddVehicleIcon width={50} height={50} />
-                            <View style={styles.featureTxtWrapper}>
-                                <Text style={styles.featureHeader}>ADD VEHICLE</Text>
-                                <Text style={styles.featureDescription}>Register or add a new vehicle</Text>
-                            </View>
+                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.push("/car-owner/(tabs)/(profile)/profile")}>
+                            <Text style={styles.userInitials}>GA</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <View style={styles.row}>
-                        <TouchableOpacity style={styles.feature}>
-                            <RunDiagnosticIcon width={40} height={40} />
-                            <View style={styles.featureTxtWrapper}>
-                                <Text style={styles.featureHeader}>RUN DIAGNOSTICS</Text>
-                                <Text style={styles.featureDescription}>Perform a quick system diagnostic</Text>
-                            </View>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.feature}>
-                            <ProfileIcon width={50} height={50} />
-                            <View style={styles.featureTxtWrapper}>
-                                <Text style={styles.featureHeader}>MY PROFILE</Text>
-                                <Text style={styles.featureDescription}>Manage your account details and preferences</Text>
-                            </View>
-                        </TouchableOpacity>
+                    <View style={styles.introTxtContainer}>
+                        <Text style={styles.introHeader}>Let's Get Started</Text>
+                        <Text style={styles.introBody}>Start your experience to easier vehicle maintenance.</Text>
                     </View>
 
-                    <View style={[styles.row, {alignSelf: "flex-start", marginLeft: 5}]}>
-                        <TouchableOpacity style={styles.feature}>
-                            <LocationIcon width={50} height={50} />
-                            <View style={styles.featureTxtWrapper}>
-                                <Text style={styles.featureHeader}>REPAIR SHOPS</Text>
-                                <Text style={styles.featureDescription}>Locate nearby repair shops</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-
-                    <Modal
-                        animationType="fade"
-                        backdropColor={"rgba(0, 0, 0, 0.5)"}
-                        visible={addVehicleModalVisible}
-                        onRequestClose={() => {
-                            isAddVehicleModalVisible(!addVehicleModalVisible);
-                            setSelectedMake("");
-                            setModel("");
-                            setYear("");
-                            setError("");
-                        }}
-                    >
-                        <View style={styles.centeredView}>
-                            <View style={styles.addCarModalView}>
-                                <Text style={styles.modalHeader}>ADD VEHICLE</Text>
-
-                                <View style={styles.textInputContainer}>
-                                    <Text style={styles.textInputLbl}>Manufacturer</Text>
-                                    <SelectDropdown 
-                                        data={targetMakes}
-                                        onSelect={(selectedItem) => setSelectedMake(selectedItem)}
-                                        renderButton={(selectedItem, isOpen) => (
-                                            <View style={styles.dropdownButtonStyle}>
-                                                <Text style={styles.dropdownButtonTxtStyle}>
-                                                    {selectedItem || "Select manufacturer"}
-                                                </Text>
-                                                <Icon name={isOpen ? "chevron-up" : "chevron-down"} style={styles.dropdownButtonArrowStyle} />
-                                            </View>
-                                        )}
-                                        renderItem={(item, _index, isSelected) => (
-                                            <View
-                                                style={{
-                                                    ...styles.dropdownItemStyle,
-                                                    ...(isSelected && { backgroundColor: "#D2D9DF" }),
-                                                }}
-                                                >
-                                                <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
-                                            </View>
-                                        )}
-                                    />
+                    <View style={styles.featuresContainer}>
+                        <View style={styles.row}>
+                            <TouchableOpacity style={styles.feature}>
+                                <DiagnosticHistoryIcon width={50} height={50} />
+                                <View style={styles.featureTxtWrapper}>
+                                    <Text style={styles.featureHeader}>DIAGNOSTIC HISTORY</Text>
+                                    <Text style={styles.featureDescription}>View past diagnostic checks and repair information</Text>
                                 </View>
+                            </TouchableOpacity>
 
-                                <View style={styles.textInputContainer}>
-                                    <Text style={styles.textInputLbl}>Model</Text>
-                                    <TextInput 
-                                        value={model}
-                                        onChangeText={setModel}
-                                        style={styles.input}
-                                        placeholder="Model"
-                                        editable={!selectedMake ? false : true}
-                                    />
+                            <TouchableOpacity style={styles.feature} onPress={() => isAddVehicleModalVisible(true)}>
+                                <AddVehicleIcon width={50} height={50} />
+                                <View style={styles.featureTxtWrapper}>
+                                    <Text style={styles.featureHeader}>ADD VEHICLE</Text>
+                                    <Text style={styles.featureDescription}>Register or add a new vehicle</Text>
                                 </View>
+                            </TouchableOpacity>
+                        </View>
 
-                                <View style={styles.textInputContainer}>
-                                    <Text style={styles.textInputLbl}>Year</Text>
-                                    <TextInput 
-                                        value={year}
-                                        onChangeText={setYear}
-                                        style={styles.input}
-                                        keyboardType="numeric"
-                                        placeholder="Year"
-                                        maxLength={4}
-                                        editable={!model ? false : true}
-                                    />
+                        <View style={styles.row}>
+                            <TouchableOpacity style={styles.feature}>
+                                <RunDiagnosticIcon width={40} height={40} />
+                                <View style={styles.featureTxtWrapper}>
+                                    <Text style={styles.featureHeader}>RUN DIAGNOSTICS</Text>
+                                    <Text style={styles.featureDescription}>Perform a quick system diagnostic</Text>
                                 </View>
+                            </TouchableOpacity>
 
-                                {error.length > 0 && (
-                                    <View style={styles.errorContainer}>
-                                        <Text style={styles.errorMessage}>{error}</Text>
+                            <TouchableOpacity style={styles.feature} onPress={() => router.push("/car-owner/(tabs)/(profile)/profile")}>
+                                <ProfileIcon width={50} height={50} />
+                                <View style={styles.featureTxtWrapper}>
+                                    <Text style={styles.featureHeader}>MY PROFILE</Text>
+                                    <Text style={styles.featureDescription}>Manage your account details and preferences</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={[styles.row, {alignSelf: "flex-start", marginLeft: 5}]}>
+                            <TouchableOpacity style={styles.feature}>
+                                <LocationIcon width={50} height={50} />
+                                <View style={styles.featureTxtWrapper}>
+                                    <Text style={styles.featureHeader}>REPAIR SHOPS</Text>
+                                    <Text style={styles.featureDescription}>Locate nearby repair shops</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
+                        <Modal
+                            animationType="fade"
+                            backdropColor={"rgba(0, 0, 0, 0.5)"}
+                            visible={addVehicleModalVisible}
+                            onRequestClose={() => {
+                                isAddVehicleModalVisible(!addVehicleModalVisible);
+                                setSelectedMake("");
+                                setModel("");
+                                setYear("");
+                                setError("");
+                            }}
+                        >
+                            <View style={styles.centeredView}>
+                                <View style={styles.addCarModalView}>
+                                    <Text style={styles.modalHeader}>ADD VEHICLE</Text>
+                                    <View style={styles.textInputContainer}>
+                                        <Text style={styles.textInputLbl}>Manufacturer</Text>
+                                        <SelectDropdown 
+                                            data={targetMakes}
+                                            onSelect={(selectedItem) => setSelectedMake(selectedItem)}
+                                            renderButton={(selectedItem, isOpen) => (
+                                                <View style={styles.dropdownButtonStyle}>
+                                                    <Text style={styles.dropdownButtonTxtStyle}>
+                                                        {selectedItem || "Select manufacturer"}
+                                                    </Text>
+                                                    <Icon name={isOpen ? "chevron-up" : "chevron-down"} style={styles.dropdownButtonArrowStyle} />
+                                                </View>
+                                            )}
+                                            renderItem={(item, _index, isSelected) => (
+                                                <View
+                                                    style={{
+                                                        ...styles.dropdownItemStyle,
+                                                        ...(isSelected && { backgroundColor: "#D2D9DF" }),
+                                                    }}
+                                                    >
+                                                    <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+                                                </View>
+                                            )}
+                                        />
                                     </View>
-                                )}
 
-                                {loading === true && (
-                                    <ActivityIndicator style={{ marginTop: 20 }} size="small" color="#fff" />
-                                )}
+                                    <View style={styles.textInputContainer}>
+                                        <Text style={styles.textInputLbl}>Model</Text>
+                                        <TextInput 
+                                            value={model}
+                                            onChangeText={setModel}
+                                            style={styles.input}
+                                            placeholder="Model"
+                                            editable={!selectedMake ? false : true}
+                                        />
+                                    </View>
 
-                                <TouchableOpacity style={styles.addCarButton} onPress={() => {
-                                    if (parseInt(year) < 1996) {
-                                        setError("OBD2 scanners only support vehicles manufactured in 1996 and newer.");
-                                    } else {
-                                        handleCarVerification();
-                                    }
-                                }}>
-                                    <Text style={styles.addCarButtonTxt}>ADD</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </Modal>
+                                    <View style={styles.textInputContainer}>
+                                        <Text style={styles.textInputLbl}>Year</Text>
+                                        <TextInput 
+                                            value={year}
+                                            onChangeText={setYear}
+                                            style={styles.input}
+                                            keyboardType="numeric"
+                                            placeholder="Year"
+                                            maxLength={4}
+                                            editable={!model ? false : true}
+                                        />
+                                    </View>
 
-                    <Modal
-                        animationType="fade"
-                        backdropColor={"rgba(0, 0, 0, 0.5)"}
-                        visible={addSuccessModalVisible}
-                        onRequestClose={() => isAddSuccessModalVisible(!addSuccessModalVisible)}
-                    >
-                        <View style={styles.centeredView}>
-                            <View style={styles.addSuccessModalView}>
-                                <Text style={styles.modalTxt}>Car added successfully!</Text>
-                                <TouchableOpacity
-                                    style={styles.addSuccessButton}
-                                    onPress={() => {
-                                    isAddSuccessModalVisible(!addSuccessModalVisible)
+                                    {error.length > 0 && (
+                                        <View style={styles.errorContainer}>
+                                            <Text style={styles.errorMessage}>{error}</Text>
+                                        </View>
+                                    )}
+
+                                    {loading === true && (
+                                        <ActivityIndicator style={{ marginTop: 20 }} size="small" color="#fff" />
+                                    )}
+
+                                    <TouchableOpacity style={styles.addCarButton} onPress={() => {
+                                        if (parseInt(year) < 1996) {
+                                            setError("OBD2 scanners only support vehicles manufactured in 1996 and newer.");
+                                        } else {
+                                            handleCarVerification();
+                                        }
                                     }}>
-                                        <Text style={styles.addSuccessButtonTxt}>OK</Text>
-                                </TouchableOpacity>
+                                        <Text style={styles.addCarButtonTxt}>ADD</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
-                        </View>
-                    </Modal>
-                </View>
+                        </Modal>
+
+                        <Modal
+                            animationType="fade"
+                            backdropColor={"rgba(0, 0, 0, 0.5)"}
+                            visible={addSuccessModalVisible}
+                            onRequestClose={() => isAddSuccessModalVisible(!addSuccessModalVisible)}
+                        >
+                            <View style={styles.centeredView}>
+                                <View style={styles.addSuccessModalView}>
+                                    <Text style={styles.modalTxt}>Car added successfully!</Text>
+                                    <TouchableOpacity
+                                        style={styles.addSuccessButton}
+                                        onPress={() => {
+                                        isAddSuccessModalVisible(!addSuccessModalVisible)
+                                        }}>
+                                            <Text style={styles.addSuccessButtonTxt}>OK</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </Modal>
+                    </View>
+                </ScrollView>
             </SafeAreaView>
         </SafeAreaProvider> 
     );
@@ -255,18 +257,19 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
-        gap: 100,
+        gap: 20,
         marginTop: 20,
         marginLeft: 10,
         marginRight: 10,
     },
     userNameContainer: {
         flexDirection: "column",
+        maxWidth: 220,
+        minWidth: 220,
     },
     header: {
-        fontFamily: "LeagueSpartan",
+        fontFamily: "LeagueSpartan_Bold",
         fontSize: 30,
-        fontWeight: "bold",
     },
     userName: {
         fontFamily: "LeagueSpartan",
@@ -281,9 +284,8 @@ const styles = StyleSheet.create({
         borderRadius: 80,
     },
     userInitials: {
-        fontFamily: "LeagueSpartan",
+        fontFamily: "LeagueSpartan_Bold",
         fontSize: 30,
-        fontWeight: "bold",
         color: "#fff",
     },
     introTxtContainer: {
@@ -315,6 +317,7 @@ const styles = StyleSheet.create({
         paddingBottom: 5,
         gap: 10,
         marginTop: 20,
+        marginBottom: 10,
     },
     row: {
         flexDirection: "row",
@@ -336,9 +339,8 @@ const styles = StyleSheet.create({
     },
     featureHeader: {
         color: "#fff",
-        fontFamily: "LeagueSpartan",
+        fontFamily: "LeagueSpartan_Bold",
         fontSize: 14,
-        fontWeight: "bold",
     },
     featureDescription: {
         color: "#fff",
@@ -346,9 +348,9 @@ const styles = StyleSheet.create({
         fontSize: 10,
     },
     centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     addCarModalView: {
         margin: 20,
@@ -367,9 +369,8 @@ const styles = StyleSheet.create({
     },
     modalHeader: {
         fontSize: 24,
-        fontFamily: "LeagueSpartan",
+        fontFamily: "LeagueSpartan_Bold",
         color: "#fff",
-        fontWeight: "bold", 
     },
     textInputContainer: {
         gap: 10,
@@ -431,8 +432,7 @@ const styles = StyleSheet.create({
     },
     addCarButtonTxt: {
         fontSize: 16,
-        fontFamily: "LeagueSpartan",
-        fontWeight: "bold",
+        fontFamily: "LeagueSpartan_Bold",
     },
     errorContainer: {
         backgroundColor: "#fff",
@@ -476,8 +476,7 @@ const styles = StyleSheet.create({
     },
     addSuccessButtonTxt: {
         fontSize: 16,
-        fontFamily: "LeagueSpartan",
-        fontWeight: "bold",
+        fontFamily: "LeagueSpartan_Bold",
         color: "#fff",
     },
 });

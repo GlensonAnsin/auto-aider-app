@@ -51,6 +51,27 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="(profile)/profile"
+        options={{
+          title: "Profile",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/edit-profile"
+        options={{
+          title: "Edit Profile",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/manage-vehicles"
+        options={{
+          title: "Manage Vehicles",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
