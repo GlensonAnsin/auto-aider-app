@@ -10,13 +10,25 @@ const manageVehicles = () => {
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <View style={styles.upperBox}>
-          <Text style={styles.header}>VEHICLES</Text>
+          <Text style={styles.header}>|  VEHICLES</Text>
           <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push("/car-owner/(tabs)/(profile)/profile")}>
             <Icon name="arrow-left" style={styles.arrowBack} />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.lowerBox}></View>
+        <View style={styles.lowerBox}>
+          <View style={styles.vehicleContainer}>
+            <View style={styles.carDetailsContainer}>
+              <Text style={styles.carDetail}>Toyota </Text>
+              <Text style={styles.carDetail}>Fortuner </Text>
+              <Text style={styles.carDetail}>2025</Text>
+            </View>
+
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonTxt}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </SafeAreaView>
     </SafeAreaProvider>
   )
@@ -30,12 +42,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000B58",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   header: {
     color: "#fff",
     fontFamily: "LeagueSpartan_Bold",
     fontSize: 24,
+    marginLeft: 50,
   },
   arrowWrapper: {
     top: 21,
@@ -50,6 +63,40 @@ const styles = StyleSheet.create({
     flex: 9,
     backgroundColor: "#fff",
     alignItems: "center",
+  },
+  vehicleContainer: {
+    backgroundColor: "#EAEAEA",
+    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 80,
+    padding: 10,
+    marginTop: 20,
+  },
+  carDetailsContainer: {
+    flexDirection: "row",
+    maxWidth: 200,
+    minWidth: 200,
+    flexWrap: "wrap",
+  },
+  carDetail: {
+    fontFamily: "LeagueSpartan_Bold",
+    fontSize: 20,
+    color: "#000B58",
+  },
+  button: {
+    width: 100,
+    height: 45,
+    backgroundColor: "red",
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonTxt: {
+    fontSize: 16,
+    fontFamily: "LeagueSpartan_Bold",
+    color: "#fff",
   },
 })
 

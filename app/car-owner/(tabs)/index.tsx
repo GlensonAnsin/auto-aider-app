@@ -1,3 +1,5 @@
+/* UNFINISHED REFACTOR */
+
 import { verifyCar } from '@/services/geminiApi';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -80,8 +82,8 @@ export default function Home() {
                     </View>
 
                     <View style={styles.featuresContainer}>
-                        <View style={styles.row}>
-                            <TouchableOpacity style={styles.feature}>
+                        <View style={styles.column}>
+                            <TouchableOpacity style={styles.feature} onPress={() => router.push("/car-owner/(tabs)/(diagnostic-history)/diagnostic-history")}>
                                 <DiagnosticHistoryIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>DIAGNOSTIC HISTORY</Text>
@@ -89,16 +91,6 @@ export default function Home() {
                                 </View>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.feature} onPress={() => isAddVehicleModalVisible(true)}>
-                                <AddVehicleIcon width={50} height={50} />
-                                <View style={styles.featureTxtWrapper}>
-                                    <Text style={styles.featureHeader}>ADD VEHICLE</Text>
-                                    <Text style={styles.featureDescription}>Register or add a new vehicle</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={styles.row}>
                             <TouchableOpacity style={styles.feature}>
                                 <RunDiagnosticIcon width={40} height={40} />
                                 <View style={styles.featureTxtWrapper}>
@@ -107,21 +99,29 @@ export default function Home() {
                                 </View>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.feature} onPress={() => router.push("/car-owner/(tabs)/(profile)/profile")}>
-                                <ProfileIcon width={50} height={50} />
-                                <View style={styles.featureTxtWrapper}>
-                                    <Text style={styles.featureHeader}>MY PROFILE</Text>
-                                    <Text style={styles.featureDescription}>Manage your account details and preferences</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={[styles.row, {alignSelf: "flex-start", marginLeft: 5}]}>
                             <TouchableOpacity style={styles.feature}>
                                 <LocationIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>REPAIR SHOPS</Text>
                                     <Text style={styles.featureDescription}>Locate nearby repair shops</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.column}>
+                            <TouchableOpacity style={styles.feature} onPress={() => isAddVehicleModalVisible(true)}>
+                                <AddVehicleIcon width={50} height={50} />
+                                <View style={styles.featureTxtWrapper}>
+                                    <Text style={styles.featureHeader}>ADD VEHICLE</Text>
+                                    <Text style={styles.featureDescription}>Register or add a new vehicle</Text>
+                                </View>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.feature} onPress={() => router.push("/car-owner/(tabs)/(profile)/profile")}>
+                                <ProfileIcon width={50} height={50} />
+                                <View style={styles.featureTxtWrapper}>
+                                    <Text style={styles.featureHeader}>MY PROFILE</Text>
+                                    <Text style={styles.featureDescription}>Manage your account details and preferences</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>
@@ -255,17 +255,15 @@ const styles = StyleSheet.create({
     },
     userContainer: {
         flexDirection: "row",
-        justifyContent: "center",
+        justifyContent: "space-between",
         alignItems: "center",
-        gap: 20,
         marginTop: 20,
-        marginLeft: 10,
-        marginRight: 10,
+        width: "90%",
+        alignSelf: "center",
     },
     userNameContainer: {
         flexDirection: "column",
-        maxWidth: 220,
-        minWidth: 220,
+        width: "70%"
     },
     header: {
         fontFamily: "LeagueSpartan_Bold",
@@ -291,11 +289,11 @@ const styles = StyleSheet.create({
     introTxtContainer: {
         borderWidth: 2,
         borderColor: "#003161",
-        marginLeft: 10,
-        marginRight: 10,
+        width: "94%",
         borderRadius: 10,
         padding: 10,
         marginTop: 20,
+        alignSelf: "center",
     },
     introHeader: {
         fontFamily: "LeagueSpartan",
@@ -309,33 +307,34 @@ const styles = StyleSheet.create({
     },
     featuresContainer: {
         backgroundColor: "#EAEAEA",
-        marginLeft: 10,
-        marginRight: 10,
-        borderRadius: 10,
-        alignItems: "center",
-        paddingTop: 5,
-        paddingBottom: 5,
-        gap: 10,
+        width: "94%",
+        flexDirection: "row",
+        alignSelf: "center",
+        borderRadius: 8,
         marginTop: 20,
         marginBottom: 10,
+        gap: 5,
+        paddingTop: 5,
+        paddingBottom: 5,
+        justifyContent: "center",
     },
-    row: {
-        flexDirection: "row",
-        gap: 10,
+    column: {
+        width: "47%",
+        gap: 5,
     },
     feature: {
         flexDirection: "row",
         backgroundColor: "#000B58",
-        width: 160,
+        width: "100%",
         height: 100,
-        borderRadius: 10,
+        borderRadius: 8,
         justifyContent: "center",
         alignItems: "center",
         gap: 3,
     },
     featureTxtWrapper: {
         flexDirection: "column",
-        width: 100,
+        width: "60%",
     },
     featureHeader: {
         color: "#fff",

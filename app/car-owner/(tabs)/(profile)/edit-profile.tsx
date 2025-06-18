@@ -20,7 +20,7 @@ const editProfile = () => {
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <View style={styles.upperBox}>
-          <Text style={styles.header}>EDIT PROFILE</Text>
+          <Text style={styles.header}>|  EDIT PROFILE</Text>
           <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push("/car-owner/(tabs)/(profile)/profile")}>
             <Icon name="arrow-left" style={styles.arrowBack} />
           </TouchableOpacity>
@@ -124,12 +124,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000B58",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   header: {
     color: "#fff",
     fontFamily: "LeagueSpartan_Bold",
     fontSize: 24,
+    marginLeft: 50,
   },
   arrowWrapper: {
     top: 21,

@@ -27,6 +27,7 @@ export default function TabsLayout() {
               <NotificationIcon width={30} height={30} color="#fff" />
             </View>
           ),
+          animation: "none",
         }}
       />
       <Tabs.Screen
@@ -38,6 +39,7 @@ export default function TabsLayout() {
               <HomeIcon width={30} height={30} color="#fff" />
             </View>
           ),
+          animation: "none",
         }}
       />
       <Tabs.Screen
@@ -49,6 +51,7 @@ export default function TabsLayout() {
               <SettingsIcon width={30} height={30} color="#fff" />
             </View>
           ),
+          animation: "none",
         }}
       />
       <Tabs.Screen
@@ -56,6 +59,7 @@ export default function TabsLayout() {
         options={{
           title: "Profile",
           href: null,
+          animation: "none",
         }}
       />
       <Tabs.Screen
@@ -63,6 +67,7 @@ export default function TabsLayout() {
         options={{
           title: "Edit Profile",
           href: null,
+          animation: "none",
         }}
       />
       <Tabs.Screen
@@ -70,6 +75,15 @@ export default function TabsLayout() {
         options={{
           title: "Manage Vehicles",
           href: null,
+          animation: "none",
+        }}
+      />
+      <Tabs.Screen
+        name="(diagnostic-history)/diagnostic-history"
+        options={{
+          title: "History",
+          href: null,
+          animation: "none",
         }}
       />
     </Tabs>

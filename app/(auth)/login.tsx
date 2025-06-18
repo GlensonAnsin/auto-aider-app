@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   screenDesign: {
     backgroundColor: "#000B58",
     width: "100%",
-    height: "20%",
+    height: 150,
   },
   formContainer: {
     flex: 1,
@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
   },
   textInputContainer: {
     gap: 10,
+    width: "70%",
   },
   textInputLbl: {
     color: "#fff",
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#EAEAEA",
-    width: 250,
+    width: "100%",
     height: 45,
     borderRadius: 10,
     padding: 10,
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     fontFamily: "LeagueSpartan",
   },
   dropdownButtonStyle: {
-    width: 250,
+    width: "100%",
     height: 45,
     backgroundColor: "#EAEAEA",
     borderRadius: 10,

@@ -22,7 +22,8 @@ const Signup = () => {
   const [page, setPage] = useState<string>("");
   const [region, setRegion] = useState<Region | undefined>(undefined);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [modalVisible, isModalVisible] = useState<boolean>(false);
+  const [carOwnerModalVisible, isCarOwnerModalVisible] = useState<boolean>(false);
+  const [repairShopModalVisible, isRepairShopModalVisible] = useState<boolean>(false);
 
   const roles = [
     { title: "Car Owner", icon: "car-outline" },
@@ -130,7 +131,7 @@ const Signup = () => {
             source={require("../../assets/images/logo.png")}
           />
 
-          <View style={styles.textInputContainer}>
+          <View style={styles.textInputContainer1}>
             <Text style={styles.upperTextInputLbl}>Register as</Text>
             <SelectDropdown
               data={roles}
@@ -169,7 +170,7 @@ const Signup = () => {
             <>
               <Text style={styles.header}>CREATE ACCOUNT</Text>
               <View style={styles.row}>
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>First Name</Text>
                   <TextInput
                     value={firstname}
@@ -178,7 +179,7 @@ const Signup = () => {
                   />
                 </View>
 
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Last Name</Text>
                   <TextInput
                     value={lastname}
@@ -189,7 +190,7 @@ const Signup = () => {
               </View>
 
               <View style={styles.row}>
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Gender</Text>
                   <SelectDropdown
                     data={genders}
@@ -219,7 +220,7 @@ const Signup = () => {
                   />
                 </View>
 
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Mobile Number</Text>
                   <TextInput
                     value={mobileNum}
@@ -230,7 +231,7 @@ const Signup = () => {
               </View>
 
               <View style={styles.row}>
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Password</Text>
                   <TextInput
                     value={password}
@@ -240,7 +241,7 @@ const Signup = () => {
                   />
                 </View>
 
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Confirm Password</Text>
                   <TextInput
                     value={confirmPassword}
@@ -258,9 +259,30 @@ const Signup = () => {
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity style={styles.button} onPress={() => router.push("/(auth)/login")}>
+              <TouchableOpacity style={styles.button} onPress={() => isCarOwnerModalVisible(true)}>
                 <Text style={styles.buttonTxt}>SIGN UP</Text>
               </TouchableOpacity>
+
+              <Modal
+                animationType="fade"
+                backdropColor={"rgba(0, 0, 0, 0.5)"}
+                visible={carOwnerModalVisible}
+                onRequestClose={() => isCarOwnerModalVisible(!carOwnerModalVisible)}
+              >
+                <View style={styles.centeredView}>
+                  <View style={styles.modalView}>
+                    <Text style={styles.modalTxt}>Account created successfully. Thank you for registering!</Text>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => {
+                        isCarOwnerModalVisible(!carOwnerModalVisible)
+                        router.push("/(auth)/login");
+                      }}>
+                      <Text style={styles.buttonTxt}>OK</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Modal>
             </>
           )}
 
@@ -268,7 +290,7 @@ const Signup = () => {
             <>
               <Text style={styles.header}>CREATE ACCOUNT</Text>
               <View style={styles.row}>
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>First Name</Text>
                   <TextInput
                     value={firstname}
@@ -277,7 +299,7 @@ const Signup = () => {
                   />
                 </View>
 
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Last Name</Text>
                   <TextInput
                     value={lastname}
@@ -288,7 +310,7 @@ const Signup = () => {
               </View>
 
               <View style={styles.row}>
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Gender</Text>
                   <SelectDropdown
                     data={genders}
@@ -318,7 +340,7 @@ const Signup = () => {
                   />
                 </View>
 
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Mobile Number</Text>
                   <TextInput
                     value={mobileNum}
@@ -329,7 +351,7 @@ const Signup = () => {
               </View>
 
               <View style={styles.row}>
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Password</Text>
                   <TextInput
                     value={password}
@@ -339,7 +361,7 @@ const Signup = () => {
                   />
                 </View>
 
-                <View style={styles.textInputContainer}>
+                <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Confirm Password</Text>
                   <TextInput
                     value={confirmPassword}
@@ -350,7 +372,7 @@ const Signup = () => {
                 </View>
               </View>
 
-              <View style={styles.textInputContainer}>
+              <View style={styles.textInputContainer3}>
                 <Text style={styles.textInputLbl}>Shop Name</Text>
                 <TextInput
                   value={shopName}
@@ -422,15 +444,15 @@ const Signup = () => {
                 )}
               />
 
-              <TouchableOpacity style={styles.button} onPress={() => isModalVisible(true)}>
+              <TouchableOpacity style={styles.button} onPress={() => isRepairShopModalVisible(true)}>
                 <Text style={styles.buttonTxt}>SUBMIT</Text>
               </TouchableOpacity>
 
               <Modal
                 animationType="fade"
                 backdropColor={"rgba(0, 0, 0, 0.5)"}
-                visible={modalVisible}
-                onRequestClose={() => isModalVisible(!modalVisible)}
+                visible={repairShopModalVisible}
+                onRequestClose={() => isRepairShopModalVisible(!repairShopModalVisible)}
               >
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
@@ -438,7 +460,7 @@ const Signup = () => {
                     <TouchableOpacity
                       style={styles.button}
                       onPress={() => {
-                        isModalVisible(!isModalVisible)
+                        isRepairShopModalVisible(!repairShopModalVisible)
                         router.push("/(auth)/login");
                       }}>
                       <Text style={styles.buttonTxt}>OK</Text>
@@ -460,17 +482,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   upperBox: {
-    flex: 1,
     backgroundColor: "#000B58",
     justifyContent: "center",
     alignItems: "center",
     gap: 10,
-  },
-  lowerBox: {
-    flex: 2,
-    backgroundColor: "fff",
-    alignItems: "center",
-    paddingTop: 10,
+    padding: 10,
   },
   welcomeTxt: {
     color: "#fff",
@@ -484,7 +500,7 @@ const styles = StyleSheet.create({
     fontFamily: "LeagueSpartan",
   },
   upperDropdownButtonStyle: {
-    width: 250,
+    width: "100%",
     height: 45,
     backgroundColor: "#EAEAEA",
     borderRadius: 10,
@@ -493,20 +509,34 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 10,
   },
+  lowerBox: {
+    alignItems: "center",
+  },
   header: {
     color: "#000B58",
     fontSize: 24,
     fontFamily: "LeagueSpartan_Bold",
+    marginTop: 10,
   },
-  textInputContainer: {
+  textInputContainer1: {
     gap: 10,
     marginTop: 10,
+    width: "50%",
+  },
+  textInputContainer2: {
+    gap: 10,
+    marginTop: 10,
+    width: "45%",
+  },
+  textInputContainer3: {
+    gap: 10,
+    marginTop: 10,
+    width: "93%",
   },
   row: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    gap: 10,
+    width: "100%",
+    justifyContent: "space-evenly",
   },
   textInputLbl: {
     fontSize: 16,
@@ -514,7 +544,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#EAEAEA",
-    width: 150,
+    width: "100%",
     height: 45,
     borderRadius: 10,
     padding: 10,
@@ -522,7 +552,7 @@ const styles = StyleSheet.create({
     fontFamily: "LeagueSpartan",
   },
   dropdownButtonStyle: {
-    width: 150,
+    width: "100%",
     height: 45,
     backgroundColor: "#EAEAEA",
     borderRadius: 10,
@@ -596,7 +626,7 @@ const styles = StyleSheet.create({
   },
   shopNameInput: {
     backgroundColor: "#EAEAEA",
-    width: 310,
+    width: "100%",
     height: 45,
     borderRadius: 10,
     padding: 10,
@@ -621,6 +651,7 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 20,
     marginTop: 20,
+    height: 350,
   },
   checkboxContainer: {
     flexDirection: "row",
@@ -638,10 +669,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
+    margin: 40,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -653,7 +684,6 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalTxt: {
-    marginBottom: 15,
     textAlign: 'center',
     fontFamily: "LeagueSpartan",
     fontSize: 16,
