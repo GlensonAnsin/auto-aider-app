@@ -16,9 +16,10 @@ export default function RootLayout() {
     <>
       <StatusBar barStyle="light-content" />
       
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)/login" options={{ animation: "none" }} />
-        <Stack.Screen name="(auth)/signup" options={{ animation: "none" }} />
+      <Stack initialRouteName="index" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" options={{ animation: "none"}} />
+        <Stack.Screen name="auth/login" options={{ animation: "none" }} />
+        <Stack.Screen name="auth/signup" options={{ animation: "none" }} />
         <Stack.Screen name="car-owner/(tabs)" options={{ animation: "none" }} />
       </Stack>
     </>

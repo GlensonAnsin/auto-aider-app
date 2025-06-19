@@ -84,7 +84,7 @@ export default function Login() {
 
             <View style={styles.signupContainer}>
               <Text style={styles.questionLbl}>Don't have an account?</Text>
-              <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
+              <TouchableOpacity onPress={() => router.push("/auth/signup")}>
                 <Text style={styles.signupLbl}>Sign Up</Text>
               </TouchableOpacity>
             </View>
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   button: {
-    width: 150,
+    width: "40%",
     height: 45,
     backgroundColor: "#D9D9D9",
     justifyContent: "center",

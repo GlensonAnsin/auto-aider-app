@@ -119,12 +119,13 @@ const editProfile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
   },
   upperBox: {
-    flex: 1,
     backgroundColor: "#000B58",
     justifyContent: "center",
     alignItems: "flex-start",
+    height: 63,
   },
   header: {
     color: "#fff",
@@ -142,8 +143,6 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   lowerBox: {
-    flex: 9,
-    backgroundColor: "#fff",
     alignItems: "center",
   },
   editPicContainer: {
@@ -184,21 +183,23 @@ const styles = StyleSheet.create({
   editInfoContainer: {
     gap: 10,
     marginTop: 100,
+    width: "100%",
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    width: "100%",
   },
   textInputLbl: {
     fontSize: 16,
     fontFamily: "LeagueSpartan_Bold",
     color: "#000B58",
-    width: 120,
+    width: "35%",
   },
   input: {
     backgroundColor: "#EAEAEA",
-    width: 200,
+    width: "50%",
     height: 45,
     borderRadius: 10,
     padding: 10,
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     fontFamily: "LeagueSpartan",
   },
   dropdownButtonStyle: {
-    width: 200,
+    width: "50%",
     height: 45,
     backgroundColor: "#EAEAEA",
     borderRadius: 10,
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   button: {
-    width: 150,
+    width: "40%",
     height: 45,
     backgroundColor: "#000B58",
     justifyContent: "center",

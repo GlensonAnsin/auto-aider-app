@@ -254,7 +254,7 @@ const Signup = () => {
 
               <View style={styles.loginContainer}>
                 <Text style={styles.questionLbl}>Have an account?</Text>
-                <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
+                <TouchableOpacity onPress={() => router.push("/auth/login")}>
                   <Text style={styles.loginLbl}>Log In</Text>
                 </TouchableOpacity>
               </View>
@@ -273,10 +273,10 @@ const Signup = () => {
                   <View style={styles.modalView}>
                     <Text style={styles.modalTxt}>Account created successfully. Thank you for registering!</Text>
                     <TouchableOpacity
-                      style={styles.button}
+                      style={styles.modalButton}
                       onPress={() => {
                         isCarOwnerModalVisible(!carOwnerModalVisible)
-                        router.push("/(auth)/login");
+                        router.push("/auth/login");
                       }}>
                       <Text style={styles.buttonTxt}>OK</Text>
                     </TouchableOpacity>
@@ -458,10 +458,10 @@ const Signup = () => {
                   <View style={styles.modalView}>
                     <Text style={styles.modalTxt}>Thank you for registering! Please wait for admin approval. An update will be sent via SMS.</Text>
                     <TouchableOpacity
-                      style={styles.button}
+                      style={styles.modalButton}
                       onPress={() => {
                         isRepairShopModalVisible(!repairShopModalVisible)
-                        router.push("/(auth)/login");
+                        router.push("/auth/login");
                       }}>
                       <Text style={styles.buttonTxt}>OK</Text>
                     </TouchableOpacity>
@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   button: {
-    width: 150,
+    width: "40%",
     height: 45,
     backgroundColor: "#000B58",
     justifyContent: "center",
@@ -665,16 +665,16 @@ const styles = StyleSheet.create({
   },
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalView: {
-    margin: 40,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
+    width: "70%",
     borderRadius: 10,
     padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -684,9 +684,18 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalTxt: {
-    textAlign: 'center',
+    textAlign: "center",
     fontFamily: "LeagueSpartan",
     fontSize: 16,
+  },
+  modalButton: {
+    width: "50%",
+    height: 45,
+    backgroundColor: "#000B58",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 20,
+    marginTop: 10,
   },
 })
 

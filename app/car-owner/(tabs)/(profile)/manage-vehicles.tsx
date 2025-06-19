@@ -37,12 +37,13 @@ const manageVehicles = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
   },
   upperBox: {
-    flex: 1,
     backgroundColor: "#000B58",
     justifyContent: "center",
     alignItems: "flex-start",
+    height: 63,
   },
   header: {
     color: "#fff",
@@ -60,7 +61,6 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   lowerBox: {
-    flex: 9,
     backgroundColor: "#fff",
     alignItems: "center",
   },
@@ -73,11 +73,19 @@ const styles = StyleSheet.create({
     minHeight: 80,
     padding: 10,
     marginTop: 20,
+    width: "90%",
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   carDetailsContainer: {
     flexDirection: "row",
-    maxWidth: 200,
-    minWidth: 200,
+    width: "65%",
     flexWrap: "wrap",
   },
   carDetail: {

@@ -1,5 +1,3 @@
-/* UNFINISHED REFACTOR */
-
 import { verifyCar } from '@/services/geminiApi';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -164,6 +162,8 @@ export default function Home() {
                                                     <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
                                                 </View>
                                             )}
+                                            showsVerticalScrollIndicator={false}
+                                            dropdownStyle={styles.dropdownMenuStyle}
                                         />
                                     </View>
 
@@ -317,6 +317,14 @@ const styles = StyleSheet.create({
         paddingTop: 5,
         paddingBottom: 5,
         justifyContent: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
     },
     column: {
         width: "47%",
@@ -331,6 +339,14 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         gap: 3,
+        shadowColor: '#000',
+        shadowOffset: {
+        width: 0,
+        height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
     },
     featureTxtWrapper: {
         flexDirection: "column",
@@ -352,8 +368,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     addCarModalView: {
-        margin: 20,
         backgroundColor: '#000B58',
+        width: "85%",
         borderRadius: 20,
         padding: 35,
         alignItems: 'center',
@@ -374,6 +390,7 @@ const styles = StyleSheet.create({
     textInputContainer: {
         gap: 10,
         marginTop: 10,
+        width: "100%",
     },
     textInputLbl: {
         fontSize: 16,
@@ -381,7 +398,7 @@ const styles = StyleSheet.create({
         color: "#fff",
     },
     dropdownButtonStyle: {
-        width: 250,
+        width: "100%",
         height: 45,
         backgroundColor: "#EAEAEA",
         borderRadius: 10,
@@ -398,6 +415,11 @@ const styles = StyleSheet.create({
     dropdownButtonArrowStyle: {
         fontSize: 24,
     },
+    dropdownMenuStyle: {
+        backgroundColor: "#EAEAEA",
+        borderRadius: 10,
+        marginTop: -1,
+    },
     dropdownItemStyle: {
         width: "100%",
         flexDirection: "row",
@@ -405,6 +427,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         paddingVertical: 8,
+        borderRadius: 10,
     },
     dropdownItemTxtStyle: {
         flex: 1,
@@ -413,7 +436,7 @@ const styles = StyleSheet.create({
     },
     input: {
         backgroundColor: "#EAEAEA",
-        width: 250,
+        width: "100%",
         height: 45,
         borderRadius: 10,
         padding: 10,
@@ -421,7 +444,7 @@ const styles = StyleSheet.create({
         fontFamily: "LeagueSpartan",
     },
     addCarButton: {
-        width: 150,
+        width: "50%",
         height: 45,
         backgroundColor: "#fff",
         justifyContent: "center",
@@ -436,6 +459,7 @@ const styles = StyleSheet.create({
     errorContainer: {
         backgroundColor: "#fff",
         borderRadius: 5,
+        width: "100%",
         padding: 10,
         marginTop: 20,
     },
@@ -445,11 +469,12 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     addSuccessModalView: {
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        padding: 25,
-        alignItems: 'center',
-        shadowColor: '#000',
+        backgroundColor: "#fff",
+        width: "60%",
+        borderRadius: 10,
+        padding: 20,
+        alignItems: "center",
+        shadowColor: "#000",
         shadowOffset: {
         width: 0,
         height: 2,
@@ -460,18 +485,17 @@ const styles = StyleSheet.create({
     },
     modalTxt: {
         marginBottom: 15,
-        textAlign: 'center',
+        textAlign: "center",
         fontFamily: "LeagueSpartan",
         fontSize: 16,
     },
     addSuccessButton: {
-        width: 100,
+        width: "50%",
         height: 45,
         backgroundColor: "#000B58",
         justifyContent: "center",
         alignItems: "center",
         borderRadius: 20,
-        marginTop: 20,
     },
     addSuccessButtonTxt: {
         fontSize: 16,

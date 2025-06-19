@@ -10,6 +10,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           backgroundColor: "#000B58",
           height: 60,
@@ -19,24 +20,24 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="notifications"
-        options={{
-          title: "Notifications",
-          tabBarIcon: () => (
-            <View style={{ alignItems: "center", justifyContent: "center" }}>
-              <NotificationIcon width={30} height={30} color="#fff" />
-            </View>
-          ),
-          animation: "none",
-        }}
-      />
-      <Tabs.Screen
         name="index"
         options={{
           title: "Home",
           tabBarIcon: () => (
             <View style={{ alignItems: "center", justifyContent: "center" }}>
               <HomeIcon width={30} height={30} color="#fff" />
+            </View>
+          ),
+          animation: "none",
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: "Notifications",
+          tabBarIcon: () => (
+            <View style={{ alignItems: "center", justifyContent: "center" }}>
+              <NotificationIcon width={30} height={30} color="#fff" />
             </View>
           ),
           animation: "none",

@@ -72,7 +72,7 @@ const Profile = () => {
                             />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.profileTab} onPress={() => router.push("/(auth)/login")}>
+                        <TouchableOpacity style={styles.profileTab} onPress={() => router.push("/auth/login")}>
                             <Icon
                                 name="logout"
                                 style={[styles.icon, {color: "red"}]}
@@ -144,12 +144,13 @@ const Profile = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: "#fff",
     },
     upperBox: {
-        flex: 1,
         backgroundColor: "#000B58",
         justifyContent: "center",
         alignItems: "flex-start",
+        height: 63,
     },
     header: {
         color: "#fff",
@@ -167,21 +168,18 @@ const styles = StyleSheet.create({
         color: "#fff",
     },
     lowerBox: {
-        flex: 9,
-        backgroundColor: "#fff",
         alignItems: "center",
     },
     userContainer: {
         flexDirection: "row",
-        justifyContent: "center",
         alignItems: "center",
-        gap: 20,
+        justifyContent: "space-between",
         marginTop: 50,
+        width: "90%",
     },
     userNameContainer: {
         flexDirection: "column",
-        maxWidth: 220,
-        minWidth: 220,
+        width: "65%",
     },
     userName: {
         fontFamily: "LeagueSpartan_Bold",
@@ -209,7 +207,7 @@ const styles = StyleSheet.create({
     profileTabContainer: {
         width: "100%",
         marginTop: 30,
-        gap: 5,
+        gap: 10,
     },
     profileTab: {
         flexDirection: "row",
@@ -217,6 +215,14 @@ const styles = StyleSheet.create({
         backgroundColor: "#EAEAEA",
         padding: 20,
         gap: 25,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
     },
     icon: {
         fontSize: 35,
@@ -234,16 +240,16 @@ const styles = StyleSheet.create({
     },
     centeredView: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
     },
     modalView: {
-        margin: 20,
-        backgroundColor: '#000B58',
+        backgroundColor: "#000B58",
+        width: "85%",
         borderRadius: 20,
         padding: 35,
-        alignItems: 'center',
-        shadowColor: '#000',
+        alignItems: "center",
+        shadowColor: "#000",
         shadowOffset: {
         width: 0,
         height: 2,
@@ -260,6 +266,7 @@ const styles = StyleSheet.create({
     textInputContainer: {
         gap: 10,
         marginTop: 10,
+        width: "100%",
     },
     textInputLbl: {
         fontSize: 16,
@@ -268,7 +275,7 @@ const styles = StyleSheet.create({
     },
     input: {
         backgroundColor: "#EAEAEA",
-        width: 250,
+        width: "100%",
         height: 45,
         borderRadius: 10,
         padding: 10,
@@ -276,7 +283,7 @@ const styles = StyleSheet.create({
         fontFamily: "LeagueSpartan",
     },
     button: {
-        width: 150,
+        width: "50%",
         height: 45,
         backgroundColor: "#fff",
         justifyContent: "center",

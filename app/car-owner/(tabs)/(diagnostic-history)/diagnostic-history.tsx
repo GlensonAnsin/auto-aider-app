@@ -37,12 +37,13 @@ const diagnosticHistory = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: "#fff",
     },
     upperBox: {
-        flex: 1,
         backgroundColor: "#000B58",
         justifyContent: "center",
         alignItems: "flex-start",
+        height: 63,
     },
     header: {
         color: "#fff",
@@ -60,7 +61,6 @@ const styles = StyleSheet.create({
         color: "#fff",
     },
     lowerBox: {
-        flex: 9,
         backgroundColor: "#fff",
         alignItems: "center",
     },
