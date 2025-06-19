@@ -87,6 +87,22 @@ export default function TabsLayout() {
           animation: "none",
         }}
       />
+      <Tabs.Screen
+        name="(run-diagnostics)/run-diagnostics"
+        options={{
+          title: "Diagnose",
+          href: null,
+          animation: "none",
+        }}
+      />
+      <Tabs.Screen
+        name="(run-diagnostics)/diagnosis"
+        options={{
+          title: "Diagnosis",
+          href: null,
+          animation: "none",
+        }}
+      />
     </Tabs>
   );
 }

@@ -5,7 +5,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from "react-native-select-dropdown";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
-const editProfile = () => {
+const EditProfile = () => {
   const router = useRouter();
 
   const [firstname, setFirstname] = useState<string>("Glenson");
@@ -262,4 +262,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default editProfile
+export default EditProfile

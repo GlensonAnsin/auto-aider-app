@@ -3,7 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
-const manageVehicles = () => {
+const ManageVehicles = () => {
   const router = useRouter();
 
   return (
@@ -108,4 +108,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default manageVehicles
+export default ManageVehicles

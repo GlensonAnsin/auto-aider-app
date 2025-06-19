@@ -3,35 +3,36 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
-const diagnosticHistory = () => {
+const DiagnosticHistory = () => {
     const router = useRouter();
-  return (
-    <SafeAreaProvider>
-        <SafeAreaView style={styles.container}>
-            <View style={styles.upperBox}>
-                <Text style={styles.header}>|  HISTORY</Text>
-                <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push("/car-owner/(tabs)")}>
-                    <Icon name="arrow-left" style={styles.arrowBack} />
-                </TouchableOpacity>
-            </View>
 
-            <View style={styles.lowerBox}>
-                <View style={styles.clearHistoryContainer}>
-                    <Text style={styles.header2}>Scanned Cars</Text>
-                    <TouchableOpacity style={styles.button}>
-                        <Text style={styles.buttonTxt}>Clear history</Text>
+    return (
+        <SafeAreaProvider>
+            <SafeAreaView style={styles.container}>
+                <View style={styles.upperBox}>
+                    <Text style={styles.header}>|  HISTORY</Text>
+                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push("/car-owner/(tabs)")}>
+                        <Icon name="arrow-left" style={styles.arrowBack} />
                     </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity style={styles.historyContainer}>
-                    <Text style={styles.carDetails}>Toyota Fortuner 2025</Text>
-                    <Text style={styles.date}>06/18/2025</Text>
-                    <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
-                </TouchableOpacity>
-            </View>
-        </SafeAreaView>
-    </SafeAreaProvider>
-  )
+                <View style={styles.lowerBox}>
+                    <View style={styles.clearHistoryContainer}>
+                        <Text style={styles.header2}>Scanned Cars</Text>
+                        <TouchableOpacity style={styles.button}>
+                            <Text style={styles.buttonTxt}>Clear history</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <TouchableOpacity style={styles.historyContainer}>
+                        <Text style={styles.carDetails}>Toyota Fortuner 2025</Text>
+                        <Text style={styles.date}>06/18/2025</Text>
+                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        </SafeAreaProvider>
+    )
 }
 
 const styles = StyleSheet.create({
@@ -60,8 +61,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         color: "#fff",
     },
-    lowerBox: {
-        backgroundColor: "#fff",
+    lowerBox: { 
         alignItems: "center",
     },
     clearHistoryContainer: {
@@ -110,4 +110,4 @@ const styles = StyleSheet.create({
 
 })
 
-export default diagnosticHistory
+export default DiagnosticHistory

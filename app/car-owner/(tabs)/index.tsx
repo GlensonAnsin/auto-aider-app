@@ -89,7 +89,7 @@ export default function Home() {
                                 </View>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.feature}>
+                            <TouchableOpacity style={styles.feature} onPress={() => router.push("/car-owner/(tabs)/(run-diagnostics)/run-diagnostics")}>
                                 <RunDiagnosticIcon width={40} height={40} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>RUN DIAGNOSTICS</Text>
