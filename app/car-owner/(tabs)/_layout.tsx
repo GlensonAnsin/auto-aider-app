@@ -103,6 +103,14 @@ export default function TabsLayout() {
           animation: "none",
         }}
       />
+      <Tabs.Screen
+        name="(run-diagnostics)/detailed-report"
+        options={{
+          title: "Detailed Report",
+          href: null,
+          animation: "none",
+        }}
+      />
     </Tabs>
   );
 }

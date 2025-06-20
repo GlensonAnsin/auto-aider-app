@@ -1,3 +1,4 @@
+import { codeTechnicalDescription } from '@/services/geminiApi';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -14,6 +15,15 @@ const RunDiagnostics = () => {
         { make: "Toyota", model: "Fortuner", year: "2025" },
         { make: "Honda", model: "Civic", year: "2017" },
     ];
+
+    const handleCodeTechnicalDescription = async () => {
+        try {
+            const result = await codeTechnicalDescription("P1604", "2017", "Toyota", "Fortuner");
+            console.log(result);
+        } catch (e) {
+            console.error("Error getting technical description: ", e);
+        }
+    }
 
     return (
         <SafeAreaProvider>
@@ -55,7 +65,10 @@ const RunDiagnostics = () => {
                     </View>
 
                     <View style={styles.buttonContainer}>
-                        <TouchableOpacity style={styles.scanButton} onPress={() => router.push("/car-owner/(tabs)/(run-diagnostics)/diagnosis")}>
+                        <TouchableOpacity style={styles.scanButton} onPress={() => {
+                            handleCodeTechnicalDescription();
+                            router.push("/car-owner/(tabs)/(run-diagnostics)/diagnosis");
+                            }}>
                             <View style={styles.innerContainer}>
                                 <Text style={styles.buttonTxt}>Scan</Text>
                             </View>
