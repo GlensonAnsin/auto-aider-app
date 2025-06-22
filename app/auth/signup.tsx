@@ -1,3 +1,4 @@
+import { createUser } from "@/services/backendApi";
 import Checkbox from "expo-checkbox";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
@@ -13,11 +14,11 @@ const Signup = () => {
 
   const [firstname, setFirstname] = useState<string>("");
   const [lastname, setLastname] = useState<string>("");
-  const [_gender, setGender] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
   const [mobileNum, setMobileNum] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [_role, setRole] = useState<string>("");
+  const [role, setRole] = useState<string>("");
   const [shopName, setShopName] = useState<string>("");
   const [page, setPage] = useState<string>("");
   const [region, setRegion] = useState<Region | undefined>(undefined);
@@ -121,6 +122,27 @@ const Signup = () => {
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
+
+  const handleAddUser = async () => {
+    if (!firstname || !lastname || !gender || !mobileNum || !password || !confirmPassword || !role) {
+      console.log("Please fill in all fields.")
+      return;
+    }
+
+    const newUser = {
+      firstname: firstname.trim(),
+      lastname: lastname.trim(),
+      gender: gender.trim(),
+      email: null,
+      mobile_num: mobileNum.trim(),
+      password: password.trim(),
+      creation_date: new Date(),
+      profile_pic: null,
+      role: role.trim()
+    };
+    
+    await createUser(newUser);
+  }
 
   return (
     <SafeAreaProvider>
@@ -259,7 +281,10 @@ const Signup = () => {
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity style={styles.button} onPress={() => isCarOwnerModalVisible(true)}>
+              <TouchableOpacity style={styles.button} onPress={() => {
+                handleAddUser();
+                isCarOwnerModalVisible(true)
+              }}>
                 <Text style={styles.buttonTxt}>SIGN UP</Text>
               </TouchableOpacity>
 
