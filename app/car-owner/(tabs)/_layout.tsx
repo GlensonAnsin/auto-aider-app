@@ -1,8 +1,8 @@
-import { Tabs } from "expo-router";
-import { View } from "react-native";
-import NotificationIcon from "../../../assets/images/ion_notifications.svg";
-import SettingsIcon from "../../../assets/images/material-symbols_settings.svg";
-import HomeIcon from "../../../assets/images/typcn_home.svg";
+import { Tabs } from 'expo-router';
+import { View } from 'react-native';
+import NotificationIcon from '../../../assets/images/ion_notifications.svg';
+import SettingsIcon from '../../../assets/images/material-symbols_settings.svg';
+import HomeIcon from '../../../assets/images/typcn_home.svg';
 
 export default function TabsLayout() {
   return (
@@ -12,7 +12,7 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
-          backgroundColor: "#000B58",
+          backgroundColor: '#000B58',
           height: 60,
           paddingHorizontal: 10,
           paddingTop: 10,
@@ -20,95 +20,95 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name='index'
         options={{
-          title: "Home",
+          title: 'Home',
           tabBarIcon: () => (
-            <View style={{ alignItems: "center", justifyContent: "center" }}>
-              <HomeIcon width={30} height={30} color="#fff" />
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <HomeIcon width={30} height={30} color='#fff' />
             </View>
           ),
-          animation: "none",
+          animation: 'none',
         }}
       />
       <Tabs.Screen
-        name="notifications"
+        name='notifications'
         options={{
-          title: "Notifications",
+          title: 'Notifications',
           tabBarIcon: () => (
-            <View style={{ alignItems: "center", justifyContent: "center" }}>
-              <NotificationIcon width={30} height={30} color="#fff" />
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <NotificationIcon width={30} height={30} color='#fff' />
             </View>
           ),
-          animation: "none",
+          animation: 'none',
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name='settings'
         options={{
-          title: "Settings",
+          title: 'Settings',
           tabBarIcon: () => (
-            <View style={{ alignItems: "center", justifyContent: "center" }}>
-              <SettingsIcon width={30} height={30} color="#fff" />
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <SettingsIcon width={30} height={30} color='#fff' />
             </View>
           ),
-          animation: "none",
+          animation: 'none',
         }}
       />
       <Tabs.Screen
-        name="(profile)/profile"
+        name='(profile)/profile'
         options={{
-          title: "Profile",
+          title: 'Profile',
           href: null,
-          animation: "none",
+          animation: 'none',
         }}
       />
       <Tabs.Screen
-        name="(profile)/edit-profile"
+        name='(profile)/edit-profile'
         options={{
-          title: "Edit Profile",
+          title: 'Edit Profile',
           href: null,
-          animation: "none",
+          animation: 'none',
         }}
       />
       <Tabs.Screen
-        name="(profile)/manage-vehicles"
+        name='(profile)/manage-vehicles'
         options={{
-          title: "Manage Vehicles",
+          title: 'Manage Vehicles',
           href: null,
-          animation: "none",
+          animation: 'none',
         }}
       />
       <Tabs.Screen
-        name="(diagnostic-history)/diagnostic-history"
+        name='(diagnostic-history)/diagnostic-history'
         options={{
-          title: "History",
+          title: 'History',
           href: null,
-          animation: "none",
+          animation: 'none',
         }}
       />
       <Tabs.Screen
-        name="(run-diagnostics)/run-diagnostics"
+        name='(run-diagnostics)/run-diagnostics'
         options={{
-          title: "Diagnose",
+          title: 'Diagnose',
           href: null,
-          animation: "none",
+          animation: 'none',
         }}
       />
       <Tabs.Screen
-        name="(run-diagnostics)/diagnosis"
+        name='(run-diagnostics)/diagnosis'
         options={{
-          title: "Diagnosis",
+          title: 'Diagnosis',
           href: null,
-          animation: "none",
+          animation: 'none',
         }}
       />
       <Tabs.Screen
-        name="(run-diagnostics)/detailed-report"
+        name='(run-diagnostics)/detailed-report'
         options={{
-          title: "Detailed Report",
+          title: 'Detailed Report',
           href: null,
-          animation: "none",
+          animation: 'none',
         }}
       />
     </Tabs>

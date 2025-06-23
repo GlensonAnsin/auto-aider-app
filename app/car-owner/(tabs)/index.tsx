@@ -2,47 +2,47 @@ import { verifyCar } from '@/services/geminiApi';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import AddVehicleIcon from "../../../assets/images/add_vehicle.svg";
-import DiagnosticHistoryIcon from "../../../assets/images/diagnostic_history.svg";
-import ProfileIcon from "../../../assets/images/iconamoon_profile-fill.svg";
-import LocationIcon from "../../../assets/images/subway_location-1.svg";
-import RunDiagnosticIcon from "../../../assets/images/teenyicons_scan-outline.svg";
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AddVehicleIcon from '../../../assets/images/add_vehicle.svg';
+import DiagnosticHistoryIcon from '../../../assets/images/diagnostic_history.svg';
+import ProfileIcon from '../../../assets/images/iconamoon_profile-fill.svg';
+import LocationIcon from '../../../assets/images/subway_location-1.svg';
+import RunDiagnosticIcon from '../../../assets/images/teenyicons_scan-outline.svg';
 
 export default function Home() {
     const [addVehicleModalVisible, isAddVehicleModalVisible] = useState(false);
     const [addSuccessModalVisible, isAddSuccessModalVisible] = useState(false);
-    const [selectedMake, setSelectedMake] = useState<string>("");
-    const [model, setModel] = useState<string>("");
-    const [year, setYear] = useState<string>("");
-    const [error, setError] = useState<string>("");
+    const [selectedMake, setSelectedMake] = useState<string>('');
+    const [model, setModel] = useState<string>('');
+    const [year, setYear] = useState<string>('');
+    const [error, setError] = useState<string>('');
     const [loading, isLoading] = useState(false);
 
-    const targetMakes = ["Acura", "Audi", "BMW", "Chevrolet", "Dodge", "Chrysler", "Jeep", "Ford", "Foton", "Geely", "Honda", "Hyundai", "Infiniti", "Isuzu", "Jaguar", "Kia", "Land Rover", "Lexus", "Mazda", "Mercedes-Benz", "MG", "Mitsubishi", "Nissan", "RAM", "Subaru", "Suzuki", "Toyota", "Volkswagen"]
+    const targetMakes = ['Acura', 'Audi', 'BMW', 'Chevrolet', 'Dodge', 'Chrysler', 'Jeep', 'Ford', 'Foton', 'Geely', 'Honda', 'Hyundai', 'Infiniti', 'Isuzu', 'Jaguar', 'Kia', 'Land Rover', 'Lexus', 'Mazda', 'Mercedes-Benz', 'MG', 'Mitsubishi', 'Nissan', 'RAM', 'Subaru', 'Suzuki', 'Toyota', 'Volkswagen']
 
     const handleCarVerification = async () => {
         if (!selectedMake || !model || !year) {
-            setError("Please fill in all fields.")
+            setError('Please fill in all fields.')
             return;
         }
-        setError("")
+        setError('')
         try {
             isLoading(true);
             const result = await verifyCar(selectedMake, model, year);
-            if (result === "false") {
-                setError("Invalid car details. Please check and try again.")
+            if (result === 'false') {
+                setError('Invalid car details. Please check and try again.')
             } else {
-                setSelectedMake("");
-                setModel("");
-                setYear("");
-                setError("");
+                setSelectedMake('');
+                setModel('');
+                setYear('');
+                setError('');
                 isAddVehicleModalVisible(!addVehicleModalVisible);
                 isAddSuccessModalVisible(true);
             }
         } catch (e) {
-            setError("An error occurred while verifying the car.")
+            setError('An error occurred while verifying the car.')
         } finally {
             isLoading(false);
         }
@@ -53,11 +53,11 @@ export default function Home() {
             <SafeAreaView style={styles.container}>
                 <ScrollView>
                     <Image
-                        source={require("../../../assets/images/screen-design-2.png")}
+                        source={require('../../../assets/images/screen-design-2.png')}
                         style={styles.screenDesign}
                     />
                     <Image
-                        source={require("../../../assets/images/logo.png")}
+                        source={require('../../../assets/images/logo.png')}
                         style={styles.logo}
                         width={200}
                         height={25}
@@ -69,7 +69,7 @@ export default function Home() {
                             <Text style={styles.userName}>Glenson Ansin</Text>
                         </View>
 
-                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.push("/car-owner/(tabs)/(profile)/profile")}>
+                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.push('/car-owner/(tabs)/(profile)/profile')}>
                             <Text style={styles.userInitials}>GA</Text>
                         </TouchableOpacity>
                     </View>
@@ -81,7 +81,7 @@ export default function Home() {
 
                     <View style={styles.featuresContainer}>
                         <View style={styles.column}>
-                            <TouchableOpacity style={styles.feature} onPress={() => router.push("/car-owner/(tabs)/(diagnostic-history)/diagnostic-history")}>
+                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(diagnostic-history)/diagnostic-history')}>
                                 <DiagnosticHistoryIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>DIAGNOSTIC HISTORY</Text>
@@ -89,7 +89,7 @@ export default function Home() {
                                 </View>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.feature} onPress={() => router.push("/car-owner/(tabs)/(run-diagnostics)/run-diagnostics")}>
+                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(run-diagnostics)/run-diagnostics')}>
                                 <RunDiagnosticIcon width={40} height={40} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>RUN DIAGNOSTICS</Text>
@@ -115,7 +115,7 @@ export default function Home() {
                                 </View>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.feature} onPress={() => router.push("/car-owner/(tabs)/(profile)/profile")}>
+                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(profile)/profile')}>
                                 <ProfileIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>MY PROFILE</Text>
@@ -125,15 +125,15 @@ export default function Home() {
                         </View>
 
                         <Modal
-                            animationType="fade"
-                            backdropColor={"rgba(0, 0, 0, 0.5)"}
+                            animationType='fade'
+                            backdropColor={'rgba(0, 0, 0, 0.5)'}
                             visible={addVehicleModalVisible}
                             onRequestClose={() => {
                                 isAddVehicleModalVisible(!addVehicleModalVisible);
-                                setSelectedMake("");
-                                setModel("");
-                                setYear("");
-                                setError("");
+                                setSelectedMake('');
+                                setModel('');
+                                setYear('');
+                                setError('');
                             }}
                         >
                             <View style={styles.centeredView}>
@@ -147,16 +147,16 @@ export default function Home() {
                                             renderButton={(selectedItem, isOpen) => (
                                                 <View style={styles.dropdownButtonStyle}>
                                                     <Text style={styles.dropdownButtonTxtStyle}>
-                                                        {selectedItem || "Select manufacturer"}
+                                                        {selectedItem || 'Select manufacturer'}
                                                     </Text>
-                                                    <Icon name={isOpen ? "chevron-up" : "chevron-down"} style={styles.dropdownButtonArrowStyle} />
+                                                    <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
                                                 </View>
                                             )}
                                             renderItem={(item, _index, isSelected) => (
                                                 <View
                                                     style={{
                                                         ...styles.dropdownItemStyle,
-                                                        ...(isSelected && { backgroundColor: "#D2D9DF" }),
+                                                        ...(isSelected && { backgroundColor: '#D2D9DF' }),
                                                     }}
                                                     >
                                                     <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
@@ -173,7 +173,7 @@ export default function Home() {
                                             value={model}
                                             onChangeText={setModel}
                                             style={styles.input}
-                                            placeholder="Model"
+                                            placeholder='Model'
                                             editable={!selectedMake ? false : true}
                                         />
                                     </View>
@@ -184,8 +184,8 @@ export default function Home() {
                                             value={year}
                                             onChangeText={setYear}
                                             style={styles.input}
-                                            keyboardType="numeric"
-                                            placeholder="Year"
+                                            keyboardType='numeric'
+                                            placeholder='Year'
                                             maxLength={4}
                                             editable={!model ? false : true}
                                         />
@@ -198,12 +198,12 @@ export default function Home() {
                                     )}
 
                                     {loading === true && (
-                                        <ActivityIndicator style={{ marginTop: 20 }} size="small" color="#fff" />
+                                        <ActivityIndicator style={{ marginTop: 20 }} size='small' color='#fff' />
                                     )}
 
                                     <TouchableOpacity style={styles.addCarButton} onPress={() => {
                                         if (parseInt(year) < 1996) {
-                                            setError("OBD2 scanners only support vehicles manufactured in 1996 and newer.");
+                                            setError('OBD2 scanners only support vehicles manufactured in 1996 and newer.');
                                         } else {
                                             handleCarVerification();
                                         }
@@ -215,8 +215,8 @@ export default function Home() {
                         </Modal>
 
                         <Modal
-                            animationType="fade"
-                            backdropColor={"rgba(0, 0, 0, 0.5)"}
+                            animationType='fade'
+                            backdropColor={'rgba(0, 0, 0, 0.5)'}
                             visible={addSuccessModalVisible}
                             onRequestClose={() => isAddSuccessModalVisible(!addSuccessModalVisible)}
                         >
@@ -243,81 +243,81 @@ export default function Home() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
+        backgroundColor: '#fff',
     },
     screenDesign: {
-        width: "100%",
+        width: '100%',
     },
     logo: {
-        position: "absolute",
+        position: 'absolute',
         top: 35,
         left: 20,
     },
     userContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginTop: 20,
-        width: "90%",
-        alignSelf: "center",
+        width: '90%',
+        alignSelf: 'center',
     },
     userNameContainer: {
-        flexDirection: "column",
-        width: "70%"
+        flexDirection: 'column',
+        width: '70%'
     },
     header: {
-        fontFamily: "LeagueSpartan_Bold",
+        fontFamily: 'LeagueSpartan_Bold',
         fontSize: 30,
     },
     userName: {
-        fontFamily: "LeagueSpartan",
+        fontFamily: 'LeagueSpartan',
         fontSize: 24,
     },
     profileWrapper: {
-        backgroundColor: "green",
+        backgroundColor: 'green',
         width: 80,
         height: 80,
-        alignItems: "center",
-        justifyContent: "center",
+        alignItems: 'center',
+        justifyContent: 'center',
         borderRadius: 80,
     },
     userInitials: {
-        fontFamily: "LeagueSpartan_Bold",
+        fontFamily: 'LeagueSpartan_Bold',
         fontSize: 30,
-        color: "#fff",
+        color: '#fff',
     },
     introTxtContainer: {
         borderWidth: 2,
-        borderColor: "#003161",
-        width: "94%",
+        borderColor: '#003161',
+        width: '94%',
         borderRadius: 10,
         padding: 10,
         marginTop: 20,
-        alignSelf: "center",
+        alignSelf: 'center',
     },
     introHeader: {
-        fontFamily: "LeagueSpartan",
+        fontFamily: 'LeagueSpartan',
         fontSize: 18,
-        textAlign: "center",
+        textAlign: 'center',
     },
     introBody: {
-        fontFamily: "LeagueSpartan",
+        fontFamily: 'LeagueSpartan',
         fontSize: 16,
-        textAlign: "center",
+        textAlign: 'center',
     },
     featuresContainer: {
-        backgroundColor: "#EAEAEA",
-        width: "94%",
-        flexDirection: "row",
-        alignSelf: "center",
+        backgroundColor: '#EAEAEA',
+        width: '94%',
+        flexDirection: 'row',
+        alignSelf: 'center',
         borderRadius: 8,
         marginTop: 20,
         marginBottom: 10,
         gap: 5,
         paddingTop: 5,
         paddingBottom: 5,
-        justifyContent: "center",
-        shadowColor: "#000",
+        justifyContent: 'center',
+        shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 2,
@@ -327,17 +327,17 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     column: {
-        width: "47%",
+        width: '47%',
         gap: 5,
     },
     feature: {
-        flexDirection: "row",
-        backgroundColor: "#000B58",
-        width: "100%",
+        flexDirection: 'row',
+        backgroundColor: '#000B58',
+        width: '100%',
         height: 100,
         borderRadius: 8,
-        justifyContent: "center",
-        alignItems: "center",
+        justifyContent: 'center',
+        alignItems: 'center',
         gap: 3,
         shadowColor: '#000',
         shadowOffset: {
@@ -349,17 +349,17 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     featureTxtWrapper: {
-        flexDirection: "column",
-        width: "60%",
+        flexDirection: 'column',
+        width: '60%',
     },
     featureHeader: {
-        color: "#fff",
-        fontFamily: "LeagueSpartan_Bold",
+        color: '#fff',
+        fontFamily: 'LeagueSpartan_Bold',
         fontSize: 14,
     },
     featureDescription: {
-        color: "#fff",
-        fontFamily: "LeagueSpartan",
+        color: '#fff',
+        fontFamily: 'LeagueSpartan',
         fontSize: 10,
     },
     centeredView: {
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     },
     addCarModalView: {
         backgroundColor: '#000B58',
-        width: "85%",
+        width: '85%',
         borderRadius: 20,
         padding: 35,
         alignItems: 'center',
@@ -384,97 +384,97 @@ const styles = StyleSheet.create({
     },
     modalHeader: {
         fontSize: 24,
-        fontFamily: "LeagueSpartan_Bold",
-        color: "#fff",
+        fontFamily: 'LeagueSpartan_Bold',
+        color: '#fff',
     },
     textInputContainer: {
         gap: 10,
         marginTop: 10,
-        width: "100%",
+        width: '100%',
     },
     textInputLbl: {
         fontSize: 16,
-        fontFamily: "LeagueSpartan",
-        color: "#fff",
+        fontFamily: 'LeagueSpartan',
+        color: '#fff',
     },
     dropdownButtonStyle: {
-        width: "100%",
+        width: '100%',
         height: 45,
-        backgroundColor: "#EAEAEA",
+        backgroundColor: '#EAEAEA',
         borderRadius: 10,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
         paddingHorizontal: 10,
     },
     dropdownButtonTxtStyle: {
         flex: 1,
         fontSize: 16,
-        fontFamily: "LeagueSpartan",
+        fontFamily: 'LeagueSpartan',
     },
     dropdownButtonArrowStyle: {
         fontSize: 24,
     },
     dropdownMenuStyle: {
-        backgroundColor: "#EAEAEA",
+        backgroundColor: '#EAEAEA',
         borderRadius: 10,
         marginTop: -1,
     },
     dropdownItemStyle: {
-        width: "100%",
-        flexDirection: "row",
+        width: '100%',
+        flexDirection: 'row',
         paddingHorizontal: 10,
-        justifyContent: "center",
-        alignItems: "center",
+        justifyContent: 'center',
+        alignItems: 'center',
         paddingVertical: 8,
         borderRadius: 10,
     },
     dropdownItemTxtStyle: {
         flex: 1,
         fontSize: 16,
-        fontFamily: "LeagueSpartan",
+        fontFamily: 'LeagueSpartan',
     },
     input: {
-        backgroundColor: "#EAEAEA",
-        width: "100%",
+        backgroundColor: '#EAEAEA',
+        width: '100%',
         height: 45,
         borderRadius: 10,
         padding: 10,
         fontSize: 16,
-        fontFamily: "LeagueSpartan",
+        fontFamily: 'LeagueSpartan',
     },
     addCarButton: {
-        width: "50%",
+        width: '50%',
         height: 45,
-        backgroundColor: "#fff",
-        justifyContent: "center",
-        alignItems: "center",
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
         borderRadius: 20,
         marginTop: 20,
     },
     addCarButtonTxt: {
         fontSize: 16,
-        fontFamily: "LeagueSpartan_Bold",
+        fontFamily: 'LeagueSpartan_Bold',
     },
     errorContainer: {
-        backgroundColor: "#fff",
+        backgroundColor: '#fff',
         borderRadius: 5,
-        width: "100%",
+        width: '100%',
         padding: 10,
         marginTop: 20,
     },
     errorMessage: {
-        fontFamily: "LeagueSpartan",
-        color: "red",
-        textAlign: "center",
+        fontFamily: 'LeagueSpartan',
+        color: 'red',
+        textAlign: 'center',
     },
     addSuccessModalView: {
-        backgroundColor: "#fff",
-        width: "60%",
+        backgroundColor: '#fff',
+        width: '60%',
         borderRadius: 10,
         padding: 20,
-        alignItems: "center",
-        shadowColor: "#000",
+        alignItems: 'center',
+        shadowColor: '#000',
         shadowOffset: {
         width: 0,
         height: 2,
@@ -485,21 +485,21 @@ const styles = StyleSheet.create({
     },
     modalTxt: {
         marginBottom: 15,
-        textAlign: "center",
-        fontFamily: "LeagueSpartan",
+        textAlign: 'center',
+        fontFamily: 'LeagueSpartan',
         fontSize: 16,
     },
     addSuccessButton: {
-        width: "50%",
+        width: '50%',
         height: 45,
-        backgroundColor: "#000B58",
-        justifyContent: "center",
-        alignItems: "center",
+        backgroundColor: '#000B58',
+        justifyContent: 'center',
+        alignItems: 'center',
         borderRadius: 20,
     },
     addSuccessButtonTxt: {
         fontSize: 16,
-        fontFamily: "LeagueSpartan_Bold",
-        color: "#fff",
+        fontFamily: 'LeagueSpartan_Bold',
+        color: '#fff',
     },
 });

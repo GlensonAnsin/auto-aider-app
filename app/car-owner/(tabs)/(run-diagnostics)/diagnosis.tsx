@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Diagnosis = () => {
     const router = useRouter();
@@ -12,20 +12,20 @@ const Diagnosis = () => {
             <SafeAreaView style={styles.container}>
                 <View style={styles.upperBox}>
                     <Text style={styles.header}>|  DIAGNOSIS</Text>
-                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push("/car-owner/(tabs)/(run-diagnostics)/run-diagnostics")}>
-                        <Icon name="arrow-left" style={styles.arrowBack} />
+                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(run-diagnostics)/run-diagnostics')}>
+                        <Icon name='arrow-left' style={styles.arrowBack} />
                     </TouchableOpacity>
                 </View>
                 
                 <View style={styles.lowerBox}>
                     <View style={styles.buttonContainer}>
                         <Text style={styles.car}>Honda Civic 2017</Text>
-                        <TouchableOpacity style={[styles.button, {backgroundColor: "#770909"}]}>
-                            <Icon name="close-circle-outline" style={styles.buttonIcon} />
+                        <TouchableOpacity style={[styles.button, {backgroundColor: '#770909'}]}>
+                            <Icon name='close-circle-outline' style={styles.buttonIcon} />
                             <Text style={styles.buttonText}>Disconnect</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.button, {backgroundColor: "#000B58"}]}>
-                            <Icon name="radiobox-marked" style={styles.buttonIcon} />
+                        <TouchableOpacity style={[styles.button, {backgroundColor: '#000B58'}]}>
+                            <Icon name='radiobox-marked' style={styles.buttonIcon} />
                             <Text style={styles.buttonText}>Start another diagnosis</Text>
                         </TouchableOpacity>
                     </View>
@@ -38,7 +38,7 @@ const Diagnosis = () => {
                             </TouchableOpacity>
                         </View>
 
-                        <TouchableOpacity style={styles.troubleCodeButton} onPress={() => router.push("/car-owner/(tabs)/(run-diagnostics)/detailed-report")}>
+                        <TouchableOpacity style={styles.troubleCodeButton} onPress={() => router.push('/car-owner/(tabs)/(run-diagnostics)/detailed-report')}>
                             <Text style={styles.troubleCodeText}>P1456</Text>
                             <Text style={styles.troubleCodeText2}>Evaporative Emissions Control System Leakage - Fuel Tank (Small Leak)</Text>
                         </TouchableOpacity>
@@ -61,89 +61,90 @@ const Diagnosis = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
+        backgroundColor: '#fff',
     },
     upperBox: {
-        backgroundColor: "#000B58",
-        justifyContent: "center",
-        alignItems: "flex-start",
+        backgroundColor: '#000B58',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
         height: 63,
     },
     header: {
-        color: "#fff",
-        fontFamily: "LeagueSpartan_Bold",
+        color: '#fff',
+        fontFamily: 'LeagueSpartan_Bold',
         fontSize: 24,
         marginLeft: 50,
     },
     arrowWrapper: {
         top: 21,
         right: 320,
-        position: "absolute",
+        position: 'absolute',
     },
     arrowBack: {
         fontSize: 24,
-        color: "#fff",
+        color: '#fff',
     },
     lowerBox: {
-        alignItems: "center",
+        alignItems: 'center',
         marginTop: 30,
+        flex: 1,
     },
     buttonContainer: {
-        width: "90%",
+        width: '90%',
         gap: 10,
     },
     car: {
-        fontFamily: "LeagueSpartan_Bold",
+        fontFamily: 'LeagueSpartan_Bold',
         fontSize: 24,
-        color: "#000B58",
-        textAlign: "center",
+        color: '#000B58',
+        textAlign: 'center',
     },
     button: {
-        width: "100%",
-        flexDirection: "row",
-        alignItems: "center",
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
         gap: 10,
         padding: 20,
         borderRadius: 8,
     },
     buttonIcon: {
         fontSize: 30,
-        color: "#fff",
+        color: '#fff',
     },
     buttonText: {
-        color: "#fff",
-        fontFamily: "LeagueSpartan_Bold",
+        color: '#fff',
+        fontFamily: 'LeagueSpartan_Bold',
         fontSize: 20,
     },
     troubleCodesContainer: {
-        width: "90%",
+        width: '90%',
         marginTop: 40,
     },
     labelContainer: {
-        width: "100%",
-        flexDirection: "row",
-        justifyContent: "space-between",
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         marginBottom: 10,
     },
     troubleCodesLbl: {
-        fontFamily: "LeagueSpartan_Bold",
+        fontFamily: 'LeagueSpartan_Bold',
         fontSize: 18,
-        color: "#000B58"
+        color: '#000B58'
     },
     clearButton: {
-        justifyContent: "center",
-        alignItems: "center",
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     clearButtonText: {
-        fontFamily: "LeagueSpartan",
-        color: "#000B58",
+        fontFamily: 'LeagueSpartan',
+        color: '#000B58',
         fontSize: 18,
     },
     troubleCodeButton: {
-        backgroundColor: "#EAEAEA",
-        width: "100%",
+        backgroundColor: '#EAEAEA',
+        width: '100%',
         marginBottom: 10,
-        shadowColor: "#000",
+        shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 2,
@@ -155,26 +156,26 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     troubleCodeText: {
-        fontFamily: "LeagueSpartan_Bold",
+        fontFamily: 'LeagueSpartan_Bold',
         fontSize: 18,
     },
     troubleCodeText2: {
-        fontFamily: "LeagueSpartan",
+        fontFamily: 'LeagueSpartan',
         fontSize: 16,
     },
     findShopButton: {
-        width: "45%",
+        width: '45%',
         height: 45,
-        backgroundColor: "#000B58",
-        justifyContent: "center",
-        alignItems: "center",
+        backgroundColor: '#000B58',
+        justifyContent: 'center',
+        alignItems: 'center',
         borderRadius: 20,
         marginTop: 50,
     },
     findShopButtonText: {
         fontSize: 16,
-        fontFamily: "LeagueSpartan_Bold",
-        color: "#fff",
+        fontFamily: 'LeagueSpartan_Bold',
+        color: '#fff',
     },
 })
 

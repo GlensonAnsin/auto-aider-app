@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NotificationsTab() {
     return (
@@ -16,7 +16,7 @@ export default function NotificationsTab() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
+        backgroundColor: '#fff',
     },
     header: {
         padding: 20,
@@ -24,8 +24,8 @@ const styles = StyleSheet.create({
     },
     headerText: {
         fontSize: 24,
-        fontFamily: "LeagueSpartan",
-        fontWeight: "bold",
-        color: "#000B58",
+        fontFamily: 'LeagueSpartan',
+        fontWeight: 'bold',
+        color: '#000B58',
     },
 });
