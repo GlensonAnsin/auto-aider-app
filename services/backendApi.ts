@@ -6,7 +6,7 @@ const baseURL = process.env.EXPO_PUBLIC_BACKEND_BASE_URL;
 
 export const createUser = async (userData: User): Promise<User | null> => {
   try {
-    const res = await axios.post(`${baseURL}/user`, userData);
+    const res = await axios.post(`${baseURL}/user/signup`, userData);
     return res.data;
   } catch (e) {
     console.error('Error creating user:', e);
@@ -16,7 +16,7 @@ export const createUser = async (userData: User): Promise<User | null> => {
 
 export const getUsers = async () => {
   try {
-    const res = await axios.get(`${baseURL}/user`);
+    const res = await axios.get(`${baseURL}/user/get-all`);
     return res.data;
   } catch (e) {
     console.error('Error getting all users: ', e);
@@ -26,7 +26,7 @@ export const getUsers = async () => {
 
 export const createRepairShop = async (repairShopData: AutoRepairShop): Promise<AutoRepairShop | null> => {
   try {
-    const res = await axios.post(`${baseURL}/auto_repair_shop`, repairShopData);
+    const res = await axios.post(`${baseURL}/auto_repair_shop/signup`, repairShopData);
     return res.data;
   } catch (e) {
     console.error('Error creating repair shop: ', e);
@@ -36,7 +36,7 @@ export const createRepairShop = async (repairShopData: AutoRepairShop): Promise<
 
 export const getRepairShops = async () => {
   try {
-    const res = await axios.get(`${baseURL}/auto_repair_shop`);
+    const res = await axios.get(`${baseURL}/auto_repair_shop/get-all`);
     return res.data;
   } catch (e) {
     console.error('Error getting all repair shops: ', e);

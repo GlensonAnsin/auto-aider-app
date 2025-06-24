@@ -1,10 +1,12 @@
+import api from '@/services/interceptor';
+import { storeTokens } from '@/services/tokenStorage';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import FlashMessage, { showMessage } from "react-native-flash-message";
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
 
 export default function Login() {
   const router = useRouter();
@@ -12,7 +14,6 @@ export default function Login() {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [role, setRole] = useState<string>('');
-  const [error, setError] = useState<string>('')
   
   const roles = [
     { title: 'Car Owner', icon: 'car-outline' },
@@ -20,8 +21,55 @@ export default function Login() {
   ];
 
   const handleLogin = async () => {
-    if (!username || !password || !role) {
-      console.log('Error')
+    if (role === 'Car Owner') {
+      if (!username || !password || !role) {
+        showMessage({
+          message: 'Please fill in all fields.',
+          type: 'warning',
+          floating: true,
+          color: '#fff',
+          icon: 'warning',
+        });
+        return;
+      }
+
+      try {
+        const res = await api.post('user/login', { username, password });
+
+        const { accessToken, refreshToken } = res.data;
+        await storeTokens(accessToken, refreshToken);
+
+        showMessage({
+          message: 'Login successful!',
+          type: 'success',
+          floating: true,
+          color: '#fff',
+          icon: 'success',
+        });
+
+        router.push('/car-owner/(tabs)');
+
+      } catch (e) {
+          if (e instanceof Error) {
+            showMessage({
+              message: 'Invalid credentials',
+              type: 'warning',
+              floating: true,
+              color: '#fff',
+              icon: 'warning',
+            });
+          } else {
+            showMessage({
+              message: 'Login error',
+              type: 'danger',
+              floating: true,
+              color: '#fff',
+              icon: 'danger',
+            });
+          }
+      }
+
+    } else {
       return;
     }
   }
@@ -29,6 +77,7 @@ export default function Login() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
+        <FlashMessage />
         <KeyboardAvoidingView
           behavior='padding'
           keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}

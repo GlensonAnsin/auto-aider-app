@@ -127,12 +127,47 @@ const Signup = () => {
   };
 
   const handleAddUser = async () => {
-    if (role === 'Car Owner') {
-      if (!firstname || !lastname || !gender || !mobileNum || !password || !confirmPassword || !role) {
+    if (!firstname || !lastname || !gender || !mobileNum || !password || !confirmPassword || !role) {
+      showMessage({
+        message: 'Please fill in all fields.',
+        type: 'warning',
+        floating: true,
+        color: '#fff',
+        icon: 'warning',
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showMessage({
+        message: "Password don't match.",
+        type: 'warning',
+        floating: true,
+        color: '#fff',
+        icon: 'warning',
+      });
+      return;
+    }
+
+    if (password.length < 8) {
+      showMessage({
+        message: "Password must be at least 8 characters.",
+        type: 'warning',
+        floating: true,
+        color: '#fff',
+        icon: 'warning',
+      });
+      return;
+    }
+
+    try {
+      const fetchedUsers: User[] = await getUsers();
+      const mobileNumExists = fetchedUsers.some(user => user.mobile_num === mobileNum.trim());
+
+      if (mobileNumExists) {
         showMessage({
-          message: 'Please fill in all fields.',
+          message: 'Mobile number is already used by another account.',
           type: 'warning',
-          backgroundColor: 'red',
           floating: true,
           color: '#fff',
           icon: 'warning',
@@ -140,93 +175,55 @@ const Signup = () => {
         return;
       }
 
-      if (password !== confirmPassword) {
-        showMessage({
-          message: "Password don't match.",
-          type: 'warning',
-          backgroundColor: 'red',
-          floating: true,
-          color: '#fff',
-          icon: 'warning',
-        });
-        return;
-      }
+    } catch (e) {
+      showMessage({
+        message: 'Something went wrong while creating the account.',
+        type: 'danger',
+        floating: true,
+        color: '#fff',
+        icon: 'danger',
+      });
+    }
 
-      if (password.length < 8) {
-        showMessage({
-          message: "Password must be at least 8 characters.",
-          type: 'warning',
-          backgroundColor: 'red',
-          floating: true,
-          color: '#fff',
-          icon: 'warning',
-        });
-        return;
-      }
+    const newUser = {
+      firstname: firstname.trim(),
+      lastname: lastname.trim(),
+      gender: gender.trim(),
+      email: null,
+      mobile_num: mobileNum.trim(),
+      password: password.trim(),
+      creation_date: new Date(),
+      profile_pic: null,
+      role: role.trim()
+    };
 
-      try {
-        const fetchedUsers: User[] = await getUsers();
-        const mobileNumExists = fetchedUsers.some(user => user.mobile_num === mobileNum.trim());
+    try {
+      await createUser(newUser);
+      setFirstname('');
+      setLastname('');
+      setGender('');
+      setMobileNum('');
+      setPassword('');
+      setConfirmPassword('');
+      isCarOwnerModalVisible(true);
 
-        if (mobileNumExists) {
-          showMessage({
-            message: 'Mobile number is already used by another account.',
-            type: 'warning',
-            backgroundColor: 'red',
-            floating: true,
-            color: '#fff',
-            icon: 'warning',
-          });
-          return;
-        }
-      } catch (e) {
-        showMessage({
-          message: 'Something went wrong while creating the account.',
-          type: 'danger',
-          backgroundColor: 'red',
-          floating: true,
-          color: '#fff',
-          icon: 'danger',
-        });
-      }
+    } catch (e) {
+      showMessage({
+        message: 'Something went wrong while creating the account.',
+        type: 'danger',
+        floating: true,
+        color: '#fff',
+        icon: 'danger',
+      });
+    }
+  };
 
-      const newUser = {
-        firstname: firstname.trim(),
-        lastname: lastname.trim(),
-        gender: gender.trim(),
-        email: null,
-        mobile_num: mobileNum.trim(),
-        password: password.trim(),
-        creation_date: new Date(),
-        profile_pic: null,
-        role: role.trim()
-      };
-
-      try {
-        await createUser(newUser);
-        setFirstname('');
-        setLastname('');
-        setGender('');
-        setMobileNum('');
-        setPassword('');
-        setConfirmPassword('');
-        isCarOwnerModalVisible(true);
-      } catch (e) {
-        showMessage({
-          message: 'Something went wrong while creating the account.',
-          type: 'danger',
-          backgroundColor: 'red',
-          floating: true,
-          color: '#fff',
-          icon: 'danger',
-        });
-      }
-    } else {
+  const handleAddRepairShop = async () => {
+    if (page === 'Repair Shop') {
       if (!firstname || !lastname || !gender || !mobileNum || !password || !confirmPassword || !shopName || !role) {
         showMessage({
           message: 'Please fill in all fields.',
           type: 'warning',
-          backgroundColor: 'red',
           floating: true,
           color: '#fff',
           icon: 'warning',
@@ -238,7 +235,6 @@ const Signup = () => {
         showMessage({
           message: "Password don't match.",
           type: 'warning',
-          backgroundColor: 'red',
           floating: true,
           color: '#fff',
           icon: 'warning',
@@ -250,7 +246,6 @@ const Signup = () => {
         showMessage({
           message: "Password must be at least 8 characters.",
           type: 'warning',
-          backgroundColor: 'red',
           floating: true,
           color: '#fff',
           icon: 'warning',
@@ -266,22 +261,38 @@ const Signup = () => {
           showMessage({
             message: 'Mobile number is already used by another account.',
             type: 'warning',
-            backgroundColor: 'red',
             floating: true,
             color: '#fff',
             icon: 'warning',
           });
           return;
         }
+
       } catch (e) {
         showMessage({
           message: 'Something went wrong while creating the account.',
           type: 'danger',
-          backgroundColor: 'red',
           floating: true,
           color: '#fff',
           icon: 'danger',
         });
+      }
+      
+      setPage('Location');
+
+    } else if (page === 'Location') {
+      setPage('Services Offered');
+
+    } else {
+      if (selectedServices.length === 0) {
+        showMessage({
+          message: 'Please select your services oferred.',
+          type: 'warning',
+          floating: true,
+          color: '#fff',
+          icon: 'warning',
+        });
+        return;
       }
 
       const newRepairShop = {
@@ -309,29 +320,30 @@ const Signup = () => {
         setFirstname('');
         setLastname('');
         setGender('');
-        setShopName('')
+        setShopName('');
         setMobileNum('');
         setPassword('');
         setConfirmPassword('');
         setSelectedServices([]);
         setRegion(undefined);
         isRepairShopModalVisible(true);
+        
       } catch (e) {
         showMessage({
           message: 'Something went wrong while creating the account.',
           type: 'danger',
-          backgroundColor: 'red',
           floating: true,
           color: '#fff',
           icon: 'danger',
         });
       }
     }
-  };
+  }
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
+        <FlashMessage />
         <KeyboardAvoidingView
           behavior='padding'
           keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
@@ -341,7 +353,6 @@ const Signup = () => {
             contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps='handled' 
           >
-            <FlashMessage />
             <View style={styles.upperBox}>
               <Text style={styles.welcomeTxt}>WELCOME TO</Text>
               <Image 
@@ -361,6 +372,9 @@ const Signup = () => {
                     setMobileNum('');
                     setPassword('');
                     setConfirmPassword('');
+                    setSelectedServices([]);
+                    setRegion(undefined);
+                    setShopName('');
                   }}
                   renderButton={(selectedItem, isOpen) => (
                     <View style={styles.upperDropdownButtonStyle}>
@@ -505,6 +519,7 @@ const Signup = () => {
                           onPress={() => {
                             isCarOwnerModalVisible(!carOwnerModalVisible)
                             router.push('/auth/login');
+                            setPage('');
                           }}>
                           <Text style={styles.buttonTxt}>OK</Text>
                         </TouchableOpacity>
@@ -578,6 +593,7 @@ const Signup = () => {
                         value={mobileNum}
                         onChangeText={setMobileNum}
                         style={styles.input}
+                        keyboardType='number-pad'
                       />
                     </View>
                   </View>
@@ -613,7 +629,7 @@ const Signup = () => {
                     />
                   </View>
 
-                  <TouchableOpacity style={styles.button} onPress={() => setPage('Location')}>
+                  <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
                     <Text style={styles.buttonTxt}>NEXT</Text>
                   </TouchableOpacity>
                 </>
@@ -647,7 +663,7 @@ const Signup = () => {
                     )}
                   </MapView>
                   
-                  <TouchableOpacity style={styles.button} onPress={() => setPage('Services Offered')}>
+                  <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
                     <Text style={styles.buttonTxt}>NEXT</Text>
                   </TouchableOpacity>
                 </>
@@ -664,16 +680,16 @@ const Signup = () => {
                     {services.map((item) => (
                       <View key={item.id} style={styles.checkboxContainer}>
                         <Checkbox
-                          value={selectedServices.includes(item.id)}
-                          onValueChange={() => toggleCheckbox(item.id)}
-                          color={selectedServices.includes(item.id) ? '#000B58' : undefined}
+                          value={selectedServices.includes(item.label)}
+                          onValueChange={() => toggleCheckbox(item.label)}
+                          color={selectedServices.includes(item.label) ? '#000B58' : undefined}
                         />
                         <Text style={styles.checkboxTxt}>{item.label}</Text>
                       </View>
                     ))}
                   </View>
 
-                  <TouchableOpacity style={styles.button} onPress={() => handleAddUser()}>
+                  <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
                     <Text style={styles.buttonTxt}>SUBMIT</Text>
                   </TouchableOpacity>
 
@@ -691,6 +707,7 @@ const Signup = () => {
                           onPress={() => {
                             isRepairShopModalVisible(!repairShopModalVisible)
                             router.push('/auth/login');
+                            setPage('');
                           }}>
                           <Text style={styles.buttonTxt}>OK</Text>
                         </TouchableOpacity>
