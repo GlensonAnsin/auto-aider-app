@@ -12,7 +12,7 @@ const Diagnosis = () => {
             <SafeAreaView style={styles.container}>
                 <View style={styles.upperBox}>
                     <Text style={styles.header}>|  DIAGNOSIS</Text>
-                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(run-diagnostics)/run-diagnostics')}>
+                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/run-diagnostics/run-diagnostics')}>
                         <Icon name='arrow-left' style={styles.arrowBack} />
                     </TouchableOpacity>
                 </View>
@@ -38,7 +38,7 @@ const Diagnosis = () => {
                             </TouchableOpacity>
                         </View>
 
-                        <TouchableOpacity style={styles.troubleCodeButton} onPress={() => router.push('/car-owner/(tabs)/(run-diagnostics)/detailed-report')}>
+                        <TouchableOpacity style={styles.troubleCodeButton} onPress={() => router.push('/car-owner/(tabs)/(screens)/run-diagnostics/detailed-report')}>
                             <Text style={styles.troubleCodeText}>P1456</Text>
                             <Text style={styles.troubleCodeText2}>Evaporative Emissions Control System Leakage - Fuel Tank (Small Leak)</Text>
                         </TouchableOpacity>

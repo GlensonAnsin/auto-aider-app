@@ -6,7 +6,7 @@ import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import FlashMessage, { showMessage } from "react-native-flash-message";
+import { showMessage } from "react-native-flash-message";
 import MapView, { Marker, Region } from 'react-native-maps';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -343,7 +343,6 @@ const Signup = () => {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
-        <FlashMessage />
         <KeyboardAvoidingView
           behavior='padding'
           keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}

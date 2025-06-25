@@ -1,6 +1,7 @@
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'react-native';
+import FlashMessage from 'react-native-flash-message';
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -15,6 +16,8 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar barStyle='light-content' />
+
+      <FlashMessage position='top' />
       
       <Stack initialRouteName='index' screenOptions={{ headerShown: false }}>
         <Stack.Screen name='index' options={{ animation: 'none'}} />

@@ -30,7 +30,7 @@ const EditProfile = () => {
           >
             <View style={styles.upperBox}>
               <Text style={styles.header}>|  EDIT PROFILE</Text>
-              <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(profile)/profile')}>
+              <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
                 <Icon name='arrow-left' style={styles.arrowBack} />
               </TouchableOpacity>
             </View>
@@ -116,7 +116,7 @@ const EditProfile = () => {
                 </View>
               </View>
 
-              <TouchableOpacity style={styles.button} onPress={() => router.push('/car-owner/(tabs)/(profile)/profile')}>
+              <TouchableOpacity style={styles.button} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
                 <Text style={styles.buttonTxt}>UPDATE</Text>
               </TouchableOpacity>
             </View>

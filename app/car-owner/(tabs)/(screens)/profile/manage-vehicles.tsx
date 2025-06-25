@@ -11,7 +11,7 @@ const ManageVehicles = () => {
       <SafeAreaView style={styles.container}>
         <View style={styles.upperBox}>
           <Text style={styles.header}>|  VEHICLES</Text>
-          <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(profile)/profile')}>
+          <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
             <Icon name='arrow-left' style={styles.arrowBack} />
           </TouchableOpacity>
         </View>

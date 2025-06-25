@@ -3,7 +3,7 @@ import { storeTokens } from '@/services/tokenStorage';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import FlashMessage, { showMessage } from "react-native-flash-message";
+import { showMessage } from "react-native-flash-message";
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -21,22 +21,22 @@ export default function Login() {
   ];
 
   const handleLogin = async () => {
-    if (role === 'Car Owner') {
-      if (!username || !password || !role) {
-        showMessage({
-          message: 'Please fill in all fields.',
-          type: 'warning',
-          floating: true,
-          color: '#fff',
-          icon: 'warning',
-        });
-        return;
-      }
+    if (!username || !password || !role) {
+      showMessage({
+        message: 'Please fill in all fields.',
+        type: 'warning',
+        floating: true,
+        color: '#fff',
+        icon: 'warning',
+      });
+      return;
+    }
 
+    if (role === 'Car Owner') {
       try {
         const res = await api.post('user/login', { username, password });
 
-        const { accessToken, refreshToken } = res.data;
+        const { accessToken, refreshToken, user } = res.data;
         await storeTokens(accessToken, refreshToken);
 
         showMessage({
@@ -47,26 +47,35 @@ export default function Login() {
           icon: 'success',
         });
 
-        router.push('/car-owner/(tabs)');
+        const user_id = user.user_id
 
-      } catch (e) {
-          if (e instanceof Error) {
-            showMessage({
-              message: 'Invalid credentials',
-              type: 'warning',
-              floating: true,
-              color: '#fff',
-              icon: 'warning',
-            });
-          } else {
-            showMessage({
-              message: 'Login error',
-              type: 'danger',
-              floating: true,
-              color: '#fff',
-              icon: 'danger',
-            });
-          }
+        setTimeout(() => {
+          router.push(`/car-owner/(tabs)/${user_id}`);
+          setUsername('');
+          setPassword('');
+          setRole('');
+        }, 2000);
+
+      } catch (e: any) {
+        if (e.response?.status === 401) {
+          showMessage({
+            message: 'Invalid credentials',
+            type: 'warning',
+            floating: true,
+            color: '#fff',
+            icon: 'warning',
+          });
+
+        } else {
+          showMessage({
+            message: 'Something went wrong. Please try again.',
+            type: 'danger',
+            floating: true,
+            color: '#fff',
+            icon: 'danger',
+          });
+          console.log('Login error:', e.message);
+        }
       }
 
     } else {
@@ -77,7 +86,6 @@ export default function Login() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
-        <FlashMessage />
         <KeyboardAvoidingView
           behavior='padding'
           keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}

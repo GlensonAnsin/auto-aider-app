@@ -20,7 +20,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name='index'
+        name='[id]'
         options={{
           title: 'Home',
           tabBarIcon: () => (
@@ -56,57 +56,8 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name='(profile)/profile'
+        name='(screens)'
         options={{
-          title: 'Profile',
-          href: null,
-          animation: 'none',
-        }}
-      />
-      <Tabs.Screen
-        name='(profile)/edit-profile'
-        options={{
-          title: 'Edit Profile',
-          href: null,
-          animation: 'none',
-        }}
-      />
-      <Tabs.Screen
-        name='(profile)/manage-vehicles'
-        options={{
-          title: 'Manage Vehicles',
-          href: null,
-          animation: 'none',
-        }}
-      />
-      <Tabs.Screen
-        name='(diagnostic-history)/diagnostic-history'
-        options={{
-          title: 'History',
-          href: null,
-          animation: 'none',
-        }}
-      />
-      <Tabs.Screen
-        name='(run-diagnostics)/run-diagnostics'
-        options={{
-          title: 'Diagnose',
-          href: null,
-          animation: 'none',
-        }}
-      />
-      <Tabs.Screen
-        name='(run-diagnostics)/diagnosis'
-        options={{
-          title: 'Diagnosis',
-          href: null,
-          animation: 'none',
-        }}
-      />
-      <Tabs.Screen
-        name='(run-diagnostics)/detailed-report'
-        options={{
-          title: 'Detailed Report',
           href: null,
           animation: 'none',
         }}

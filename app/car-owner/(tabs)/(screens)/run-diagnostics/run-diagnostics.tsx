@@ -30,7 +30,7 @@ const RunDiagnostics = () => {
             <SafeAreaView style={styles.container}>
                 <View style={styles.upperBox}>
                     <Text style={styles.header}>|  DIAGNOSE</Text>
-                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)')}>
+                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)[id]')}>
                         <Icon name='arrow-left' style={styles.arrowBack} />
                     </TouchableOpacity>
                 </View>
@@ -67,7 +67,7 @@ const RunDiagnostics = () => {
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity style={styles.scanButton} onPress={() => {
                             handleCodeTechnicalDescription();
-                            router.push('/car-owner/(tabs)/(run-diagnostics)/diagnosis');
+                            router.push('/car-owner/(tabs)/(screens)/run-diagnostics/diagnosis');
                             }}>
                             <View style={styles.innerContainer}>
                                 <Text style={styles.buttonTxt}>Scan</Text>

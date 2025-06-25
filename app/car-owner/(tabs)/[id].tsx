@@ -1,6 +1,7 @@
+import { getUserInfo } from '@/services/backendApi';
 import { verifyCar } from '@/services/geminiApi';
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -12,6 +13,10 @@ import LocationIcon from '../../../assets/images/subway_location-1.svg';
 import RunDiagnosticIcon from '../../../assets/images/teenyicons_scan-outline.svg';
 
 export default function Home() {
+    const router = useRouter();
+
+    const { id } = useLocalSearchParams<{ id: string }>();
+
     const [addVehicleModalVisible, isAddVehicleModalVisible] = useState(false);
     const [addSuccessModalVisible, isAddSuccessModalVisible] = useState(false);
     const [selectedMake, setSelectedMake] = useState<string>('');
@@ -19,6 +24,8 @@ export default function Home() {
     const [year, setYear] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [loading, isLoading] = useState(false);
+    const [firstname, setFirstname] = useState<string>('');
+    const [lastname, setLastname] = useState<string>('');
 
     const targetMakes = ['Acura', 'Audi', 'BMW', 'Chevrolet', 'Dodge', 'Chrysler', 'Jeep', 'Ford', 'Foton', 'Geely', 'Honda', 'Hyundai', 'Infiniti', 'Isuzu', 'Jaguar', 'Kia', 'Land Rover', 'Lexus', 'Mazda', 'Mercedes-Benz', 'MG', 'Mitsubishi', 'Nissan', 'RAM', 'Subaru', 'Suzuki', 'Toyota', 'Volkswagen']
 
@@ -48,6 +55,24 @@ export default function Home() {
         }
     }
 
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await getUserInfo(parseInt(id));
+                const { userWithoutPassword } = res;
+
+                const firstname = userWithoutPassword.firstname;
+                const lastname = userWithoutPassword.lastname;
+                
+                setFirstname(firstname);
+                setLastname(lastname);
+
+            } catch (e) {
+                console.error('Error: ', e);
+            }
+        })();
+    }, []);
+
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
@@ -66,10 +91,10 @@ export default function Home() {
                     <View style={styles.userContainer}>
                         <View style={styles.userNameContainer}>
                             <Text style={styles.header}>HELLO,</Text>
-                            <Text style={styles.userName}>Glenson Ansin</Text>
+                            <Text style={styles.userName}>{`${firstname} ${lastname}`}</Text>
                         </View>
 
-                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.push('/car-owner/(tabs)/(profile)/profile')}>
+                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
                             <Text style={styles.userInitials}>GA</Text>
                         </TouchableOpacity>
                     </View>
@@ -81,7 +106,7 @@ export default function Home() {
 
                     <View style={styles.featuresContainer}>
                         <View style={styles.column}>
-                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(diagnostic-history)/diagnostic-history')}>
+                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(screens)/diagnostic-history/diagnostic-history')}>
                                 <DiagnosticHistoryIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>DIAGNOSTIC HISTORY</Text>
@@ -89,7 +114,7 @@ export default function Home() {
                                 </View>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(run-diagnostics)/run-diagnostics')}>
+                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(screens)/run-diagnostics/run-diagnostics')}>
                                 <RunDiagnosticIcon width={40} height={40} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>RUN DIAGNOSTICS</Text>
@@ -115,7 +140,7 @@ export default function Home() {
                                 </View>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(profile)/profile')}>
+                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
                                 <ProfileIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>MY PROFILE</Text>

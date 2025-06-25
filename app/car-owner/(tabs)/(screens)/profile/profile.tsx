@@ -17,7 +17,7 @@ const Profile = () => {
             <SafeAreaView style={styles.container}>
                 <View style={styles.upperBox}>
                     <Text style={styles.header}>|  PROFILE</Text>
-                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)')}>
+                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/[id]')}>
                         <Icon name='arrow-left' style={styles.arrowBack} />
                     </TouchableOpacity>
                 </View>
@@ -36,7 +36,7 @@ const Profile = () => {
                     </View>
 
                     <View style={styles.profileTabContainer}>
-                        <TouchableOpacity style={styles.profileTab} onPress={() => router.push('/car-owner/(tabs)/(profile)/edit-profile')}>
+                        <TouchableOpacity style={styles.profileTab} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/edit-profile')}>
                             <Icon
                                 name='account-edit-outline'
                                 style={styles.icon}
@@ -48,7 +48,7 @@ const Profile = () => {
                             />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.profileTab} onPress={() => router.push('/car-owner/(tabs)/(profile)/manage-vehicles')}>
+                        <TouchableOpacity style={styles.profileTab} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/manage-vehicles')}>
                             <Icon
                                 name='car-outline'
                                 style={styles.icon}

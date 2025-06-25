@@ -12,7 +12,7 @@ const DetailedReport = () => {
                 <ScrollView>
                     <View style={styles.upperBox}>
                         <Text style={styles.header}>|  DETAILED REPORT</Text>
-                        <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(run-diagnostics)/diagnosis')}>
+                        <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/run-diagnostics/diagnosis')}>
                             <Icon name='arrow-left' style={styles.arrowBack} />
                         </TouchableOpacity>
                     </View>
