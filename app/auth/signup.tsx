@@ -177,12 +177,13 @@ const Signup = () => {
 
     } catch (e) {
       showMessage({
-        message: 'Something went wrong while creating the account.',
+        message: 'Server error',
         type: 'danger',
         floating: true,
         color: '#fff',
         icon: 'danger',
       });
+      return;
     }
 
     const newUser = {
@@ -209,7 +210,7 @@ const Signup = () => {
 
     } catch (e) {
       showMessage({
-        message: 'Something went wrong while creating the account.',
+        message: 'Server error',
         type: 'danger',
         floating: true,
         color: '#fff',
@@ -270,7 +271,7 @@ const Signup = () => {
 
       } catch (e) {
         showMessage({
-          message: 'Something went wrong while creating the account.',
+          message: 'Server error',
           type: 'danger',
           floating: true,
           color: '#fff',
@@ -330,7 +331,7 @@ const Signup = () => {
         
       } catch (e) {
         showMessage({
-          message: 'Something went wrong while creating the account.',
+          message: 'Server error',
           type: 'danger',
           floating: true,
           color: '#fff',

@@ -36,7 +36,7 @@ export default function Login() {
       try {
         const res = await api.post('user/login', { username, password });
 
-        const { accessToken, refreshToken, user } = res.data;
+        const { accessToken, refreshToken } = res.data;
         await storeTokens(accessToken, refreshToken);
 
         showMessage({
@@ -47,10 +47,8 @@ export default function Login() {
           icon: 'success',
         });
 
-        const user_id = user.user_id
-
         setTimeout(() => {
-          router.push(`/car-owner/(tabs)/${user_id}`);
+          router.push('/car-owner/(tabs)');
           setUsername('');
           setPassword('');
           setRole('');

@@ -1,6 +1,7 @@
+import { getUserInfo } from '@/services/backendApi';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -11,13 +12,35 @@ const Profile = () => {
     const [newPassword, setNewPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [modalVisible, isModalVisible] = useState<boolean>(false);
+    const [firstname, setFirstname] = useState<string>('');
+    const [lastname, setLastname] = useState<string>('');
+    const [mobileNum, setMobileNum] = useState<string>('');
+    const [email, setEmail] = useState<string | null>(null);
+    const [profilePic, setProfilePic] = useState<string | null>(null);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await getUserInfo();
+                
+                setFirstname(res.firstname);
+                setLastname(res.lastname);
+                setMobileNum(res.mobile_num);
+                setEmail(res.email);
+                setProfilePic(res.profile_pic);
+
+            } catch (e) {
+                console.error('Error: ', e);
+            }
+        })();
+    }, []);
     
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
                 <View style={styles.upperBox}>
                     <Text style={styles.header}>|  PROFILE</Text>
-                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/[id]')}>
+                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)')}>
                         <Icon name='arrow-left' style={styles.arrowBack} />
                     </TouchableOpacity>
                 </View>
@@ -25,13 +48,23 @@ const Profile = () => {
                 <View style={styles.lowerBox}>
                     <View style={styles.userContainer}>
                         <View style={styles.profilePicWrapper}>
-                            <Text style={styles.userInitials}>GA</Text>
+                            {profilePic === null && (
+                                <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
+                            )}
+
+                            {profilePic !== null && (
+                                <Image
+                                    source={{ uri: profilePic }}
+                                />
+                            )}
                         </View>
 
                         <View style={styles.userNameContainer}>
-                            <Text style={styles.userName}>Glenson Ansin</Text>
-                            <Text style={styles.userContact}>09056122650</Text>
-                            <Text style={styles.userContact}>ansin.glenson01@gmail.com</Text>
+                            <Text style={styles.userName}>{`${firstname} ${lastname}`}</Text>
+                            <Text style={styles.userContact}>{`${mobileNum}`}</Text>
+                            {email !== null && (
+                                <Text style={styles.userContact}>{`${email}`}</Text>
+                            )}
                         </View>
                     </View>
 

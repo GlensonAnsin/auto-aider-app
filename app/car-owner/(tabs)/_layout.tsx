@@ -20,7 +20,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name='[id]'
+        name='index'
         options={{
           title: 'Home',
           tabBarIcon: () => (

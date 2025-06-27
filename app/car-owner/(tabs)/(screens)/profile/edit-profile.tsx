@@ -1,6 +1,9 @@
+import { getUserInfo, getUsers, updateUserInfo } from '@/services/backendApi';
+import { UserWithID } from '@/types/user';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -8,13 +11,121 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const EditProfile = () => {
   const router = useRouter();
 
-  const [firstname, setFirstname] = useState<string>('Glenson');
-  const [lastname, setLastname] = useState<string>('Ansin');
+  const [userID, setUserID] = useState<number>(0);
+  const [firstname, setFirstname] = useState<string>('');
+  const [lastname, setLastname] = useState<string>('');
   const [gender, setGender] = useState<string>('');
-  const [mobileNum, setMobileNum] = useState<string>('09056122650');
-  const [email, setEmail] = useState<string>('ansin.glenson01@gmail.com');
+  const [mobileNum, setMobileNum] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [profilePic, setProfilePic] = useState<string | null>(null);
 
   const genders = ['Male', 'Female'];
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getUserInfo();
+        
+        setUserID(res.user_id);
+        setFirstname(res.firstname);
+        setLastname(res.lastname);
+        setGender(res.gender);
+        setMobileNum(res.mobile_num);
+        setEmail(res.email);
+        setProfilePic(res.profile_pic);
+
+      } catch (e) {
+        console.error('Error: ', e);
+      }
+    })();
+  }, []);
+
+  const handleUpdateUserInfo = async () => {
+    if (!firstname || !lastname || !gender || !mobileNum) {
+      showMessage({
+        message: 'Please fill in required fields.',
+        type: 'warning',
+        floating: true,
+        color: '#fff',
+        icon: 'warning',
+      });
+      return;
+    }
+
+    try {
+      const fetchedUsers: UserWithID[] = await getUsers();
+      const userExcluded = fetchedUsers.filter(user => user.user_id !== userID);
+      const mobileNumExists = userExcluded.some(user => user.mobile_num === mobileNum.trim());
+
+      if (mobileNumExists) {
+        showMessage({
+          message: 'Mobile number is already used by another account.',
+          type: 'warning',
+          floating: true,
+          color: '#fff',
+          icon: 'warning',
+        });
+        return;
+      }
+      
+      if (email !== null) {
+        const emailExists = fetchedUsers.some(user => user.email === email.trim());
+        if (emailExists) {
+          showMessage({
+            message: 'Email is already used by another account.',
+            type: 'warning',
+            floating: true,
+            color: '#fff',
+            icon: 'warning',
+          });
+          return;
+        }
+      }
+
+    } catch (e) {
+      showMessage({
+        message: 'Server error',
+        type: 'danger',
+        floating: true,
+        color: '#fff',
+        icon: 'danger',
+      });
+      return;
+    }
+
+    const userInfo = {
+      firstname: firstname.trim(),
+      lastname: lastname.trim(),
+      gender: gender.trim(),
+      email: email.trim(),
+      mobile_num: mobileNum.trim(),
+      profile_pic: profilePic
+    };
+
+    try {
+      await updateUserInfo(userInfo)
+      showMessage({
+        message: 'Update successful!',
+        type: 'success',
+        floating: true,
+        color: '#fff',
+        icon: 'success',
+      });
+
+      setTimeout(() => {
+        router.push('/car-owner/(tabs)/(screens)/profile/profile');
+      }, 2000);
+
+    } catch (e) {
+      showMessage({
+        message: 'Server error',
+        type: 'danger',
+        floating: true,
+        color: '#fff',
+        icon: 'danger',
+      });
+    }
+  }
 
   return (
     <SafeAreaProvider>
@@ -38,7 +149,15 @@ const EditProfile = () => {
             <View style={styles.lowerBox}>
               <View style={styles.editPicContainer}>
                 <View style={styles.profilePicWrapper}>
-                  <Text style={styles.userInitials}>GA</Text>
+                  {profilePic === null && (
+                    <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
+                  )}
+
+                  {profilePic !== null && (
+                    <Image
+                      source={{ uri: profilePic }}
+                    />
+                  )}
                 </View>
 
                 <TouchableOpacity style={styles.editPicWrapper}>
@@ -72,6 +191,7 @@ const EditProfile = () => {
                   <Text style={styles.textInputLbl}>Gender</Text>
                   <SelectDropdown
                     data={genders}
+                    defaultValue={gender}
                     onSelect={(selectedItem) => setGender(selectedItem)}
                     renderButton={(selectedItem, isOpen) => (
                       <View style={styles.dropdownButtonStyle}>
@@ -116,7 +236,7 @@ const EditProfile = () => {
                 </View>
               </View>
 
-              <TouchableOpacity style={styles.button} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
+              <TouchableOpacity style={styles.button} onPress={() => handleUpdateUserInfo()}>
                 <Text style={styles.buttonTxt}>UPDATE</Text>
               </TouchableOpacity>
             </View>

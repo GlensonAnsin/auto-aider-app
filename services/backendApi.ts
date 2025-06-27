@@ -1,6 +1,8 @@
 import { AutoRepairShop } from '@/types/autoRepairShop';
-import { User } from '@/types/user';
+import { UpdateUser, User } from '@/types/user';
+import { Vehicle } from '@/types/vehicle';
 import axios from 'axios';
+import { getAccessToken } from './tokenStorage';
 
 const baseURL = process.env.EXPO_PUBLIC_BACKEND_BASE_URL;
 
@@ -11,7 +13,7 @@ export const createUser = async (userData: User): Promise<User | null> => {
     return res.data;
 
   } catch (e) {
-    console.error('Error creating user:', e);
+    console.error('Error:', e);
     return null;
   }
 };
@@ -23,22 +25,47 @@ export const getUsers = async () => {
     return res.data;
     
   } catch (e) {
-    console.error('Error getting all users: ', e);
+    console.error('Error: ', e);
     return null;
   }
 };
 
 // GET USER INFO
-export const getUserInfo = async (id: number) => {
+export const getUserInfo = async () => {
   try {
-    const res = await axios.post(`${baseURL}/user/get-user-info`, { id });
+    const token = await getAccessToken();
+    const res = await axios.get(`${baseURL}/user/get-user-info`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
     return res.data;
 
   } catch (e) {
-    console.error('Error getting user info: ', e);
+    console.error('Error: ', e);
     return null;
   }
 };
+
+// UPDATE USER INFO
+export const updateUserInfo = async (userData: UpdateUser): Promise<UpdateUser | null> => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.patch(`${baseURL}/user/update-user-info`,
+      userData,
+      { headers: {
+        Authorization: `Bearer ${token}`
+      }}
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Error: ', e);
+    return null;
+  }
+}
+
+
 
 // SIGNUP REPAIR SHOP
 export const createRepairShop = async (repairShopData: AutoRepairShop): Promise<AutoRepairShop | null> => {
@@ -47,7 +74,7 @@ export const createRepairShop = async (repairShopData: AutoRepairShop): Promise<
     return res.data;
 
   } catch (e) {
-    console.error('Error creating repair shop: ', e);
+    console.error('Error: ', e);
     return null;
   }
 };
@@ -59,7 +86,26 @@ export const getRepairShops = async () => {
     return res.data;
 
   } catch (e) {
-    console.error('Error getting all repair shops: ', e);
+    console.error('Error: ', e);
     return null;
   }
 };
+
+
+
+export const addVehicle = async (vehicleInfo: Vehicle): Promise<Vehicle | null> => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.post(`${baseURL}/vehicle/add-vehicle`,
+      vehicleInfo,
+      { headers: {
+        Authorization: `Bearer ${token}`
+      }}
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Error: ', e)
+    return null;
+  }
+}

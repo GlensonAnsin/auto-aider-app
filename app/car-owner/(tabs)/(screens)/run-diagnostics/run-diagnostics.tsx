@@ -30,7 +30,7 @@ const RunDiagnostics = () => {
             <SafeAreaView style={styles.container}>
                 <View style={styles.upperBox}>
                     <Text style={styles.header}>|  DIAGNOSE</Text>
-                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)[id]')}>
+                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)')}>
                         <Icon name='arrow-left' style={styles.arrowBack} />
                     </TouchableOpacity>
                 </View>

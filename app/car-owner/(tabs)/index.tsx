@@ -1,6 +1,6 @@
-import { getUserInfo } from '@/services/backendApi';
+import { addVehicle, getUserInfo } from '@/services/backendApi';
 import { verifyCar } from '@/services/geminiApi';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -15,8 +15,6 @@ import RunDiagnosticIcon from '../../../assets/images/teenyicons_scan-outline.sv
 export default function Home() {
     const router = useRouter();
 
-    const { id } = useLocalSearchParams<{ id: string }>();
-
     const [addVehicleModalVisible, isAddVehicleModalVisible] = useState(false);
     const [addSuccessModalVisible, isAddSuccessModalVisible] = useState(false);
     const [selectedMake, setSelectedMake] = useState<string>('');
@@ -24,8 +22,10 @@ export default function Home() {
     const [year, setYear] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [loading, isLoading] = useState(false);
+    const [userID, setUserID] = useState<number>(0);
     const [firstname, setFirstname] = useState<string>('');
     const [lastname, setLastname] = useState<string>('');
+    const [profilePic, setProfilePic] = useState<string | null>(null)
 
     const targetMakes = ['Acura', 'Audi', 'BMW', 'Chevrolet', 'Dodge', 'Chrysler', 'Jeep', 'Ford', 'Foton', 'Geely', 'Honda', 'Hyundai', 'Infiniti', 'Isuzu', 'Jaguar', 'Kia', 'Land Rover', 'Lexus', 'Mazda', 'Mercedes-Benz', 'MG', 'Mitsubishi', 'Nissan', 'RAM', 'Subaru', 'Suzuki', 'Toyota', 'Volkswagen']
 
@@ -34,22 +34,21 @@ export default function Home() {
             setError('Please fill in all fields.')
             return;
         }
+
         setError('')
+
         try {
             isLoading(true);
             const result = await verifyCar(selectedMake, model, year);
             if (result === 'false') {
                 setError('Invalid car details. Please check and try again.')
             } else {
-                setSelectedMake('');
-                setModel('');
-                setYear('');
-                setError('');
-                isAddVehicleModalVisible(!addVehicleModalVisible);
-                isAddSuccessModalVisible(true);
+                handleAddCar();
             }
+
         } catch (e) {
             setError('An error occurred while verifying the car.')
+
         } finally {
             isLoading(false);
         }
@@ -58,20 +57,40 @@ export default function Home() {
     useEffect(() => {
         (async () => {
             try {
-                const res = await getUserInfo(parseInt(id));
-                const { userWithoutPassword } = res;
-
-                const firstname = userWithoutPassword.firstname;
-                const lastname = userWithoutPassword.lastname;
+                const res = await getUserInfo();
                 
-                setFirstname(firstname);
-                setLastname(lastname);
+                setUserID(res.user_id);
+                setFirstname(res.firstname);
+                setLastname(res.lastname);
+                setProfilePic(res.profile_pic);
 
             } catch (e) {
                 console.error('Error: ', e);
             }
         })();
     }, []);
+
+    const handleAddCar = async () => {
+        const vehicleInfo = {
+            make: selectedMake.toUpperCase().trim(),
+            model: model.toUpperCase().trim(),
+            year: year.trim(),
+            date_added: new Date()
+        };
+
+        try {
+            await addVehicle(vehicleInfo)
+            setSelectedMake('');
+            setModel('');
+            setYear('');
+            setError('');
+            isAddVehicleModalVisible(!addVehicleModalVisible);
+            isAddSuccessModalVisible(true);
+
+        } catch (e) {
+            setError('Server error')
+        }
+    }
 
     return (
         <SafeAreaProvider>
@@ -95,7 +114,15 @@ export default function Home() {
                         </View>
 
                         <TouchableOpacity style={styles.profileWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
-                            <Text style={styles.userInitials}>GA</Text>
+                            {profilePic === null && (
+                                <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
+                            )}
+
+                            {profilePic !== null && (
+                                <Image
+                                    source={{ uri: profilePic }}
+                                />
+                            )}
                         </TouchableOpacity>
                     </View>
 
