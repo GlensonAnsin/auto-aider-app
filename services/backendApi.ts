@@ -4,12 +4,12 @@ import { Vehicle } from '@/types/vehicle';
 import axios from 'axios';
 import { getAccessToken } from './tokenStorage';
 
-const baseURL = process.env.EXPO_PUBLIC_BACKEND_BASE_URL;
+const apiURL = process.env.EXPO_PUBLIC_BACKEND_API_URL;
 
 // SIGNUP USER
 export const createUser = async (userData: User): Promise<User | null> => {
   try {
-    const res = await axios.post(`${baseURL}/user/signup`, userData);
+    const res = await axios.post(`${apiURL}/user/signup`, userData);
     return res.data;
 
   } catch (e) {
@@ -21,7 +21,7 @@ export const createUser = async (userData: User): Promise<User | null> => {
 // GET ALL USERS
 export const getUsers = async () => {
   try {
-    const res = await axios.get(`${baseURL}/user/get-all`);
+    const res = await axios.get(`${apiURL}/user/get-all`);
     return res.data;
     
   } catch (e) {
@@ -34,7 +34,7 @@ export const getUsers = async () => {
 export const getUserInfo = async () => {
   try {
     const token = await getAccessToken();
-    const res = await axios.get(`${baseURL}/user/get-user-info`, {
+    const res = await axios.get(`${apiURL}/user/get-user-info`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -51,7 +51,7 @@ export const getUserInfo = async () => {
 export const updateUserInfo = async (userData: UpdateUser): Promise<UpdateUser | null> => {
   try {
     const token = await getAccessToken();
-    const res = await axios.patch(`${baseURL}/user/update-user-info`,
+    const res = await axios.patch(`${apiURL}/user/update-user-info`,
       userData,
       { headers: {
         Authorization: `Bearer ${token}`
@@ -63,14 +63,14 @@ export const updateUserInfo = async (userData: UpdateUser): Promise<UpdateUser |
     console.error('Error: ', e);
     return null;
   }
-}
+};
 
 
 
 // SIGNUP REPAIR SHOP
 export const createRepairShop = async (repairShopData: AutoRepairShop): Promise<AutoRepairShop | null> => {
   try {
-    const res = await axios.post(`${baseURL}/auto_repair_shop/signup`, repairShopData);
+    const res = await axios.post(`${apiURL}/auto_repair_shop/signup`, repairShopData);
     return res.data;
 
   } catch (e) {
@@ -82,7 +82,7 @@ export const createRepairShop = async (repairShopData: AutoRepairShop): Promise<
 // GET ALL REPAIR SHOPS
 export const getRepairShops = async () => {
   try {
-    const res = await axios.get(`${baseURL}/auto_repair_shop/get-all`);
+    const res = await axios.get(`${apiURL}/auto_repair_shop/get-all`);
     return res.data;
 
   } catch (e) {
@@ -93,10 +93,11 @@ export const getRepairShops = async () => {
 
 
 
+// ADD VEHICLE
 export const addVehicle = async (vehicleInfo: Vehicle): Promise<Vehicle | null> => {
   try {
     const token = await getAccessToken();
-    const res = await axios.post(`${baseURL}/vehicle/add-vehicle`,
+    const res = await axios.post(`${apiURL}/vehicle/add-vehicle`,
       vehicleInfo,
       { headers: {
         Authorization: `Bearer ${token}`
@@ -105,7 +106,40 @@ export const addVehicle = async (vehicleInfo: Vehicle): Promise<Vehicle | null> 
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e)
+    console.error('Error: ', e);
     return null;
   }
-}
+};
+
+// GET VEHICLE
+export const getVehicle = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/vehicle/get-vehicles`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return res.data;
+
+  } catch (e) {
+    console.error('Error: ', e);
+    return null;
+  }
+};
+
+// DELETE VEHICLE
+export const deleteVehicle = async (vehicleID: number) => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.delete(`${apiURL}/vehicle/delete-vehicle/${vehicleID}`,
+      { headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return res.data;
+
+  } catch (e) {
+    console.error('Error: ', e);
+  }
+};

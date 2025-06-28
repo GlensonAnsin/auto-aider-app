@@ -22,7 +22,6 @@ export default function Home() {
     const [year, setYear] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [loading, isLoading] = useState(false);
-    const [userID, setUserID] = useState<number>(0);
     const [firstname, setFirstname] = useState<string>('');
     const [lastname, setLastname] = useState<string>('');
     const [profilePic, setProfilePic] = useState<string | null>(null)
@@ -59,7 +58,6 @@ export default function Home() {
             try {
                 const res = await getUserInfo();
                 
-                setUserID(res.user_id);
                 setFirstname(res.firstname);
                 setLastname(res.lastname);
                 setProfilePic(res.profile_pic);

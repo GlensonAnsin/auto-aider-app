@@ -49,16 +49,16 @@ const styles = StyleSheet.create({
     header: {
         color: '#fff',
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 24,
+        fontSize: 22,
         marginLeft: 50,
     },
     arrowWrapper: {
-        top: 21,
+        top: 23,
         right: 320,
         position: 'absolute',
     },
     arrowBack: {
-        fontSize: 24,
+        fontSize: 22,
         color: '#fff',
     },
     lowerBox: { 

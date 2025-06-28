@@ -6,7 +6,7 @@ interface CustomAxiosRequestConfig extends AxiosRequestConfig {
 }
 
 const api = axios.create({
-    baseURL: process.env.EXPO_PUBLIC_BACKEND_BASE_URL,
+    baseURL: process.env.EXPO_PUBLIC_BACKEND_API_URL,
     headers: {
         'Content-Type': 'application/json',
     },

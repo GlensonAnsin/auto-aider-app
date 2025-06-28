@@ -6,7 +6,7 @@ export async function verifyCar(make: string, model: string, year: string) {
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `Is there a real car with the make '${make}', model '${model}', and year '${year}'? Respond with only "true" or "false".`.trim(),
+            contents: `Is there a real car with the make '${make}', model '${model}', and year '${year}'? Respond with only "true" or "false". Be strict with spellings, if wrong spelling respond with "false.`.trim(),
         });
         return(response.text);
     } catch (e) {
