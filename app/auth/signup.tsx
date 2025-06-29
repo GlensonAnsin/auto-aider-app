@@ -132,7 +132,7 @@ const Signup = () => {
         message: 'Please fill in all fields.',
         type: 'warning',
         floating: true,
-        color: '#fff',
+        color: '#FFF',
         icon: 'warning',
       });
       return;
@@ -143,7 +143,7 @@ const Signup = () => {
         message: "Password don't match.",
         type: 'warning',
         floating: true,
-        color: '#fff',
+        color: '#FFF',
         icon: 'warning',
       });
       return;
@@ -154,7 +154,7 @@ const Signup = () => {
         message: "Password must be at least 8 characters.",
         type: 'warning',
         floating: true,
-        color: '#fff',
+        color: '#FFF',
         icon: 'warning',
       });
       return;
@@ -169,7 +169,7 @@ const Signup = () => {
           message: 'Mobile number is already used by another account.',
           type: 'warning',
           floating: true,
-          color: '#fff',
+          color: '#FFF',
           icon: 'warning',
         });
         return;
@@ -180,7 +180,7 @@ const Signup = () => {
         message: 'Server error',
         type: 'danger',
         floating: true,
-        color: '#fff',
+        color: '#FFF',
         icon: 'danger',
       });
       return;
@@ -213,7 +213,7 @@ const Signup = () => {
         message: 'Server error',
         type: 'danger',
         floating: true,
-        color: '#fff',
+        color: '#FFF',
         icon: 'danger',
       });
     }
@@ -226,7 +226,7 @@ const Signup = () => {
           message: 'Please fill in all fields.',
           type: 'warning',
           floating: true,
-          color: '#fff',
+          color: '#FFF',
           icon: 'warning',
         });
         return;
@@ -237,7 +237,7 @@ const Signup = () => {
           message: "Password don't match.",
           type: 'warning',
           floating: true,
-          color: '#fff',
+          color: '#FFF',
           icon: 'warning',
         });
         return;
@@ -248,7 +248,7 @@ const Signup = () => {
           message: "Password must be at least 8 characters.",
           type: 'warning',
           floating: true,
-          color: '#fff',
+          color: '#FFF',
           icon: 'warning',
         });
         return;
@@ -263,7 +263,7 @@ const Signup = () => {
             message: 'Mobile number is already used by another account.',
             type: 'warning',
             floating: true,
-            color: '#fff',
+            color: '#FFF',
             icon: 'warning',
           });
           return;
@@ -274,7 +274,7 @@ const Signup = () => {
           message: 'Server error',
           type: 'danger',
           floating: true,
-          color: '#fff',
+          color: '#FFF',
           icon: 'danger',
         });
       }
@@ -290,7 +290,7 @@ const Signup = () => {
           message: 'Please select your services oferred.',
           type: 'warning',
           floating: true,
-          color: '#fff',
+          color: '#FFF',
           icon: 'warning',
         });
         return;
@@ -334,7 +334,7 @@ const Signup = () => {
           message: 'Server error',
           type: 'danger',
           floating: true,
-          color: '#fff',
+          color: '#FFF',
           icon: 'danger',
         });
       }
@@ -354,7 +354,7 @@ const Signup = () => {
             keyboardShouldPersistTaps='handled' 
           >
             <View style={styles.upperBox}>
-              <Text style={styles.welcomeTxt}>WELCOME TO</Text>
+              <Text style={styles.welcomeTxt}>Welcome To</Text>
               <Image 
                 source={require('../../assets/images/logo.png')}
               />
@@ -409,7 +409,7 @@ const Signup = () => {
                     <Icon name='arrow-left' style={styles.arrowBack} />
                   </TouchableOpacity>
 
-                  <Text style={styles.header}>CREATE ACCOUNT</Text>
+                  <Text style={styles.header}>Create Account</Text>
                   <View style={styles.row}>
                     <View style={styles.textInputContainer2}>
                       <Text style={styles.textInputLbl}>First Name</Text>
@@ -502,7 +502,7 @@ const Signup = () => {
                   </View>
 
                   <TouchableOpacity style={styles.button} onPress={() => handleAddUser()}>
-                    <Text style={styles.buttonTxt}>SIGN UP</Text>
+                    <Text style={styles.buttonTxt}>Sign Up</Text>
                   </TouchableOpacity>
 
                   <Modal
@@ -521,7 +521,7 @@ const Signup = () => {
                             router.push('/auth/login');
                             setPage('');
                           }}>
-                          <Text style={styles.buttonTxt}>OK</Text>
+                          <Text style={styles.buttonTxt}>Ok</Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -535,7 +535,7 @@ const Signup = () => {
                     <Icon name='arrow-left' style={styles.arrowBack} />
                   </TouchableOpacity>
 
-                  <Text style={styles.header}>CREATE ACCOUNT</Text>
+                  <Text style={styles.header}>Create Account</Text>
                   <View style={styles.row}>
                     <View style={styles.textInputContainer2}>
                       <Text style={styles.textInputLbl}>First Name</Text>
@@ -630,7 +630,7 @@ const Signup = () => {
                   </View>
 
                   <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
-                    <Text style={styles.buttonTxt}>NEXT</Text>
+                    <Text style={styles.buttonTxt}>Next</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -641,7 +641,7 @@ const Signup = () => {
                     <Icon name='arrow-left' style={styles.arrowBack} />
                   </TouchableOpacity>
 
-                  <Text style={styles.header}>LOCATION</Text>
+                  <Text style={styles.header}>Location</Text>
                   <Text style={styles.textInputLbl}>Please set up your shop location on the map.</Text>
 
                   <MapView
@@ -664,7 +664,7 @@ const Signup = () => {
                   </MapView>
                   
                   <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
-                    <Text style={styles.buttonTxt}>NEXT</Text>
+                    <Text style={styles.buttonTxt}>Next</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -675,7 +675,7 @@ const Signup = () => {
                     <Icon name='arrow-left' style={styles.arrowBack} />
                   </TouchableOpacity>
 
-                  <Text style={styles.header}>SERVICES OFFERED</Text>
+                  <Text style={styles.header}>Services Offered</Text>
                   <View style={styles.servicesList}>
                     {services.map((item) => (
                       <View key={item.id} style={styles.checkboxContainer}>
@@ -690,7 +690,7 @@ const Signup = () => {
                   </View>
 
                   <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
-                    <Text style={styles.buttonTxt}>SUBMIT</Text>
+                    <Text style={styles.buttonTxt}>Submit</Text>
                   </TouchableOpacity>
 
                   <Modal
@@ -709,7 +709,7 @@ const Signup = () => {
                             router.push('/auth/login');
                             setPage('');
                           }}>
-                          <Text style={styles.buttonTxt}>OK</Text>
+                          <Text style={styles.buttonTxt}>Ok</Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -727,7 +727,7 @@ const Signup = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF',
   },
   upperBox: {
     backgroundColor: '#000B58',
@@ -737,13 +737,13 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   welcomeTxt: {
-    color: '#fff',
+    color: '#FFF',
     fontSize: 30,
     fontFamily: 'LeagueSpartan_Bold',
     marginBottom: 10,
   },
   upperTextInputLbl: {
-    color: '#fff',
+    color: '#FFF',
     fontSize: 16,
     fontFamily: 'LeagueSpartan',
   },
@@ -763,7 +763,7 @@ const styles = StyleSheet.create({
   },
   header: {
     color: '#000B58',
-    fontSize: 24,
+    fontSize: 22,
     fontFamily: 'LeagueSpartan_Bold',
     marginTop: 10,
   },
@@ -789,6 +789,7 @@ const styles = StyleSheet.create({
   },
   textInputLbl: {
     fontSize: 16,
+    color: '#333',
     fontFamily: 'LeagueSpartan',
   },
   input: {
@@ -798,6 +799,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     fontSize: 16,
+    color: '#333',
     fontFamily: 'LeagueSpartan',
   },
   dropdownButtonStyle: {
@@ -813,13 +815,16 @@ const styles = StyleSheet.create({
   dropdownButtonTxtStyle: {
     flex: 1,
     fontSize: 16,
+    color: '#333',
     fontFamily: 'LeagueSpartan',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
+    color: '#333',
   },
   dropdownButtonIconStyle: {
     fontSize: 24,
+    color: '#333',
     marginRight: 8,
   },
   dropdownMenuStyle: {
@@ -838,18 +843,22 @@ const styles = StyleSheet.create({
   dropdownItemTxtStyle: {
     flex: 1,
     fontSize: 16,
+    color: '#333',
     fontFamily: 'LeagueSpartan',
   },
   dropdownItemIconStyle: {
     fontSize: 24,
+    color: '#333',
     marginRight: 8,
   },
   questionLbl: {
     fontSize: 14,
+    color: '#333',
     fontFamily: 'LeagueSpartan',
   },
   loginLbl: {
     fontSize: 14,
+    color: '#333',
     fontFamily: 'LeagueSpartan_Bold',
     textDecorationLine: 'underline',
   },
@@ -870,7 +879,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonTxt: {
-    color: '#fff',
+    color: '#FFF',
     fontSize: 16,
     fontFamily: 'LeagueSpartan_Bold',
   },
@@ -918,7 +927,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalView: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF',
     width: '70%',
     borderRadius: 10,
     padding: 20,
@@ -935,6 +944,7 @@ const styles = StyleSheet.create({
   modalTxt: {
     textAlign: 'center',
     fontFamily: 'LeagueSpartan',
+    color: '#333',
     fontSize: 16,
   },
   modalButton: {

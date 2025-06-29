@@ -10,7 +10,7 @@ import { io, Socket } from 'socket.io-client';
 const ManageVehicles = () => {
   const router = useRouter();
 
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [_socket, setSocket] = useState<Socket | null>(null);
   const [vehicles, setVehicles] = useState<{ id: number, make: string, model: string, year: string, dateAdded: string }[]>([]);
 
   useEffect(() => {
@@ -81,7 +81,7 @@ const ManageVehicles = () => {
       <SafeAreaView style={styles.container}>
         <ScrollView>
           <View style={styles.upperBox}>
-            <Text style={styles.header}>|  VEHICLES</Text>
+            <Text style={styles.header}>|  Vehicles</Text>
             <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
               <Icon name='arrow-left' style={styles.arrowBack} />
             </TouchableOpacity>
@@ -99,9 +99,18 @@ const ManageVehicles = () => {
                   <Text style={styles.carDetail}>{item.year}</Text>
                 </View>
 
-                <TouchableOpacity style={styles.button} onPress={() => handleDelete(item.id)}>
-                  <Text style={styles.buttonTxt}>Delete</Text>
-                </TouchableOpacity>
+                <View style={styles.buttonDateContainer}>
+                  <Text style={styles.dateAdded}>{`Date added: ${item.dateAdded}`}</Text>
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={[styles.button, { backgroundColor: '#000B58' }]}>
+                      <Text style={styles.buttonTxt}>View</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={[styles.button, { backgroundColor: '#780606' }]} onPress={() => handleDelete(item.id)}>
+                      <Text style={styles.buttonTxt}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
             ))}
           </View>
@@ -125,11 +134,11 @@ const styles = StyleSheet.create({
   header: {
     color: '#fff',
     fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 24,
+    fontSize: 22,
     marginLeft: 50,
   },
   arrowWrapper: {
-    top: 21,
+    top: 23,
     right: 320,
     position: 'absolute',
   },
@@ -146,17 +155,14 @@ const styles = StyleSheet.create({
   noVehiclesTxt: {
     fontFamily: 'LeagueSpartan',
     fontSize: 16,
-    color: 'grey',
+    color: '#555',
   },
   vehicleContainer: {
     backgroundColor: '#EAEAEA',
     borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     minHeight: 80,
     padding: 10,
-    marginBottom: 20,
+    marginBottom: 10,
     width: '90%',
     shadowColor: '#000',
     shadowOffset: {
@@ -169,19 +175,31 @@ const styles = StyleSheet.create({
   },
   carDetailsContainer: {
     flexDirection: 'row',
-    width: '65%',
     flexWrap: 'wrap',
   },
   carDetail: {
     fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 20,
-    color: '#000B58',
+    fontSize: 18,
+    color: '#333',
+  },
+  buttonDateContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dateAdded: {
+    fontFamily: 'LeagueSpartan',
+    fontSize: 14,
+    color: '#555',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 5,
   },
   button: {
-    width: 100,
-    height: 45,
-    backgroundColor: 'red',
-    borderRadius: 10,
+    width: 70,
+    padding: 5,
+    borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },

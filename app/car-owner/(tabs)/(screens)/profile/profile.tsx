@@ -39,7 +39,7 @@ const Profile = () => {
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
                 <View style={styles.upperBox}>
-                    <Text style={styles.header}>|  PROFILE</Text>
+                    <Text style={styles.header}>|  Profile</Text>
                     <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)')}>
                         <Icon name='arrow-left' style={styles.arrowBack} />
                     </TouchableOpacity>
@@ -130,7 +130,7 @@ const Profile = () => {
                         >
                             <View style={styles.centeredView}>
                                 <View style={styles.modalView}>
-                                    <Text style={styles.modalHeader}>CHANGE PASSWORD</Text>
+                                    <Text style={styles.modalHeader}>Change Password</Text>
                                     <View style={styles.textInputContainer}>
                                         <Text style={styles.textInputLbl}>Current Password</Text>
                                         <TextInput
@@ -162,7 +162,7 @@ const Profile = () => {
                                     </View>
 
                                     <TouchableOpacity style={styles.button} onPress={() => isModalVisible(!modalVisible)}>
-                                        <Text style={styles.buttonTxt}>CHANGE</Text>
+                                        <Text style={styles.buttonTxt}>Save</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -177,7 +177,7 @@ const Profile = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#FFF',
     },
     upperBox: {
         backgroundColor: '#000B58',
@@ -186,19 +186,19 @@ const styles = StyleSheet.create({
         height: 63,
     },
     header: {
-        color: '#fff',
+        color: '#FFF',
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 24,
+        fontSize: 22,
         marginLeft: 50,
     },
     arrowWrapper: {
-        top: 21,
+        top: 23,
         right: 320,
         position: 'absolute',
     },
     arrowBack: {
-        fontSize: 24,
-        color: '#fff',
+        fontSize: 22,
+        color: '#FFF',
     },
     lowerBox: {
         alignItems: 'center',
@@ -217,13 +217,13 @@ const styles = StyleSheet.create({
     },
     userName: {
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 24,
-        color: '#000B58',
+        fontSize: 22,
+        color: '#333',
     },
     userContact: {
         fontFamily: 'LeagueSpartan',
-        fontSize: 14,
-        color: '#000B58',
+        fontSize: 16,
+        color: '#555',
     },
     profilePicWrapper: {
         backgroundColor: 'green',
@@ -236,19 +236,19 @@ const styles = StyleSheet.create({
     userInitials: {
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 30,
-        color: '#fff',
+        color: '#FFF',
     },
     profileTabContainer: {
         width: '100%',
         marginTop: 30,
-        gap: 10,
+        gap: 5,
     },
     profileTab: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#EAEAEA',
-        padding: 20,
-        gap: 25,
+        padding: 10,
+        gap: 35,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     },
     tabName: {
         color: '#000B58',
-        fontFamily: 'LeagueSpartan_Bold',
+        fontFamily: 'LeagueSpartan',
         fontSize: 16,
         width: 200,
     },
@@ -278,10 +278,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalView: {
-        backgroundColor: '#000B58',
+        backgroundColor: '#FFF',
         width: '85%',
-        borderRadius: 20,
-        padding: 35,
+        borderRadius: 10,
+        padding: 20,
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: {
@@ -293,9 +293,9 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     modalHeader: {
-        fontSize: 24,
+        fontSize: 22,
         fontFamily: 'LeagueSpartan_Bold',
-        color: '#fff',
+        color: '#333',
     },
     textInputContainer: {
         gap: 10,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     textInputLbl: {
         fontSize: 16,
         fontFamily: 'LeagueSpartan',
-        color: '#fff',
+        color: '#333',
     },
     input: {
         backgroundColor: '#EAEAEA',
@@ -314,12 +314,13 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
         fontSize: 16,
+        color: '#333',
         fontFamily: 'LeagueSpartan',
     },
     button: {
         width: '50%',
         height: 45,
-        backgroundColor: '#fff',
+        backgroundColor: '#000B58',
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 20,
@@ -327,6 +328,7 @@ const styles = StyleSheet.create({
     },
     buttonTxt: {
         fontSize: 16,
+        color: '#FFF',
         fontFamily: 'LeagueSpartan_Bold',
     },
 })

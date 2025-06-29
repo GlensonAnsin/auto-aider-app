@@ -11,7 +11,7 @@ const Diagnosis = () => {
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
                 <View style={styles.upperBox}>
-                    <Text style={styles.header}>|  DIAGNOSIS</Text>
+                    <Text style={styles.header}>|  Diagnosis</Text>
                     <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/run-diagnostics/run-diagnostics')}>
                         <Icon name='arrow-left' style={styles.arrowBack} />
                     </TouchableOpacity>
@@ -20,7 +20,7 @@ const Diagnosis = () => {
                 <View style={styles.lowerBox}>
                     <View style={styles.buttonContainer}>
                         <Text style={styles.car}>Honda Civic 2017</Text>
-                        <TouchableOpacity style={[styles.button, {backgroundColor: '#770909'}]}>
+                        <TouchableOpacity style={[styles.button, {backgroundColor: '#780606'}]}>
                             <Icon name='close-circle-outline' style={styles.buttonIcon} />
                             <Text style={styles.buttonText}>Disconnect</Text>
                         </TouchableOpacity>
@@ -61,7 +61,7 @@ const Diagnosis = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#FFF',
     },
     upperBox: {
         backgroundColor: '#000B58',
@@ -70,19 +70,19 @@ const styles = StyleSheet.create({
         height: 63,
     },
     header: {
-        color: '#fff',
+        color: '#FFF',
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 24,
+        fontSize: 22,
         marginLeft: 50,
     },
     arrowWrapper: {
-        top: 21,
+        top: 23,
         right: 320,
         position: 'absolute',
     },
     arrowBack: {
-        fontSize: 24,
-        color: '#fff',
+        fontSize: 22,
+        color: '#FFF',
     },
     lowerBox: {
         alignItems: 'center',
@@ -95,8 +95,8 @@ const styles = StyleSheet.create({
     },
     car: {
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 24,
-        color: '#000B58',
+        fontSize: 22,
+        color: '#333',
         textAlign: 'center',
     },
     button: {
@@ -109,10 +109,10 @@ const styles = StyleSheet.create({
     },
     buttonIcon: {
         fontSize: 30,
-        color: '#fff',
+        color: '#FFF',
     },
     buttonText: {
-        color: '#fff',
+        color: '#FFF',
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 20,
     },
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     troubleCodesLbl: {
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 18,
-        color: '#000B58'
+        color: '#333'
     },
     clearButton: {
         justifyContent: 'center',
@@ -157,11 +157,13 @@ const styles = StyleSheet.create({
     },
     troubleCodeText: {
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 18,
+        color: '#333',
+        fontSize: 16,
     },
     troubleCodeText2: {
         fontFamily: 'LeagueSpartan',
-        fontSize: 16,
+        color: '#555',
+        fontSize: 14,
     },
     findShopButton: {
         width: '45%',
@@ -175,7 +177,7 @@ const styles = StyleSheet.create({
     findShopButtonText: {
         fontSize: 16,
         fontFamily: 'LeagueSpartan_Bold',
-        color: '#fff',
+        color: '#FFF',
     },
 })
 

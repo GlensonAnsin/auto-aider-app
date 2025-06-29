@@ -46,7 +46,7 @@ const EditProfile = () => {
         message: 'Please fill in required fields.',
         type: 'warning',
         floating: true,
-        color: '#fff',
+        color: '#FFF',
         icon: 'warning',
       });
       return;
@@ -56,38 +56,36 @@ const EditProfile = () => {
       const fetchedUsers: UserWithID[] = await getUsers();
       const userExcluded = fetchedUsers.filter(user => user.user_id !== userID);
       const mobileNumExists = userExcluded.some(user => user.mobile_num === mobileNum.trim());
+      const emailExists = userExcluded.some(user => user.email === email.trim());
 
       if (mobileNumExists) {
         showMessage({
           message: 'Mobile number is already used by another account.',
           type: 'warning',
           floating: true,
-          color: '#fff',
+          color: '#FFF',
           icon: 'warning',
         });
         return;
-      }
+      };
       
-      if (email !== null) {
-        const emailExists = fetchedUsers.some(user => user.email === email.trim());
-        if (emailExists) {
-          showMessage({
-            message: 'Email is already used by another account.',
-            type: 'warning',
-            floating: true,
-            color: '#fff',
-            icon: 'warning',
-          });
-          return;
-        }
-      }
+      if (emailExists) {
+        showMessage({
+          message: 'Email is already used by another account.',
+          type: 'warning',
+          floating: true,
+          color: '#FFF',
+          icon: 'warning',
+        });
+        return;
+      };
 
     } catch (e) {
       showMessage({
         message: 'Server error',
         type: 'danger',
         floating: true,
-        color: '#fff',
+        color: '#FFF',
         icon: 'danger',
       });
       return;
@@ -105,10 +103,10 @@ const EditProfile = () => {
     try {
       await updateUserInfo(userInfo)
       showMessage({
-        message: 'Update successful!',
+        message: 'Changes saved!',
         type: 'success',
         floating: true,
-        color: '#fff',
+        color: '#FFF',
         icon: 'success',
       });
 
@@ -121,7 +119,7 @@ const EditProfile = () => {
         message: 'Server error',
         type: 'danger',
         floating: true,
-        color: '#fff',
+        color: '#FFF',
         icon: 'danger',
       });
     }
@@ -140,7 +138,7 @@ const EditProfile = () => {
             keyboardShouldPersistTaps='handled' 
           >
             <View style={styles.upperBox}>
-              <Text style={styles.header}>|  EDIT PROFILE</Text>
+              <Text style={styles.header}>|  Edit Profile</Text>
               <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
                 <Icon name='arrow-left' style={styles.arrowBack} />
               </TouchableOpacity>
@@ -237,7 +235,7 @@ const EditProfile = () => {
               </View>
 
               <TouchableOpacity style={styles.button} onPress={() => handleUpdateUserInfo()}>
-                <Text style={styles.buttonTxt}>UPDATE</Text>
+                <Text style={styles.buttonTxt}>Save</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -250,7 +248,7 @@ const EditProfile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF',
   },
   upperBox: {
     backgroundColor: '#000B58',
@@ -259,19 +257,19 @@ const styles = StyleSheet.create({
     height: 63,
   },
   header: {
-    color: '#fff',
+    color: '#FFF',
     fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 24,
+    fontSize: 22,
     marginLeft: 50,
   },
   arrowWrapper: {
-    top: 21,
+    top: 23,
     right: 320,
     position: 'absolute',
   },
   arrowBack: {
-    fontSize: 24,
-    color: '#fff',
+    fontSize: 22,
+    color: '#FFF',
   },
   lowerBox: {
     alignItems: 'center',
@@ -306,7 +304,7 @@ const styles = StyleSheet.create({
   userInitials: {
     fontFamily: 'LeagueSpartan_Bold',
     fontSize: 30,
-    color: '#fff',
+    color: '#FFF',
   },
   editIcon: {
     fontSize: 30,
@@ -325,8 +323,8 @@ const styles = StyleSheet.create({
   },
   textInputLbl: {
     fontSize: 16,
-    fontFamily: 'LeagueSpartan_Bold',
-    color: '#000B58',
+    fontFamily: 'LeagueSpartan',
+    color: '#333',
     width: '35%',
   },
   input: {
@@ -336,6 +334,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     fontSize: 16,
+    color: '#333',
     fontFamily: 'LeagueSpartan',
   },
   dropdownButtonStyle: {
@@ -351,10 +350,12 @@ const styles = StyleSheet.create({
   dropdownButtonTxtStyle: {
     flex: 1,
     fontSize: 16,
+    color: '#333',
     fontFamily: 'LeagueSpartan',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
+    color: '#333',
   },
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
@@ -372,11 +373,8 @@ const styles = StyleSheet.create({
   dropdownItemTxtStyle: {
     flex: 1,
     fontSize: 16,
+    color: '#333',
     fontFamily: 'LeagueSpartan',
-  },
-  dropdownItemIconStyle: {
-    fontSize: 24,
-    marginRight: 8,
   },
   button: {
     width: '40%',
@@ -389,7 +387,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   buttonTxt: {
-    color: '#fff',
+    color: '#FFF',
     fontSize: 16,
     fontFamily: 'LeagueSpartan_Bold',
   },

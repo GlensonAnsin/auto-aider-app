@@ -3,6 +3,7 @@ import { verifyCar } from '@/services/geminiApi';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -16,7 +17,6 @@ export default function Home() {
     const router = useRouter();
 
     const [addVehicleModalVisible, isAddVehicleModalVisible] = useState(false);
-    const [addSuccessModalVisible, isAddSuccessModalVisible] = useState(false);
     const [selectedMake, setSelectedMake] = useState<string>('');
     const [model, setModel] = useState<string>('');
     const [year, setYear] = useState<string>('');
@@ -83,7 +83,13 @@ export default function Home() {
             setYear('');
             setError('');
             isAddVehicleModalVisible(!addVehicleModalVisible);
-            isAddSuccessModalVisible(true);
+            showMessage({
+                message: 'Car added successfully!',
+                type: 'success',
+                floating: true,
+                color: '#FFF',
+                icon: 'success',
+            });
 
         } catch (e) {
             setError('Server error')
@@ -107,7 +113,7 @@ export default function Home() {
 
                     <View style={styles.userContainer}>
                         <View style={styles.userNameContainer}>
-                            <Text style={styles.header}>HELLO,</Text>
+                            <Text style={styles.header}>Hello,</Text>
                             <Text style={styles.userName}>{`${firstname} ${lastname}`}</Text>
                         </View>
 
@@ -125,7 +131,7 @@ export default function Home() {
                     </View>
 
                     <View style={styles.introTxtContainer}>
-                        <Text style={styles.introHeader}>Let's Get Started</Text>
+                        <Text style={styles.introHeader}>Let's get started</Text>
                         <Text style={styles.introBody}>Start your experience to easier vehicle maintenance.</Text>
                     </View>
 
@@ -134,15 +140,15 @@ export default function Home() {
                             <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(screens)/diagnostic-history/diagnostic-history')}>
                                 <DiagnosticHistoryIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
-                                    <Text style={styles.featureHeader}>DIAGNOSTIC HISTORY</Text>
-                                    <Text style={styles.featureDescription}>View past diagnostic checks and repair information</Text>
+                                    <Text style={styles.featureHeader}>Diagnostic History</Text>
+                                    <Text style={styles.featureDescription}>View past diagnostic checks</Text>
                                 </View>
                             </TouchableOpacity>
 
                             <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(screens)/run-diagnostics/run-diagnostics')}>
                                 <RunDiagnosticIcon width={40} height={40} />
                                 <View style={styles.featureTxtWrapper}>
-                                    <Text style={styles.featureHeader}>RUN DIAGNOSTICS</Text>
+                                    <Text style={styles.featureHeader}>Scan Car</Text>
                                     <Text style={styles.featureDescription}>Perform a quick system diagnostic</Text>
                                 </View>
                             </TouchableOpacity>
@@ -150,7 +156,7 @@ export default function Home() {
                             <TouchableOpacity style={styles.feature}>
                                 <LocationIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
-                                    <Text style={styles.featureHeader}>REPAIR SHOPS</Text>
+                                    <Text style={styles.featureHeader}>Repair Shops</Text>
                                     <Text style={styles.featureDescription}>Locate nearby repair shops</Text>
                                 </View>
                             </TouchableOpacity>
@@ -160,7 +166,7 @@ export default function Home() {
                             <TouchableOpacity style={styles.feature} onPress={() => isAddVehicleModalVisible(true)}>
                                 <AddVehicleIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
-                                    <Text style={styles.featureHeader}>ADD VEHICLE</Text>
+                                    <Text style={styles.featureHeader}>Add Vehicle</Text>
                                     <Text style={styles.featureDescription}>Register or add a new vehicle</Text>
                                 </View>
                             </TouchableOpacity>
@@ -168,7 +174,7 @@ export default function Home() {
                             <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
                                 <ProfileIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
-                                    <Text style={styles.featureHeader}>MY PROFILE</Text>
+                                    <Text style={styles.featureHeader}>My Profile</Text>
                                     <Text style={styles.featureDescription}>Manage your account details and preferences</Text>
                                 </View>
                             </TouchableOpacity>
@@ -188,7 +194,7 @@ export default function Home() {
                         >
                             <View style={styles.centeredView}>
                                 <View style={styles.addCarModalView}>
-                                    <Text style={styles.modalHeader}>ADD VEHICLE</Text>
+                                    <Text style={styles.modalHeader}>Add Vehicle</Text>
                                     <View style={styles.textInputContainer}>
                                         <Text style={styles.textInputLbl}>Manufacturer</Text>
                                         <SelectDropdown 
@@ -248,7 +254,7 @@ export default function Home() {
                                     )}
 
                                     {loading === true && (
-                                        <ActivityIndicator style={{ marginTop: 20 }} size='small' color='#fff' />
+                                        <ActivityIndicator style={{ marginTop: 20 }} size='small' color='#000B58' />
                                     )}
 
                                     <TouchableOpacity style={styles.addCarButton} onPress={() => {
@@ -258,27 +264,7 @@ export default function Home() {
                                             handleCarVerification();
                                         }
                                     }}>
-                                        <Text style={styles.addCarButtonTxt}>ADD</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </Modal>
-
-                        <Modal
-                            animationType='fade'
-                            backdropColor={'rgba(0, 0, 0, 0.5)'}
-                            visible={addSuccessModalVisible}
-                            onRequestClose={() => isAddSuccessModalVisible(!addSuccessModalVisible)}
-                        >
-                            <View style={styles.centeredView}>
-                                <View style={styles.addSuccessModalView}>
-                                    <Text style={styles.modalTxt}>Car added successfully!</Text>
-                                    <TouchableOpacity
-                                        style={styles.addSuccessButton}
-                                        onPress={() => {
-                                        isAddSuccessModalVisible(!addSuccessModalVisible)
-                                        }}>
-                                            <Text style={styles.addSuccessButtonTxt}>OK</Text>
+                                        <Text style={styles.addCarButtonTxt}>Add</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -293,7 +279,7 @@ export default function Home() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#FFF',
     },
     screenDesign: {
         width: '100%',
@@ -334,7 +320,7 @@ const styles = StyleSheet.create({
     userInitials: {
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 30,
-        color: '#fff',
+        color: '#FFF',
     },
     introTxtContainer: {
         borderWidth: 2,
@@ -403,14 +389,14 @@ const styles = StyleSheet.create({
         width: '60%',
     },
     featureHeader: {
-        color: '#fff',
+        color: '#FFF',
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 14,
+        fontSize: 16,
     },
     featureDescription: {
-        color: '#fff',
+        color: '#FFF',
         fontFamily: 'LeagueSpartan',
-        fontSize: 10,
+        fontSize: 12,
     },
     centeredView: {
         flex: 1,
@@ -418,10 +404,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     addCarModalView: {
-        backgroundColor: '#000B58',
+        backgroundColor: '#FFF',
         width: '85%',
-        borderRadius: 20,
-        padding: 35,
+        borderRadius: 10,
+        padding: 20,
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: {
@@ -433,9 +419,9 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     modalHeader: {
-        fontSize: 24,
+        fontSize: 22,
         fontFamily: 'LeagueSpartan_Bold',
-        color: '#fff',
+        color: '#333',
     },
     textInputContainer: {
         gap: 10,
@@ -445,13 +431,13 @@ const styles = StyleSheet.create({
     textInputLbl: {
         fontSize: 16,
         fontFamily: 'LeagueSpartan',
-        color: '#fff',
+        color: '#333',
     },
     dropdownButtonStyle: {
         width: '100%',
         height: 45,
         backgroundColor: '#EAEAEA',
-        borderRadius: 10,
+        borderRadius: 5,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
@@ -460,10 +446,12 @@ const styles = StyleSheet.create({
     dropdownButtonTxtStyle: {
         flex: 1,
         fontSize: 16,
+        color: '#333',
         fontFamily: 'LeagueSpartan',
     },
     dropdownButtonArrowStyle: {
         fontSize: 24,
+        color: '#333',
     },
     dropdownMenuStyle: {
         backgroundColor: '#EAEAEA',
@@ -482,21 +470,23 @@ const styles = StyleSheet.create({
     dropdownItemTxtStyle: {
         flex: 1,
         fontSize: 16,
+        color: '#333',
         fontFamily: 'LeagueSpartan',
     },
     input: {
         backgroundColor: '#EAEAEA',
         width: '100%',
         height: 45,
-        borderRadius: 10,
+        borderRadius: 5,
         padding: 10,
         fontSize: 16,
+        color: '#333',
         fontFamily: 'LeagueSpartan',
     },
     addCarButton: {
         width: '50%',
         height: 45,
-        backgroundColor: '#fff',
+        backgroundColor: '#000B58',
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 20,
@@ -504,10 +494,11 @@ const styles = StyleSheet.create({
     },
     addCarButtonTxt: {
         fontSize: 16,
+        color: '#FFF',
         fontFamily: 'LeagueSpartan_Bold',
     },
     errorContainer: {
-        backgroundColor: '#fff',
+        backgroundColor: '#EAEAEA',
         borderRadius: 5,
         width: '100%',
         padding: 10,
@@ -517,39 +508,5 @@ const styles = StyleSheet.create({
         fontFamily: 'LeagueSpartan',
         color: 'red',
         textAlign: 'center',
-    },
-    addSuccessModalView: {
-        backgroundColor: '#fff',
-        width: '60%',
-        borderRadius: 10,
-        padding: 20,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-        width: 0,
-        height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    modalTxt: {
-        marginBottom: 15,
-        textAlign: 'center',
-        fontFamily: 'LeagueSpartan',
-        fontSize: 16,
-    },
-    addSuccessButton: {
-        width: '50%',
-        height: 45,
-        backgroundColor: '#000B58',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 20,
-    },
-    addSuccessButtonTxt: {
-        fontSize: 16,
-        fontFamily: 'LeagueSpartan_Bold',
-        color: '#fff',
     },
 });

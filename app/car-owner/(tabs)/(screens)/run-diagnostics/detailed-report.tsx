@@ -11,7 +11,7 @@ const DetailedReport = () => {
             <SafeAreaView style={styles.container}>
                 <ScrollView>
                     <View style={styles.upperBox}>
-                        <Text style={styles.header}>|  DETAILED REPORT</Text>
+                        <Text style={styles.header}>|  Detailed Report</Text>
                         <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/run-diagnostics/diagnosis')}>
                             <Icon name='arrow-left' style={styles.arrowBack} />
                         </TouchableOpacity>
@@ -65,16 +65,16 @@ const styles = StyleSheet.create({
     header: {
         color: '#fff',
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 24,
+        fontSize: 22,
         marginLeft: 50,
     },
     arrowWrapper: {
-        top: 21,
+        top: 23,
         right: 320,
         position: 'absolute',
     },
     arrowBack: {
-        fontSize: 24,
+        fontSize: 22,
         color: '#fff',
     },
     lowerBox: {
@@ -86,23 +86,27 @@ const styles = StyleSheet.create({
     },
     troubleCode: {
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 24,
+        fontSize: 22,
+        color: '#333',
         textAlign: 'center',
 
     },
     technicalDescription: {
         fontFamily: 'LeagueSpartan',
         fontSize: 20,
+        color: '#555',
         textAlign: 'center',
     },
     label: {
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 18,
+        color: '#333',
         marginTop: 10,
     },
     text: {
         fontFamily: 'LeagueSpartan',
         fontSize: 16,
+        color: '#333',
     },
 })
 

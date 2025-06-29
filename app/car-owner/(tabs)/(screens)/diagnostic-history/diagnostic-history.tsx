@@ -10,7 +10,7 @@ const DiagnosticHistory = () => {
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
                 <View style={styles.upperBox}>
-                    <Text style={styles.header}>|  HISTORY</Text>
+                    <Text style={styles.header}>|  History</Text>
                     <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)')}>
                         <Icon name='arrow-left' style={styles.arrowBack} />
                     </TouchableOpacity>
@@ -25,8 +25,8 @@ const DiagnosticHistory = () => {
                     </View>
 
                     <TouchableOpacity style={styles.historyContainer}>
-                        <Text style={styles.carDetails}>Toyota Fortuner 2025</Text>
-                        <Text style={styles.date}>06/18/2025</Text>
+                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
+                        <Text style={styles.date}>2025-06-29</Text>
                         <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
                     </TouchableOpacity>
                 </View>
@@ -38,7 +38,7 @@ const DiagnosticHistory = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#FFF',
     },
     upperBox: {
         backgroundColor: '#000B58',
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
         height: 63,
     },
     header: {
-        color: '#fff',
+        color: '#FFF',
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 22,
         marginLeft: 50,
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     },
     arrowBack: {
         fontSize: 22,
-        color: '#fff',
+        color: '#FFF',
     },
     lowerBox: { 
         alignItems: 'center',
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     header2: {
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 20,
-        color: '#000B58'
+        color: '#333'
     },
     button: {
         alignItems: 'center',
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     },
     historyContainer: {
         width: '90%',
-        backgroundColor: '#000B58',
+        backgroundColor: '#EAEAEA',
         justifyContent: 'space-between',
         padding: 10,
         borderRadius: 4,
@@ -95,18 +95,18 @@ const styles = StyleSheet.create({
     },
     carDetails: {
         fontFamily: 'LeagueSpartan_Bold',
-        color: '#fff',
+        color: '#333',
         fontSize: 18,
     },
     troubleCodes: {
         fontFamily: 'LeagueSpartan_Bold',
-        color: 'red',
-        fontSize: 16,
+        color: '#780606',
+        fontSize: 14,
     },
     date: {
         fontFamily: 'LeagueSpartan_Bold',
-        color: '#fff',
-        fontSize: 16,
+        color: '#555',
+        fontSize: 14,
     },
 
 })

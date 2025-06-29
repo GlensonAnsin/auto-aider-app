@@ -1,6 +1,7 @@
+import { getVehicle } from '@/services/backendApi';
 import { codeTechnicalDescription } from '@/services/geminiApi';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -10,11 +11,7 @@ const RunDiagnostics = () => {
     const router = useRouter()
 
     const [_selectedCar, setSelectedCar] = useState<string>('');
-
-    const cars = [
-        { make: 'Toyota', model: 'Fortuner', year: '2025' },
-        { make: 'Honda', model: 'Civic', year: '2017' },
-    ];
+    const [vehicles, setVehicles] = useState<{ id: number, make: string, model: string, year: string }[]>([])
 
     const handleCodeTechnicalDescription = async () => {
         try {
@@ -23,13 +20,31 @@ const RunDiagnostics = () => {
         } catch (e) {
             console.error('Error getting technical description: ', e);
         }
-    }
+    };
+
+    useEffect(() => {
+        (async () => {
+          try {
+            const res = await getVehicle();
+            const vehicleInfo = res.map((v: { vehicle_id: number, make: string, model: string, year: string }) => ({
+              id: v.vehicle_id,
+              make: v.make,
+              model: v.model,
+              year: v.year
+            }));
+            setVehicles(vehicleInfo)
+    
+          } catch (e) {
+            console.error('Error: ', e);
+          }
+        })();
+      }, []);
 
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
                 <View style={styles.upperBox}>
-                    <Text style={styles.header}>|  DIAGNOSE</Text>
+                    <Text style={styles.header}>|  Diagnose</Text>
                     <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)')}>
                         <Icon name='arrow-left' style={styles.arrowBack} />
                     </TouchableOpacity>
@@ -39,7 +54,7 @@ const RunDiagnostics = () => {
                     <View style={styles.selectCarContainer}>
                         <Text style={styles.dropdownLbl}>Car to scan</Text>
                         <SelectDropdown 
-                            data={cars}
+                            data={vehicles}
                             onSelect={(selectedItem) => setSelectedCar(`${selectedItem.make} ${selectedItem.model} ${selectedItem.year}`)}
                             renderButton={(selectedItem, isOpen) => (
                                 <View style={styles.dropdownButtonStyle}>
@@ -66,7 +81,6 @@ const RunDiagnostics = () => {
 
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity style={styles.scanButton} onPress={() => {
-                            handleCodeTechnicalDescription();
                             router.push('/car-owner/(tabs)/(screens)/run-diagnostics/diagnosis');
                             }}>
                             <View style={styles.innerContainer}>
@@ -83,7 +97,7 @@ const RunDiagnostics = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#FFF',
     },
     upperBox: {
         backgroundColor: '#000B58',
@@ -92,19 +106,19 @@ const styles = StyleSheet.create({
         height: 63,
     },
     header: {
-        color: '#fff',
+        color: '#FFF',
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 24,
+        fontSize: 22,
         marginLeft: 50,
     },
     arrowWrapper: {
-        top: 21,
+        top: 23,
         right: 320,
         position: 'absolute',
     },
     arrowBack: {
-        fontSize: 24,
-        color: '#fff',
+        fontSize: 22,
+        color: '#FFF',
     },
     lowerBox: {
         alignItems: 'center',
@@ -132,7 +146,7 @@ const styles = StyleSheet.create({
     dropdownLbl: {
         fontFamily: 'LeagueSpartan',
         fontSize: 20,
-        color: '#fff',
+        color: '#FFF',
         marginBottom: 10,
     },
     dropdownButtonStyle: {
@@ -200,7 +214,7 @@ const styles = StyleSheet.create({
     },
     buttonTxt: {
         fontFamily: 'LeagueSpartan_Bold',
-        color: '#fff',
+        color: '#FFF',
         fontSize: 24,
     },
 })

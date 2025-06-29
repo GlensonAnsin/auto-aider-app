@@ -26,7 +26,7 @@ export default function Login() {
         message: 'Please fill in all fields.',
         type: 'warning',
         floating: true,
-        color: '#fff',
+        color: '#FFF',
         icon: 'warning',
       });
       return;
@@ -43,7 +43,7 @@ export default function Login() {
           message: 'Login successful!',
           type: 'success',
           floating: true,
-          color: '#fff',
+          color: '#FFF',
           icon: 'success',
         });
 
@@ -60,7 +60,7 @@ export default function Login() {
             message: 'Invalid credentials',
             type: 'warning',
             floating: true,
-            color: '#fff',
+            color: '#FFF',
             icon: 'warning',
           });
 
@@ -69,7 +69,7 @@ export default function Login() {
             message: 'Something went wrong. Please try again.',
             type: 'danger',
             floating: true,
-            color: '#fff',
+            color: '#FFF',
             icon: 'danger',
           });
           console.log('Login error:', e.message);
@@ -99,7 +99,7 @@ export default function Login() {
             />
 
             <View style={styles.formContainer}>
-              <Text style={styles.header}>LOG IN</Text>
+              <Text style={styles.header}>Log In</Text>
               <View style={styles.textInputContainer}>
                 <Text style={styles.textInputLbl}>Username</Text>
                 <TextInput
@@ -149,7 +149,7 @@ export default function Login() {
                 />
                 
                 <TouchableOpacity>
-                  <Text style={styles.forgetPassLbl}>Forget password?</Text>
+                  <Text style={styles.forgetPassLbl}>Forgot password?</Text>
                 </TouchableOpacity>
               </View>
 
@@ -164,7 +164,7 @@ export default function Login() {
                 style={styles.button}
                 onPress={() => handleLogin()}
               >
-                <Text style={styles.buttonTxt}>LOG IN</Text>
+                <Text style={styles.buttonTxt}>Log In</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -177,7 +177,7 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF',
   },
   screenDesign: {
     backgroundColor: '#000B58',
@@ -191,8 +191,8 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   header: {
-    color: '#fff',
-    fontSize: 24,
+    color: '#FFF',
+    fontSize: 28,
     fontFamily: 'LeagueSpartan_Bold',
   },
   textInputContainer: {
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     width: '70%',
   },
   textInputLbl: {
-    color: '#fff',
+    color: '#FFF',
     fontSize: 16,
     fontFamily: 'LeagueSpartan',
   },
@@ -211,6 +211,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     fontSize: 16,
+    color: '#333',
     fontFamily: 'LeagueSpartan',
   },
   dropdownButtonStyle: {
@@ -226,14 +227,17 @@ const styles = StyleSheet.create({
   dropdownButtonTxtStyle: {
     flex: 1,
     fontSize: 16,
+    color: '#333',
     fontFamily: 'LeagueSpartan',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
+    color: '#333',
   },
   dropdownButtonIconStyle: {
     fontSize: 24,
     marginRight: 8,
+    color: '#333',
   },
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
@@ -251,25 +255,27 @@ const styles = StyleSheet.create({
   dropdownItemTxtStyle: {
     flex: 1,
     fontSize: 16,
+    color: '#333',
     fontFamily: 'LeagueSpartan',
   },
   dropdownItemIconStyle: {
     fontSize: 24,
     marginRight: 8,
+    color: '#333',
   },
   forgetPassLbl: {
-    color: '#fff',
+    color: '#FFF',
     fontSize: 14,
     fontFamily: 'LeagueSpartan',
     textDecorationLine: 'underline',
   },
   questionLbl: {
-    color: '#fff',
+    color: '#FFF',
     fontSize: 14,
     fontFamily: 'LeagueSpartan',
   },
   signupLbl: {
-    color: '#fff',
+    color: '#FFF',
     fontSize: 14,
     fontFamily: 'LeagueSpartan_Bold',
     textDecorationLine: 'underline',
@@ -291,6 +297,7 @@ const styles = StyleSheet.create({
   },
   buttonTxt: {
     fontSize: 16,
+    color: '#333',
     fontFamily: 'LeagueSpartan_Bold',
   },
 })
