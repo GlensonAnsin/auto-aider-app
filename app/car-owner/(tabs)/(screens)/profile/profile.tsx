@@ -1,5 +1,6 @@
+import { Header } from '@/components/Header';
 import { getUserInfo } from '@/services/backendApi';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -38,12 +39,7 @@ const Profile = () => {
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
-                <View style={styles.upperBox}>
-                    <Text style={styles.header}>|  Profile</Text>
-                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)')}>
-                        <Icon name='arrow-left' style={styles.arrowBack} />
-                    </TouchableOpacity>
-                </View>
+                <Header headerTitle='Profile' link='/car-owner/(tabs)' />
 
                 <View style={styles.lowerBox}>
                     <View style={styles.userContainer}>
@@ -69,29 +65,33 @@ const Profile = () => {
                     </View>
 
                     <View style={styles.profileTabContainer}>
-                        <TouchableOpacity style={styles.profileTab} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/edit-profile')}>
-                            <Icon
-                                name='account-edit-outline'
-                                style={styles.icon}
-                            />
-                            <Text style={styles.tabName}>Edit Profile</Text>
-                            <Icon
-                                name='arrow-right-thin'
-                                style={styles.forwardIcon}
-                            />
-                        </TouchableOpacity>
+                        <Link href='/car-owner/(tabs)/(screens)/profile/edit-profile' style={styles.profileTab} asChild>
+                            <TouchableOpacity>
+                                <Icon
+                                    name='account-edit-outline'
+                                    style={styles.icon}
+                                />
+                                <Text style={styles.tabName}>Edit Profile</Text>
+                                <Icon
+                                    name='arrow-right-thin'
+                                    style={styles.forwardIcon}
+                                />
+                            </TouchableOpacity>
+                        </Link>
 
-                        <TouchableOpacity style={styles.profileTab} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/manage-vehicles')}>
-                            <Icon
-                                name='car-outline'
-                                style={styles.icon}
-                            />
-                            <Text style={styles.tabName}>Manage Connected Vehicles</Text>
-                            <Icon
-                                name='arrow-right-thin'
-                                style={styles.forwardIcon}
-                            />
-                        </TouchableOpacity>
+                        <Link href='/car-owner/(tabs)/(screens)/profile/manage-vehicles' style={styles.profileTab} asChild>
+                            <TouchableOpacity>
+                                <Icon
+                                    name='car-outline'
+                                    style={styles.icon}
+                                />
+                                <Text style={styles.tabName}>Manage Connected Vehicles</Text>
+                                <Icon
+                                    name='arrow-right-thin'
+                                    style={styles.forwardIcon}
+                                />
+                            </TouchableOpacity>
+                        </Link>
 
                         <TouchableOpacity style={styles.profileTab} onPress={() => isModalVisible(true)}>
                             <Icon
@@ -105,17 +105,19 @@ const Profile = () => {
                             />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.profileTab} onPress={() => router.push('/auth/login')}>
-                            <Icon
-                                name='logout'
-                                style={[styles.icon, {color: 'red'}]}
-                            />
-                            <Text style={[styles.tabName, {color: 'red'}]}>Logout</Text>
-                            <Icon
-                                name='arrow-right-thin'
-                                style={[styles.forwardIcon, {color: 'red'}]}
-                            />
-                        </TouchableOpacity>
+                        <Link href='/auth/login' style={styles.profileTab} asChild>
+                            <TouchableOpacity>
+                                <Icon
+                                    name='logout'
+                                    style={[styles.icon, {color: 'red'}]}
+                                />
+                                <Text style={[styles.tabName, {color: 'red'}]}>Logout</Text>
+                                <Icon
+                                    name='arrow-right-thin'
+                                    style={[styles.forwardIcon, {color: 'red'}]}
+                                />
+                            </TouchableOpacity>
+                        </Link>
 
                         <Modal
                             animationType='fade'
@@ -178,27 +180,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFF',
-    },
-    upperBox: {
-        backgroundColor: '#000B58',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        height: 63,
-    },
-    header: {
-        color: '#FFF',
-        fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 22,
-        marginLeft: 50,
-    },
-    arrowWrapper: {
-        top: 23,
-        right: 320,
-        position: 'absolute',
-    },
-    arrowBack: {
-        fontSize: 22,
-        color: '#FFF',
     },
     lowerBox: {
         alignItems: 'center',

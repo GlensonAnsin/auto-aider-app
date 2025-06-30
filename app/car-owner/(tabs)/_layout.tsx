@@ -11,6 +11,7 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarHideOnKeyboard: true,
+        animation: 'none',
         tabBarStyle: {
           backgroundColor: '#000B58',
           height: 60,

@@ -1,15 +1,12 @@
+import { Header } from '@/components/Header';
 import { deleteVehicle, getVehicle } from '@/services/backendApi';
-import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { io, Socket } from 'socket.io-client';
 
 const ManageVehicles = () => {
-  const router = useRouter();
-
   const [_socket, setSocket] = useState<Socket | null>(null);
   const [vehicles, setVehicles] = useState<{ id: number, make: string, model: string, year: string, dateAdded: string }[]>([]);
 
@@ -80,12 +77,7 @@ const ManageVehicles = () => {
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <ScrollView>
-          <View style={styles.upperBox}>
-            <Text style={styles.header}>|  Vehicles</Text>
-            <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
-              <Icon name='arrow-left' style={styles.arrowBack} />
-            </TouchableOpacity>
-          </View>
+          <Header headerTitle='Vehicles' link='/car-owner/(tabs)/(screens)/profile/profile' />
 
           <View style={styles.lowerBox}>
             {vehicles.length === 0 && (
@@ -124,27 +116,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  upperBox: {
-    backgroundColor: '#000B58',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    height: 63,
-  },
-  header: {
-    color: '#fff',
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 22,
-    marginLeft: 50,
-  },
-  arrowWrapper: {
-    top: 23,
-    right: 320,
-    position: 'absolute',
-  },
-  arrowBack: {
-    fontSize: 24,
-    color: '#fff',
   },
   lowerBox: {
     backgroundColor: '#fff',
@@ -205,7 +176,7 @@ const styles = StyleSheet.create({
   },
   buttonTxt: {
     fontSize: 16,
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'LeagueSpartan',
     color: '#fff',
   },
 })

@@ -47,12 +47,11 @@ export default function Login() {
           icon: 'success',
         });
 
-        setTimeout(() => {
-          router.push('/car-owner/(tabs)');
-          setUsername('');
-          setPassword('');
-          setRole('');
-        }, 2000);
+        router.push('/car-owner/(tabs)');
+        
+        setUsername('');
+        setPassword('');
+        setRole('');
 
       } catch (e: any) {
         if (e.response?.status === 401) {

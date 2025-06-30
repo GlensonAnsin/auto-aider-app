@@ -1,3 +1,4 @@
+import { Header } from '@/components/Header';
 import { getVehicle } from '@/services/backendApi';
 import { codeTechnicalDescription } from '@/services/geminiApi';
 import { useRouter } from 'expo-router';
@@ -43,12 +44,7 @@ const RunDiagnostics = () => {
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
-                <View style={styles.upperBox}>
-                    <Text style={styles.header}>|  Diagnose</Text>
-                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)')}>
-                        <Icon name='arrow-left' style={styles.arrowBack} />
-                    </TouchableOpacity>
-                </View>
+                <Header headerTitle='Diagnostic' link='/car-owner/(tabs)' />
 
                 <View style={styles.lowerBox}>
                     <View style={styles.selectCarContainer}>
@@ -98,27 +94,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFF',
-    },
-    upperBox: {
-        backgroundColor: '#000B58',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        height: 63,
-    },
-    header: {
-        color: '#FFF',
-        fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 22,
-        marginLeft: 50,
-    },
-    arrowWrapper: {
-        top: 23,
-        right: 320,
-        position: 'absolute',
-    },
-    arrowBack: {
-        fontSize: 22,
-        color: '#FFF',
     },
     lowerBox: {
         alignItems: 'center',

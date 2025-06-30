@@ -1,20 +1,12 @@
-import { useRouter } from 'expo-router';
+import { Header } from '@/components/Header';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const DiagnosticHistory = () => {
-    const router = useRouter();
-
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
-                <View style={styles.upperBox}>
-                    <Text style={styles.header}>|  History</Text>
-                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)')}>
-                        <Icon name='arrow-left' style={styles.arrowBack} />
-                    </TouchableOpacity>
-                </View>
+                <Header headerTitle='History' link='/car-owner/(tabs)' />
 
                 <View style={styles.lowerBox}>
                     <View style={styles.clearHistoryContainer}>
@@ -39,27 +31,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFF',
-    },
-    upperBox: {
-        backgroundColor: '#000B58',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        height: 63,
-    },
-    header: {
-        color: '#FFF',
-        fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 22,
-        marginLeft: 50,
-    },
-    arrowWrapper: {
-        top: 23,
-        right: 320,
-        position: 'absolute',
-    },
-    arrowBack: {
-        fontSize: 22,
-        color: '#FFF',
     },
     lowerBox: { 
         alignItems: 'center',
@@ -90,8 +61,16 @@ const styles = StyleSheet.create({
         backgroundColor: '#EAEAEA',
         justifyContent: 'space-between',
         padding: 10,
-        borderRadius: 4,
+        borderRadius: 10,
         marginTop: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
     },
     carDetails: {
         fontFamily: 'LeagueSpartan_Bold',

@@ -1,3 +1,4 @@
+import { Header } from '@/components/Header';
 import { getUserInfo, getUsers, updateUserInfo } from '@/services/backendApi';
 import { UserWithID } from '@/types/user';
 import { useRouter } from 'expo-router';
@@ -137,12 +138,7 @@ const EditProfile = () => {
             contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps='handled' 
           >
-            <View style={styles.upperBox}>
-              <Text style={styles.header}>|  Edit Profile</Text>
-              <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
-                <Icon name='arrow-left' style={styles.arrowBack} />
-              </TouchableOpacity>
-            </View>
+            <Header headerTitle='Edit Profile' link='/car-owner/(tabs)/(screens)/profile/profile' />
 
             <View style={styles.lowerBox}>
               <View style={styles.editPicContainer}>
@@ -249,27 +245,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF',
-  },
-  upperBox: {
-    backgroundColor: '#000B58',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    height: 63,
-  },
-  header: {
-    color: '#FFF',
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 22,
-    marginLeft: 50,
-  },
-  arrowWrapper: {
-    top: 23,
-    right: 320,
-    position: 'absolute',
-  },
-  arrowBack: {
-    fontSize: 22,
-    color: '#FFF',
   },
   lowerBox: {
     alignItems: 'center',

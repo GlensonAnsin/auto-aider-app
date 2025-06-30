@@ -1,21 +1,13 @@
-import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Header } from '@/components/Header';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const DetailedReport = () => {
-    const router = useRouter();
-
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
                 <ScrollView>
-                    <View style={styles.upperBox}>
-                        <Text style={styles.header}>|  Detailed Report</Text>
-                        <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/run-diagnostics/diagnosis')}>
-                            <Icon name='arrow-left' style={styles.arrowBack} />
-                        </TouchableOpacity>
-                    </View>
+                    <Header headerTitle='Detailed Report' link='/car-owner/(tabs)/(screens)/run-diagnostics/diagnosis' />
 
                     <View style={styles.lowerBox}>
                         <Text style={styles.troubleCode}>P1456</Text>
@@ -55,27 +47,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-    },
-    upperBox: {
-        backgroundColor: '#000B58',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        height: 63,
-    },
-    header: {
-        color: '#fff',
-        fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 22,
-        marginLeft: 50,
-    },
-    arrowWrapper: {
-        top: 23,
-        right: 320,
-        position: 'absolute',
-    },
-    arrowBack: {
-        fontSize: 22,
-        color: '#fff',
     },
     lowerBox: {
         alignSelf: 'center',

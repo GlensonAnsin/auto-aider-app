@@ -1,3 +1,4 @@
+import { Header } from '@/components/Header';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -10,12 +11,7 @@ const Diagnosis = () => {
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
-                <View style={styles.upperBox}>
-                    <Text style={styles.header}>|  Diagnosis</Text>
-                    <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/run-diagnostics/run-diagnostics')}>
-                        <Icon name='arrow-left' style={styles.arrowBack} />
-                    </TouchableOpacity>
-                </View>
+                <Header headerTitle='Diagnosis' link='/car-owner/(tabs)/(screens)/run-diagnostics/run-diagnostics' />
                 
                 <View style={styles.lowerBox}>
                     <View style={styles.buttonContainer}>
@@ -62,27 +58,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFF',
-    },
-    upperBox: {
-        backgroundColor: '#000B58',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        height: 63,
-    },
-    header: {
-        color: '#FFF',
-        fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 22,
-        marginLeft: 50,
-    },
-    arrowWrapper: {
-        top: 23,
-        right: 320,
-        position: 'absolute',
-    },
-    arrowBack: {
-        fontSize: 22,
-        color: '#FFF',
     },
     lowerBox: {
         alignItems: 'center',

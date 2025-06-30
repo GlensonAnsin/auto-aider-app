@@ -19,7 +19,7 @@ export default function RootLayout() {
 
       <FlashMessage position='top' />
       
-      <Stack initialRouteName='index' screenOptions={{ headerShown: false }}>
+      <Stack initialRouteName='index' screenOptions={{ headerShown: false, animation: 'none' }}>
         <Stack.Screen name='index' options={{ animation: 'none'}} />
         <Stack.Screen name='auth/login' options={{ animation: 'none' }} />
         <Stack.Screen name='auth/signup' options={{ animation: 'none' }} />
