@@ -8,7 +8,8 @@ export interface User {
     creation_date: Date;
     profile_pic: string | null;
     role: string;
-}
+    user_initials_bg: string;
+};
 
 export interface UserWithID {
     user_id: number;
@@ -21,7 +22,7 @@ export interface UserWithID {
     creation_date: Date;
     profile_pic: string | null;
     role: string;
-}
+};
 
 export interface UpdateUser {
     firstname: string;
@@ -30,4 +31,14 @@ export interface UpdateUser {
     email: string | null;
     mobile_num: string;
     profile_pic: string | null;
-}
+};
+
+export interface ChangePass {
+    newPassword: string;
+    currentPassword: string;
+};
+
+export interface LoginUser {
+    username: string;
+    password: string;
+};

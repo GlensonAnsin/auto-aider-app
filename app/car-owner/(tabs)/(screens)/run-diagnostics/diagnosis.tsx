@@ -2,59 +2,57 @@ import { Header } from '@/components/Header';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Diagnosis = () => {
     const router = useRouter();
 
     return (
-        <SafeAreaProvider>
-            <SafeAreaView style={styles.container}>
-                <ScrollView>
-                    <Header headerTitle='Diagnosis' link='./run-diagnostics' />
-                
-                    <View style={styles.lowerBox}>
-                        <View style={styles.buttonContainer}>
-                            <Text style={styles.car}>TOYOTA HILUX 2025</Text>
-                            <TouchableOpacity style={[styles.button, {backgroundColor: '#780606'}]}>
-                                <Icon name='close-circle-outline' style={styles.buttonIcon} />
-                                <Text style={styles.buttonText}>Disconnect</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.button, {backgroundColor: '#000B58'}]}>
-                                <Icon name='radiobox-marked' style={styles.buttonIcon} />
-                                <Text style={styles.buttonText}>Start another diagnosis</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={styles.troubleCodesContainer}>
-                            <View style={styles.labelContainer}>
-                                <Text style={styles.troubleCodesLbl}>Detected Trouble Codes</Text>
-                                <TouchableOpacity style={styles.clearButton}>
-                                    <Text style={styles.clearButtonText}>Clear codes</Text>
-                                </TouchableOpacity>
-                            </View>
-
-                            
-                            <TouchableOpacity style={styles.troubleCodeButton} onPress={() => router.navigate('./detailed-report')}>
-                                <Text style={styles.troubleCodeText}>P1456</Text>
-                                <Text style={styles.troubleCodeText2}>Evaporative Emissions Control System Leakage - Fuel Tank (Small Leak)</Text>
-                            </TouchableOpacity>
-                            
-
-                            <TouchableOpacity style={styles.troubleCodeButton}>
-                                <Text style={styles.troubleCodeText}>P1162</Text>
-                                <Text style={styles.troubleCodeText2}>Primary HO2S (Sensor 1) Circuit Malfunction</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <TouchableOpacity style={styles.findShopButton}>
-                            <Text style={styles.findShopButtonText}>Find Repair Shop</Text>
+        <SafeAreaView style={styles.container}>
+            <ScrollView>
+                <Header headerTitle='Diagnosis' link='./run-diagnostics' />
+            
+                <View style={styles.lowerBox}>
+                    <View style={styles.buttonContainer}>
+                        <Text style={styles.car}>TOYOTA HILUX 2025</Text>
+                        <TouchableOpacity style={[styles.button, {backgroundColor: '#780606'}]}>
+                            <Icon name='close-circle-outline' style={styles.buttonIcon} />
+                            <Text style={styles.buttonText}>Disconnect</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.button, {backgroundColor: '#000B58'}]}>
+                            <Icon name='radiobox-marked' style={styles.buttonIcon} />
+                            <Text style={styles.buttonText}>Start another diagnosis</Text>
                         </TouchableOpacity>
                     </View>
-                </ScrollView>
-            </SafeAreaView>
-        </SafeAreaProvider>
+
+                    <View style={styles.troubleCodesContainer}>
+                        <View style={styles.labelContainer}>
+                            <Text style={styles.troubleCodesLbl}>Detected Trouble Codes</Text>
+                            <TouchableOpacity style={styles.clearButton}>
+                                <Text style={styles.clearButtonText}>Clear codes</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        
+                        <TouchableOpacity style={styles.troubleCodeButton} onPress={() => router.navigate('./detailed-report')}>
+                            <Text style={styles.troubleCodeText}>P1456</Text>
+                            <Text style={styles.troubleCodeText2}>Evaporative Emissions Control System Leakage - Fuel Tank (Small Leak)</Text>
+                        </TouchableOpacity>
+                        
+
+                        <TouchableOpacity style={styles.troubleCodeButton}>
+                            <Text style={styles.troubleCodeText}>P1162</Text>
+                            <Text style={styles.troubleCodeText2}>Primary HO2S (Sensor 1) Circuit Malfunction</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <TouchableOpacity style={styles.findShopButton}>
+                        <Text style={styles.findShopButtonText}>Find Repair Shop</Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     )
 }
 

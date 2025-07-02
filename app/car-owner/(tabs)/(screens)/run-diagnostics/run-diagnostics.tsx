@@ -4,7 +4,7 @@ import { codeTechnicalDescription } from '@/services/geminiApi';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -42,51 +42,49 @@ const RunDiagnostics = () => {
       }, []);
 
     return (
-        <SafeAreaProvider>
-            <SafeAreaView style={styles.container}>
-                <Header headerTitle='Diagnostic' link='/car-owner/(tabs)' />
+        <SafeAreaView style={styles.container}>
+            <Header headerTitle='Diagnostic' link='/car-owner/(tabs)' />
 
-                <View style={styles.lowerBox}>
-                    <View style={styles.selectCarContainer}>
-                        <Text style={styles.dropdownLbl}>Car to scan</Text>
-                        <SelectDropdown 
-                            data={vehicles}
-                            onSelect={(selectedItem) => setSelectedCar(`${selectedItem.make} ${selectedItem.model} ${selectedItem.year}`)}
-                            renderButton={(selectedItem, isOpen) => (
-                                <View style={styles.dropdownButtonStyle}>
-                                    <Text style={styles.dropdownButtonTxtStyle}>
-                                        {(selectedItem && `${selectedItem.make} ${selectedItem.model} ${selectedItem.year}`) || 'Select car'}
-                                    </Text>
-                                    <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                                </View>
-                            )}
-                            renderItem={(item, _index, isSelected) => (
-                                <View
-                                    style={{
-                                    ...styles.dropdownItemStyle,
-                                    ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                                    }}
-                                >
-                                    <Text style={styles.dropdownItemTxtStyle}>{`${item.make} ${item.model} ${item.year}`}</Text>
-                                </View>
-                            )}
-                            showsVerticalScrollIndicator={false}
-                            dropdownStyle={styles.dropdownMenuStyle}
-                        />
-                    </View>
-
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity style={styles.scanButton} onPress={() => {
-                            router.navigate('./diagnosis');
-                            }}>
-                            <View style={styles.innerContainer}>
-                                <Text style={styles.buttonTxt}>Scan</Text>
+            <View style={styles.lowerBox}>
+                <View style={styles.selectCarContainer}>
+                    <Text style={styles.dropdownLbl}>Car to scan</Text>
+                    <SelectDropdown 
+                        data={vehicles}
+                        onSelect={(selectedItem) => setSelectedCar(`${selectedItem.make} ${selectedItem.model} ${selectedItem.year}`)}
+                        renderButton={(selectedItem, isOpen) => (
+                            <View style={styles.dropdownButtonStyle}>
+                                <Text style={styles.dropdownButtonTxtStyle}>
+                                    {(selectedItem && `${selectedItem.make} ${selectedItem.model} ${selectedItem.year}`) || 'Select car'}
+                                </Text>
+                                <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
                             </View>
-                    </TouchableOpacity>
-                    </View>
+                        )}
+                        renderItem={(item, _index, isSelected) => (
+                            <View
+                                style={{
+                                ...styles.dropdownItemStyle,
+                                ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                                }}
+                            >
+                                <Text style={styles.dropdownItemTxtStyle}>{`${item.make} ${item.model} ${item.year}`}</Text>
+                            </View>
+                        )}
+                        showsVerticalScrollIndicator={false}
+                        dropdownStyle={styles.dropdownMenuStyle}
+                    />
                 </View>
-            </SafeAreaView>
-        </SafeAreaProvider>
+
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={styles.scanButton} onPress={() => {
+                        router.navigate('./diagnosis');
+                        }}>
+                        <View style={styles.innerContainer}>
+                            <Text style={styles.buttonTxt}>Scan</Text>
+                        </View>
+                </TouchableOpacity>
+                </View>
+            </View>
+        </SafeAreaView>
     )
 }
 

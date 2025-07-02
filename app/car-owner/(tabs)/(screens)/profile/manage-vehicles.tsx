@@ -1,18 +1,21 @@
 import { Header } from '@/components/Header';
+import { Loading } from '@/components/Loading';
 import { deleteVehicle, getVehicle } from '@/services/backendApi';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { io, Socket } from 'socket.io-client';
 
 const ManageVehicles = () => {
   const [_socket, setSocket] = useState<Socket | null>(null);
   const [vehicles, setVehicles] = useState<{ id: number, make: string, model: string, year: string, dateAdded: string }[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     (async () => {
       try {
+        setIsLoading(true);
         const res = await getVehicle();
         const vehicleInfo = res.map((v: { vehicle_id: number, make: string, model: string, year: string, date_added: string }) => ({
           id: v.vehicle_id,
@@ -25,6 +28,9 @@ const ManageVehicles = () => {
 
       } catch (e) {
         console.error('Error: ', e);
+
+      } finally {
+        setIsLoading(false);
       }
     })();
   }, []);
@@ -64,7 +70,7 @@ const ManageVehicles = () => {
 
     } catch (e) {
       showMessage({
-        message: 'Server error',
+        message: 'Something went wrong. Please try again.',
         type: 'danger',
         floating: true,
         color: '#fff',
@@ -73,42 +79,44 @@ const ManageVehicles = () => {
     }
   }
 
+  if (isLoading) {
+    return <Loading />
+  }
+
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        <ScrollView>
-          <Header headerTitle='Vehicles' link='./profile' />
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
+        <Header headerTitle='Vehicles' link='./profile' />
 
-          <View style={styles.lowerBox}>
-            {vehicles.length === 0 && (
-              <Text style={styles.noVehiclesTxt}>-- No vehicles added --</Text>
-            )}
-            {vehicles?.map((item) => (
-              <View key={item.id} style={styles.vehicleContainer}>
-                <View style={styles.carDetailsContainer}>
-                  <Text style={styles.carDetail}>{item.make} </Text>
-                  <Text style={styles.carDetail}>{item.model} </Text>
-                  <Text style={styles.carDetail}>{item.year}</Text>
-                </View>
+        <View style={styles.lowerBox}>
+          {vehicles.length === 0 && (
+            <Text style={styles.noVehiclesTxt}>-- No vehicles added --</Text>
+          )}
+          {vehicles?.map((item) => (
+            <View key={item.id} style={styles.vehicleContainer}>
+              <View style={styles.carDetailsContainer}>
+                <Text style={styles.carDetail}>{item.make} </Text>
+                <Text style={styles.carDetail}>{item.model} </Text>
+                <Text style={styles.carDetail}>{item.year}</Text>
+              </View>
 
-                <View style={styles.buttonDateContainer}>
-                  <Text style={styles.dateAdded}>{`Date added: ${item.dateAdded}`}</Text>
-                  <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={[styles.button, { backgroundColor: '#000B58' }]}>
-                      <Text style={styles.buttonTxt}>View</Text>
-                    </TouchableOpacity>
+              <View style={styles.buttonDateContainer}>
+                <Text style={styles.dateAdded}>{`Date added: ${item.dateAdded}`}</Text>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity style={[styles.button, { backgroundColor: '#000B58' }]}>
+                    <Text style={styles.buttonTxt}>View</Text>
+                  </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.button, { backgroundColor: '#780606' }]} onPress={() => handleDelete(item.id)}>
-                      <Text style={styles.buttonTxt}>Delete</Text>
-                    </TouchableOpacity>
-                  </View>
+                  <TouchableOpacity style={[styles.button, { backgroundColor: '#780606' }]} onPress={() => handleDelete(item.id)}>
+                    <Text style={styles.buttonTxt}>Delete</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-            ))}
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </SafeAreaProvider>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   )
 }
 

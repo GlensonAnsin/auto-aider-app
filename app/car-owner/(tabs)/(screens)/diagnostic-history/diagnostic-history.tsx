@@ -1,29 +1,27 @@
 import { Header } from '@/components/Header';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const DiagnosticHistory = () => {
     return (
-        <SafeAreaProvider>
-            <SafeAreaView style={styles.container}>
-                <Header headerTitle='History' link='/car-owner/(tabs)' />
+        <SafeAreaView style={styles.container}>
+            <Header headerTitle='History' link='/car-owner/(tabs)' />
 
-                <View style={styles.lowerBox}>
-                    <View style={styles.clearHistoryContainer}>
-                        <Text style={styles.header2}>Scanned Cars</Text>
-                        <TouchableOpacity style={styles.button}>
-                            <Text style={styles.buttonTxt}>Clear history</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <TouchableOpacity style={styles.historyContainer}>
-                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
-                        <Text style={styles.date}>2025-06-29</Text>
-                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
+            <View style={styles.lowerBox}>
+                <View style={styles.clearHistoryContainer}>
+                    <Text style={styles.header2}>Scanned Cars</Text>
+                    <TouchableOpacity style={styles.button}>
+                        <Text style={styles.buttonTxt}>Clear history</Text>
                     </TouchableOpacity>
                 </View>
-            </SafeAreaView>
-        </SafeAreaProvider>
+
+                <TouchableOpacity style={styles.historyContainer}>
+                    <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
+                    <Text style={styles.date}>2025-06-29</Text>
+                    <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
+                </TouchableOpacity>
+            </View>
+        </SafeAreaView>
     )
 }
 

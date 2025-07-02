@@ -1,10 +1,9 @@
-import api from '@/services/interceptor';
-import { storeTokens } from '@/services/tokenStorage';
+import { loginUser } from '@/services/backendApi';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from "react-native-flash-message";
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -33,11 +32,24 @@ export default function Login() {
     }
 
     if (role === 'Car Owner') {
-      try {
-        const res = await api.post('user/login', { username, password });
+      const userData = {
+        username: username.trim(),
+        password: password.trim()
+      };
 
-        const { accessToken, refreshToken } = res.data;
-        await storeTokens(accessToken, refreshToken);
+      try {
+        const res = await loginUser(userData);
+
+        if (res === '401') {
+          showMessage({
+            message: 'Invalid credentials.',
+            type: 'warning',
+            floating: true,
+            color: '#FFF',
+            icon: 'warning',
+          });
+          return;
+        }
 
         showMessage({
           message: 'Login successful!',
@@ -47,32 +59,22 @@ export default function Login() {
           icon: 'success',
         });
 
-        router.replace('/car-owner/(tabs)');
+        setTimeout(() => {
+          router.replace('/car-owner/(tabs)');
         
-        setUsername('');
-        setPassword('');
-        setRole('');
+          setUsername('');
+          setPassword('');
+          setRole('');
+        }, 1000)
 
       } catch (e: any) {
-        if (e.response?.status === 401) {
-          showMessage({
-            message: 'Invalid credentials',
-            type: 'warning',
-            floating: true,
-            color: '#FFF',
-            icon: 'warning',
-          });
-
-        } else {
-          showMessage({
-            message: 'Something went wrong. Please try again.',
-            type: 'danger',
-            floating: true,
-            color: '#FFF',
-            icon: 'danger',
-          });
-          console.log('Login error:', e.message);
-        }
+        showMessage({
+          message: 'Something went wrong. Please try again.',
+          type: 'danger',
+          floating: true,
+          color: '#FFF',
+          icon: 'danger',
+        });
       }
 
     } else {
@@ -81,96 +83,94 @@ export default function Login() {
   }
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        <KeyboardAvoidingView
-          behavior='padding'
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-          style={{ flex: 1 }}
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior='padding'
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps='handled' 
         >
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
-            keyboardShouldPersistTaps='handled' 
-          >
-            <Image 
-              source={require('../../assets/images/screen-design-1.png')}
-              style={styles.screenDesign}
-            />
+          <Image 
+            source={require('../../assets/images/screen-design-1.png')}
+            style={styles.screenDesign}
+          />
 
-            <View style={styles.formContainer}>
-              <Text style={styles.header}>Log In</Text>
-              <View style={styles.textInputContainer}>
-                <Text style={styles.textInputLbl}>Username</Text>
-                <TextInput
-                  value={username}
-                  onChangeText={setUsername}
-                  style={styles.input}
-                />
-              </View>
+          <View style={styles.formContainer}>
+            <Text style={styles.header}>Log In</Text>
+            <View style={styles.textInputContainer}>
+              <Text style={styles.textInputLbl}>Username</Text>
+              <TextInput
+                value={username}
+                onChangeText={setUsername}
+                style={styles.input}
+              />
+            </View>
 
-              <View style={styles.textInputContainer}>
-                <Text style={styles.textInputLbl}>Password</Text>
-                <TextInput
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  style={styles.input}
-                />
-              </View>
+            <View style={styles.textInputContainer}>
+              <Text style={styles.textInputLbl}>Password</Text>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                style={styles.input}
+              />
+            </View>
 
-              <View style={styles.textInputContainer}>
-                <Text style={styles.textInputLbl}>Log In as</Text>
-                <SelectDropdown
-                  data={roles}
-                  defaultValue={role}
-                  onSelect={(selectedItem) => setRole(selectedItem.title)}
-                  renderButton={(selectedItem, isOpen) => (
-                    <View style={styles.dropdownButtonStyle}>
-                      {selectedItem && <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />}
-                      <Text style={styles.dropdownButtonTxtStyle}>
-                        {(selectedItem && selectedItem.title) || 'Select role'}
-                      </Text>
-                      <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                    </View>
-                  )}
-                  renderItem={(item, _index, isSelected) => (
-                    <View
-                      style={{
-                        ...styles.dropdownItemStyle,
-                        ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                      }}
-                    >
-                      <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
-                      <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
-                    </View>
-                  )}
-                  showsVerticalScrollIndicator={false}
-                  dropdownStyle={styles.dropdownMenuStyle}
-                />
-                
-                <TouchableOpacity>
-                  <Text style={styles.forgetPassLbl}>Forgot password?</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.signupContainer}>
-                <Text style={styles.questionLbl}>Don't have an account?</Text>
-                <TouchableOpacity onPress={() => router.navigate('/auth/signup')}>
-                  <Text style={styles.signupLbl}>Sign Up</Text>
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => handleLogin()}
-              >
-                <Text style={styles.buttonTxt}>Log In</Text>
+            <View style={styles.textInputContainer}>
+              <Text style={styles.textInputLbl}>Log In as</Text>
+              <SelectDropdown
+                data={roles}
+                defaultValue={role}
+                onSelect={(selectedItem) => setRole(selectedItem.title)}
+                renderButton={(selectedItem, isOpen) => (
+                  <View style={styles.dropdownButtonStyle}>
+                    {selectedItem && <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />}
+                    <Text style={styles.dropdownButtonTxtStyle}>
+                      {(selectedItem && selectedItem.title) || 'Select role'}
+                    </Text>
+                    <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                  </View>
+                )}
+                renderItem={(item, _index, isSelected) => (
+                  <View
+                    style={{
+                      ...styles.dropdownItemStyle,
+                      ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                    }}
+                  >
+                    <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
+                    <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
+                  </View>
+                )}
+                showsVerticalScrollIndicator={false}
+                dropdownStyle={styles.dropdownMenuStyle}
+              />
+              
+              <TouchableOpacity>
+                <Text style={styles.forgetPassLbl}>Forgot password?</Text>
               </TouchableOpacity>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </SafeAreaProvider>
+
+            <View style={styles.signupContainer}>
+              <Text style={styles.questionLbl}>Don't have an account?</Text>
+              <TouchableOpacity onPress={() => router.navigate('/auth/signup')}>
+                <Text style={styles.signupLbl}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => handleLogin()}
+            >
+              <Text style={styles.buttonTxt}>Log In</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

@@ -1,8 +1,9 @@
 import { AutoRepairShop } from '@/types/autoRepairShop';
-import { UpdateUser, User } from '@/types/user';
+import { ChangePass, LoginUser, UpdateUser, User } from '@/types/user';
 import { Vehicle } from '@/types/vehicle';
 import axios from 'axios';
-import { getAccessToken } from './tokenStorage';
+import api from './interceptor';
+import { getAccessToken, storeTokens } from './tokenStorage';
 
 const apiURL = process.env.EXPO_PUBLIC_BACKEND_API_URL;
 
@@ -47,6 +48,25 @@ export const getUserInfo = async () => {
   }
 };
 
+// LOGIN USER
+export const loginUser = async (userData: LoginUser): Promise<string | null> => {
+  try {
+    const res = await api.post('user/login', userData);
+    const { accessToken, refreshToken } = res.data;
+    await storeTokens(accessToken, refreshToken);
+    return null
+
+  } catch (e: any) {
+    if (e.response?.status === 401) {
+      return '401';
+
+    } else {
+      console.error('Error: ', e);
+      return null;
+    }
+  }
+}
+
 // UPDATE USER INFO
 export const updateUserInfo = async (userData: UpdateUser): Promise<UpdateUser | null> => {
   try {
@@ -62,6 +82,29 @@ export const updateUserInfo = async (userData: UpdateUser): Promise<UpdateUser |
   } catch (e) {
     console.error('Error: ', e);
     return null;
+  }
+};
+
+// USER CHANGE PASS
+export const changePass = async (userData: ChangePass): Promise<ChangePass | string | null> => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.patch(`${apiURL}/user/change-password`,
+      userData,
+      { headers: {
+        Authorization: `Bearer ${token}`
+      }}
+    );
+    return res.data;
+
+  } catch (e: any) {
+    if (e.response?.status === 401) {
+      return '401';
+
+    } else {
+      console.error('Error: ', e);
+      return null;
+    }
   }
 };
 

@@ -1,11 +1,12 @@
 import { Header } from '@/components/Header';
-import { getUserInfo } from '@/services/backendApi';
+import { Loading } from '@/components/Loading';
+import { changePass, getUserInfo } from '@/services/backendApi';
 import { clearTokens } from '@/services/tokenStorage';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Profile = () => {
@@ -14,16 +15,19 @@ const Profile = () => {
     const [currentPassword, setCurrentPassword] = useState<string>('');
     const [newPassword, setNewPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
-    const [modalVisible, isModalVisible] = useState<boolean>(false);
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
     const [firstname, setFirstname] = useState<string>('');
     const [lastname, setLastname] = useState<string>('');
     const [mobileNum, setMobileNum] = useState<string>('');
     const [email, setEmail] = useState<string | null>(null);
     const [profilePic, setProfilePic] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [userInitialsBG, setUserInitialsBG] = useState<string>('');
 
     useEffect(() => {
         (async () => {
             try {
+                setIsLoading(true);
                 const res = await getUserInfo();
                 
                 setFirstname(res.firstname);
@@ -31,9 +35,13 @@ const Profile = () => {
                 setMobileNum(res.mobile_num);
                 setEmail(res.email);
                 setProfilePic(res.profile_pic);
+                setUserInitialsBG(res.user_initials_bg);
 
             } catch (e) {
                 console.error('Error: ', e);
+
+            } finally {
+                setIsLoading(false);
             }
         })();
     }, []);
@@ -53,143 +61,221 @@ const Profile = () => {
             });
             console.log('Login error:', e.message);
         }
+    };
+
+    const handleChangePass = async () => {
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            showMessage({
+                message: 'Please fill in all fields.',
+                type: 'warning',
+                floating: true,
+                color: '#FFF',
+                icon: 'warning',
+            });
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showMessage({
+                message: "Password don't match.",
+                type: 'warning',
+                floating: true,
+                color: '#FFF',
+                icon: 'warning',
+            });
+            return;
+        };
+
+        if (newPassword.length < 8) {
+            showMessage({
+                message: "Password must be at least 8 characters.",
+                type: 'warning',
+                floating: true,
+                color: '#FFF',
+                icon: 'warning',
+            });
+            return;
+        };
+
+        const userData = {
+            newPassword: newPassword.trim(),
+            currentPassword: currentPassword.trim()
+        };
+
+        try {
+            const res = await changePass(userData);
+
+            if (res === '401') {
+                showMessage({
+                    message: 'Wrong current password',
+                    type: 'warning',
+                    floating: true,
+                    color: '#FFF',
+                    icon: 'warning',
+                });
+                return;
+            }
+
+            showMessage({
+                message: 'Password changed!',
+                type: 'success',
+                floating: true,
+                color: '#FFF',
+                icon: 'success',
+            });
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+            setModalVisible(!modalVisible)
+
+        } catch (e: any) {
+            showMessage({
+                message: 'Something went wrong. Please try again.',
+                type: 'danger',
+                floating: true,
+                color: '#FFF',
+                icon: 'danger',
+            });
+        }
+    };
+
+    if (isLoading) {
+        return <Loading />
     }
     
     return (
-        <SafeAreaProvider>
-            <SafeAreaView style={styles.container}>
-                <Header headerTitle='Profile' link='/car-owner/(tabs)' />
+        <SafeAreaView style={styles.container}>
+            <Header headerTitle='Profile' link='/car-owner/(tabs)' />
 
-                <View style={styles.lowerBox}>
-                    <View style={styles.userContainer}>
-                        <View style={styles.profilePicWrapper}>
-                            {profilePic === null && (
-                                <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
-                            )}
+            <View style={styles.lowerBox}>
+                <View style={styles.userContainer}>
+                    <View style={[styles.profilePicWrapper, { backgroundColor: userInitialsBG }]}>
+                        {profilePic === null && (
+                            <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
+                        )}
 
-                            {profilePic !== null && (
-                                <Image
-                                    source={{ uri: profilePic }}
-                                />
-                            )}
-                        </View>
-
-                        <View style={styles.userNameContainer}>
-                            <Text style={styles.userName}>{`${firstname} ${lastname}`}</Text>
-                            <Text style={styles.userContact}>{`${mobileNum}`}</Text>
-                            {email !== null && (
-                                <Text style={styles.userContact}>{`${email}`}</Text>
-                            )}
-                        </View>
+                        {profilePic !== null && (
+                            <Image
+                                source={{ uri: profilePic }}
+                            />
+                        )}
                     </View>
 
-                    <View style={styles.profileTabContainer}>
-                        
-                        <TouchableOpacity style={styles.profileTab} onPress={() => router.navigate('./edit-profile')}>
-                            <Icon
-                                name='account-edit-outline'
-                                style={styles.icon}
-                            />
-                            <Text style={styles.tabName}>Edit Profile</Text>
-                            <Icon
-                                name='arrow-right-thin'
-                                style={styles.forwardIcon}
-                            />
-                        </TouchableOpacity>
-                       
-
-                        
-                        <TouchableOpacity style={styles.profileTab} onPress={() => router.navigate('./manage-vehicles')}>
-                            <Icon
-                                name='car-outline'
-                                style={styles.icon}
-                            />
-                            <Text style={styles.tabName}>Manage Connected Vehicles</Text>
-                            <Icon
-                                name='arrow-right-thin'
-                                style={styles.forwardIcon}
-                            />
-                        </TouchableOpacity>
-                      
-
-                        <TouchableOpacity style={styles.profileTab} onPress={() => isModalVisible(true)}>
-                            <Icon
-                                name='lock-outline'
-                                style={styles.icon}
-                            />
-                            <Text style={styles.tabName}>Change Password</Text>
-                            <Icon
-                                name='arrow-right-thin'
-                                style={styles.forwardIcon}
-                            />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.profileTab} onPress={() => handleLogout()}>
-                            <Icon
-                                name='logout'
-                                style={[styles.icon, {color: '#780606'}]}
-                            />
-                            <Text style={[styles.tabName, {color: '#780606'}]}>Logout</Text>
-                            <Icon
-                                name='arrow-right-thin'
-                                style={[styles.forwardIcon, {color: '#780606'}]}
-                            />
-                        </TouchableOpacity>
-
-                        <Modal
-                            animationType='fade'
-                            backdropColor={'rgba(0, 0, 0, 0.5)'}
-                            visible={modalVisible}
-                            onRequestClose={() => {
-                                isModalVisible(!isModalVisible);
-                                setCurrentPassword('');
-                                setNewPassword('');
-                                setConfirmPassword('');
-                            }}
-                        >
-                            <View style={styles.centeredView}>
-                                <View style={styles.modalView}>
-                                    <Text style={styles.modalHeader}>Change Password</Text>
-                                    <View style={styles.textInputContainer}>
-                                        <Text style={styles.textInputLbl}>Current Password</Text>
-                                        <TextInput
-                                            value={currentPassword}
-                                            onChangeText={setCurrentPassword}
-                                            style={styles.input}
-                                            secureTextEntry
-                                        />
-                                    </View>
-
-                                    <View style={styles.textInputContainer}>
-                                        <Text style={styles.textInputLbl}>New Password</Text>
-                                        <TextInput
-                                            value={newPassword}
-                                            onChangeText={setNewPassword}
-                                            style={styles.input}
-                                            secureTextEntry
-                                        />
-                                    </View>
-
-                                    <View style={styles.textInputContainer}>
-                                        <Text style={styles.textInputLbl}>Confirm New Password</Text>
-                                        <TextInput
-                                            value={confirmPassword}
-                                            onChangeText={setConfirmPassword}
-                                            style={styles.input}
-                                            secureTextEntry
-                                        />
-                                    </View>
-
-                                    <TouchableOpacity style={styles.button} onPress={() => isModalVisible(!modalVisible)}>
-                                        <Text style={styles.buttonTxt}>Save</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </Modal>
+                    <View style={styles.userNameContainer}>
+                        <Text style={styles.userName}>{`${firstname} ${lastname}`}</Text>
+                        <Text style={styles.userContact}>{`${mobileNum}`}</Text>
+                        {email !== null && (
+                            <Text style={styles.userContact}>{`${email}`}</Text>
+                        )}
                     </View>
                 </View>
-            </SafeAreaView>
-        </SafeAreaProvider>
+
+                <View style={styles.profileTabContainer}>
+                    
+                    <TouchableOpacity style={styles.profileTab} onPress={() => router.navigate('./edit-profile')}>
+                        <Icon
+                            name='account-edit-outline'
+                            style={styles.icon}
+                        />
+                        <Text style={styles.tabName}>Edit Profile</Text>
+                        <Icon
+                            name='arrow-right-thin'
+                            style={styles.forwardIcon}
+                        />
+                    </TouchableOpacity>
+                    
+
+                    
+                    <TouchableOpacity style={styles.profileTab} onPress={() => router.navigate('./manage-vehicles')}>
+                        <Icon
+                            name='car-outline'
+                            style={styles.icon}
+                        />
+                        <Text style={styles.tabName}>Manage Connected Vehicles</Text>
+                        <Icon
+                            name='arrow-right-thin'
+                            style={styles.forwardIcon}
+                        />
+                    </TouchableOpacity>
+                    
+
+                    <TouchableOpacity style={styles.profileTab} onPress={() => setModalVisible(true)}>
+                        <Icon
+                            name='lock-outline'
+                            style={styles.icon}
+                        />
+                        <Text style={styles.tabName}>Change Password</Text>
+                        <Icon
+                            name='arrow-right-thin'
+                            style={styles.forwardIcon}
+                        />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.profileTab} onPress={() => handleLogout()}>
+                        <Icon
+                            name='logout'
+                            style={[styles.icon, {color: '#780606'}]}
+                        />
+                        <Text style={[styles.tabName, {color: '#780606'}]}>Logout</Text>
+                        <Icon
+                            name='arrow-right-thin'
+                            style={[styles.forwardIcon, {color: '#780606'}]}
+                        />
+                    </TouchableOpacity>
+
+                    <Modal
+                        animationType='fade'
+                        backdropColor={'rgba(0, 0, 0, 0.5)'}
+                        visible={modalVisible}
+                        onRequestClose={() => {
+                            setModalVisible(!setModalVisible);
+                            setCurrentPassword('');
+                            setNewPassword('');
+                            setConfirmPassword('');
+                        }}
+                    >
+                        <View style={styles.centeredView}>
+                            <View style={styles.modalView}>
+                                <Text style={styles.modalHeader}>Change Password</Text>
+                                <View style={styles.textInputContainer}>
+                                    <Text style={styles.textInputLbl}>Current Password</Text>
+                                    <TextInput
+                                        value={currentPassword}
+                                        onChangeText={setCurrentPassword}
+                                        style={styles.input}
+                                        secureTextEntry
+                                    />
+                                </View>
+
+                                <View style={styles.textInputContainer}>
+                                    <Text style={styles.textInputLbl}>New Password</Text>
+                                    <TextInput
+                                        value={newPassword}
+                                        onChangeText={setNewPassword}
+                                        style={styles.input}
+                                        secureTextEntry
+                                    />
+                                </View>
+
+                                <View style={styles.textInputContainer}>
+                                    <Text style={styles.textInputLbl}>Confirm New Password</Text>
+                                    <TextInput
+                                        value={confirmPassword}
+                                        onChangeText={setConfirmPassword}
+                                        style={styles.input}
+                                        secureTextEntry
+                                    />
+                                </View>
+
+                                <TouchableOpacity style={styles.button} onPress={() => handleChangePass()}>
+                                    <Text style={styles.buttonTxt}>Save</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
+                </View>
+            </View>
+        </SafeAreaView>
     )
 }
 
@@ -224,7 +310,6 @@ const styles = StyleSheet.create({
         color: '#555',
     },
     profilePicWrapper: {
-        backgroundColor: 'green',
         width: 100,
         height: 100,
         alignItems: 'center',
@@ -233,7 +318,7 @@ const styles = StyleSheet.create({
     },
     userInitials: {
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 30,
+        fontSize: 35,
         color: '#FFF',
     },
     profileTabContainer: {

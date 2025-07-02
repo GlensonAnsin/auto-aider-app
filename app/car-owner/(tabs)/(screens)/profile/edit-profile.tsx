@@ -1,11 +1,12 @@
 import { Header } from '@/components/Header';
+import { Loading } from '@/components/Loading';
 import { getUserInfo, getUsers, updateUserInfo } from '@/services/backendApi';
 import { UserWithID } from '@/types/user';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -19,12 +20,15 @@ const EditProfile = () => {
   const [mobileNum, setMobileNum] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [userInitialsBG, setUserInitialsBG] = useState<string>('');
 
   const genders = ['Male', 'Female'];
 
   useEffect(() => {
     (async () => {
       try {
+        setIsLoading(true);
         const res = await getUserInfo();
         
         setUserID(res.user_id);
@@ -34,9 +38,13 @@ const EditProfile = () => {
         setMobileNum(res.mobile_num);
         setEmail(res.email);
         setProfilePic(res.profile_pic);
+        setUserInitialsBG(res.user_initials_bg);
 
       } catch (e) {
         console.error('Error: ', e);
+
+      } finally {
+        setIsLoading(false)
       }
     })();
   }, []);
@@ -83,7 +91,7 @@ const EditProfile = () => {
 
     } catch (e) {
       showMessage({
-        message: 'Server error',
+        message: 'Something went wrong. Please try again.',
         type: 'danger',
         floating: true,
         color: '#FFF',
@@ -112,12 +120,12 @@ const EditProfile = () => {
       });
 
       setTimeout(() => {
-        router.back();
+        router.replace('./profile');
       }, 2000);
 
     } catch (e) {
       showMessage({
-        message: 'Server error',
+        message: 'Something went wrong. Please try again.',
         type: 'danger',
         floating: true,
         color: '#FFF',
@@ -126,118 +134,120 @@ const EditProfile = () => {
     }
   }
 
+  if (isLoading) {
+    return <Loading />
+  }
+
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        <KeyboardAvoidingView
-          behavior='padding'
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-          style={{ flex: 1 }}
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior='padding'
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps='handled' 
         >
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
-            keyboardShouldPersistTaps='handled' 
-          >
-            <Header headerTitle='Edit Profile' link='./profile' />
+          <Header headerTitle='Edit Profile' link='./profile' />
 
-            <View style={styles.lowerBox}>
-              <View style={styles.editPicContainer}>
-                <View style={styles.profilePicWrapper}>
-                  {profilePic === null && (
-                    <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
-                  )}
+          <View style={styles.lowerBox}>
+            <View style={styles.editPicContainer}>
+              <View style={[styles.profilePicWrapper, { backgroundColor: userInitialsBG }]}>
+                {profilePic === null && (
+                  <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
+                )}
 
-                  {profilePic !== null && (
-                    <Image
-                      source={{ uri: profilePic }}
-                    />
-                  )}
-                </View>
-
-                <TouchableOpacity style={styles.editPicWrapper}>
-                  <Icon
-                    name='pencil'
-                    style={styles.editIcon}
+                {profilePic !== null && (
+                  <Image
+                    source={{ uri: profilePic }}
                   />
-                </TouchableOpacity>
+                )}
               </View>
 
-              <View style={styles.editInfoContainer}>
-                <View style={styles.row}>
-                  <Text style={styles.textInputLbl}>First Name</Text>
-                  <TextInput
-                    value={firstname}
-                    onChangeText={setFirstname}
-                    style={styles.input}
-                  />
-                </View>
-
-                <View style={styles.row}>
-                  <Text style={styles.textInputLbl}>Last Name</Text>
-                  <TextInput
-                    value={lastname}
-                    onChangeText={setLastname}
-                    style={styles.input}
-                  />
-                </View>
-
-                <View style={styles.row}>
-                  <Text style={styles.textInputLbl}>Gender</Text>
-                  <SelectDropdown
-                    data={genders}
-                    defaultValue={gender}
-                    onSelect={(selectedItem) => setGender(selectedItem)}
-                    renderButton={(selectedItem, isOpen) => (
-                      <View style={styles.dropdownButtonStyle}>
-                        <Text style={styles.dropdownButtonTxtStyle}>
-                          {selectedItem || 'Select gender'}
-                        </Text>
-                        <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                      </View>
-                    )}
-                    renderItem={(item, _index, isSelected) => (
-                      <View
-                        style={{
-                          ...styles.dropdownItemStyle,
-                          ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                        }}
-                      >
-                        <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
-                      </View>
-                    )}
-                    showsVerticalScrollIndicator={false}
-                    dropdownStyle={styles.dropdownMenuStyle}
-                  />
-                </View>
-
-                <View style={styles.row}>
-                  <Text style={styles.textInputLbl}>Mobile Number</Text>
-                  <TextInput
-                    value={mobileNum}
-                    onChangeText={setMobileNum}
-                    style={styles.input}
-                    keyboardType='number-pad'
-                  />
-                </View>
-
-                <View style={styles.row}>
-                  <Text style={styles.textInputLbl}>Email</Text>
-                  <TextInput
-                    value={email}
-                    onChangeText={setEmail}
-                    style={styles.input}
-                  />
-                </View>
-              </View>
-
-              <TouchableOpacity style={styles.button} onPress={() => handleUpdateUserInfo()}>
-                <Text style={styles.buttonTxt}>Save</Text>
+              <TouchableOpacity style={styles.editPicWrapper}>
+                <Icon
+                  name='pencil'
+                  style={styles.editIcon}
+                />
               </TouchableOpacity>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </SafeAreaProvider>
+
+            <View style={styles.editInfoContainer}>
+              <View style={styles.row}>
+                <Text style={styles.textInputLbl}>First Name</Text>
+                <TextInput
+                  value={firstname}
+                  onChangeText={setFirstname}
+                  style={styles.input}
+                />
+              </View>
+
+              <View style={styles.row}>
+                <Text style={styles.textInputLbl}>Last Name</Text>
+                <TextInput
+                  value={lastname}
+                  onChangeText={setLastname}
+                  style={styles.input}
+                />
+              </View>
+
+              <View style={styles.row}>
+                <Text style={styles.textInputLbl}>Gender</Text>
+                <SelectDropdown
+                  data={genders}
+                  defaultValue={gender}
+                  onSelect={(selectedItem) => setGender(selectedItem)}
+                  renderButton={(selectedItem, isOpen) => (
+                    <View style={styles.dropdownButtonStyle}>
+                      <Text style={styles.dropdownButtonTxtStyle}>
+                        {selectedItem || 'Select gender'}
+                      </Text>
+                      <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                    </View>
+                  )}
+                  renderItem={(item, _index, isSelected) => (
+                    <View
+                      style={{
+                        ...styles.dropdownItemStyle,
+                        ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                      }}
+                    >
+                      <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+                    </View>
+                  )}
+                  showsVerticalScrollIndicator={false}
+                  dropdownStyle={styles.dropdownMenuStyle}
+                />
+              </View>
+
+              <View style={styles.row}>
+                <Text style={styles.textInputLbl}>Mobile Number</Text>
+                <TextInput
+                  value={mobileNum}
+                  onChangeText={setMobileNum}
+                  style={styles.input}
+                  keyboardType='number-pad'
+                />
+              </View>
+
+              <View style={styles.row}>
+                <Text style={styles.textInputLbl}>Email</Text>
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  style={styles.input}
+                />
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.button} onPress={() => handleUpdateUserInfo()}>
+              <Text style={styles.buttonTxt}>Save</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }
 
@@ -257,7 +267,6 @@ const styles = StyleSheet.create({
     marginTop: 100,
   },
   profilePicWrapper: {
-    backgroundColor: 'green',
     width: 120,
     height: 120,
     alignItems: 'center',
@@ -278,7 +287,7 @@ const styles = StyleSheet.create({
   },
   userInitials: {
     fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 30,
+    fontSize: 40,
     color: '#FFF',
   },
   editIcon: {
