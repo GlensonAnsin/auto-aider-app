@@ -1,3 +1,4 @@
+import { Loading } from '@/components/Loading';
 import { addVehicle, getUserInfo } from '@/services/backendApi';
 import { verifyCar } from '@/services/geminiApi';
 import { useRouter } from 'expo-router';
@@ -21,7 +22,8 @@ export default function Home() {
     const [model, setModel] = useState<string>('');
     const [year, setYear] = useState<string>('');
     const [error, setError] = useState<string>('');
-    const [loading, isLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isAddCarLoading, setIsAddCarLoading] = useState<boolean>(false);
     const [firstname, setFirstname] = useState<string>('');
     const [lastname, setLastname] = useState<string>('');
     const [profilePic, setProfilePic] = useState<string | null>(null)
@@ -37,7 +39,7 @@ export default function Home() {
         setError('')
 
         try {
-            isLoading(true);
+            setIsAddCarLoading(true);
             const result = await verifyCar(selectedMake, model, year);
             if (result === 'false') {
                 setError('Invalid car details. Please check and try again.')
@@ -49,13 +51,14 @@ export default function Home() {
             setError('An error occurred while verifying the car.')
 
         } finally {
-            isLoading(false);
+            setIsAddCarLoading(false);
         }
     }
 
     useEffect(() => {
         (async () => {
             try {
+                setIsLoading(true)
                 const res = await getUserInfo();
                 
                 setFirstname(res.firstname);
@@ -64,6 +67,8 @@ export default function Home() {
 
             } catch (e) {
                 console.error('Error: ', e);
+            } finally {
+                setIsLoading(true);
             }
         })();
     }, []);
@@ -96,6 +101,10 @@ export default function Home() {
         }
     }
 
+    if (isLoading) {
+        <Loading />
+    }
+
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
@@ -117,7 +126,7 @@ export default function Home() {
                             <Text style={styles.userName}>{`${firstname} ${lastname}`}</Text>
                         </View>
 
-                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
+                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.navigate('./profile/profile')}>
                             {profilePic === null && (
                                 <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
                             )}
@@ -137,22 +146,26 @@ export default function Home() {
 
                     <View style={styles.featuresContainer}>
                         <View style={styles.column}>
-                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(screens)/diagnostic-history/diagnostic-history')}>
+                            <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./diagnostic-history/diagnostic-history')} >
                                 <DiagnosticHistoryIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>Diagnostic History</Text>
                                     <Text style={styles.featureDescription}>View past diagnostic checks</Text>
                                 </View>
                             </TouchableOpacity>
+                         
 
-                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(screens)/run-diagnostics/run-diagnostics')}>
+                            <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./run-diagnostics/run-diagnostics')} >
                                 <RunDiagnosticIcon width={40} height={40} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>Scan Car</Text>
                                     <Text style={styles.featureDescription}>Perform a quick system diagnostic</Text>
                                 </View>
                             </TouchableOpacity>
+                                
+                           
 
+              
                             <TouchableOpacity style={styles.feature}>
                                 <LocationIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
@@ -160,6 +173,7 @@ export default function Home() {
                                     <Text style={styles.featureDescription}>Locate nearby repair shops</Text>
                                 </View>
                             </TouchableOpacity>
+                          
                         </View>
 
                         <View style={styles.column}>
@@ -171,13 +185,15 @@ export default function Home() {
                                 </View>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.feature} onPress={() => router.push('/car-owner/(tabs)/(screens)/profile/profile')}>
+                            
+                            <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./profile/profile')}>
                                 <ProfileIcon width={50} height={50} />
                                 <View style={styles.featureTxtWrapper}>
                                     <Text style={styles.featureHeader}>My Profile</Text>
                                     <Text style={styles.featureDescription}>Manage your account details and preferences</Text>
                                 </View>
                             </TouchableOpacity>
+                           
                         </View>
 
                         <Modal
@@ -253,7 +269,7 @@ export default function Home() {
                                         </View>
                                     )}
 
-                                    {loading === true && (
+                                    {isAddCarLoading === true && (
                                         <ActivityIndicator style={{ marginTop: 20 }} size='small' color='#000B58' />
                                     )}
 

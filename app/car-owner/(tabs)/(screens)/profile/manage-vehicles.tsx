@@ -77,7 +77,7 @@ const ManageVehicles = () => {
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <ScrollView>
-          <Header headerTitle='Vehicles' link='/car-owner/(tabs)/(screens)/profile/profile' />
+          <Header headerTitle='Vehicles' link='./profile' />
 
           <View style={styles.lowerBox}>
             {vehicles.length === 0 && (

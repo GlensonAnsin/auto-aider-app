@@ -47,7 +47,7 @@ export default function Login() {
           icon: 'success',
         });
 
-        router.push('/car-owner/(tabs)');
+        router.replace('/car-owner/(tabs)');
         
         setUsername('');
         setPassword('');
@@ -122,6 +122,7 @@ export default function Login() {
                 <Text style={styles.textInputLbl}>Log In as</Text>
                 <SelectDropdown
                   data={roles}
+                  defaultValue={role}
                   onSelect={(selectedItem) => setRole(selectedItem.title)}
                   renderButton={(selectedItem, isOpen) => (
                     <View style={styles.dropdownButtonStyle}>
@@ -154,7 +155,7 @@ export default function Login() {
 
               <View style={styles.signupContainer}>
                 <Text style={styles.questionLbl}>Don't have an account?</Text>
-                <TouchableOpacity onPress={() => router.push('/auth/signup')}>
+                <TouchableOpacity onPress={() => router.navigate('/auth/signup')}>
                   <Text style={styles.signupLbl}>Sign Up</Text>
                 </TouchableOpacity>
               </View>

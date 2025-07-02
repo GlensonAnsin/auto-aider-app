@@ -1,8 +1,10 @@
 import { Header } from '@/components/Header';
 import { getUserInfo } from '@/services/backendApi';
-import { Link, useRouter } from 'expo-router';
+import { clearTokens } from '@/services/tokenStorage';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -35,6 +37,23 @@ const Profile = () => {
             }
         })();
     }, []);
+
+    const handleLogout = async () => {
+        try {
+            await clearTokens();
+            router.replace('/auth/login');
+
+        } catch (e: any) {
+            showMessage({
+                message: 'Something went wrong. Please try again.',
+                type: 'danger',
+                floating: true,
+                color: '#FFF',
+                icon: 'danger',
+            });
+            console.log('Login error:', e.message);
+        }
+    }
     
     return (
         <SafeAreaProvider>
@@ -65,33 +84,33 @@ const Profile = () => {
                     </View>
 
                     <View style={styles.profileTabContainer}>
-                        <Link href='/car-owner/(tabs)/(screens)/profile/edit-profile' style={styles.profileTab} asChild>
-                            <TouchableOpacity>
-                                <Icon
-                                    name='account-edit-outline'
-                                    style={styles.icon}
-                                />
-                                <Text style={styles.tabName}>Edit Profile</Text>
-                                <Icon
-                                    name='arrow-right-thin'
-                                    style={styles.forwardIcon}
-                                />
-                            </TouchableOpacity>
-                        </Link>
+                        
+                        <TouchableOpacity style={styles.profileTab} onPress={() => router.navigate('./edit-profile')}>
+                            <Icon
+                                name='account-edit-outline'
+                                style={styles.icon}
+                            />
+                            <Text style={styles.tabName}>Edit Profile</Text>
+                            <Icon
+                                name='arrow-right-thin'
+                                style={styles.forwardIcon}
+                            />
+                        </TouchableOpacity>
+                       
 
-                        <Link href='/car-owner/(tabs)/(screens)/profile/manage-vehicles' style={styles.profileTab} asChild>
-                            <TouchableOpacity>
-                                <Icon
-                                    name='car-outline'
-                                    style={styles.icon}
-                                />
-                                <Text style={styles.tabName}>Manage Connected Vehicles</Text>
-                                <Icon
-                                    name='arrow-right-thin'
-                                    style={styles.forwardIcon}
-                                />
-                            </TouchableOpacity>
-                        </Link>
+                        
+                        <TouchableOpacity style={styles.profileTab} onPress={() => router.navigate('./manage-vehicles')}>
+                            <Icon
+                                name='car-outline'
+                                style={styles.icon}
+                            />
+                            <Text style={styles.tabName}>Manage Connected Vehicles</Text>
+                            <Icon
+                                name='arrow-right-thin'
+                                style={styles.forwardIcon}
+                            />
+                        </TouchableOpacity>
+                      
 
                         <TouchableOpacity style={styles.profileTab} onPress={() => isModalVisible(true)}>
                             <Icon
@@ -105,19 +124,17 @@ const Profile = () => {
                             />
                         </TouchableOpacity>
 
-                        <Link href='/auth/login' style={styles.profileTab} asChild>
-                            <TouchableOpacity>
-                                <Icon
-                                    name='logout'
-                                    style={[styles.icon, {color: 'red'}]}
-                                />
-                                <Text style={[styles.tabName, {color: 'red'}]}>Logout</Text>
-                                <Icon
-                                    name='arrow-right-thin'
-                                    style={[styles.forwardIcon, {color: 'red'}]}
-                                />
-                            </TouchableOpacity>
-                        </Link>
+                        <TouchableOpacity style={styles.profileTab} onPress={() => handleLogout()}>
+                            <Icon
+                                name='logout'
+                                style={[styles.icon, {color: '#780606'}]}
+                            />
+                            <Text style={[styles.tabName, {color: '#780606'}]}>Logout</Text>
+                            <Icon
+                                name='arrow-right-thin'
+                                style={[styles.forwardIcon, {color: '#780606'}]}
+                            />
+                        </TouchableOpacity>
 
                         <Modal
                             animationType='fade'

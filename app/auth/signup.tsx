@@ -496,7 +496,7 @@ const Signup = () => {
 
                   <View style={styles.loginContainer}>
                     <Text style={styles.questionLbl}>Have an account?</Text>
-                    <TouchableOpacity onPress={() => router.push('/auth/login')}>
+                    <TouchableOpacity onPress={() => router.navigate('/auth/login')}>
                       <Text style={styles.loginLbl}>Log In</Text>
                     </TouchableOpacity>
                   </View>
@@ -518,7 +518,7 @@ const Signup = () => {
                           style={styles.modalButton}
                           onPress={() => {
                             isCarOwnerModalVisible(!carOwnerModalVisible)
-                            router.push('/auth/login');
+                            router.navigate('/auth/login');
                             setPage('');
                           }}>
                           <Text style={styles.buttonTxt}>Ok</Text>
@@ -706,7 +706,7 @@ const Signup = () => {
                           style={styles.modalButton}
                           onPress={() => {
                             isRepairShopModalVisible(!repairShopModalVisible)
-                            router.push('/auth/login');
+                            router.navigate('/auth/login');
                             setPage('');
                           }}>
                           <Text style={styles.buttonTxt}>Ok</Text>

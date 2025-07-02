@@ -77,7 +77,7 @@ const RunDiagnostics = () => {
 
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity style={styles.scanButton} onPress={() => {
-                            router.push('/car-owner/(tabs)/(screens)/run-diagnostics/diagnosis');
+                            router.navigate('./diagnosis');
                             }}>
                             <View style={styles.innerContainer}>
                                 <Text style={styles.buttonTxt}>Scan</Text>

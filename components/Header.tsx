@@ -1,21 +1,21 @@
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface HeaderProps {
     headerTitle: string;
-    link: any;
+    link: any
 };
 
-export const Header = ({ headerTitle, link}: HeaderProps) => {
+export const Header = ({ headerTitle, link }: HeaderProps) => {
+    const router = useRouter();
+    
     return (
         <View style={styles.upperBox}>
             <Text style={styles.header}>{`|  ${headerTitle}`}</Text>
-            <Link href={link} style={styles.arrowWrapper} asChild>
-                <TouchableOpacity>
-                    <Icon name='arrow-left' style={styles.arrowBack} />
-                </TouchableOpacity>
-            </Link>
+            <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.replace(link)}>
+                <Icon name='arrow-left' style={styles.arrowBack} />
+            </TouchableOpacity>
         </View>
     )
 }

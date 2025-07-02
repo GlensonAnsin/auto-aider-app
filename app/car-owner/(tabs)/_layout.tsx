@@ -8,10 +8,8 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
         tabBarShowLabel: false,
         tabBarHideOnKeyboard: true,
-        animation: 'none',
         tabBarStyle: {
           backgroundColor: '#000B58',
           height: 60,
@@ -29,6 +27,7 @@ export default function TabsLayout() {
               <HomeIcon width={30} height={30} color='#fff' />
             </View>
           ),
+          headerShown: false,
           animation: 'none',
         }}
       />
@@ -41,6 +40,7 @@ export default function TabsLayout() {
               <NotificationIcon width={30} height={30} color='#fff' />
             </View>
           ),
+          headerShown: false,
           animation: 'none',
         }}
       />
@@ -53,6 +53,7 @@ export default function TabsLayout() {
               <SettingsIcon width={30} height={30} color='#fff' />
             </View>
           ),
+          headerShown: false,
           animation: 'none',
         }}
       />
@@ -60,6 +61,7 @@ export default function TabsLayout() {
         name='(screens)'
         options={{
           href: null,
+          headerShown: false,
           animation: 'none',
         }}
       />

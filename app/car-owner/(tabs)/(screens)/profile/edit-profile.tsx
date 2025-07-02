@@ -112,7 +112,7 @@ const EditProfile = () => {
       });
 
       setTimeout(() => {
-        router.push('/car-owner/(tabs)/(screens)/profile/profile');
+        router.back();
       }, 2000);
 
     } catch (e) {
@@ -138,7 +138,7 @@ const EditProfile = () => {
             contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps='handled' 
           >
-            <Header headerTitle='Edit Profile' link='/car-owner/(tabs)/(screens)/profile/profile' />
+            <Header headerTitle='Edit Profile' link='./profile' />
 
             <View style={styles.lowerBox}>
               <View style={styles.editPicContainer}>
