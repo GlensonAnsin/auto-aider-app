@@ -11,6 +11,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AddVehicleIcon from '../../../assets/images/add_vehicle.svg';
 import DiagnosticHistoryIcon from '../../../assets/images/diagnostic_history.svg';
 import ProfileIcon from '../../../assets/images/iconamoon_profile-fill.svg';
+import RequestStatusIcon from '../../../assets/images/request_icon.svg';
 import LocationIcon from '../../../assets/images/subway_location-1.svg';
 import RunDiagnosticIcon from '../../../assets/images/teenyicons_scan-outline.svg';
 
@@ -195,7 +196,14 @@ export default function Home() {
                                 <Text style={styles.featureDescription}>Manage your account details</Text>
                             </View>
                         </TouchableOpacity>
-                        
+
+                        <TouchableOpacity style={styles.feature}>
+                            <RequestStatusIcon width={50} height={50} />
+                            <View style={styles.featureTxtWrapper}>
+                                <Text style={styles.featureHeader}>Request Status</Text>
+                                <Text style={styles.featureDescription}>Status of your repair request</Text>
+                            </View>
+                        </TouchableOpacity>       
                     </View>
 
                     <Modal

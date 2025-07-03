@@ -1,4 +1,4 @@
-import { loginUser } from '@/services/backendApi';
+import { loginRepairShop, loginUser } from '@/services/backendApi';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -67,7 +67,7 @@ export default function Login() {
           setRole('');
         }, 1000)
 
-      } catch (e: any) {
+      } catch (e) {
         showMessage({
           message: 'Something went wrong. Please try again.',
           type: 'danger',
@@ -78,7 +78,50 @@ export default function Login() {
       }
 
     } else {
-      return;
+      const userData = {
+        username: username.trim(),
+        password: password.trim()
+      };
+
+      try {
+        const res = await loginRepairShop(userData);
+
+        if (res === '401') {
+          showMessage({
+            message: 'Invalid credentials.',
+            type: 'warning',
+            floating: true,
+            color: '#FFF',
+            icon: 'warning',
+          });
+          return;
+        }
+
+        showMessage({
+          message: 'Login successful!',
+          type: 'success',
+          floating: true,
+          color: '#FFF',
+          icon: 'success',
+        });
+
+        setTimeout(() => {
+          router.replace('/repair-shop/(tabs)');
+        
+          setUsername('');
+          setPassword('');
+          setRole('');
+        }, 1000)
+
+      } catch (e) {
+        showMessage({
+          message: 'Something went wrong. Please try again.',
+          type: 'danger',
+          floating: true,
+          color: '#FFF',
+          icon: 'danger',
+        });
+      }
     }
   }
 

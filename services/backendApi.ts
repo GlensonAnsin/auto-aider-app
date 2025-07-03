@@ -31,6 +31,25 @@ export const getUsers = async () => {
   }
 };
 
+// LOGIN USER
+export const loginUser = async (userData: LoginUser): Promise<string | null> => {
+  try {
+    const res = await api.post('user/login', userData);
+    const { accessToken, refreshToken } = res.data;
+    await storeTokens(accessToken, refreshToken);
+    return null;
+
+  } catch (e: any) {
+    if (e.response?.status === 401) {
+      return '401';
+
+    } else {
+      console.error('Error: ', e);
+      return null;
+    }
+  }
+}
+
 // GET USER INFO
 export const getUserInfo = async () => {
   try {
@@ -47,25 +66,6 @@ export const getUserInfo = async () => {
     return null;
   }
 };
-
-// LOGIN USER
-export const loginUser = async (userData: LoginUser): Promise<string | null> => {
-  try {
-    const res = await api.post('user/login', userData);
-    const { accessToken, refreshToken } = res.data;
-    await storeTokens(accessToken, refreshToken);
-    return null
-
-  } catch (e: any) {
-    if (e.response?.status === 401) {
-      return '401';
-
-    } else {
-      console.error('Error: ', e);
-      return null;
-    }
-  }
-}
 
 // UPDATE USER INFO
 export const updateUserInfo = async (userData: UpdateUser): Promise<UpdateUser | null> => {
@@ -133,6 +133,42 @@ export const getRepairShops = async () => {
     return null;
   }
 };
+
+// LOGIN REPAIR SHOP
+export const loginRepairShop = async (userData: LoginUser): Promise<string | null> => {
+  try {
+    const res = await api.post(`${apiURL}/auto_repair_shop/login`, userData);
+    const { accessToken, refreshToken } = res.data;
+    await storeTokens(accessToken, refreshToken);
+    return null;
+
+  } catch (e: any) {
+    if (e.response?.status === 401) {
+      return '401';
+
+    } else {
+      console.error('Error: ', e);
+      return null;
+    }
+  }
+};
+
+// GET REPAIR SHOP INFO
+export const getRepairShopInfo = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/auto_repair_shop/get-repair-shop-info`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return res.data;
+
+  } catch (e) {
+    console.error('Error: ', e);
+    return null;
+  }
+}
 
 
 

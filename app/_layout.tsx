@@ -36,6 +36,7 @@ export default function RootLayout() {
           <Stack.Screen name='auth/login' options={{ headerShown: false, animation: 'none' }} />
           <Stack.Screen name='auth/signup' options={{ headerShown: false, animation: 'none' }} />
           <Stack.Screen name='car-owner/(tabs)' options={{ headerShown: false, animation: 'none' }} />
+          <Stack.Screen name='repair-shop/(tabs)' options={{ headerShown: false, animation: 'none' }} />
         </Stack>
       </SafeAreaProvider>
     </>
