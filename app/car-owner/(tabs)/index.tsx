@@ -1,19 +1,16 @@
 import { Loading } from '@/components/Loading';
 import { addVehicle, getUserInfo } from '@/services/backendApi';
 import { verifyCar } from '@/services/geminiApi';
+import Entypo from '@expo/vector-icons/Entypo';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import AddVehicleIcon from '../../../assets/images/add_vehicle.svg';
-import DiagnosticHistoryIcon from '../../../assets/images/diagnostic_history.svg';
-import ProfileIcon from '../../../assets/images/iconamoon_profile-fill.svg';
-import RequestStatusIcon from '../../../assets/images/request_icon.svg';
-import LocationIcon from '../../../assets/images/subway_location-1.svg';
-import RunDiagnosticIcon from '../../../assets/images/teenyicons_scan-outline.svg';
 
 export default function Home() {
     const router = useRouter();
@@ -30,15 +27,15 @@ export default function Home() {
     const [profilePic, setProfilePic] = useState<string | null>(null)
     const [userInitialsBG, setUserInitialsBG] = useState<string>('');
 
-    const targetMakes = ['Acura', 'Audi', 'BMW', 'Chevrolet', 'Dodge', 'Chrysler', 'Jeep', 'Ford', 'Foton', 'Geely', 'Honda', 'Hyundai', 'Infiniti', 'Isuzu', 'Jaguar', 'Kia', 'Land Rover', 'Lexus', 'Mazda', 'Mercedes-Benz', 'MG', 'Mitsubishi', 'Nissan', 'RAM', 'Subaru', 'Suzuki', 'Toyota', 'Volkswagen']
+    const targetMakes = ['Acura', 'Audi', 'BMW', 'Chevrolet', 'Dodge', 'Chrysler', 'Jeep', 'Ford', 'Foton', 'Geely', 'Honda', 'Hyundai', 'Infiniti', 'Isuzu', 'Jaguar', 'Kia', 'Land Rover', 'Lexus', 'Mazda', 'Mercedes-Benz', 'MG', 'Mitsubishi', 'Nissan', 'RAM', 'Subaru', 'Suzuki', 'Toyota', 'Volkswagen'];
 
     const handleCarVerification = async () => {
         if (!selectedMake || !model || !year) {
             setError('Please fill in all fields.')
             return;
-        }
+        };
 
-        setError('')
+        setError('');
 
         try {
             setIsAddCarLoading(true);
@@ -55,7 +52,7 @@ export default function Home() {
         } finally {
             setIsAddCarLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         (async () => {
@@ -103,7 +100,7 @@ export default function Home() {
         } catch (e) {
             setError('Something went wrong. Please try again.')
         }
-    }
+    };
 
     if (isLoading) {
         return <Loading />
@@ -150,7 +147,7 @@ export default function Home() {
                 <View style={styles.featuresContainer}>
                     <View style={styles.column}>
                         <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./diagnostic-history/diagnostic-history')} >
-                            <DiagnosticHistoryIcon width={50} height={50} />
+                            <MaterialIcons name='history' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Diagnostic History</Text>
                                 <Text style={styles.featureDescription}>View past diagnostic checks</Text>
@@ -159,7 +156,7 @@ export default function Home() {
                         
 
                         <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./run-diagnostics/run-diagnostics')} >
-                            <RunDiagnosticIcon width={40} height={40} />
+                            <Ionicons name='scan' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Scan Car</Text>
                                 <Text style={styles.featureDescription}>Perform a quick system diagnostic</Text>
@@ -170,7 +167,7 @@ export default function Home() {
 
             
                         <TouchableOpacity style={styles.feature}>
-                            <LocationIcon width={50} height={50} />
+                            <Entypo name='location' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Repair Shops</Text>
                                 <Text style={styles.featureDescription}>Locate nearby repair shops</Text>
@@ -181,7 +178,7 @@ export default function Home() {
 
                     <View style={styles.column}>
                         <TouchableOpacity style={styles.feature} onPress={() => isAddVehicleModalVisible(true)}>
-                            <AddVehicleIcon width={50} height={50} />
+                            <Ionicons name='add-circle' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Add Vehicle</Text>
                                 <Text style={styles.featureDescription}>Register or add a new vehicle</Text>
@@ -190,7 +187,7 @@ export default function Home() {
 
                         
                         <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./profile/profile')}>
-                            <ProfileIcon width={50} height={50} />
+                            <MaterialCommunityIcons name='account' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>My Profile</Text>
                                 <Text style={styles.featureDescription}>Manage your account details</Text>
@@ -198,7 +195,7 @@ export default function Home() {
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.feature}>
-                            <RequestStatusIcon width={50} height={50} />
+                            <MaterialCommunityIcons name='clipboard-edit' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Request Status</Text>
                                 <Text style={styles.featureDescription}>Status of your repair request</Text>
@@ -231,7 +228,7 @@ export default function Home() {
                                                 <Text style={styles.dropdownButtonTxtStyle}>
                                                     {selectedItem || 'Select manufacturer'}
                                                 </Text>
-                                                <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                                                <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
                                             </View>
                                         )}
                                         renderItem={(item, _index, isSelected) => (
@@ -374,7 +371,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         borderRadius: 8,
         marginTop: 20,
-        marginBottom: 10,
+        marginBottom: 100,
         gap: 5,
         paddingTop: 5,
         paddingBottom: 5,
@@ -396,11 +393,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         backgroundColor: '#000B58',
         width: '100%',
-        height: 100,
+        height: 85,
         borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 3,
+        gap: 5,
         shadowColor: '#000',
         shadowOffset: {
         width: 0,

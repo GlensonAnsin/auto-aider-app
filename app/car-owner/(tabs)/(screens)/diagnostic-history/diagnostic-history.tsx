@@ -1,26 +1,64 @@
 import { Header } from '@/components/Header';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const DiagnosticHistory = () => {
     return (
         <SafeAreaView style={styles.container}>
-            <Header headerTitle='History' link='/car-owner/(tabs)' />
+            <ScrollView>
+                <Header headerTitle='History' link='/car-owner/(tabs)' />
 
-            <View style={styles.lowerBox}>
-                <View style={styles.clearHistoryContainer}>
-                    <Text style={styles.header2}>Scanned Cars</Text>
-                    <TouchableOpacity style={styles.button}>
-                        <Text style={styles.buttonTxt}>Clear history</Text>
+                <View style={styles.lowerBox}>
+                    <View style={styles.clearHistoryContainer}>
+                        <Text style={styles.header2}>Scanned Cars</Text>
+                        <TouchableOpacity style={styles.button}>
+                            <Text style={styles.buttonTxt}>Clear history</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <TouchableOpacity style={styles.historyContainer}>
+                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
+                        <Text style={styles.date}>2025-06-29</Text>
+                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.historyContainer}>
+                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
+                        <Text style={styles.date}>2025-06-29</Text>
+                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.historyContainer}>
+                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
+                        <Text style={styles.date}>2025-06-29</Text>
+                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.historyContainer}>
+                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
+                        <Text style={styles.date}>2025-06-29</Text>
+                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.historyContainer}>
+                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
+                        <Text style={styles.date}>2025-06-29</Text>
+                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.historyContainer}>
+                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
+                        <Text style={styles.date}>2025-06-29</Text>
+                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.historyContainer}>
+                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
+                        <Text style={styles.date}>2025-06-29</Text>
+                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
                     </TouchableOpacity>
                 </View>
-
-                <TouchableOpacity style={styles.historyContainer}>
-                    <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
-                    <Text style={styles.date}>2025-06-29</Text>
-                    <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
-                </TouchableOpacity>
-            </View>
+            </ScrollView>
         </SafeAreaView>
     )
 }
@@ -33,6 +71,8 @@ const styles = StyleSheet.create({
     lowerBox: { 
         alignItems: 'center',
         flex: 1,
+        marginBottom: 100,
+        gap: 10,
     },
     clearHistoryContainer: {
         flexDirection: 'row',
@@ -43,7 +83,7 @@ const styles = StyleSheet.create({
     header2: {
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 20,
-        color: '#333'
+        color: '#333',
     },
     button: {
         alignItems: 'center',
@@ -60,7 +100,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         padding: 10,
         borderRadius: 10,
-        marginTop: 20,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,

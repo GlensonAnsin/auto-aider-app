@@ -2,12 +2,12 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { changePass, getUserInfo } from '@/services/backendApi';
 import { clearTokens } from '@/services/tokenStorage';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Profile = () => {
     const router = useRouter();
@@ -173,12 +173,12 @@ const Profile = () => {
                 <View style={styles.profileTabContainer}>
                     
                     <TouchableOpacity style={styles.profileTab} onPress={() => router.navigate('./edit-profile')}>
-                        <Icon
+                        <MaterialCommunityIcons
                             name='account-edit-outline'
                             style={styles.icon}
                         />
                         <Text style={styles.tabName}>Edit Profile</Text>
-                        <Icon
+                        <MaterialCommunityIcons
                             name='arrow-right-thin'
                             style={styles.forwardIcon}
                         />
@@ -187,12 +187,12 @@ const Profile = () => {
 
                     
                     <TouchableOpacity style={styles.profileTab} onPress={() => router.navigate('./manage-vehicles')}>
-                        <Icon
+                        <MaterialCommunityIcons
                             name='car-outline'
                             style={styles.icon}
                         />
                         <Text style={styles.tabName}>Manage Connected Vehicles</Text>
-                        <Icon
+                        <MaterialCommunityIcons
                             name='arrow-right-thin'
                             style={styles.forwardIcon}
                         />
@@ -200,24 +200,24 @@ const Profile = () => {
                     
 
                     <TouchableOpacity style={styles.profileTab} onPress={() => setModalVisible(true)}>
-                        <Icon
+                        <MaterialCommunityIcons
                             name='lock-outline'
                             style={styles.icon}
                         />
                         <Text style={styles.tabName}>Change Password</Text>
-                        <Icon
+                        <MaterialCommunityIcons
                             name='arrow-right-thin'
                             style={styles.forwardIcon}
                         />
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles.profileTab} onPress={() => handleLogout()}>
-                        <Icon
+                        <MaterialCommunityIcons
                             name='logout'
                             style={[styles.icon, {color: '#780606'}]}
                         />
                         <Text style={[styles.tabName, {color: '#780606'}]}>Logout</Text>
-                        <Icon
+                        <MaterialCommunityIcons
                             name='arrow-right-thin'
                             style={[styles.forwardIcon, {color: '#780606'}]}
                         />

@@ -1,33 +1,15 @@
+import TabBar from '@/components/TabBar';
 import { Tabs } from 'expo-router';
-import { View } from 'react-native';
-import ChatIcon from '../../../assets/images/chat_icon.svg';
-import NotificationIcon from '../../../assets/images/ion_notifications.svg';
-import SettingsIcon from '../../../assets/images/material-symbols_settings.svg';
-import HomeIcon from '../../../assets/images/typcn_home.svg';
 
 export default function TabsLayout() {
   return (
     <Tabs
-      screenOptions={{
-        tabBarShowLabel: false,
-        tabBarHideOnKeyboard: true,
-        tabBarStyle: {
-          backgroundColor: '#000B58',
-          height: 60,
-          paddingHorizontal: 10,
-          paddingTop: 10,
-        }
-      }}
+      tabBar={props => <TabBar {...props} />}
     >
       <Tabs.Screen
         name='index'
         options={{
           title: 'Home',
-          tabBarIcon: () => (
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <HomeIcon width={30} height={30} color='#FFF' />
-            </View>
-          ),
           headerShown: false,
           animation: 'none',
         }}
@@ -36,11 +18,6 @@ export default function TabsLayout() {
         name='inbox'
         options={{
           title: 'Inbox',
-          tabBarIcon: () => (
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <ChatIcon width={30} height={30} color='#FFF' />
-            </View>
-          ),
           headerShown: false,
           animation: 'none',
         }}
@@ -49,11 +26,6 @@ export default function TabsLayout() {
         name='notifications'
         options={{
           title: 'Notifications',
-          tabBarIcon: () => (
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <NotificationIcon width={30} height={30} color='#FFF' />
-            </View>
-          ),
           headerShown: false,
           animation: 'none',
         }}
@@ -62,11 +34,6 @@ export default function TabsLayout() {
         name='settings'
         options={{
           title: 'Settings',
-          tabBarIcon: () => (
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <SettingsIcon width={30} height={30} color='#FFF' />
-            </View>
-          ),
           headerShown: false,
           animation: 'none',
         }}

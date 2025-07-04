@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     lowerBox: {
         alignSelf: 'center',
         marginTop: 20,
-        marginBottom: 20,
+        marginBottom: 100,
         gap: 10,
         width: '90%',
         flex: 1,

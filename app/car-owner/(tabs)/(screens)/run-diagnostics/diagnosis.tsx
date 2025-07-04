@@ -45,6 +45,21 @@ const Diagnosis = () => {
                             <Text style={styles.troubleCodeText}>P1162</Text>
                             <Text style={styles.troubleCodeText2}>Primary HO2S (Sensor 1) Circuit Malfunction</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.troubleCodeButton}>
+                            <Text style={styles.troubleCodeText}>P1162</Text>
+                            <Text style={styles.troubleCodeText2}>Primary HO2S (Sensor 1) Circuit Malfunction</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.troubleCodeButton}>
+                            <Text style={styles.troubleCodeText}>P1162</Text>
+                            <Text style={styles.troubleCodeText2}>Primary HO2S (Sensor 1) Circuit Malfunction</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.troubleCodeButton}>
+                            <Text style={styles.troubleCodeText}>P1162</Text>
+                            <Text style={styles.troubleCodeText2}>Primary HO2S (Sensor 1) Circuit Malfunction</Text>
+                        </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity style={styles.findShopButton}>
@@ -65,6 +80,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 30,
         flex: 1,
+        marginBottom: 100,
     },
     buttonContainer: {
         width: '90%',
@@ -149,7 +165,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 20,
-        marginTop: 50,
+        marginTop: 10,
         marginBottom: 20,
     },
     findShopButtonText: {

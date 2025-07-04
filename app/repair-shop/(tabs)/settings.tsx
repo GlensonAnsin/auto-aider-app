@@ -6,7 +6,7 @@ export default function SettingsTab() {
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
                 <View style={styles.header}>
-                    <Text style={styles.headerText}>Settings</Text>
+                    <Text style={styles.headerText}>Repair Shop Settings</Text>
                 </View>
             </SafeAreaView>
         </SafeAreaProvider>

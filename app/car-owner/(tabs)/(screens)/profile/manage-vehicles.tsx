@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     flex: 1,
+    marginBottom: 100,
   },
   noVehiclesTxt: {
     fontFamily: 'LeagueSpartan',

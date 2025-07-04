@@ -6,7 +6,7 @@ export default function NotificationsTab() {
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
                 <View style={styles.header}>
-                    <Text style={styles.headerText}>Inbox</Text>
+                    <Text style={styles.headerText}>Car Owner Inbox</Text>
                 </View>
             </SafeAreaView>
         </SafeAreaProvider>
