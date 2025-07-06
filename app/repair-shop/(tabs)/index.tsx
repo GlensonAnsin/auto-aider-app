@@ -5,23 +5,36 @@ import Fontisto from '@expo/vector-icons/Fontisto';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Home() {
+  const { width: screenWidth } = Dimensions.get('window');
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [repShopName, setRepShopName] = useState<string>('');
   const [ownerFirstname, setOwnerFirstname] = useState<string>('');
   const [ownerLastname, setOwnerLastname] = useState<string>('');
+  const [gender, setGender] = useState<string>('');
   const [mobileNum, setMobileNum] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [ratingsNum, setRatingsNum] = useState<number>(0);
   const [averageRating, setAverageRating] = useState<number>(0);
+  const [servicesOffered, setServicesOffered] = useState<string[]>([]);
   const [profilePic, setProfilePic] = useState<string | null>(null)
   const [shopImages, setShopImages] = useState<string[]>([]);
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
 
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
+  const data = [
+    {id: 1, color: 'green'},
+    {id: 2, color: 'blue'},
+    {id: 3, color: 'red'},
+    {id: 4, color: 'teal'},
+    {id: 5, color: 'cyan'},
+  ];
 
   useEffect(() => {
     (async () => {
@@ -32,10 +45,12 @@ export default function Home() {
         setRepShopName(res.shop_name);
         setOwnerFirstname(res.owner_firstname);
         setOwnerLastname(res.owner_lastname);
+        setGender(res.gender);
         setMobileNum(res.mobile_num);
         setEmail(res.email);
         setRatingsNum(res.number_of_ratings);
         setAverageRating(res.average_rating);
+        setServicesOffered(res.services_offered);
         setProfilePic(res.profile_pic);
         setShopImages(res.shop_images);
 
@@ -71,7 +86,21 @@ export default function Home() {
 
             <View style={styles.repShopNameContainer}>
               <Text style={styles.repShopName}>{repShopName}</Text>
-              <Text style={styles.contactText}>{`${ownerFirstname} ${ownerLastname}`}</Text>
+              <View style={styles.genderNameContainer}>
+                {gender === 'Male' && (
+                  <>
+                    <Fontisto name='male' size={16} color='#555' />
+                    <Text style={styles.contactText}>{`${ownerFirstname} ${ownerLastname}`}</Text>
+                  </>
+                )}
+
+                {gender === 'Female' && (
+                  <>
+                    <Fontisto name='female' size={16} color='#555' />
+                    <Text style={styles.contactText}>{`${ownerFirstname} ${ownerLastname}`}</Text>
+                  </>
+                )}
+              </View>
               <Text style={styles.contactText}>{mobileNum}</Text>
               {email !== null && (
                 <Text style={styles.contactText}>{email}</Text>
@@ -79,9 +108,9 @@ export default function Home() {
 
               <View style={styles.ratingSwitchContainer}>
                 <View style={styles.ratingContainer}>
-                  <Fontisto name='persons' size={18} color='#555' />
+                  <Fontisto name='persons' size={16} color='#555' />
                   <Text style={styles.rating}>{ratingsNum}</Text>
-                  <MaterialIcons name='star-rate' size={18} color='#FDCC0D' />
+                  <MaterialIcons name='star-rate' size={16} color='#FDCC0D' />
                   <Text style={styles.rating}>{averageRating}</Text>
                 </View>
 
@@ -115,6 +144,35 @@ export default function Home() {
                 <Text style={styles.buttonText}>Edit Shop</Text>
               </TouchableOpacity>
           </View>
+
+          <View style={styles.shopImages}>
+            <Text style={styles.subHeader}>Shop Images</Text>
+            <Carousel
+              width={screenWidth * 0.9}
+              height={200}
+              data={data}
+              mode='parallax'
+              autoPlay={true}
+              autoPlayInterval={3000}
+              scrollAnimationDuration={2000}
+              loop={true}
+              renderItem={({ item }) => (
+                <View style={[styles.carouselItem, { backgroundColor: item.color }]}>
+                  <Text style={styles.carouselText}>{`Item ${item.id}`}</Text>
+                </View>
+              )}
+            />
+          </View>
+
+          <View style={styles.servicesOffered}>
+              <Text style={styles.subHeader}>Services Offered</Text>
+              {servicesOffered.map((item) => (
+                <View key={item} style={styles.services}>
+                  <Text style={styles.bullet}>{`\u2022`}</Text>
+                  <Text style={styles.servicesText}>{item}</Text>
+                </View>
+              ))}
+            </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -150,6 +208,7 @@ const styles = StyleSheet.create({
       width: '90%',
       alignSelf: 'center',
       marginTop: 20,
+      marginBottom: 100,
     },
     repShopUpperContainer: {
       flexDirection: 'row',
@@ -171,6 +230,11 @@ const styles = StyleSheet.create({
       fontFamily: 'LeagueSpartan_Bold',
       color: '#333',
       fontSize: 22,
+    },
+    genderNameContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
     },
     contactText: {
       fontFamily: 'LeagueSpartan',
@@ -225,5 +289,47 @@ const styles = StyleSheet.create({
       fontFamily: 'LeagueSpartan',
       fontSize: 14,
       color: '#FFF',
+    },
+    shopImages: {
+      width: '100%',
+      marginTop: 20,
+      paddingBottom: 20,
+    },
+    subHeader: {
+      fontFamily: 'LeagueSpartan_Bold',
+      color: '#333',
+      fontSize: 20,
+      marginBottom: 10,
+    },
+    carouselItem: {
+      flex: 1,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    carouselText: {
+      color: '#fff',
+      fontFamily: 'LeagueSpartan',
+      fontSize: 24,
+    },
+    servicesOffered: {
+      width: '100%',
+    },
+    services: {
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingLeft: 5
+    },
+    bullet: {
+      fontFamily: 'LeagueSpartan_Bold',
+      color: '#333',
+      fontSize: 16,
+    },
+    servicesText: {
+      fontFamily: 'LeagueSpartan',
+      color: '#333',
+      fontSize: 16,
     },
 });

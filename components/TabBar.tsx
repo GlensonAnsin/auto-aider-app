@@ -7,10 +7,10 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 export default function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const icons = {
-    index: (color: string) => <Entypo name='home' size={25} color={color} />,
-    inbox: (color: string) => <Entypo name='chat' size={25} color={color} />,
-    notifications: (color: string) => <Ionicons name='notifications' size={25} color={color} />,
-    settings: (color: string) => <Ionicons name='settings' size={25} color={color} />,
+    index: (color: string) => <Entypo name='home' size={22} color={color} />,
+    inbox: (color: string) => <Entypo name='chat' size={22} color={color} />,
+    notifications: (color: string) => <Ionicons name='notifications' size={22} color={color} />,
+    settings: (color: string) => <Ionicons name='settings' size={22} color={color} />,
   };
 
   return (
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#000B58',
         marginHorizontal: 20,
-        paddingVertical: 15,
+        paddingVertical: 10,
         borderRadius: 25,
         borderCurve: 'continuous',
         shadowColor: '#000',
