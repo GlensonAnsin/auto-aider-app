@@ -76,6 +76,7 @@ export default function Home() {
               {email !== null && (
                 <Text style={styles.contactText}>{email}</Text>
               )}
+
               <View style={styles.ratingSwitchContainer}>
                 <View style={styles.ratingContainer}>
                   <Fontisto name='persons' size={18} color='#555' />
@@ -89,7 +90,7 @@ export default function Home() {
                   <Switch
                     trackColor={{false: '#767577', true: '#000B58'}}
                     thumbColor={isEnabled ? '#EEE' : '#DDD'}
-                    ios_backgroundColor="#3e3e3e"
+                    ios_backgroundColor='#3e3e3e'
                     onValueChange={toggleSwitch}
                     value={isEnabled}
                   />
@@ -100,17 +101,17 @@ export default function Home() {
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button}>
-                <MaterialIcons name='manage-history' size={20} color='#FFF' />
-                <Text style={styles.buttonText}>Repair History</Text>
+                <MaterialIcons name='manage-history' size={15} color='#FFF' />
+                <Text style={styles.buttonText}>History</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.button}>
-                <FontAwesome6 name='screwdriver-wrench' size={15} color='#FFF' />
-                <Text style={styles.buttonText}>Repair Requests</Text>
+                <FontAwesome6 name='screwdriver-wrench' size={10} color='#FFF' />
+                <Text style={styles.buttonText}>Requests</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.button}>
-                <FontAwesome6 name='edit' size={15} color='#FFF' />
+                <FontAwesome6 name='edit' size={10} color='#FFF' />
                 <Text style={styles.buttonText}>Edit Shop</Text>
               </TouchableOpacity>
           </View>
@@ -154,9 +155,6 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       gap: 20,
       width: '100%',
-      borderBottomWidth: 1,
-      borderColor: '#EAEAEA',
-      paddingBottom: 20,
     },
     profilePicWrapper: {
       backgroundColor: 'green',
@@ -205,26 +203,27 @@ const styles = StyleSheet.create({
       color: '#555',
     },
     buttonContainer: {
-      marginTop: 20,
       justifyContent: 'space-evenly',
       width: '100%',
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 3,
+      borderBottomWidth: 1,
+      borderColor: '#EAEAEA',
+      paddingBottom: 20,
     },
     button: {
       backgroundColor: '#000B58',
       justifyContent: 'center',
       alignItems: 'center',
       flexDirection: 'row',
-      gap: 5,
-      width: 150,
+      gap: 3,
+      width: 90,
       padding: 5,
       borderRadius: 5,
     },
     buttonText: {
       fontFamily: 'LeagueSpartan',
-      fontSize: 16,
+      fontSize: 14,
       color: '#FFF',
     },
 });
