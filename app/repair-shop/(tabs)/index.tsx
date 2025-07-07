@@ -4,12 +4,15 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Home() {
+  const router = useRouter();
+
   const { width: screenWidth } = Dimensions.get('window');
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -129,17 +132,17 @@ export default function Home() {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity style={styles.button} onPress={() => router.navigate('./repair-history/repair-history')}>
                 <MaterialIcons name='manage-history' size={15} color='#FFF' />
                 <Text style={styles.buttonText}>History</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.button}>
+              <TouchableOpacity style={styles.button} onPress={() => router.navigate('./repair-requests/repair-requests')}>
                 <FontAwesome6 name='screwdriver-wrench' size={10} color='#FFF' />
                 <Text style={styles.buttonText}>Requests</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.button}>
+              <TouchableOpacity style={styles.button} onPress={() => router.navigate('./edit-shop/edit-shop')}>
                 <FontAwesome6 name='edit' size={10} color='#FFF' />
                 <Text style={styles.buttonText}>Edit Shop</Text>
               </TouchableOpacity>
@@ -319,8 +322,8 @@ const styles = StyleSheet.create({
       width: '100%',
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
-      paddingLeft: 5
+      gap: 10,
+      paddingLeft: 5,
     },
     bullet: {
       fontFamily: 'LeagueSpartan_Bold',

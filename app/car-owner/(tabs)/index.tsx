@@ -35,6 +35,11 @@ export default function Home() {
             return;
         };
 
+        if (parseInt(year) < 1996) {
+            setError('OBD2 scanners only support vehicles manufactured in 1996 and newer.');
+            return;
+        };
+
         setError('');
 
         try {
@@ -52,6 +57,14 @@ export default function Home() {
         } finally {
             setIsAddCarLoading(false);
         }
+    };
+
+    const handleCancelAddCar = () => {
+        setSelectedMake('');
+        setModel('');
+        setYear('');
+        setError('');
+        isAddVehicleModalVisible(!addVehicleModalVisible);
     };
 
     useEffect(() => {
@@ -154,7 +167,6 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
                         
-
                         <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./run-diagnostics/run-diagnostics')} >
                             <Ionicons name='scan' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
@@ -163,17 +175,13 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
                             
-                        
-
-            
                         <TouchableOpacity style={styles.feature}>
                             <Entypo name='location' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Repair Shops</Text>
                                 <Text style={styles.featureDescription}>Locate nearby repair shops</Text>
                             </View>
-                        </TouchableOpacity>
-                        
+                        </TouchableOpacity> 
                     </View>
 
                     <View style={styles.column}>
@@ -185,7 +193,6 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
 
-                        
                         <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./profile/profile')}>
                             <MaterialCommunityIcons name='account' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
@@ -280,15 +287,15 @@ export default function Home() {
                                     <ActivityIndicator style={{ marginTop: 20 }} size='small' color='#000B58' />
                                 )}
 
-                                <TouchableOpacity style={styles.addCarButton} onPress={() => {
-                                    if (parseInt(year) < 1996) {
-                                        setError('OBD2 scanners only support vehicles manufactured in 1996 and newer.');
-                                    } else {
-                                        handleCarVerification();
-                                    }
-                                }}>
-                                    <Text style={styles.addCarButtonTxt}>Add</Text>
-                                </TouchableOpacity>
+                                <View style={styles.cancelSaveContainer}>
+                                    <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelAddCar()}>
+                                        <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleCarVerification()}>
+                                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Add</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         </View>
                     </Modal>
@@ -506,18 +513,23 @@ const styles = StyleSheet.create({
         color: '#333',
         fontFamily: 'LeagueSpartan',
     },
-    addCarButton: {
-        width: '50%',
-        height: 45,
-        backgroundColor: '#000B58',
+    cancelSaveContainer: {
+        flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 20,
-        marginTop: 20,
+        width: '100%',
+        gap: 10,
+        marginTop: 10,
     },
-    addCarButtonTxt: {
+    modalButton: {
+        width: '30%',
+        height: 45,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    modalButtonText: {
         fontSize: 16,
-        color: '#FFF',
         fontFamily: 'LeagueSpartan_Bold',
     },
     errorContainer: {

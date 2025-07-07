@@ -2,13 +2,13 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { getUserInfo, getUsers, updateUserInfo } from '@/services/backendApi';
 import { UserWithID } from '@/types/user';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const EditProfile = () => {
   const router = useRouter();
@@ -166,7 +166,7 @@ const EditProfile = () => {
               </View>
 
               <TouchableOpacity style={styles.editPicWrapper}>
-                <Icon
+                <MaterialCommunityIcons
                   name='pencil'
                   style={styles.editIcon}
                 />
@@ -203,7 +203,7 @@ const EditProfile = () => {
                       <Text style={styles.dropdownButtonTxtStyle}>
                         {selectedItem || 'Select gender'}
                       </Text>
-                      <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                      <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
                     </View>
                   )}
                   renderItem={(item, _index, isSelected) => (

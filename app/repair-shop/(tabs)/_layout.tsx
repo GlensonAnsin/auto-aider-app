@@ -38,6 +38,14 @@ export default function TabsLayout() {
           animation: 'none',
         }}
       />
+      <Tabs.Screen
+        name='(screens)'
+        options={{
+          href: null,
+          headerShown: false,
+          animation: 'none',
+        }}
+      />
     </Tabs>
   );
 }

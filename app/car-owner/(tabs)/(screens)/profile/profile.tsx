@@ -139,6 +139,13 @@ const Profile = () => {
         }
     };
 
+    const handleCancelChangePass = () => {
+        setCurrentPassword(''),
+        setNewPassword('');
+        setConfirmPassword('');
+        setModalVisible(!modalVisible);
+    };
+
     if (isLoading) {
         return <Loading />
     }
@@ -267,9 +274,15 @@ const Profile = () => {
                                     />
                                 </View>
 
-                                <TouchableOpacity style={styles.button} onPress={() => handleChangePass()}>
-                                    <Text style={styles.buttonTxt}>Save</Text>
-                                </TouchableOpacity>
+                                <View style={styles.cancelSaveContainer}>
+                                    <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelChangePass()}>
+                                        <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleChangePass()}>
+                                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         </View>
                     </Modal>
@@ -400,18 +413,23 @@ const styles = StyleSheet.create({
         color: '#333',
         fontFamily: 'LeagueSpartan',
     },
-    button: {
-        width: '50%',
-        height: 45,
-        backgroundColor: '#000B58',
+    cancelSaveContainer: {
+        flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 20,
-        marginTop: 20,
+        width: '100%',
+        gap: 10,
+        marginTop: 10,
     },
-    buttonTxt: {
+    modalButton: {
+        width: '30%',
+        height: 45,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    modalButtonText: {
         fontSize: 16,
-        color: '#FFF',
         fontFamily: 'LeagueSpartan_Bold',
     },
 })
