@@ -3,9 +3,11 @@ import { Loading } from '@/components/Loading';
 import { getUserInfo, getUsers, updateUserInfo } from '@/services/backendApi';
 import { UserWithID } from '@/types/user';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import axios from 'axios';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -21,7 +23,10 @@ const EditProfile = () => {
   const [email, setEmail] = useState<string>('');
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [userInitials, setUserInitials] = useState<string>('');
   const [userInitialsBG, setUserInitialsBG] = useState<string>('');
+  const [updateLoading, setUpdateLoading] = useState<boolean>(false);
+  const [pickedImage, setPickedImage] = useState<boolean>(false);
 
   const genders = ['Male', 'Female'];
 
@@ -38,6 +43,7 @@ const EditProfile = () => {
         setMobileNum(res.mobile_num);
         setEmail(res.email);
         setProfilePic(res.profile_pic);
+        setUserInitials(`${res.firstname[0]}${res.lastname[0]}`);
         setUserInitialsBG(res.user_initials_bg);
 
       } catch (e) {
@@ -49,7 +55,27 @@ const EditProfile = () => {
     })();
   }, []);
 
-  const handleUpdateUserInfo = async () => {
+  const pickImage = async (): Promise<void> => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'Please grant access to photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 4],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfilePic(result.assets[0].uri);
+      setPickedImage(true);
+    }
+  };
+
+  const handleUpdateUserInfo = async (link: string | null) => {
     if (!firstname || !lastname || !gender || !mobileNum) {
       showMessage({
         message: 'Please fill in required fields.',
@@ -62,6 +88,7 @@ const EditProfile = () => {
     }
 
     try {
+      setUpdateLoading(true);
       const fetchedUsers: UserWithID[] = await getUsers();
       const userExcluded = fetchedUsers.filter(user => user.user_id !== userID);
       const mobileNumExists = userExcluded.some(user => user.mobile_num === mobileNum.trim());
@@ -97,7 +124,9 @@ const EditProfile = () => {
         color: '#FFF',
         icon: 'danger',
       });
-      return;
+
+    } finally {
+      setUpdateLoading(false);
     }
 
     const userInfo = {
@@ -106,7 +135,7 @@ const EditProfile = () => {
       gender: gender.trim(),
       email: email.trim(),
       mobile_num: mobileNum.trim(),
-      profile_pic: profilePic
+      profile_pic: link
     };
 
     try {
@@ -134,6 +163,53 @@ const EditProfile = () => {
     }
   }
 
+  const uploadImage = async () => {
+    try {
+      const signRes = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/generate-signature`);
+      const { timestamp, signature, apiKey, cloudName, folder } = signRes.data;
+
+      const formData = new FormData();
+      formData.append('file', {
+        uri: profilePic,
+        type: 'image/jpeg',
+        name: 'upload.jpg',
+      } as any);
+
+      formData.append('api_key', apiKey);
+      formData.append('timestamp', timestamp.toString());
+      formData.append('signature', signature);
+      formData.append('folder', folder);
+
+      const uploadRes = await axios.post(
+        `${process.env.EXPO_PUBLIC_CLOUDINARY_BASE_URL}/${cloudName}/image/upload`,
+        formData,
+        { 
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      const uploadedUrl = uploadRes.data.secure_url;
+      Alert.alert('Success', 'Image uploaded successfully!');
+      setPickedImage(false);
+      return uploadedUrl;
+
+    } catch (e: any) {
+      console.error('Upload Error: ', e);
+      Alert.alert('Upload failed', 'An error occured during upload.');
+    }
+  }
+
+  const handleSave = async () => {
+    if (pickedImage) {
+      const res = await uploadImage();
+      handleUpdateUserInfo(res);
+    } else {
+      handleUpdateUserInfo(null);
+    }
+  };
+
   if (isLoading) {
     return <Loading />
   }
@@ -153,23 +229,25 @@ const EditProfile = () => {
 
           <View style={styles.lowerBox}>
             <View style={styles.editPicContainer}>
-              <View style={[styles.profilePicWrapper, { backgroundColor: userInitialsBG }]}>
-                {profilePic === null && (
-                  <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
-                )}
+              {profilePic === null && (
+                <View style={[styles.profilePicWrapper, { backgroundColor: userInitialsBG }]}>
+                  <Text style={styles.userInitials}>{userInitials}</Text>
+                </View>
+              )}
 
-                {profilePic !== null && (
+              {profilePic !== null && (
+                <View style={styles.profilePicWrapper}>
                   <Image
+                    style={styles.profilePic}
                     source={{ uri: profilePic }}
+                    width={120}
+                    height={120}
                   />
-                )}
-              </View>
+                </View>
+              )}
 
-              <TouchableOpacity style={styles.editPicWrapper}>
-                <MaterialCommunityIcons
-                  name='pencil'
-                  style={styles.editIcon}
-                />
+              <TouchableOpacity style={styles.editPicWrapper} onPress={() => pickImage()}>
+                <MaterialCommunityIcons name='pencil' style={styles.editIcon} />
               </TouchableOpacity>
             </View>
 
@@ -241,9 +319,21 @@ const EditProfile = () => {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.button} onPress={() => handleUpdateUserInfo()}>
-              <Text style={styles.buttonTxt}>Save</Text>
-            </TouchableOpacity>
+            <View style={styles.cancelSaveContainer}>
+              <TouchableOpacity style={[styles.button, { borderWidth: 1, borderColor: '#555' }]} onPress={() => router.replace('./profile')}>
+                <Text style={[styles.buttonText, { color: '#555' }]}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={[styles.button, { backgroundColor: '#000B58' }]} onPress={() => handleSave()}>
+                <Text style={[styles.buttonText, { color: '#FFF' }]}>Save</Text>
+              </TouchableOpacity>
+            </View>
+
+            {updateLoading && (
+              <View style={styles.updateLoadingContainer}>
+                <ActivityIndicator size='large' color='#000B58'  />
+              </View>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -276,7 +366,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   editPicWrapper: {
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     width: 120,
     height: 120,
     borderRadius: 120,
@@ -289,6 +379,9 @@ const styles = StyleSheet.create({
     fontFamily: 'LeagueSpartan_Bold',
     fontSize: 40,
     color: '#FFF',
+  },
+  profilePic: {
+    borderRadius: 120,
   },
   editIcon: {
     fontSize: 30,
@@ -360,20 +453,36 @@ const styles = StyleSheet.create({
     color: '#333',
     fontFamily: 'LeagueSpartan',
   },
-  button: {
-    width: '40%',
-    height: 45,
-    backgroundColor: '#000B58',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 20,
+  cancelSaveContainer: {
     marginTop: 30,
     marginBottom: 30,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
+    gap: 10,
   },
-  buttonTxt: {
-    color: '#FFF',
-    fontSize: 16,
+  button: {
+    width: '30%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 5,
+  },
+  buttonText: {
     fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 16,
+  },
+  updateLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 10,
   },
 })
 

@@ -1,18 +1,21 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { getRepairShopInfo } from '@/services/backendApi';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 
 const editShop = () => {
+    const router = useRouter();
+
     const [repShopID, setRepShopID] = useState<number>(0);
     const [repShopName, setRepShopName] = useState<string>('');
     const [ownerFirstname, setOwnerFirstname] = useState<string>('');
@@ -35,37 +38,50 @@ const editShop = () => {
 
     const genders = ['Male', 'Female'];
 
-    useEffect(() => {
-        (async () => {
-            try {
-                setIsLoading(true);
-                const res = await getRepairShopInfo();
+    useFocusEffect(
+        useCallback(() => {
+            let isActive = true;
 
-                setRepShopID(res.repair_shop_id);
-                setRepShopName(res.shop_name);
-                setOwnerFirstname(res.owner_firstname);
-                setOwnerLastname(res.owner_lastname);
-                setGender(res.gender);
-                setMobileNum(res.mobile_num);
-                setEmail(res.email);
-                setServicesOffered(res.services_offered);
-                setRegion({
+            const fetchData = async () => {
+                try {
+                    setIsLoading(true);
+                    const res = await getRepairShopInfo();
+
+                    if (!isActive) return;
+
+                    setRepShopID(res.repair_shop_id);
+                    setRepShopName(res.shop_name);
+                    setOwnerFirstname(res.owner_firstname);
+                    setOwnerLastname(res.owner_lastname);
+                    setGender(res.gender);
+                    setMobileNum(res.mobile_num);
+                    setEmail(res.email);
+                    setServicesOffered(res.services_offered);
+                    setRegion({
                     latitude: res.latitude,
                     longitude: res.longitude,
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
-                });
-                setProfilePic(res.profile_pic);
-                setShopImages(res.shop_images);
+                    });
+                    setProfilePic(res.profile_pic);
+                    setShopImages(res.shop_images);
 
-            } catch (e) {
-                console.error('Error: ', e);
+                } catch (e) {
+                    console.error('Error: ', e);
 
-            } finally {
-                setIsLoading(false);
-            }
-        })();
-    }, [restore]);
+                } finally {
+                    if (isActive) setIsLoading(false);
+                }
+            };
+
+            fetchData();
+
+            return () => {
+            isActive = false;
+            setEdit('');
+            };
+        }, [restore])
+);
 
     const handleRestoreInfo = () => {
         setRestore(restore + 1);
@@ -94,7 +110,7 @@ const editShop = () => {
                         contentContainerStyle={{ flexGrow: 1 }}
                         keyboardShouldPersistTaps='handled' 
                     >
-                        <Header headerTitle='Edit Shop' link='../' />
+                        <Header headerTitle='Edit Shop' link='/repair-shop/(tabs)' />
 
                         <View style={styles.lowerBox}>
                             <View style={styles.picRepNameContainer}>
@@ -369,9 +385,27 @@ const editShop = () => {
                                 <Text style={styles.subHeader}>Shop Images</Text>
                                 {shopImages === null && (
                                     <TouchableOpacity style={styles.editButton2}>
-                                        <AntDesign name='plussquareo' size={16} color='#000B58' />
-                                        <Text style={styles.editButtonText}>Upload Image</Text>
+                                        <MaterialCommunityIcons name='image-plus' size={16} color='#555' />
+                                        <Text style={[styles.editButtonText, { color: '#555' }]}>Upload Image</Text>
                                     </TouchableOpacity>
+                                )}
+
+                                {shopImages !== null && (
+                                    <>
+                                        <View style={styles.imagesContainer}>
+                                            {shopImages.map((item) => (
+                                                <Image
+                                                    style={styles.image}
+                                                    source={{ uri: item }}
+                                                    width={100}
+                                                    height={100}
+                                                />
+                                            ))}
+                                            <TouchableOpacity style={styles.addImageButton}>
+                                                <MaterialCommunityIcons name='image-plus' size={30} color='#555' />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </>
                                 )}
                             </View>
 
@@ -379,14 +413,14 @@ const editShop = () => {
                                 <Text style={styles.subHeader}>Shop Location</Text>
                                 {!isEditLocation && (
                                     <TouchableOpacity style={styles.editButton2}>
-                                        <Entypo name='location' size={16} color='#000B58' />
-                                        <Text style={styles.editButtonText}>Edit Location</Text>
+                                        <Entypo name='location' size={16} color='#555' />
+                                        <Text style={[styles.editButtonText, { color: '#555' }]}>Edit Location</Text>
                                     </TouchableOpacity>
                                 )}
                             </View>
 
                             <View style={styles.cancelSaveContainer}>
-                                <TouchableOpacity style={[styles.endingButton, { borderWidth: 1, borderColor: '#555' }]}>
+                                <TouchableOpacity style={[styles.endingButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => router.replace('/repair-shop/(tabs)')}>
                                     <Text style={[styles.endingButtonText, { color: '#555' }]}>Cancel</Text>
                                 </TouchableOpacity>
 
@@ -576,6 +610,23 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         flexDirection: 'row',
         gap: 5,
+    },
+    imagesContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        width: '100%',
+        gap: 5,
+    },
+    image: {
+        borderRadius: 5,
+    },
+     addImageButton: {
+        width: 100,
+        height: 100,
+        borderRadius: 5,
+        backgroundColor: '#D9D9D9',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     shopLocation: {
         marginTop: 10,

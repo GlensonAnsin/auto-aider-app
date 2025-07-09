@@ -156,17 +156,22 @@ const Profile = () => {
 
             <View style={styles.lowerBox}>
                 <View style={styles.userContainer}>
-                    <View style={[styles.profilePicWrapper, { backgroundColor: userInitialsBG }]}>
-                        {profilePic === null && (
+                    {profilePic === null && (
+                        <View style={[styles.profilePicWrapper, { backgroundColor: userInitialsBG }]}>
                             <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
-                        )}
-
-                        {profilePic !== null && (
+                        </View>
+                    )}
+    
+                    {profilePic !== null && (
+                        <View style={styles.profilePicWrapper}>
                             <Image
-                                source={{ uri: profilePic }}
+                            style={styles.profilePic}
+                            source={{ uri: profilePic }}
+                            width={100}
+                            height={100}
                             />
-                        )}
-                    </View>
+                        </View>
+                    )}
 
                     <View style={styles.userNameContainer}>
                         <Text style={styles.userName}>{`${firstname} ${lastname}`}</Text>
@@ -333,6 +338,9 @@ const styles = StyleSheet.create({
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 35,
         color: '#FFF',
+    },
+    profilePic: {
+        borderRadius: 100,
     },
     profileTabContainer: {
         width: '100%',

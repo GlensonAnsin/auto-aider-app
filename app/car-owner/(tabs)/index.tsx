@@ -139,17 +139,22 @@ export default function Home() {
                         <Text style={styles.userName}>{`${firstname} ${lastname}`}</Text>
                     </View>
 
-                    <TouchableOpacity style={[styles.profileWrapper, { backgroundColor: userInitialsBG }]} onPress={() => router.navigate('./profile/profile')}>
-                        {profilePic === null && (
+                    {profilePic === null && (
+                        <TouchableOpacity style={[styles.profileWrapper, { backgroundColor: userInitialsBG }]} onPress={() => router.navigate('./profile/profile')}>
                             <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
-                        )}
-
-                        {profilePic !== null && (
+                        </TouchableOpacity>
+                    )}
+    
+                    {profilePic !== null && (
+                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.navigate('./profile/profile')}>
                             <Image
-                                source={{ uri: profilePic }}
+                            style={styles.profilePic}
+                            source={{ uri: profilePic }}
+                            width={100}
+                            height={100}
                             />
-                        )}
-                    </TouchableOpacity>
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 <View style={styles.introTxtContainer}>
@@ -351,6 +356,9 @@ const styles = StyleSheet.create({
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 30,
         color: '#FFF',
+    },
+    profilePic: {
+        borderRadius: 100,
     },
     introTxtContainer: {
         borderWidth: 2,

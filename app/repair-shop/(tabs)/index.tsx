@@ -1,12 +1,14 @@
 import { Loading } from '@/components/Loading';
 import { getRepairShopInfo } from '@/services/backendApi';
+import { clearTokens } from '@/services/tokenStorage';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -26,18 +28,10 @@ export default function Home() {
   const [averageRating, setAverageRating] = useState<number>(0);
   const [servicesOffered, setServicesOffered] = useState<string[]>([]);
   const [profilePic, setProfilePic] = useState<string | null>(null)
-  const [shopImages, setShopImages] = useState<string[]>([]);
+  const [shopImages, setShopImages] = useState<string[] | null>(null);
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
 
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
-
-  const data = [
-    {id: 1, color: 'green'},
-    {id: 2, color: 'blue'},
-    {id: 3, color: 'red'},
-    {id: 4, color: 'teal'},
-    {id: 5, color: 'cyan'},
-  ];
 
   useEffect(() => {
     (async () => {
@@ -66,6 +60,23 @@ export default function Home() {
     })()
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await clearTokens();
+      router.replace('/auth/login');
+
+    } catch (e: any) {
+      showMessage({
+          message: 'Something went wrong. Please try again.',
+          type: 'danger',
+          floating: true,
+          color: '#FFF',
+          icon: 'danger',
+      });
+      console.log('Login error:', e.message);
+    }
+  };
+
   if (isLoading) {
     return <Loading />
   }
@@ -75,7 +86,7 @@ export default function Home() {
       <ScrollView>
         <View style={styles.upperBox}>
           <Text style={styles.header}>Auto Repair Shop</Text>
-          <TouchableOpacity style={styles.iconWrapper}>
+          <TouchableOpacity style={styles.iconWrapper} onPress={() => handleLogout()}>
               <MaterialCommunityIcons name='logout' style={styles.icon}
               />
           </TouchableOpacity>
@@ -150,21 +161,32 @@ export default function Home() {
 
           <View style={styles.shopImages}>
             <Text style={styles.subHeader}>Shop Images</Text>
-            <Carousel
-              width={screenWidth * 0.9}
-              height={200}
-              data={data}
-              mode='parallax'
-              autoPlay={true}
-              autoPlayInterval={3000}
-              scrollAnimationDuration={2000}
-              loop={true}
-              renderItem={({ item }) => (
-                <View style={[styles.carouselItem, { backgroundColor: item.color }]}>
-                  <Text style={styles.carouselText}>{`Item ${item.id}`}</Text>
-                </View>
-              )}
-            />
+            {shopImages === null && (
+                <TouchableOpacity style={styles.editButton2} onPress={() => router.navigate('./edit-shop/edit-shop')}>
+                    <MaterialCommunityIcons name='image-plus' size={16} color='#555' />
+                    <Text style={[styles.editButtonText, { color: '#555' }]}>Upload Image</Text>
+                </TouchableOpacity>
+            )}
+
+            {shopImages !== null && (
+              <Carousel
+                width={screenWidth * 0.9}
+                height={200}
+                data={shopImages}
+                mode='parallax'
+                autoPlay={true}
+                autoPlayInterval={3000}
+                scrollAnimationDuration={2000}
+                loop={true}
+                renderItem={({ item }) => (
+                  <Image
+                    key={item}
+                    style={styles.image}
+                    source={{ uri: item }}
+                  />
+                )}
+              />
+            )}
           </View>
 
           <View style={styles.servicesOffered}>
@@ -298,22 +320,29 @@ const styles = StyleSheet.create({
       marginTop: 20,
       paddingBottom: 20,
     },
+    editButton2: {
+      backgroundColor: '#D9D9D9',
+      minHeight: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 10,
+      flexDirection: 'row',
+      gap: 5,
+    },
+    editButtonText: {
+      fontFamily: 'LeagueSpartan',
+      fontSize: 16,
+      color: '#555'
+    },
     subHeader: {
       fontFamily: 'LeagueSpartan_Bold',
       color: '#333',
       fontSize: 20,
       marginBottom: 10,
     },
-    carouselItem: {
+    image: {
       flex: 1,
       borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    carouselText: {
-      color: '#fff',
-      fontFamily: 'LeagueSpartan',
-      fontSize: 24,
     },
     servicesOffered: {
       width: '100%',
