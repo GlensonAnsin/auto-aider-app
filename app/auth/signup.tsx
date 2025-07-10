@@ -14,6 +14,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Signup = () => {
   const router = useRouter();
+  const mapRef = useRef<MapView>(null);
 
   const [firstname, setFirstname] = useState<string>('');
   const [lastname, setLastname] = useState<string>('');
@@ -87,8 +88,6 @@ const Signup = () => {
     { id: '47', label: 'Car restoration (classic or vintage cars)' },
     { id: '48', label: 'Custom modifications and tuning' },
   ];
-
-  const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
     (async () => {

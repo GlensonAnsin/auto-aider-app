@@ -6,15 +6,17 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useFocusEffect } from '@react-navigation/native';
+import Checkbox from 'expo-checkbox';
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Region } from 'react-native-maps';
+import MapView, { Marker, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 
 const editShop = () => {
     const router = useRouter();
+    const mapRef = useRef<MapView>(null);
 
     const [repShopID, setRepShopID] = useState<number>(0);
     const [repShopName, setRepShopName] = useState<string>('');
@@ -35,8 +37,60 @@ const editShop = () => {
     const [edit, setEdit] = useState<string>('');
     const [modalVisible, setModalVisible] = useState<boolean>(false);
     const [restore, setRestore] = useState<number>(0);
+    const [mapModalVisible, setMapModalVisible] = useState<boolean>(false);
 
     const genders = ['Male', 'Female'];
+
+    const services = [
+        { id: '1', label: 'Engine diagnostics and repair' },
+        { id: '2', label: 'Transmission repair and overhaul' },
+        { id: '3', label: 'Oil change and fluid replacement (engine oil, brake fluid, coolant, etc.)' },
+        { id: '4', label: 'Brake system service (pads, discs, drums, ABS systems)' },
+        { id: '5', label: 'Clutch system service' },
+        { id: '6', label: 'Battery check and replacement' },
+        { id: '7', label: 'Timing belt/chain replacement' },
+        { id: '8', label: 'Alternator and starter motor repair' },
+        { id: '9', label: 'Suspension and steering repair' },
+        { id: '10', label: 'Wheel alignment and balancing' },
+        { id: '11', label: 'Shock absorber and strut replacement' },
+        { id: '12', label: 'CV joint and axle repair' },
+        { id: '13', label: 'Radiator repair and replacement' },
+        { id: '14', label: 'Fuel system service (cleaning, injector repair)' },
+        { id: '15', label: 'Air conditioning system service and repair' },
+        { id: '16', label: 'Computerized engine diagnostics (OBD scanning)' },
+        { id: '17', label: 'Wiring and electrical system repair' },
+        { id: '18', label: 'ECU reprogramming' },
+        { id: '19', label: 'Sensor and fuse replacement' },
+        { id: '20', label: 'Headlight, taillight, and signal light repairs' },
+        { id: '21', label: 'Power window and central lock repair' },
+        { id: '22', label: 'Dent removal (Paintless Dent Removal)' },
+        { id: '23', label: 'Auto body repair and repainting' },
+        { id: '24', label: 'Collision repair' },
+        { id: '25', label: 'Rustproofing and undercoating' },
+        { id: '26', label: 'Car detailing and polishing' },
+        { id: '27', label: 'Headlight restoration' },
+        { id: '28', label: 'Full car wash (interior and exterior)' },
+        { id: '29', label: 'Engine wash' },
+        { id: '30', label: 'Interior vacuuming and shampooing' },
+        { id: '31', label: 'Ceramic coating or wax application' },
+        { id: '32', label: 'Upholstery and leather care' },
+        { id: '33', label: 'Tire replacement and sales' },
+        { id: '34', label: 'Brake pads, rotors, and linings' },
+        { id: '35', label: 'Filters (air, fuel, oil, cabin)' },
+        { id: '36', label: 'Belts and hoses' },
+        { id: '37', label: 'Spark plugs and ignition coils' },
+        { id: '38', label: 'Accessories (car alarms, dashcams, LED lights, spoilers, etc.)' },
+        { id: '39', label: 'Preventive maintenance service (PMS)' },
+        { id: '40', label: 'LTO vehicle inspection assistance' },
+        { id: '41', label: 'Emission testing assistance' },
+        { id: '42', label: 'Vehicle pre-buy inspection' },
+        { id: '43', label: 'Insurance claim estimates and repairs' },
+        { id: '44', label: '24/7 towing service' },
+        { id: '45', label: 'Roadside assistance' },
+        { id: '46', label: 'Fleet maintenance (for companies with multiple vehicles)' },
+        { id: '47', label: 'Car restoration (classic or vintage cars)' },
+        { id: '48', label: 'Custom modifications and tuning' },
+    ];
 
     useFocusEffect(
         useCallback(() => {
@@ -58,10 +112,10 @@ const editShop = () => {
                     setEmail(res.email);
                     setServicesOffered(res.services_offered);
                     setRegion({
-                    latitude: res.latitude,
-                    longitude: res.longitude,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
+                        latitude: parseFloat(res.latitude),
+                        longitude: parseFloat(res.longitude),
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
                     });
                     setProfilePic(res.profile_pic);
                     setShopImages(res.shop_images);
@@ -79,6 +133,8 @@ const editShop = () => {
             return () => {
             isActive = false;
             setEdit('');
+            setIsEditLocation(false);
+
             };
         }, [restore])
 );
@@ -95,6 +151,24 @@ const editShop = () => {
         setModalVisible(!modalVisible);
     };
 
+    const toggleCheckbox = (id: string) => {
+        setServicesOffered(prev => 
+            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+        );
+    };
+
+    const handleDrag = (e: any) => {
+        const { latitude, longitude } = e.nativeEvent.coordinate;
+
+        const newRegion: Region = {
+            ...region!,
+            latitude,
+            longitude,
+        };
+        setRegion(newRegion);
+        mapRef.current?.animateToRegion(newRegion, 300);
+    };
+
     if (isLoading) {
         return <Loading />
     }
@@ -105,389 +179,482 @@ const editShop = () => {
                 behavior='padding'
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
                 style={{ flex: 1 }}
+            >
+                <ScrollView
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    keyboardShouldPersistTaps='handled' 
                 >
-                    <ScrollView
-                        contentContainerStyle={{ flexGrow: 1 }}
-                        keyboardShouldPersistTaps='handled' 
-                    >
-                        <Header headerTitle='Edit Shop' link='/repair-shop/(tabs)' />
+                    <Header headerTitle='Edit Shop' link='/repair-shop/(tabs)' />
 
-                        <View style={styles.lowerBox}>
-                            <View style={styles.picRepNameContainer}>
-                                <View style={styles.editPicContainer}>
-                                    <View style={styles.profilePicWrapper}>
-                                        {profilePic === null && (
-                                        <MaterialCommunityIcons name='car-wrench' size={50} color='#FFF' />
-                                        )}
+                    <View style={styles.lowerBox}>
+                        <View style={styles.picRepNameContainer}>
+                            <View style={styles.editPicContainer}>
+                                <View style={styles.profilePicWrapper}>
+                                    {profilePic === null && (
+                                    <MaterialCommunityIcons name='car-wrench' size={50} color='#FFF' />
+                                    )}
 
-                                        {profilePic !== null && (
-                                        <Image
-                                            source={{ uri: profilePic }}
-                                        />
-                                        )}
-                                    </View>
-
-                                    <TouchableOpacity style={styles.editPicWrapper}>
-                                        <MaterialCommunityIcons name='pencil' style={styles.editIcon} />
-                                    </TouchableOpacity>
+                                    {profilePic !== null && (
+                                    <Image
+                                        source={{ uri: profilePic }}
+                                    />
+                                    )}
                                 </View>
-                                
-                                <View style={styles.infoEdit1}>
-                                    {edit === 'rep-shop-name' && (
+
+                                <TouchableOpacity style={styles.editPicWrapper}>
+                                    <MaterialCommunityIcons name='pencil' style={styles.editIcon} />
+                                </TouchableOpacity>
+                            </View>
+                            
+                            <View style={styles.infoEdit1}>
+                                {edit === 'rep-shop-name' && (
+                                    <>
+                                        <TextInput
+                                            style={styles.input1}
+                                            value={repShopName}
+                                            onChangeText={setRepShopName}
+                                        />
+
+                                        {repShopName !== '' && (
+                                            <TouchableOpacity onPress={() => setEdit('')}>
+                                                <FontAwesome5 name='check' size={22} color='#22bb33' />
+                                            </TouchableOpacity>
+                                        )}
+                                        
+                                        {repShopName === '' && (
+                                            <TouchableOpacity onPress={() => handleRestoreInfo()}>
+                                                <Entypo name='cross' size={24} color='#780606' />
+                                            </TouchableOpacity>
+                                        )}
+                                    </>
+                                )}
+
+                                {edit !== 'rep-shop-name' && (
+                                    <>
+                                        <Text style={styles.repShopName}>{repShopName}</Text>
+                                        <TouchableOpacity onPress={() => setEdit('rep-shop-name')}>
+                                            <MaterialIcons name='edit' size={22} color='#333' />
+                                        </TouchableOpacity>
+                                    </>
+                                )}
+                            </View>
+                        </View>
+
+                        <View style={styles.shopInfo}>
+                            <Text style={styles.subHeader}>Owner Details</Text>
+                            <View style={styles.row}>
+                                <Text style={styles.infoLabel}>First Name:</Text>
+                                <View style={styles.infoEdit2}>
+                                    {edit === 'firstname' && (
                                         <>
-                                            <TextInput
-                                                style={styles.input1}
-                                                value={repShopName}
-                                                onChangeText={setRepShopName}
+                                            <TextInput 
+                                                style={styles.input2}
+                                                value={ownerFirstname}
+                                                onChangeText={setOwnerFirstname}
                                             />
 
-                                            {repShopName !== '' && (
-                                                <TouchableOpacity onPress={() => setEdit('')}>
-                                                    <FontAwesome5 name='check' size={22} color='#22bb33' />
-                                                </TouchableOpacity>
-                                            )}
-                                            
-                                            {repShopName === '' && (
-                                                <TouchableOpacity onPress={() => handleRestoreInfo()}>
-                                                    <Entypo name='cross' size={24} color='#780606' />
-                                                </TouchableOpacity>
-                                            )}
-                                        </>
-                                    )}
-
-                                    {edit !== 'rep-shop-name' && (
-                                        <>
-                                            <Text style={styles.repShopName}>{repShopName}</Text>
-                                            <TouchableOpacity onPress={() => setEdit('rep-shop-name')}>
-                                                <MaterialIcons name='edit' size={22} color='#333' />
-                                            </TouchableOpacity>
-                                        </>
-                                    )}
-                                </View>
-                            </View>
-
-                            <View style={styles.shopInfo}>
-                                <Text style={styles.subHeader}>Owner Details</Text>
-                                <View style={styles.row}>
-                                    <Text style={styles.infoLabel}>First Name:</Text>
-                                    <View style={styles.infoEdit2}>
-                                        {edit === 'firstname' && (
-                                            <>
-                                                <TextInput 
-                                                    style={styles.input2}
-                                                    value={ownerFirstname}
-                                                    onChangeText={setOwnerFirstname}
-                                                />
-
-                                                {ownerFirstname !== '' && (
-                                                    <TouchableOpacity onPress={() => setEdit('')}>
-                                                        <FontAwesome5 name='check' size={16} color='#22bb33' />
-                                                    </TouchableOpacity>
-                                                )}
-
-                                                {ownerFirstname === '' && (
-                                                    <TouchableOpacity onPress={() => handleRestoreInfo()}>
-                                                        <Entypo name='cross' size={18} color='#780606' />
-                                                    </TouchableOpacity>
-                                                )}
-                                            </>
-                                        )}
-
-                                        {edit !== 'firstname' && (
-                                            <>
-                                                <Text style={styles.infoText}>{ownerFirstname}</Text>
-                                                <TouchableOpacity onPress={() => setEdit('firstname')}>
-                                                    <MaterialIcons name='edit' size={16} color='#555' />
-                                                </TouchableOpacity> 
-                                            </>
-                                        )}        
-                                    </View>
-                                </View>
-
-                                <View style={styles.row}>
-                                    <Text style={styles.infoLabel}>Last Name:</Text>
-                                    <View style={styles.infoEdit2}>
-                                        {edit === 'lastname' && (
-                                            <>
-                                                <TextInput 
-                                                    style={styles.input2}
-                                                    value={ownerLastname}
-                                                    onChangeText={setOwnerLastname}
-                                                />
-
-                                                {ownerLastname !== '' && (
-                                                    <TouchableOpacity onPress={() => setEdit('')}>
-                                                        <FontAwesome5 name='check' size={16} color='#22bb33' />
-                                                    </TouchableOpacity>
-                                                )}
-
-                                                {ownerLastname === '' && (
-                                                    <TouchableOpacity onPress={() => handleRestoreInfo()}>
-                                                        <Entypo name='cross' size={18} color='#780606' />
-                                                    </TouchableOpacity>
-                                                )}  
-                                            </>
-                                        )}
-
-                                        {edit !== 'lastname' && (
-                                            <>
-                                                <Text style={styles.infoText}>{ownerLastname}</Text>
-                                                <TouchableOpacity onPress={() => setEdit('lastname')}>
-                                                    <MaterialIcons name='edit' size={16} color='#555' />
-                                                </TouchableOpacity> 
-                                            </>
-                                        )}
-                                    </View>
-                                </View>
-
-                                <View style={styles.row}>
-                                    <Text style={styles.infoLabel}>Gender:</Text>
-                                    <View style={styles.infoEdit2}>
-                                        {edit === 'gender' && (
-                                            <>
-                                                <SelectDropdown
-                                                    data={genders}
-                                                    defaultValue={gender}
-                                                    onSelect={(selectedItem) => setGender(selectedItem)}
-                                                    renderButton={(selectedItem, isOpen) => (
-                                                        <View style={styles.dropdownButtonStyle}>
-                                                        <Text style={styles.dropdownButtonTxtStyle}>
-                                                            {selectedItem || 'Select gender'}
-                                                        </Text>
-                                                        <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                                                        </View>
-                                                    )}
-                                                    renderItem={(item, _index, isSelected) => (
-                                                        <View
-                                                        style={{
-                                                            ...styles.dropdownItemStyle,
-                                                            ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                                                        }}
-                                                        >
-                                                        <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
-                                                        </View>
-                                                    )}
-                                                    showsVerticalScrollIndicator={false}
-                                                    dropdownStyle={styles.dropdownMenuStyle}
-                                                />
+                                            {ownerFirstname !== '' && (
                                                 <TouchableOpacity onPress={() => setEdit('')}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
-                                            </>
-                                        )}
+                                            )}
 
-                                        {edit !== 'gender' && (
-                                            <>
-                                                <Text style={styles.infoText}>{gender}</Text>
-                                                <TouchableOpacity onPress={() => setEdit('gender')}>
-                                                    <MaterialIcons name='edit' size={16} color='#555' />
-                                                </TouchableOpacity> 
-                                            </>
-                                        )}
-                                    </View>
-                                </View>
-
-                                <View style={styles.row}>
-                                    <Text style={styles.infoLabel}>Mobile Number:</Text>
-                                    <View style={styles.infoEdit2}>
-                                        {edit === 'mobile-num' && (
-                                            <>
-                                                <TextInput 
-                                                    style={styles.input2}
-                                                    value={mobileNum}
-                                                    onChangeText={setMobileNum}
-                                                    keyboardType='number-pad'
-                                                />
-
-                                                {mobileNum !== '' && (
-                                                    <TouchableOpacity onPress={() => setEdit('')}>
-                                                        <FontAwesome5 name='check' size={16} color='#22bb33' />
-                                                    </TouchableOpacity>
-                                                )}
-
-                                                {mobileNum === '' && (
-                                                    <TouchableOpacity onPress={() => handleRestoreInfo()}>
-                                                        <Entypo name='cross' size={18} color='#780606' />
-                                                    </TouchableOpacity>
-                                                )}
-                                            </>
-                                        )}
-
-                                        {edit !== 'mobile-num' && (
-                                            <>
-                                                <Text style={styles.infoText}>{mobileNum}</Text>
-                                                <TouchableOpacity onPress={() => setEdit('mobile-num')}>
-                                                    <MaterialIcons name='edit' size={16} color='#555' />
-                                                </TouchableOpacity> 
-                                            </>
-                                        )}
-                                    </View>
-                                </View>
-
-                                <View style={styles.row}>
-                                    <Text style={styles.infoLabel}>Email:</Text>
-                                    {email === null && (
-                                        <TouchableOpacity style={styles.editButton} onPress={() => {
-                                            setEmail('');
-                                            setEdit('email');
-                                        }}>
-                                            <Text style={styles.editButtonText}>Add Email</Text>
-                                        </TouchableOpacity>
+                                            {ownerFirstname === '' && (
+                                                <TouchableOpacity onPress={() => handleRestoreInfo()}>
+                                                    <Entypo name='cross' size={18} color='#780606' />
+                                                </TouchableOpacity>
+                                            )}
+                                        </>
                                     )}
-                                    
-                                    {email !== null && (
-                                        <View style={styles.infoEdit2}>
-                                            {edit === 'email' && (
-                                            <>
-                                                <TextInput 
-                                                    style={styles.input2}
-                                                    value={email}
-                                                    onChangeText={setEmail}
-                                                />
 
-                                                {email !== '' && (
-                                                    <TouchableOpacity onPress={() => setEdit('')}>
-                                                        <FontAwesome5 name='check' size={16} color='#22bb33' />
-                                                    </TouchableOpacity>
-                                                )}  
-
-                                                {email === '' && (
-                                                    <TouchableOpacity onPress={() => handleRestoreInfo()}>
-                                                        <Entypo name='cross' size={18} color='#780606' />
-                                                    </TouchableOpacity>
-                                                )}                                            
-                                            </>
-                                        )}
-
-                                        {edit !== 'email' && (
-                                            <>
-                                                <Text style={styles.infoText}>{email}</Text>
-                                                <TouchableOpacity onPress={() => setEdit('email')}>
-                                                    <MaterialIcons name='edit' size={16} color='#555' />
-                                                </TouchableOpacity> 
-                                            </>
-                                        )}
-                                        </View>
-                                    )}
-                                </View>
-
-                                <View style={styles.row}>
-                                    <Text style={styles.infoLabel}>Password:</Text>
-                                    <View style={styles.infoEdit2}>
-                                        <TouchableOpacity style={styles.editButton} onPress={() => setModalVisible(true)}>
-                                            <Text style={styles.editButtonText}>Change Password</Text>
-                                        </TouchableOpacity>
-                                    </View>
+                                    {edit !== 'firstname' && (
+                                        <>
+                                            <Text style={styles.infoText}>{ownerFirstname}</Text>
+                                            <TouchableOpacity onPress={() => setEdit('firstname')}>
+                                                <MaterialIcons name='edit' size={16} color='#555' />
+                                            </TouchableOpacity> 
+                                        </>
+                                    )}        
                                 </View>
                             </View>
 
-                            <View style={styles.shopImages}>
-                                <Text style={styles.subHeader}>Shop Images</Text>
-                                {shopImages === null && (
-                                    <TouchableOpacity style={styles.editButton2}>
-                                        <MaterialCommunityIcons name='image-plus' size={16} color='#555' />
-                                        <Text style={[styles.editButtonText, { color: '#555' }]}>Upload Image</Text>
+                            <View style={styles.row}>
+                                <Text style={styles.infoLabel}>Last Name:</Text>
+                                <View style={styles.infoEdit2}>
+                                    {edit === 'lastname' && (
+                                        <>
+                                            <TextInput 
+                                                style={styles.input2}
+                                                value={ownerLastname}
+                                                onChangeText={setOwnerLastname}
+                                            />
+
+                                            {ownerLastname !== '' && (
+                                                <TouchableOpacity onPress={() => setEdit('')}>
+                                                    <FontAwesome5 name='check' size={16} color='#22bb33' />
+                                                </TouchableOpacity>
+                                            )}
+
+                                            {ownerLastname === '' && (
+                                                <TouchableOpacity onPress={() => handleRestoreInfo()}>
+                                                    <Entypo name='cross' size={18} color='#780606' />
+                                                </TouchableOpacity>
+                                            )}  
+                                        </>
+                                    )}
+
+                                    {edit !== 'lastname' && (
+                                        <>
+                                            <Text style={styles.infoText}>{ownerLastname}</Text>
+                                            <TouchableOpacity onPress={() => setEdit('lastname')}>
+                                                <MaterialIcons name='edit' size={16} color='#555' />
+                                            </TouchableOpacity> 
+                                        </>
+                                    )}
+                                </View>
+                            </View>
+
+                            <View style={styles.row}>
+                                <Text style={styles.infoLabel}>Gender:</Text>
+                                <View style={styles.infoEdit2}>
+                                    {edit === 'gender' && (
+                                        <>
+                                            <SelectDropdown
+                                                data={genders}
+                                                defaultValue={gender}
+                                                onSelect={(selectedItem) => setGender(selectedItem)}
+                                                renderButton={(selectedItem, isOpen) => (
+                                                    <View style={styles.dropdownButtonStyle}>
+                                                    <Text style={styles.dropdownButtonTxtStyle}>
+                                                        {selectedItem || 'Select gender'}
+                                                    </Text>
+                                                    <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                                                    </View>
+                                                )}
+                                                renderItem={(item, _index, isSelected) => (
+                                                    <View
+                                                    style={{
+                                                        ...styles.dropdownItemStyle,
+                                                        ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                                                    }}
+                                                    >
+                                                    <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+                                                    </View>
+                                                )}
+                                                showsVerticalScrollIndicator={false}
+                                                dropdownStyle={styles.dropdownMenuStyle}
+                                            />
+                                            <TouchableOpacity onPress={() => setEdit('')}>
+                                                <FontAwesome5 name='check' size={16} color='#22bb33' />
+                                            </TouchableOpacity>
+                                        </>
+                                    )}
+
+                                    {edit !== 'gender' && (
+                                        <>
+                                            <Text style={styles.infoText}>{gender}</Text>
+                                            <TouchableOpacity onPress={() => setEdit('gender')}>
+                                                <MaterialIcons name='edit' size={16} color='#555' />
+                                            </TouchableOpacity> 
+                                        </>
+                                    )}
+                                </View>
+                            </View>
+
+                            <View style={styles.row}>
+                                <Text style={styles.infoLabel}>Mobile Number:</Text>
+                                <View style={styles.infoEdit2}>
+                                    {edit === 'mobile-num' && (
+                                        <>
+                                            <TextInput 
+                                                style={styles.input2}
+                                                value={mobileNum}
+                                                onChangeText={setMobileNum}
+                                                keyboardType='number-pad'
+                                            />
+
+                                            {mobileNum !== '' && (
+                                                <TouchableOpacity onPress={() => setEdit('')}>
+                                                    <FontAwesome5 name='check' size={16} color='#22bb33' />
+                                                </TouchableOpacity>
+                                            )}
+
+                                            {mobileNum === '' && (
+                                                <TouchableOpacity onPress={() => handleRestoreInfo()}>
+                                                    <Entypo name='cross' size={18} color='#780606' />
+                                                </TouchableOpacity>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {edit !== 'mobile-num' && (
+                                        <>
+                                            <Text style={styles.infoText}>{mobileNum}</Text>
+                                            <TouchableOpacity onPress={() => setEdit('mobile-num')}>
+                                                <MaterialIcons name='edit' size={16} color='#555' />
+                                            </TouchableOpacity> 
+                                        </>
+                                    )}
+                                </View>
+                            </View>
+
+                            <View style={styles.row}>
+                                <Text style={styles.infoLabel}>Email:</Text>
+                                {email === null && (
+                                    <TouchableOpacity style={styles.editButton} onPress={() => {
+                                        setEmail('');
+                                        setEdit('email');
+                                    }}>
+                                        <Text style={styles.editButtonText}>Add Email</Text>
                                     </TouchableOpacity>
                                 )}
+                                
+                                {email !== null && (
+                                    <View style={styles.infoEdit2}>
+                                        {edit === 'email' && (
+                                        <>
+                                            <TextInput 
+                                                style={styles.input2}
+                                                value={email}
+                                                onChangeText={setEmail}
+                                            />
 
-                                {shopImages !== null && (
-                                    <>
-                                        <View style={styles.imagesContainer}>
-                                            {shopImages.map((item) => (
+                                            {email !== '' && (
+                                                <TouchableOpacity onPress={() => setEdit('')}>
+                                                    <FontAwesome5 name='check' size={16} color='#22bb33' />
+                                                </TouchableOpacity>
+                                            )}  
+
+                                            {email === '' && (
+                                                <TouchableOpacity onPress={() => handleRestoreInfo()}>
+                                                    <Entypo name='cross' size={18} color='#780606' />
+                                                </TouchableOpacity>
+                                            )}                                            
+                                        </>
+                                    )}
+
+                                    {edit !== 'email' && (
+                                        <>
+                                            <Text style={styles.infoText}>{email}</Text>
+                                            <TouchableOpacity onPress={() => setEdit('email')}>
+                                                <MaterialIcons name='edit' size={16} color='#555' />
+                                            </TouchableOpacity> 
+                                        </>
+                                    )}
+                                    </View>
+                                )}
+                            </View>
+
+                            <View style={styles.row}>
+                                <Text style={styles.infoLabel}>Password:</Text>
+                                <View style={styles.infoEdit2}>
+                                    <TouchableOpacity style={styles.editButton} onPress={() => setModalVisible(true)}>
+                                        <Text style={styles.editButtonText}>Change Password</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </View>
+
+                        <View style={styles.servicesOffered}>
+                            <Text style={styles.subHeader}>Services Offered</Text>
+                            {services.map((item) => (
+                                <View key={item.id} style={styles.checkboxContainer}>
+                                    <Checkbox
+                                        value={servicesOffered.includes(item.label)}
+                                        onValueChange={() => toggleCheckbox(item.label)}
+                                        color={servicesOffered.includes(item.label) ? '#000B58' : undefined}
+                                    />
+                                    <Text style={styles.checkboxTxt}>{item.label}</Text>
+                                </View>
+                            ))}
+                        </View>
+
+                        <View style={styles.shopImages}>
+                            <Text style={styles.subHeader}>Shop Images</Text>
+                            {shopImages === null && (
+                                <TouchableOpacity style={styles.editButton2}>
+                                    <MaterialCommunityIcons name='image-plus' size={16} color='#555' />
+                                    <Text style={[styles.editButtonText, { color: '#555' }]}>Upload Image</Text>
+                                </TouchableOpacity>
+                            )}
+
+                            {shopImages !== null && (
+                                <>
+                                    <View style={styles.imagesContainer}>
+                                        {shopImages.map((item) => (
+                                            <View key={item}>
                                                 <Image
+                                                    key={item}
                                                     style={styles.image}
                                                     source={{ uri: item }}
                                                     width={100}
                                                     height={100}
                                                 />
-                                            ))}
-                                            <TouchableOpacity style={styles.addImageButton}>
-                                                <MaterialCommunityIcons name='image-plus' size={30} color='#555' />
-                                            </TouchableOpacity>
-                                        </View>
-                                    </>
-                                )}
-                            </View>
+                                            </View>
+                                        ))}
+                                        <TouchableOpacity style={styles.addImageButton}>
+                                            <MaterialCommunityIcons name='image-plus' size={30} color='#555' />
+                                        </TouchableOpacity>
+                                    </View>
+                                </>
+                            )}
+                        </View>
 
-                            <View style={styles.shopLocation}>
-                                <Text style={styles.subHeader}>Shop Location</Text>
-                                {!isEditLocation && (
-                                    <TouchableOpacity style={styles.editButton2}>
+                        <View style={styles.shopLocation}>
+                            <Text style={styles.subHeader}>Shop Location</Text>
+                            {!isEditLocation && (
+                                <TouchableOpacity style={styles.editButton2} onPress={() => setMapModalVisible(true)}>
+                                    <Entypo name='location' size={16} color='#555' />
+                                    <Text style={[styles.editButtonText, { color: '#555' }]}>Edit Location</Text>
+                                </TouchableOpacity>
+                            )}
+
+                            {isEditLocation && (
+                                <View style={styles.mapButtonContainer}>
+                                    <View style={styles.mapView2}>
+                                        <MapView
+                                            style={styles.map2}
+                                            ref={mapRef}
+                                            mapType='hybrid'
+                                            region={region}
+                                        >
+                                            {region && (
+                                                <Marker
+                                                    coordinate={{
+                                                        latitude: region.latitude,
+                                                        longitude: region.longitude,
+                                                    }}
+                                                />
+                                            )}
+                                        </MapView>
+                                    </View>
+
+                                    <TouchableOpacity style={styles.editButton3} onPress={() => setMapModalVisible(true)}>
                                         <Entypo name='location' size={16} color='#555' />
                                         <Text style={[styles.editButtonText, { color: '#555' }]}>Edit Location</Text>
                                     </TouchableOpacity>
-                                )}
-                            </View>
+                                </View>
+                            )}
+                        </View>
 
-                            <View style={styles.cancelSaveContainer}>
-                                <TouchableOpacity style={[styles.endingButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => router.replace('/repair-shop/(tabs)')}>
-                                    <Text style={[styles.endingButtonText, { color: '#555' }]}>Cancel</Text>
-                                </TouchableOpacity>
+                        <View style={styles.cancelSaveContainer}>
+                            <TouchableOpacity style={[styles.endingButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => router.replace('/repair-shop/(tabs)')}>
+                                <Text style={[styles.endingButtonText, { color: '#555' }]}>Cancel</Text>
+                            </TouchableOpacity>
 
-                                 <TouchableOpacity style={[styles.endingButton, { backgroundColor: '#000B58' }]}>
-                                    <Text style={[styles.endingButtonText, { color: '#FFF' }]}>Save</Text>
-                                </TouchableOpacity>
-                            </View>
+                                <TouchableOpacity style={[styles.endingButton, { backgroundColor: '#000B58' }]}>
+                                <Text style={[styles.endingButtonText, { color: '#FFF' }]}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
 
-                            <Modal
-                                animationType='fade'
-                                backdropColor={'rgba(0, 0, 0, 0.5)'}
-                                visible={modalVisible}
-                                onRequestClose={() => {
-                                    setModalVisible(!setModalVisible);
-                                    setCurrentPassword('');
-                                    setNewPassword('');
-                                    setConfirmPassword('');
-                                }}
-                            >
-                                <View style={styles.centeredView}>
-                                    <View style={styles.modalView}>
-                                        <Text style={styles.modalHeader}>Change Password</Text>
-                                        <View style={styles.modalInputContainer}>
-                                            <Text style={styles.modalInputLabel}>Current Password</Text>
-                                            <TextInput
-                                                value={currentPassword}
-                                                onChangeText={setCurrentPassword}
-                                                style={styles.modalInput}
-                                                secureTextEntry
-                                            />
-                                        </View>
-        
-                                        <View style={styles.modalInputContainer}>
-                                            <Text style={styles.modalInputLabel}>New Password</Text>
-                                            <TextInput
-                                                value={newPassword}
-                                                onChangeText={setNewPassword}
-                                                style={styles.modalInput}
-                                                secureTextEntry
-                                            />
-                                        </View>
-        
-                                        <View style={styles.modalInputContainer}>
-                                            <Text style={styles.modalInputLabel}>Confirm New Password</Text>
-                                            <TextInput
-                                                value={confirmPassword}
-                                                onChangeText={setConfirmPassword}
-                                                style={styles.modalInput}
-                                                secureTextEntry
-                                            />
-                                        </View>
-        
-                                        <View style={styles.cancelSaveContainer}>
-                                            <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelChangePass()}>
-                                                <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                            </TouchableOpacity>
-        
-                                            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]}>
-                                                <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
-                                            </TouchableOpacity>
-                                        </View>
+                        <Modal
+                            animationType='fade'
+                            backdropColor={'rgba(0, 0, 0, 0.5)'}
+                            visible={modalVisible}
+                            onRequestClose={() => {
+                                setModalVisible(!setModalVisible);
+                                setCurrentPassword('');
+                                setNewPassword('');
+                                setConfirmPassword('');
+                            }}
+                        >
+                            <View style={styles.centeredView}>
+                                <View style={styles.modalView}>
+                                    <Text style={styles.modalHeader}>Change Password</Text>
+                                    <View style={styles.modalInputContainer}>
+                                        <Text style={styles.modalInputLabel}>Current Password</Text>
+                                        <TextInput
+                                            value={currentPassword}
+                                            onChangeText={setCurrentPassword}
+                                            style={styles.modalInput}
+                                            secureTextEntry
+                                        />
+                                    </View>
+    
+                                    <View style={styles.modalInputContainer}>
+                                        <Text style={styles.modalInputLabel}>New Password</Text>
+                                        <TextInput
+                                            value={newPassword}
+                                            onChangeText={setNewPassword}
+                                            style={styles.modalInput}
+                                            secureTextEntry
+                                        />
+                                    </View>
+    
+                                    <View style={styles.modalInputContainer}>
+                                        <Text style={styles.modalInputLabel}>Confirm New Password</Text>
+                                        <TextInput
+                                            value={confirmPassword}
+                                            onChangeText={setConfirmPassword}
+                                            style={styles.modalInput}
+                                            secureTextEntry
+                                        />
+                                    </View>
+    
+                                    <View style={styles.cancelSaveContainer}>
+                                        <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelChangePass()}>
+                                            <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                        </TouchableOpacity>
+    
+                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]}>
+                                            <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
+                                        </TouchableOpacity>
                                     </View>
                                 </View>
-                            </Modal>
-                        </View>
-                    </ScrollView>
-                </KeyboardAvoidingView>
+                            </View>
+                        </Modal>
+
+                        <Modal
+                            animationType='fade'
+                            backdropColor={'rgba(0, 0, 0, 0.5)'}
+                            visible={mapModalVisible}
+                            onRequestClose={() => {
+                                setMapModalVisible(false);
+                                handleRestoreInfo();
+                            }}
+                        >
+                            <View style={styles.centeredView}>
+                                <View style={styles.mapView}>
+                                    <MapView
+                                        style={styles.map}
+                                        ref={mapRef}
+                                        mapType='hybrid'
+                                        initialRegion={region}
+                                        onRegionChangeComplete={(newRegion) => setRegion(newRegion)}
+                                    >
+                                        {region && (
+                                            <Marker
+                                                coordinate={{
+                                                    latitude: region.latitude,
+                                                    longitude: region.longitude,
+                                                }}
+                                                draggable
+                                                onDragEnd={handleDrag}
+                                            />
+                                        )}
+                                    </MapView>
+
+                                    <View style={styles.cancelSaveContainer}>
+                                        <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => {
+                                            setMapModalVisible(false);
+                                            handleRestoreInfo();
+                                        }}>
+                                            <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                        </TouchableOpacity>
+    
+                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => {
+                                            setMapModalVisible(false);
+                                            setIsEditLocation(true);
+                                        }}>
+                                            <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                        </Modal>
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     )
 }
@@ -523,6 +690,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 120,
+        position: 'absolute',
         zIndex: 1,
     },   
     editPicWrapper: {
@@ -532,7 +700,6 @@ const styles = StyleSheet.create({
         borderRadius: 120,
         justifyContent: 'center',
         alignItems: 'center',
-        position: 'absolute',
         zIndex: 2,
     },
     editIcon: {
@@ -595,6 +762,24 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#555',
         maxWidth: '85%',
+    },
+    servicesOffered: {
+        marginTop: 10,
+        borderBottomWidth: 1,
+        borderColor: '#EAEAEA',
+        paddingBottom: 10,
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 10,
+        width: '90%',
+    },
+    checkboxTxt: {
+        fontSize: 16,
+        fontFamily: 'LeagueSpartan',
+        color: '#555',
     },
     shopImages: {
         marginTop: 10,
@@ -764,6 +949,56 @@ const styles = StyleSheet.create({
     modalButtonText: {
         fontSize: 16,
         fontFamily: 'LeagueSpartan_Bold',
+    },
+    mapView: {
+        backgroundColor: '#FFF',
+        width: '95%',
+        borderRadius: 10,
+        padding: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+        width: 0,
+        height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    map: {
+        width: '100%',
+        height: 500,
+    },
+    mapButtonContainer: {
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+    },
+    mapView2: {
+        minHeight: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+        overflow: 'hidden',
+        width: '100%',
+        position: 'absolute',
+        zIndex: 1,
+    },
+    map2: {
+        width: '100%',
+        height: 100,
+    },
+    editButton3: {
+        backgroundColor: 'rgba(217, 217, 217, 0.8)',
+        minHeight: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+        flexDirection: 'row',
+        width: '100%',
+        gap: 5,
+        zIndex: 2,
     },
 })
 
