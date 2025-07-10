@@ -11,9 +11,11 @@ import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TextInpu
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
+import { io, Socket } from 'socket.io-client';
 
 export default function Home() {
     const router = useRouter();
+    const [_socket, setSocket] = useState<Socket | null>(null);
 
     const [addVehicleModalVisible, isAddVehicleModalVisible] = useState(false);
     const [selectedMake, setSelectedMake] = useState<string>('');
@@ -85,6 +87,27 @@ export default function Home() {
                 setIsLoading(false);
             }
         })();
+    }, []);
+
+    useEffect(() => {
+        const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
+            transports: ['websocket'],
+        });
+
+        setSocket(newSocket);
+
+        newSocket.on('connect', () => {
+            console.log('Connected to server: ', newSocket.id);
+        });
+
+        newSocket.on('updatedProfile', ({ updatedProfile }) => {
+            setProfilePic(updatedProfile);
+        })
+
+        return () => {
+            newSocket.off('updatedProfile');
+            newSocket.disconnect();
+        };
     }, []);
 
     const handleAddCar = async () => {

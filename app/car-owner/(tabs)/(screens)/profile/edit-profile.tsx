@@ -88,7 +88,6 @@ const EditProfile = () => {
     }
 
     try {
-      setUpdateLoading(true);
       const fetchedUsers: UserWithID[] = await getUsers();
       const userExcluded = fetchedUsers.filter(user => user.user_id !== userID);
       const mobileNumExists = userExcluded.some(user => user.mobile_num === mobileNum.trim());
@@ -124,9 +123,6 @@ const EditProfile = () => {
         color: '#FFF',
         icon: 'danger',
       });
-
-    } finally {
-      setUpdateLoading(false);
     }
 
     const userInfo = {
@@ -147,10 +143,6 @@ const EditProfile = () => {
         color: '#FFF',
         icon: 'success',
       });
-
-      setTimeout(() => {
-        router.replace('./profile');
-      }, 2000);
 
     } catch (e) {
       showMessage({
@@ -191,7 +183,6 @@ const EditProfile = () => {
       );
 
       const uploadedUrl = uploadRes.data.secure_url;
-      Alert.alert('Success', 'Image uploaded successfully!');
       setPickedImage(false);
       return uploadedUrl;
 
@@ -202,12 +193,17 @@ const EditProfile = () => {
   }
 
   const handleSave = async () => {
+    setUpdateLoading(true);
     if (pickedImage) {
       const res = await uploadImage();
       handleUpdateUserInfo(res);
     } else {
       handleUpdateUserInfo(null);
     }
+    setUpdateLoading(false);
+    setTimeout(() => {
+        router.replace('./profile');
+      }, 1000);
   };
 
   if (isLoading) {

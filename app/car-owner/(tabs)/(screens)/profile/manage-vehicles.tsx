@@ -9,6 +9,7 @@ import { io, Socket } from 'socket.io-client';
 
 const ManageVehicles = () => {
   const [_socket, setSocket] = useState<Socket | null>(null);
+  
   const [vehicles, setVehicles] = useState<{ id: number, make: string, model: string, year: string, dateAdded: string }[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
