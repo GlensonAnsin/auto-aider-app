@@ -306,6 +306,7 @@ const Signup = () => {
       }
 
       const newRepairShop = {
+        repair_shop_id: null,
         owner_firstname: firstname.trim(),
         owner_lastname: lastname.trim(),
         gender: gender.trim(),

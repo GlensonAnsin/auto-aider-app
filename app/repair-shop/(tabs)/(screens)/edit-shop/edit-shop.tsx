@@ -1,22 +1,24 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
-import { getRepairShopInfo } from '@/services/backendApi';
+import { getRepairShopInfo, getRepairShops, updateRepairShopInfo } from '@/services/backendApi';
+import { AutoRepairShop, UpdateRepairShopInfo } from '@/types/autoRepairShop';
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useFocusEffect } from '@react-navigation/native';
 import Checkbox from 'expo-checkbox';
-import { useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
+import { io, Socket } from 'socket.io-client';
 
 const editShop = () => {
-    const router = useRouter();
     const mapRef = useRef<MapView>(null);
+    const [_socket, setSocket] = useState<Socket | null>(null);
 
     const [repShopID, setRepShopID] = useState<number>(0);
     const [repShopName, setRepShopName] = useState<string>('');
@@ -34,10 +36,22 @@ const editShop = () => {
     const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditLocation, setIsEditLocation] = useState<boolean>(false);
+    const [isEditServices, setIsEditServices] = useState<boolean>(false);
     const [edit, setEdit] = useState<string>('');
     const [modalVisible, setModalVisible] = useState<boolean>(false);
-    const [restore, setRestore] = useState<number>(0);
     const [mapModalVisible, setMapModalVisible] = useState<boolean>(false);
+    const [imageModalVisible, setImageModalVisible] = useState<boolean>(false);
+    const [imageSource, setImageSource] = useState<string>('');
+    const [passwordError, setPasswordError] = useState<string>('');
+
+    const [localRepShopName, setLocalRepShopName] = useState<string>('');
+    const [localOwnerFirstname, setLocalOwnerFirstname] = useState<string>('');
+    const [localOwnerLastname, setLocalOwnerLastname] = useState<string>('');
+    const [localGender, setLocalGender] = useState<string>('');
+    const [localMobileNum, setLocalMobileNum] = useState<string>('');
+    const [localEmail, setLocalEmail] = useState<string | null>(null);
+    const [localServicesOffered, setLocalServicesOffered] = useState<string[]>([]);
+    const [localRegion, setLocalRegion] = useState<Region | undefined>(undefined);
 
     const genders = ['Male', 'Female'];
 
@@ -120,6 +134,20 @@ const editShop = () => {
                     setProfilePic(res.profile_pic);
                     setShopImages(res.shop_images);
 
+                    setLocalRepShopName(res.shop_name);
+                    setLocalOwnerFirstname(res.owner_firstname);
+                    setLocalOwnerLastname(res.owner_lastname);
+                    setLocalGender(res.gender);
+                    setLocalMobileNum(res.mobile_num);
+                    setLocalEmail(res.email);
+                    setLocalServicesOffered(res.services_offered);
+                    setLocalRegion({
+                        latitude: parseFloat(res.latitude),
+                        longitude: parseFloat(res.longitude),
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
+                    });
+
                 } catch (e) {
                     console.error('Error: ', e);
 
@@ -136,11 +164,73 @@ const editShop = () => {
             setIsEditLocation(false);
 
             };
-        }, [restore])
-);
+        }, [])
+    );
 
-    const handleRestoreInfo = () => {
-        setRestore(restore + 1);
+    useEffect(() => {
+        const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
+          transports: ['websocket'],
+        });
+    
+        setSocket(newSocket);
+    
+        newSocket.on('connect', () => {
+          console.log('Connected to server: ', newSocket.id);
+        });
+    
+        newSocket.on('updatedRepairShopInfo', ({ updatedRepairShopInfo }) => {
+          setRepShopName(updatedRepairShopInfo.shop_name);
+          setOwnerFirstname(updatedRepairShopInfo.owner_firstname);
+          setOwnerLastname(updatedRepairShopInfo.owner_lastname);
+          setGender(updatedRepairShopInfo.gender);
+          setMobileNum(updatedRepairShopInfo.mobile_num);
+          setEmail(updatedRepairShopInfo.email);
+          setServicesOffered(updatedRepairShopInfo.services_offered);
+          setRegion({
+            latitude: parseFloat(updatedRepairShopInfo.latitude),
+            longitude: parseFloat(updatedRepairShopInfo.longitude),
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+          setProfilePic(updatedRepairShopInfo.profile_pic);
+          setShopImages(updatedRepairShopInfo.shop_images);
+        });
+    
+        return () => {
+          newSocket.off('updatedRepairShopInfo');
+          newSocket.disconnect();
+        };
+    }, []);
+
+    const handleRestoreInfo = (field: string) => {
+        switch (field) {
+            case 'rep-shop-name':
+                setLocalRepShopName(repShopName);
+                break;
+            case 'firstname':
+                setLocalOwnerFirstname(ownerFirstname);
+                break;
+            case 'lastname':
+                setLocalOwnerLastname(ownerLastname);
+                break;
+            case 'gender':
+                setLocalGender(gender);
+                break;
+            case 'mobile-num':
+                setLocalMobileNum(mobileNum);
+                break;
+            case 'email':
+                setLocalEmail(email);
+                break;
+            case 'services-offered':
+                setLocalServicesOffered(servicesOffered);
+                break;
+            case 'region':
+            default:
+                setLocalRegion(region);
+                break;
+        }
+
         setEdit('');
     };
 
@@ -148,25 +238,176 @@ const editShop = () => {
         setCurrentPassword(''),
         setNewPassword('');
         setConfirmPassword('');
+        setPasswordError('');
         setModalVisible(!modalVisible);
     };
 
     const toggleCheckbox = (id: string) => {
-        setServicesOffered(prev => 
+        setLocalServicesOffered(prev => 
             prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
         );
+        setIsEditServices(true);
     };
 
     const handleDrag = (e: any) => {
         const { latitude, longitude } = e.nativeEvent.coordinate;
 
         const newRegion: Region = {
-            ...region!,
+            ...localRegion!,
             latitude,
             longitude,
         };
-        setRegion(newRegion);
+        setLocalRegion(newRegion);
         mapRef.current?.animateToRegion(newRegion, 300);
+    };
+
+    const handleUpdateRepShopInfo = async (field: string) => {
+        try {
+            const repairShopData: UpdateRepairShopInfo = {
+                owner_firstname: null,
+                owner_lastname: null,
+                gender: null,
+                shop_name: null,
+                mobile_num: null,
+                email: null,
+                currentPassword: null,
+                newPassword: null,
+                services_offered: null,
+                longitude: null,
+                latitude: null,
+                profile_pic: null,
+                shop_images: null,
+                field: field,
+            };
+
+            const fetchedAutoRepairShops: AutoRepairShop[] = await getRepairShops();
+            const userExcluded = fetchedAutoRepairShops.filter(repairShop => repairShop.repair_shop_id !== repShopID);
+
+            switch (field) {
+                case 'firstname':
+                    repairShopData.owner_firstname = localOwnerFirstname.trim();
+                    setOwnerFirstname(localOwnerFirstname);
+                    break;
+                case 'lastname':
+                    repairShopData.owner_lastname = localOwnerLastname.trim();
+                    setOwnerLastname(localOwnerLastname);
+                    break;
+                case 'gender':
+                    repairShopData.gender = localGender.trim();
+                    setGender(localGender);
+                    break;
+                case 'rep-shop-name':
+                    repairShopData.shop_name = localRepShopName.trim();
+                    setRepShopName(localRepShopName);
+                    break;
+                case 'mobile-num':
+                    const mobileNumExists = userExcluded.some(repairShop => repairShop.mobile_num === localMobileNum.trim());
+
+                    if (mobileNumExists) {
+                        showMessage({
+                            message: 'Mobile number is already used by another account.',
+                            type: 'warning',
+                            floating: true,
+                            color: '#FFF',
+                            icon: 'warning',
+                        });
+                        return;
+                    };
+
+                    repairShopData.mobile_num = localMobileNum.trim();
+                    setMobileNum(localMobileNum);
+                    break;
+                case 'email':
+                    const emailExists = userExcluded.some(repairShop => repairShop.email === localEmail !== null ? localEmail?.trim() : null);
+
+                    if (emailExists) {
+                        showMessage({
+                            message: 'Email is already used by another account.',
+                            type: 'warning',
+                            floating: true,
+                            color: '#FFF',
+                            icon: 'warning',
+                        });
+                        return;
+                    };
+
+                    repairShopData.email = localEmail !== null ? localEmail.trim() : null;
+                    setEmail(localEmail);
+                    break;
+                case 'change-password':
+                    if (!currentPassword || !newPassword || !confirmPassword) {
+                        setPasswordError('Please fill in all fields.');
+                        return;
+                    }
+
+                    if (newPassword !== confirmPassword) {
+                        setPasswordError("Password don't match.");
+                        return;
+                    }
+
+                    if (newPassword.length < 8) {
+                         setPasswordError('Password must be at least 8 characters.');
+                        return;
+                    }
+                    
+                    repairShopData.currentPassword = currentPassword.trim();
+                    repairShopData.newPassword = newPassword.trim();
+                    setModalVisible(false);
+                    setCurrentPassword('');
+                    setNewPassword('');
+                    setConfirmPassword('');
+                    setPasswordError('');
+                    break;
+                case 'services-offered':
+                    repairShopData.services_offered = localServicesOffered;
+                    setServicesOffered(localServicesOffered);
+                    break;
+                case 'region':
+                    repairShopData.longitude = localRegion?.longitude !== undefined ? localRegion.longitude.toString() : '',
+                    repairShopData.latitude = localRegion?.latitude !== undefined ? localRegion.latitude.toString() : '',
+                    setRegion({
+                        latitude: localRegion?.latitude !== undefined ? localRegion.latitude : 0,
+                        longitude: localRegion?.longitude !== undefined ? localRegion.longitude : 0,
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
+                    })
+                    break;
+                case 'profile':
+                    repairShopData.profile_pic = profilePic;
+                    break;
+                case 'shop-images':
+                    repairShopData.shop_images = shopImages;
+                    break;
+                default:
+                    throw new Error('Unsupported field');
+            };
+
+            const res = await updateRepairShopInfo(repairShopData);
+
+            if (res === '401') {
+                setPasswordError('Wrong current password');
+                return;
+            }
+
+            setEdit('');
+            showMessage({
+                message: 'Changes saved!',
+                type: 'success',
+                floating: true,
+                color: '#FFF',
+                icon: 'success',
+            });
+
+        } catch (e) {
+            console.error('Eror:', e);
+            showMessage({
+                message: 'Something went wrong. Please try again.',
+                type: 'danger',
+                floating: true,
+                color: '#FFF',
+                icon: 'danger',
+            });
+        }
     };
 
     if (isLoading) {
@@ -211,18 +452,18 @@ const editShop = () => {
                                     <>
                                         <TextInput
                                             style={styles.input1}
-                                            value={repShopName}
-                                            onChangeText={setRepShopName}
+                                            value={localRepShopName}
+                                            onChangeText={setLocalRepShopName}
                                         />
 
-                                        {repShopName !== '' && (
-                                            <TouchableOpacity onPress={() => setEdit('')}>
+                                        {localRepShopName !== '' && (
+                                            <TouchableOpacity onPress={() => handleUpdateRepShopInfo('rep-shop-name')}>
                                                 <FontAwesome5 name='check' size={22} color='#22bb33' />
                                             </TouchableOpacity>
                                         )}
                                         
-                                        {repShopName === '' && (
-                                            <TouchableOpacity onPress={() => handleRestoreInfo()}>
+                                        {localRepShopName === '' && (
+                                            <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')}>
                                                 <Entypo name='cross' size={24} color='#780606' />
                                             </TouchableOpacity>
                                         )}
@@ -231,7 +472,7 @@ const editShop = () => {
 
                                 {edit !== 'rep-shop-name' && (
                                     <>
-                                        <Text style={styles.repShopName}>{repShopName}</Text>
+                                        <Text style={styles.repShopName}>{localRepShopName}</Text>
                                         <TouchableOpacity onPress={() => setEdit('rep-shop-name')}>
                                             <MaterialIcons name='edit' size={22} color='#333' />
                                         </TouchableOpacity>
@@ -249,18 +490,18 @@ const editShop = () => {
                                         <>
                                             <TextInput 
                                                 style={styles.input2}
-                                                value={ownerFirstname}
-                                                onChangeText={setOwnerFirstname}
+                                                value={localOwnerFirstname}
+                                                onChangeText={setLocalOwnerFirstname}
                                             />
 
-                                            {ownerFirstname !== '' && (
-                                                <TouchableOpacity onPress={() => setEdit('')}>
+                                            {localOwnerFirstname !== '' && (
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('firstname')}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
                                             )}
 
-                                            {ownerFirstname === '' && (
-                                                <TouchableOpacity onPress={() => handleRestoreInfo()}>
+                                            {localOwnerFirstname === '' && (
+                                                <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
                                                     <Entypo name='cross' size={18} color='#780606' />
                                                 </TouchableOpacity>
                                             )}
@@ -269,7 +510,7 @@ const editShop = () => {
 
                                     {edit !== 'firstname' && (
                                         <>
-                                            <Text style={styles.infoText}>{ownerFirstname}</Text>
+                                            <Text style={styles.infoText}>{localOwnerFirstname}</Text>
                                             <TouchableOpacity onPress={() => setEdit('firstname')}>
                                                 <MaterialIcons name='edit' size={16} color='#555' />
                                             </TouchableOpacity> 
@@ -285,18 +526,18 @@ const editShop = () => {
                                         <>
                                             <TextInput 
                                                 style={styles.input2}
-                                                value={ownerLastname}
-                                                onChangeText={setOwnerLastname}
+                                                value={localOwnerLastname}
+                                                onChangeText={setLocalOwnerLastname}
                                             />
 
-                                            {ownerLastname !== '' && (
-                                                <TouchableOpacity onPress={() => setEdit('')}>
+                                            {localOwnerLastname !== '' && (
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('lastname')}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
                                             )}
 
-                                            {ownerLastname === '' && (
-                                                <TouchableOpacity onPress={() => handleRestoreInfo()}>
+                                            {localOwnerLastname === '' && (
+                                                <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
                                                     <Entypo name='cross' size={18} color='#780606' />
                                                 </TouchableOpacity>
                                             )}  
@@ -305,7 +546,7 @@ const editShop = () => {
 
                                     {edit !== 'lastname' && (
                                         <>
-                                            <Text style={styles.infoText}>{ownerLastname}</Text>
+                                            <Text style={styles.infoText}>{localOwnerLastname}</Text>
                                             <TouchableOpacity onPress={() => setEdit('lastname')}>
                                                 <MaterialIcons name='edit' size={16} color='#555' />
                                             </TouchableOpacity> 
@@ -321,8 +562,8 @@ const editShop = () => {
                                         <>
                                             <SelectDropdown
                                                 data={genders}
-                                                defaultValue={gender}
-                                                onSelect={(selectedItem) => setGender(selectedItem)}
+                                                defaultValue={localGender}
+                                                onSelect={(selectedItem) => setLocalGender(selectedItem)}
                                                 renderButton={(selectedItem, isOpen) => (
                                                     <View style={styles.dropdownButtonStyle}>
                                                     <Text style={styles.dropdownButtonTxtStyle}>
@@ -344,7 +585,7 @@ const editShop = () => {
                                                 showsVerticalScrollIndicator={false}
                                                 dropdownStyle={styles.dropdownMenuStyle}
                                             />
-                                            <TouchableOpacity onPress={() => setEdit('')}>
+                                            <TouchableOpacity onPress={() => handleUpdateRepShopInfo('gender')}>
                                                 <FontAwesome5 name='check' size={16} color='#22bb33' />
                                             </TouchableOpacity>
                                         </>
@@ -352,7 +593,7 @@ const editShop = () => {
 
                                     {edit !== 'gender' && (
                                         <>
-                                            <Text style={styles.infoText}>{gender}</Text>
+                                            <Text style={styles.infoText}>{localGender}</Text>
                                             <TouchableOpacity onPress={() => setEdit('gender')}>
                                                 <MaterialIcons name='edit' size={16} color='#555' />
                                             </TouchableOpacity> 
@@ -368,19 +609,19 @@ const editShop = () => {
                                         <>
                                             <TextInput 
                                                 style={styles.input2}
-                                                value={mobileNum}
-                                                onChangeText={setMobileNum}
+                                                value={localMobileNum}
+                                                onChangeText={setLocalMobileNum}
                                                 keyboardType='number-pad'
                                             />
 
-                                            {mobileNum !== '' && (
-                                                <TouchableOpacity onPress={() => setEdit('')}>
+                                            {localMobileNum !== '' && (
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('mobile-num')}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
                                             )}
 
-                                            {mobileNum === '' && (
-                                                <TouchableOpacity onPress={() => handleRestoreInfo()}>
+                                            {localMobileNum === '' && (
+                                                <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
                                                     <Entypo name='cross' size={18} color='#780606' />
                                                 </TouchableOpacity>
                                             )}
@@ -389,7 +630,7 @@ const editShop = () => {
 
                                     {edit !== 'mobile-num' && (
                                         <>
-                                            <Text style={styles.infoText}>{mobileNum}</Text>
+                                            <Text style={styles.infoText}>{localMobileNum}</Text>
                                             <TouchableOpacity onPress={() => setEdit('mobile-num')}>
                                                 <MaterialIcons name='edit' size={16} color='#555' />
                                             </TouchableOpacity> 
@@ -400,33 +641,33 @@ const editShop = () => {
 
                             <View style={styles.row}>
                                 <Text style={styles.infoLabel}>Email:</Text>
-                                {email === null && (
+                                {localEmail === null && (
                                     <TouchableOpacity style={styles.editButton} onPress={() => {
-                                        setEmail('');
+                                        setLocalEmail('');
                                         setEdit('email');
                                     }}>
                                         <Text style={styles.editButtonText}>Add Email</Text>
                                     </TouchableOpacity>
                                 )}
                                 
-                                {email !== null && (
+                                {localEmail !== null && (
                                     <View style={styles.infoEdit2}>
                                         {edit === 'email' && (
                                         <>
                                             <TextInput 
                                                 style={styles.input2}
-                                                value={email}
-                                                onChangeText={setEmail}
+                                                value={localEmail}
+                                                onChangeText={setLocalEmail}
                                             />
 
-                                            {email !== '' && (
-                                                <TouchableOpacity onPress={() => setEdit('')}>
+                                            {localEmail !== '' && (
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('email')}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
                                             )}  
 
-                                            {email === '' && (
-                                                <TouchableOpacity onPress={() => handleRestoreInfo()}>
+                                            {localEmail === '' && (
+                                                <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
                                                     <Entypo name='cross' size={18} color='#780606' />
                                                 </TouchableOpacity>
                                             )}                                            
@@ -435,7 +676,7 @@ const editShop = () => {
 
                                     {edit !== 'email' && (
                                         <>
-                                            <Text style={styles.infoText}>{email}</Text>
+                                            <Text style={styles.infoText}>{localEmail}</Text>
                                             <TouchableOpacity onPress={() => setEdit('email')}>
                                                 <MaterialIcons name='edit' size={16} color='#555' />
                                             </TouchableOpacity> 
@@ -460,13 +701,31 @@ const editShop = () => {
                             {services.map((item) => (
                                 <View key={item.id} style={styles.checkboxContainer}>
                                     <Checkbox
-                                        value={servicesOffered.includes(item.label)}
+                                        value={localServicesOffered.includes(item.label)}
                                         onValueChange={() => toggleCheckbox(item.label)}
-                                        color={servicesOffered.includes(item.label) ? '#000B58' : undefined}
+                                        color={localServicesOffered.includes(item.label) ? '#000B58' : undefined}
                                     />
                                     <Text style={styles.checkboxTxt}>{item.label}</Text>
                                 </View>
                             ))}
+
+                            {isEditServices && (
+                                <View style={styles.cancelSaveContainer}>
+                                    <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => {
+                                        handleRestoreInfo('services-offered');
+                                        setIsEditServices(false);
+                                    }}>
+                                        <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => {
+                                        handleUpdateRepShopInfo('services-offered');
+                                        setIsEditServices(false);
+                                    }}>
+                                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
                         </View>
 
                         <View style={styles.shopImages}>
@@ -482,7 +741,10 @@ const editShop = () => {
                                 <>
                                     <View style={styles.imagesContainer}>
                                         {shopImages.map((item) => (
-                                            <View key={item}>
+                                            <TouchableOpacity key={item} onPress={() => {
+                                                setImageSource(item);
+                                                setImageModalVisible(true);
+                                            }}>
                                                 <Image
                                                     key={item}
                                                     style={styles.image}
@@ -490,7 +752,7 @@ const editShop = () => {
                                                     width={100}
                                                     height={100}
                                                 />
-                                            </View>
+                                            </TouchableOpacity>
                                         ))}
                                         <TouchableOpacity style={styles.addImageButton}>
                                             <MaterialCommunityIcons name='image-plus' size={30} color='#555' />
@@ -516,7 +778,7 @@ const editShop = () => {
                                             style={styles.map2}
                                             ref={mapRef}
                                             mapType='hybrid'
-                                            region={region}
+                                            region={localRegion}
                                         >
                                             {region && (
                                                 <Marker
@@ -535,16 +797,6 @@ const editShop = () => {
                                     </TouchableOpacity>
                                 </View>
                             )}
-                        </View>
-
-                        <View style={styles.cancelSaveContainer}>
-                            <TouchableOpacity style={[styles.endingButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => router.replace('/repair-shop/(tabs)')}>
-                                <Text style={[styles.endingButtonText, { color: '#555' }]}>Cancel</Text>
-                            </TouchableOpacity>
-
-                                <TouchableOpacity style={[styles.endingButton, { backgroundColor: '#000B58' }]}>
-                                <Text style={[styles.endingButtonText, { color: '#FFF' }]}>Save</Text>
-                            </TouchableOpacity>
                         </View>
 
                         <Modal
@@ -590,13 +842,19 @@ const editShop = () => {
                                             secureTextEntry
                                         />
                                     </View>
+
+                                    {passwordError.length > 0 && (
+                                        <View style={styles.errorContainer}>
+                                            <Text style={styles.errorMessage}>{passwordError}</Text>
+                                        </View>
+                                    )}
     
                                     <View style={styles.cancelSaveContainer}>
                                         <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelChangePass()}>
                                             <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                                         </TouchableOpacity>
     
-                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]}>
+                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleUpdateRepShopInfo('change-password')}>
                                             <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -610,7 +868,7 @@ const editShop = () => {
                             visible={mapModalVisible}
                             onRequestClose={() => {
                                 setMapModalVisible(false);
-                                handleRestoreInfo();
+                                handleRestoreInfo('region');
                             }}
                         >
                             <View style={styles.centeredView}>
@@ -619,14 +877,14 @@ const editShop = () => {
                                         style={styles.map}
                                         ref={mapRef}
                                         mapType='hybrid'
-                                        initialRegion={region}
-                                        onRegionChangeComplete={(newRegion) => setRegion(newRegion)}
+                                        initialRegion={localRegion}
+                                        onRegionChangeComplete={(newRegion) => setLocalRegion(newRegion)}
                                     >
-                                        {region && (
+                                        {localRegion && (
                                             <Marker
                                                 coordinate={{
-                                                    latitude: region.latitude,
-                                                    longitude: region.longitude,
+                                                    latitude: localRegion.latitude,
+                                                    longitude: localRegion.longitude,
                                                 }}
                                                 draggable
                                                 onDragEnd={handleDrag}
@@ -637,16 +895,51 @@ const editShop = () => {
                                     <View style={styles.cancelSaveContainer}>
                                         <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => {
                                             setMapModalVisible(false);
-                                            handleRestoreInfo();
+                                            handleRestoreInfo('region');
                                         }}>
                                             <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                                         </TouchableOpacity>
     
                                         <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => {
+                                            handleUpdateRepShopInfo('region');
                                             setMapModalVisible(false);
                                             setIsEditLocation(true);
                                         }}>
                                             <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                        </Modal>
+
+                        <Modal
+                            animationType='fade'
+                            backdropColor={'rgba(0, 0, 0, 0.5)'}
+                            visible={imageModalVisible}
+                            onRequestClose={() => {
+                                setImageModalVisible(false);
+                                setImageSource('');
+                            }}
+                        >
+                            <View style={styles.centeredView}>
+                                <View style={styles.imageView}>
+                                    <Image 
+                                        width={300}
+                                        height={300}
+                                        style={styles.viewImage}
+                                        source={{ uri: imageSource }}
+                                    />
+                                    
+                                    <View style={styles.cancelSaveContainer}>
+                                        <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => {
+                                            setImageModalVisible(false);
+                                            setImageSource('');
+                                        }}>
+                                            <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                        </TouchableOpacity>
+    
+                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#780606' }]}>
+                                            <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Delete</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -907,8 +1200,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: {
-        width: 0,
-        height: 2,
+            width: 0,
+            height: 2,
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,
@@ -950,24 +1243,39 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'LeagueSpartan_Bold',
     },
+    errorContainer: {
+        backgroundColor: '#EAEAEA',
+        borderRadius: 5,
+        width: '100%',
+        padding: 10,
+        marginTop: 20,
+    },
+    errorMessage: {
+        fontFamily: 'LeagueSpartan',
+        color: 'red',
+        textAlign: 'center',
+    },
     mapView: {
         backgroundColor: '#FFF',
         width: '95%',
         borderRadius: 10,
-        padding: 20,
+        paddingBottom: 20,
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: {
-        width: 0,
-        height: 2,
+            width: 0,
+            height: 2,
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
+        overflow: 'hidden',
     },
     map: {
         width: '100%',
         height: 500,
+        borderTopRightRadius: 10,
+        borderTopLeftRadius: 10,
     },
     mapButtonContainer: {
         width: '100%',
@@ -999,6 +1307,27 @@ const styles = StyleSheet.create({
         width: '100%',
         gap: 5,
         zIndex: 2,
+    },
+    imageView: {
+        backgroundColor: '#FFF',
+        width: '85%',
+        borderRadius: 10,
+        paddingBottom: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+        overflow: 'hidden',
+    },
+    viewImage: {
+        width: '100%',
+        borderTopRightRadius: 10,
+        borderTopLeftRadius: 10,
     },
 })
 

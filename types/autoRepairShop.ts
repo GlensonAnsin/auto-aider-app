@@ -1,4 +1,5 @@
 export interface AutoRepairShop {
+    repair_shop_id: number | null;
     owner_firstname: string;
     owner_lastname: string;
     gender: string;
@@ -17,3 +18,20 @@ export interface AutoRepairShop {
     approval_status: string;
     total_score:  number;
 }
+
+export interface UpdateRepairShopInfo {
+    owner_firstname: string | null;
+    owner_lastname: string | null;
+    gender: string | null;
+    shop_name: string | null;
+    mobile_num: string | null;
+    email: string | null;
+    currentPassword: string | null;
+    newPassword: string | null;
+    services_offered: string[] | null;
+    longitude: string | null;
+    latitude: string | null;
+    profile_pic: string | null;
+    shop_images: string[] | null;
+    field: string;
+};

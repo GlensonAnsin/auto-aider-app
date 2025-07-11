@@ -1,4 +1,4 @@
-import { AutoRepairShop } from '@/types/autoRepairShop';
+import { AutoRepairShop, UpdateRepairShopInfo } from '@/types/autoRepairShop';
 import { ChangePass, LoginUser, UpdateUser, User } from '@/types/user';
 import { Vehicle } from '@/types/vehicle';
 import axios from 'axios';
@@ -168,7 +168,32 @@ export const getRepairShopInfo = async () => {
     console.error('Error: ', e);
     return null;
   }
-}
+};
+
+// UPDATE REPAIR SHOP INFO
+export const updateRepairShopInfo = async (userData: UpdateRepairShopInfo): Promise<UpdateRepairShopInfo | string | null> => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.patch(`${apiURL}/auto_repair_shop/update-repair-shop-info`,
+      userData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e: any) {
+    if (e.response?.status === 401) {
+      return '401';
+      
+    } else {
+      console.error('Error: ', e);
+      return null;
+    }
+  }
+};
 
 
 

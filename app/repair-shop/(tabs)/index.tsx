@@ -11,9 +11,11 @@ import { Dimensions, Image, ScrollView, StyleSheet, Switch, Text, TouchableOpaci
 import { showMessage } from 'react-native-flash-message';
 import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { io, Socket } from 'socket.io-client';
 
 export default function Home() {
   const router = useRouter();
+  const [_socket, setSocket] = useState<Socket | null>(null);
 
   const { width: screenWidth } = Dimensions.get('window');
 
@@ -58,6 +60,37 @@ export default function Home() {
         setIsLoading(false);
       }
     })()
+  }, []);
+
+  useEffect(() => {
+    const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
+      transports: ['websocket'],
+    });
+
+    setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      console.log('Connected to server: ', newSocket.id);
+    });
+
+    newSocket.on('updatedRepairShopInfo', ({ updatedRepairShopInfo }) => {
+      setRepShopName(updatedRepairShopInfo.shop_name);
+      setOwnerFirstname(updatedRepairShopInfo.owner_firstname);
+      setOwnerLastname(updatedRepairShopInfo.owner_lastname);
+      setGender(updatedRepairShopInfo.gender);
+      setMobileNum(updatedRepairShopInfo.mobile_num);
+      setEmail(updatedRepairShopInfo.email);
+      setRatingsNum(updatedRepairShopInfo.number_of_ratings);
+      setAverageRating(updatedRepairShopInfo.average_rating);
+      setServicesOffered(updatedRepairShopInfo.services_offered);
+      setProfilePic(updatedRepairShopInfo.profile_pic);
+      setShopImages(updatedRepairShopInfo.shop_images);
+    });
+
+    return () => {
+      newSocket.off('updatedRepairShopInfo');
+      newSocket.disconnect();
+    };
   }, []);
 
   const handleLogout = async () => {
