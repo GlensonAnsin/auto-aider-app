@@ -17,6 +17,8 @@ export interface AutoRepairShop {
     average_rating: number;
     approval_status: string;
     total_score:  number;
+    profile_bg: string;
+    availability: string;
 }
 
 export interface UpdateRepairShopInfo {

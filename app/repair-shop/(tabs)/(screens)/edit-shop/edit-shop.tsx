@@ -7,9 +7,11 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useFocusEffect } from '@react-navigation/native';
+import axios from 'axios';
 import Checkbox from 'expo-checkbox';
+import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,7 +32,7 @@ const editShop = () => {
     const [servicesOffered, setServicesOffered] = useState<string[]>([]);
     const [region, setRegion] = useState<Region | undefined>(undefined);
     const [profilePic, setProfilePic] = useState<string | null>(null);
-    const [shopImages, setShopImages] = useState<string[] | null>(null);
+    const [shopImages, setShopImages] = useState<string[]>([]);
     const [currentPassword, setCurrentPassword] = useState<string>('');
     const [newPassword, setNewPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -43,6 +45,9 @@ const editShop = () => {
     const [imageModalVisible, setImageModalVisible] = useState<boolean>(false);
     const [imageSource, setImageSource] = useState<string>('');
     const [passwordError, setPasswordError] = useState<string>('');
+    const [profileBG, setProfileBG] = useState<string>('');
+    const [pickedImage, setPickedImage] = useState<boolean>(false);
+    const [updateLoading, setUpdateLoading] = useState<boolean>(false);
 
     const [localRepShopName, setLocalRepShopName] = useState<string>('');
     const [localOwnerFirstname, setLocalOwnerFirstname] = useState<string>('');
@@ -52,6 +57,7 @@ const editShop = () => {
     const [localEmail, setLocalEmail] = useState<string | null>(null);
     const [localServicesOffered, setLocalServicesOffered] = useState<string[]>([]);
     const [localRegion, setLocalRegion] = useState<Region | undefined>(undefined);
+    const [localProfilePic, setLocalProfilePic] = useState<string | null>(null);
 
     const genders = ['Male', 'Female'];
 
@@ -133,6 +139,7 @@ const editShop = () => {
                     });
                     setProfilePic(res.profile_pic);
                     setShopImages(res.shop_images);
+                    setProfileBG(res.profile_bg);
 
                     setLocalRepShopName(res.shop_name);
                     setLocalOwnerFirstname(res.owner_firstname);
@@ -147,6 +154,7 @@ const editShop = () => {
                         latitudeDelta: 0.01,
                         longitudeDelta: 0.01,
                     });
+                    setLocalProfilePic(res.profile_pic);
 
                 } catch (e) {
                     console.error('Error: ', e);
@@ -179,26 +187,41 @@ const editShop = () => {
         });
     
         newSocket.on('updatedRepairShopInfo', ({ updatedRepairShopInfo }) => {
-          setRepShopName(updatedRepairShopInfo.shop_name);
-          setOwnerFirstname(updatedRepairShopInfo.owner_firstname);
-          setOwnerLastname(updatedRepairShopInfo.owner_lastname);
-          setGender(updatedRepairShopInfo.gender);
-          setMobileNum(updatedRepairShopInfo.mobile_num);
-          setEmail(updatedRepairShopInfo.email);
-          setServicesOffered(updatedRepairShopInfo.services_offered);
-          setRegion({
-            latitude: parseFloat(updatedRepairShopInfo.latitude),
-            longitude: parseFloat(updatedRepairShopInfo.longitude),
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          });
-          setProfilePic(updatedRepairShopInfo.profile_pic);
-          setShopImages(updatedRepairShopInfo.shop_images);
+            setRepShopName(updatedRepairShopInfo.shop_name);
+            setOwnerFirstname(updatedRepairShopInfo.owner_firstname);
+            setOwnerLastname(updatedRepairShopInfo.owner_lastname);
+            setGender(updatedRepairShopInfo.gender);
+            setMobileNum(updatedRepairShopInfo.mobile_num);
+            setEmail(updatedRepairShopInfo.email);
+            setServicesOffered(updatedRepairShopInfo.services_offered);
+            setRegion({
+                latitude: parseFloat(updatedRepairShopInfo.latitude),
+                longitude: parseFloat(updatedRepairShopInfo.longitude),
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+            });
+            setProfilePic(updatedRepairShopInfo.profile_pic);
+            setShopImages(updatedRepairShopInfo.shop_images);
+
+            setLocalRepShopName(updatedRepairShopInfo.shop_name);
+            setLocalOwnerFirstname(updatedRepairShopInfo.owner_firstname);
+            setLocalOwnerLastname(updatedRepairShopInfo.owner_lastname);
+            setLocalGender(updatedRepairShopInfo.gender);
+            setLocalMobileNum(updatedRepairShopInfo.mobile_num);
+            setLocalEmail(updatedRepairShopInfo.email);
+            setLocalServicesOffered(updatedRepairShopInfo.services_offered);
+            setLocalRegion({
+                latitude: parseFloat(updatedRepairShopInfo.latitude),
+                longitude: parseFloat(updatedRepairShopInfo.longitude),
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+            });
+            setLocalProfilePic(updatedRepairShopInfo.profile_pic);
         });
     
         return () => {
-          newSocket.off('updatedRepairShopInfo');
-          newSocket.disconnect();
+            newSocket.off('updatedRepairShopInfo');
+            newSocket.disconnect();
         };
     }, []);
 
@@ -226,9 +249,14 @@ const editShop = () => {
                 setLocalServicesOffered(servicesOffered);
                 break;
             case 'region':
-            default:
                 setLocalRegion(region);
                 break;
+            case 'profile':
+                setLocalProfilePic(profilePic);
+                setPickedImage(false);
+                break;
+            default:
+                throw new Error('Unsupported field');
         }
 
         setEdit('');
@@ -261,8 +289,9 @@ const editShop = () => {
         mapRef.current?.animateToRegion(newRegion, 300);
     };
 
-    const handleUpdateRepShopInfo = async (field: string) => {
+    const handleUpdateRepShopInfo = async (field: string, link: string | null, arrayLink: string[] | null) => {
         try {
+            setUpdateLoading(true);
             const repairShopData: UpdateRepairShopInfo = {
                 owner_firstname: null,
                 owner_lastname: null,
@@ -373,10 +402,12 @@ const editShop = () => {
                     })
                     break;
                 case 'profile':
-                    repairShopData.profile_pic = profilePic;
+                    repairShopData.profile_pic = link;
+                    setProfilePic(link);
                     break;
                 case 'shop-images':
-                    repairShopData.shop_images = shopImages;
+                    repairShopData.shop_images = arrayLink ? [...shopImages, ...arrayLink] : [...shopImages];
+                    setShopImages(arrayLink ? [...shopImages, ...arrayLink] : [...shopImages]);
                     break;
                 default:
                     throw new Error('Unsupported field');
@@ -407,7 +438,138 @@ const editShop = () => {
                 color: '#FFF',
                 icon: 'danger',
             });
+        } finally {
+            setUpdateLoading(false);
         }
+    };
+
+    const pickProfileImage = async (): Promise<void> => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission required', 'Please grant access to photos.');
+            return;
+        }
+    
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+    
+        if (!result.canceled) {
+            setLocalProfilePic(result.assets[0].uri);
+            setPickedImage(true);
+        }
+      };
+
+      const pickShopImages = async (): Promise<void> => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission required', 'Please grant access to photos.');
+            return;
+        }
+    
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsMultipleSelection: true,
+            quality: 1,
+        });
+    
+        if (!result.canceled) {
+            const uris = result.assets.map(asset => asset.uri);
+            setShopImages([...(shopImages ?? []), ...uris]);
+            uploadShopImages(uris);
+        }
+      };
+
+      const uploadProfileImage = async () => {
+        try {
+            setUpdateLoading(true);
+            const signRes = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/generate-signature`);
+            const { timestamp, signature, apiKey, cloudName, folder } = signRes.data;
+
+            const formData = new FormData();
+            formData.append('file', {
+                uri: localProfilePic,
+                type: 'image/jpeg',
+                name: 'upload.jpg',
+        } as any);
+
+        formData.append('api_key', apiKey);
+        formData.append('timestamp', timestamp.toString());
+        formData.append('signature', signature);
+        formData.append('folder', folder);
+
+        const uploadRes = await axios.post(
+            `${process.env.EXPO_PUBLIC_CLOUDINARY_BASE_URL}/${cloudName}/image/upload`,
+            formData,
+            { 
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            }
+        );
+
+        const uploadedUrl = uploadRes.data.secure_url;
+        setPickedImage(false);
+        handleUpdateRepShopInfo('profile', uploadedUrl, null);
+
+        } catch (e) {
+            console.error('Upload Error: ', e);
+            Alert.alert('Upload failed', 'An error occured during upload.');
+        }
+    };
+
+    const uploadShopImages = async (arrayLink: string[]) => {
+        try {
+            setUpdateLoading(true);
+            const signRes = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/generate-signature-shop-images`);
+            const { timestamp, signature, apiKey, cloudName, folder } = signRes.data;
+
+            const uploadedUrls: string[] = [];
+
+            for (const asset of arrayLink) {
+                const formData = new FormData();
+                formData.append('file', {
+                    uri: asset,
+                    type: 'image/jpeg',
+                    name: `image-${Date.now()}.jpg`,
+                } as any);
+                formData.append('api_key', apiKey);
+                formData.append('timestamp', timestamp.toString());
+                formData.append('signature', signature);
+                formData.append('folder', folder);
+
+                const uploadRes = await axios.post(
+                    `${process.env.EXPO_PUBLIC_CLOUDINARY_BASE_URL}/${cloudName}/image/upload`,
+                    formData,
+                    { 
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    }
+                );
+                uploadedUrls.push(uploadRes.data.secure_url);
+            }
+            handleUpdateRepShopInfo('shop-images', null, uploadedUrls);
+            
+        } catch (e) {
+            console.error('Upload Error: ', e);
+            Alert.alert('Upload failed', 'An error occured during upload.');
+        }
+    };
+
+    const deleteProfilePic = async () => {
+        setUpdateLoading(true);
+        const parts = profilePic?.split('/');
+        const lastPart = parts?.slice(-1)[0];
+        const folderName = parts?.slice(-2)[0];
+        const fileName = lastPart?.split('.')[0];
+        
+        await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/delete-profile `, {
+            public_id: `${folderName}/${fileName}`,
+        });
     };
 
     if (isLoading) {
@@ -430,22 +592,51 @@ const editShop = () => {
                     <View style={styles.lowerBox}>
                         <View style={styles.picRepNameContainer}>
                             <View style={styles.editPicContainer}>
-                                <View style={styles.profilePicWrapper}>
-                                    {profilePic === null && (
-                                    <MaterialCommunityIcons name='car-wrench' size={50} color='#FFF' />
-                                    )}
+                                {localProfilePic === null && (
+                                    <View style={[styles.profilePicWrapper, { backgroundColor: profileBG }]}>
+                                        <MaterialCommunityIcons name='car-wrench' size={50} color='#FFF' />
+                                    </View>
+                                )}
 
-                                    {profilePic !== null && (
-                                    <Image
-                                        source={{ uri: profilePic }}
-                                    />
-                                    )}
-                                </View>
+                                {localProfilePic !== null && (
+                                    <View style={styles.profilePicWrapper}>
+                                        <Image
+                                            style={styles.profilePic}
+                                            source={{ uri: localProfilePic }}
+                                            width={120}
+                                            height={120}
+                                        />
+                                    </View>
+                                )}
 
-                                <TouchableOpacity style={styles.editPicWrapper}>
+                                <TouchableOpacity style={styles.editPicWrapper} onPress={() => pickProfileImage()}>
                                     <MaterialCommunityIcons name='pencil' style={styles.editIcon} />
                                 </TouchableOpacity>
                             </View>
+
+                            {localProfilePic !== null && !pickedImage && (
+                                <View style={styles.profileButtonContainer}>
+                                    <TouchableOpacity style={[styles.profileButton, { backgroundColor: '#780606', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, }]} onPress={() => {
+                                        deleteProfilePic();
+                                        handleUpdateRepShopInfo('profile', null, null);
+                                    }}>
+                                        <MaterialCommunityIcons name='image-remove' size={20} color='#FFF' />
+                                        <Text style={styles.profileButtonText}>Remove</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+
+                            {localProfilePic !== null && pickedImage && (
+                                <View style={styles.profileButtonContainer}>
+                                    <TouchableOpacity style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleRestoreInfo('profile')}>
+                                        <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={[styles.profileButton, { backgroundColor: '#000B58' }]} onPress={() => uploadProfileImage()}>
+                                        <Text style={styles.profileButtonText}>Save</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
                             
                             <View style={styles.infoEdit1}>
                                 {edit === 'rep-shop-name' && (
@@ -457,7 +648,7 @@ const editShop = () => {
                                         />
 
                                         {localRepShopName !== '' && (
-                                            <TouchableOpacity onPress={() => handleUpdateRepShopInfo('rep-shop-name')}>
+                                            <TouchableOpacity onPress={() => handleUpdateRepShopInfo('rep-shop-name', null, null)}>
                                                 <FontAwesome5 name='check' size={22} color='#22bb33' />
                                             </TouchableOpacity>
                                         )}
@@ -495,7 +686,7 @@ const editShop = () => {
                                             />
 
                                             {localOwnerFirstname !== '' && (
-                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('firstname')}>
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('firstname', null, null)}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
                                             )}
@@ -531,7 +722,7 @@ const editShop = () => {
                                             />
 
                                             {localOwnerLastname !== '' && (
-                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('lastname')}>
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('lastname', null, null)}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
                                             )}
@@ -585,7 +776,7 @@ const editShop = () => {
                                                 showsVerticalScrollIndicator={false}
                                                 dropdownStyle={styles.dropdownMenuStyle}
                                             />
-                                            <TouchableOpacity onPress={() => handleUpdateRepShopInfo('gender')}>
+                                            <TouchableOpacity onPress={() => handleUpdateRepShopInfo('gender', null, null)}>
                                                 <FontAwesome5 name='check' size={16} color='#22bb33' />
                                             </TouchableOpacity>
                                         </>
@@ -615,7 +806,7 @@ const editShop = () => {
                                             />
 
                                             {localMobileNum !== '' && (
-                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('mobile-num')}>
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('mobile-num', null, null)}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
                                             )}
@@ -661,7 +852,7 @@ const editShop = () => {
                                             />
 
                                             {localEmail !== '' && (
-                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('email')}>
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('email', null, null)}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
                                             )}  
@@ -719,7 +910,7 @@ const editShop = () => {
                                     </TouchableOpacity>
 
                                     <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => {
-                                        handleUpdateRepShopInfo('services-offered');
+                                        handleUpdateRepShopInfo('services-offered', null, null);
                                         setIsEditServices(false);
                                     }}>
                                         <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
@@ -730,14 +921,14 @@ const editShop = () => {
 
                         <View style={styles.shopImages}>
                             <Text style={styles.subHeader}>Shop Images</Text>
-                            {shopImages === null && (
-                                <TouchableOpacity style={styles.editButton2}>
+                            {shopImages.length === 0 && (
+                                <TouchableOpacity style={styles.editButton2} onPress={() => pickShopImages()}>
                                     <MaterialCommunityIcons name='image-plus' size={16} color='#555' />
                                     <Text style={[styles.editButtonText, { color: '#555' }]}>Upload Image</Text>
                                 </TouchableOpacity>
                             )}
 
-                            {shopImages !== null && (
+                            {shopImages.length !== 0 && (
                                 <>
                                     <View style={styles.imagesContainer}>
                                         {shopImages.map((item) => (
@@ -754,7 +945,7 @@ const editShop = () => {
                                                 />
                                             </TouchableOpacity>
                                         ))}
-                                        <TouchableOpacity style={styles.addImageButton}>
+                                        <TouchableOpacity style={styles.addImageButton} onPress={() => pickShopImages()}>
                                             <MaterialCommunityIcons name='image-plus' size={30} color='#555' />
                                         </TouchableOpacity>
                                     </View>
@@ -854,7 +1045,7 @@ const editShop = () => {
                                             <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                                         </TouchableOpacity>
     
-                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleUpdateRepShopInfo('change-password')}>
+                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleUpdateRepShopInfo('change-password', null, null)}>
                                             <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -901,7 +1092,7 @@ const editShop = () => {
                                         </TouchableOpacity>
     
                                         <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => {
-                                            handleUpdateRepShopInfo('region');
+                                            handleUpdateRepShopInfo('region', null, null);
                                             setMapModalVisible(false);
                                             setIsEditLocation(true);
                                         }}>
@@ -924,7 +1115,7 @@ const editShop = () => {
                             <View style={styles.centeredView}>
                                 <View style={styles.imageView}>
                                     <Image 
-                                        width={300}
+                                        width={500}
                                         height={300}
                                         style={styles.viewImage}
                                         source={{ uri: imageSource }}
@@ -947,6 +1138,11 @@ const editShop = () => {
                         </Modal>
                     </View>
                 </ScrollView>
+                {updateLoading && (
+                    <View style={styles.updateLoadingContainer}>
+                        <ActivityIndicator size='large' color='#000B58'  />
+                    </View>
+                )}
             </KeyboardAvoidingView>
         </SafeAreaView>
     )
@@ -977,7 +1173,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     }, 
     profilePicWrapper: {
-        backgroundColor: 'green',
         width: 120,
         height: 120,
         alignItems: 'center',
@@ -985,9 +1180,12 @@ const styles = StyleSheet.create({
         borderRadius: 120,
         position: 'absolute',
         zIndex: 1,
+    },
+    profilePic: {
+        borderRadius: 120
     },   
     editPicWrapper: {
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
         width: 120,
         height: 120,
         borderRadius: 120,
@@ -998,6 +1196,22 @@ const styles = StyleSheet.create({
     editIcon: {
         fontSize: 30,
         color: '#000B58',
+    },
+    profileButtonContainer: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    profileButton: {
+        width: 100,
+        padding: 5,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    profileButtonText: {
+        fontFamily: 'LeagueSpartan',
+        color: '#FFF',
+        fontSize: 16,
     },
     infoEdit1: {
         flexDirection: 'row',
@@ -1098,7 +1312,7 @@ const styles = StyleSheet.create({
     image: {
         borderRadius: 5,
     },
-     addImageButton: {
+    addImageButton: {
         width: 100,
         height: 100,
         borderRadius: 5,
@@ -1328,6 +1542,18 @@ const styles = StyleSheet.create({
         width: '100%',
         borderTopRightRadius: 10,
         borderTopLeftRadius: 10,
+    },
+    updateLoadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 10,
     },
 })
 

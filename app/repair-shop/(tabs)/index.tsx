@@ -30,8 +30,9 @@ export default function Home() {
   const [averageRating, setAverageRating] = useState<number>(0);
   const [servicesOffered, setServicesOffered] = useState<string[]>([]);
   const [profilePic, setProfilePic] = useState<string | null>(null)
-  const [shopImages, setShopImages] = useState<string[] | null>(null);
+  const [shopImages, setShopImages] = useState<string[]>([]);
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
+  const [profileBG, setProfileBG] = useState<string>('');
 
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
 
@@ -52,6 +53,7 @@ export default function Home() {
         setServicesOffered(res.services_offered);
         setProfilePic(res.profile_pic);
         setShopImages(res.shop_images);
+        setProfileBG(res.profile_bg);
 
       } catch (e) {
         console.log('Error: ', e);
@@ -127,9 +129,22 @@ export default function Home() {
 
         <View style={styles.lowerBox}>
           <View style={styles.repShopUpperContainer}>
-            <View style={styles.profilePicWrapper}>
-              <MaterialCommunityIcons name='car-wrench' size={50} color='#FFF' />
-            </View>
+            {profilePic === null && (
+              <View style={[styles.profilePicWrapper, { backgroundColor: profileBG }]}>
+                <MaterialCommunityIcons name='car-wrench' size={50} color='#FFF' />
+              </View>
+            )}
+
+            {profilePic !== null && (
+              <View style={styles.profilePicWrapper}>
+                <Image
+                  style={styles.profilePic}
+                  source={{ uri: profilePic }}
+                  width={100}
+                  height={100}
+                />
+              </View>
+            )}
 
             <View style={styles.repShopNameContainer}>
               <Text style={styles.repShopName}>{repShopName}</Text>
@@ -194,17 +209,17 @@ export default function Home() {
 
           <View style={styles.shopImages}>
             <Text style={styles.subHeader}>Shop Images</Text>
-            {shopImages === null && (
+            {shopImages.length === 0 && (
                 <TouchableOpacity style={styles.editButton2} onPress={() => router.navigate('./edit-shop/edit-shop')}>
                     <MaterialCommunityIcons name='image-plus' size={16} color='#555' />
                     <Text style={[styles.editButtonText, { color: '#555' }]}>Upload Image</Text>
                 </TouchableOpacity>
             )}
 
-            {shopImages !== null && (
+            {shopImages.length !== 0 && (
               <Carousel
                 width={screenWidth * 0.9}
-                height={200}
+                height={300}
                 data={shopImages}
                 mode='parallax'
                 autoPlay={true}
@@ -214,6 +229,7 @@ export default function Home() {
                 renderItem={({ item }) => (
                   <Image
                     key={item}
+                    height={300}
                     style={styles.image}
                     source={{ uri: item }}
                   />
@@ -274,11 +290,13 @@ const styles = StyleSheet.create({
       width: '100%',
     },
     profilePicWrapper: {
-      backgroundColor: 'green',
       width: 100,
       height: 100,
       alignItems: 'center',
       justifyContent: 'center',
+      borderRadius: 100,
+    },
+    profilePic: {
       borderRadius: 100,
     },
     repShopNameContainer: {

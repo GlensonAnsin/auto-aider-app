@@ -319,11 +319,13 @@ const Signup = () => {
         latitude: region?.latitude !== undefined ? region.latitude.toString() : '',
         creation_date: null,
         profile_pic: null,
-        shop_images: null,
+        shop_images: [],
         number_of_ratings: 0,
         average_rating: 0,
         approval_status: 'Pending',
-        total_score: 0
+        total_score: 0,
+        profile_bg: getRandomHexColor(),
+        availability: 'close',
       };
 
       try {
