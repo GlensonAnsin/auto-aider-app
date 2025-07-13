@@ -1,5 +1,5 @@
 import { AutoRepairShop, UpdateRepairShopInfo } from '@/types/autoRepairShop';
-import { ChangePass, LoginUser, UpdateUser, User } from '@/types/user';
+import { ChangePass, LoginUser, UpdateUserInfo, User } from '@/types/user';
 import { Vehicle } from '@/types/vehicle';
 import axios from 'axios';
 import api from './interceptor';
@@ -68,7 +68,7 @@ export const getUserInfo = async () => {
 };
 
 // UPDATE USER INFO
-export const updateUserInfo = async (userData: UpdateUser): Promise<UpdateUser | null> => {
+export const updateUserInfo = async (userData: UpdateUserInfo): Promise<UpdateUserInfo | null> => {
   try {
     const token = await getAccessToken();
     const res = await axios.patch(`${apiURL}/user/update-user-info`,

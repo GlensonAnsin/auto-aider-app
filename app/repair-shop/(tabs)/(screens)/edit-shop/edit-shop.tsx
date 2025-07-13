@@ -11,7 +11,7 @@ import axios from 'axios';
 import Checkbox from 'expo-checkbox';
 import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -37,7 +37,6 @@ const editShop = () => {
     const [newPassword, setNewPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isEditLocation, setIsEditLocation] = useState<boolean>(false);
     const [isEditServices, setIsEditServices] = useState<boolean>(false);
     const [edit, setEdit] = useState<string>('');
     const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -134,8 +133,8 @@ const editShop = () => {
                     setRegion({
                         latitude: parseFloat(res.latitude),
                         longitude: parseFloat(res.longitude),
-                        latitudeDelta: 0.01,
-                        longitudeDelta: 0.01,
+                        latitudeDelta: 0.001,
+                        longitudeDelta: 0.001,
                     });
                     setProfilePic(res.profile_pic);
                     setShopImages(res.shop_images);
@@ -151,8 +150,8 @@ const editShop = () => {
                     setLocalRegion({
                         latitude: parseFloat(res.latitude),
                         longitude: parseFloat(res.longitude),
-                        latitudeDelta: 0.01,
-                        longitudeDelta: 0.01,
+                        latitudeDelta: 0.001,
+                        longitudeDelta: 0.001,
                     });
                     setLocalProfilePic(res.profile_pic);
 
@@ -169,7 +168,6 @@ const editShop = () => {
             return () => {
             isActive = false;
             setEdit('');
-            setIsEditLocation(false);
 
             };
         }, [])
@@ -197,8 +195,8 @@ const editShop = () => {
             setRegion({
                 latitude: parseFloat(updatedRepairShopInfo.latitude),
                 longitude: parseFloat(updatedRepairShopInfo.longitude),
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
+                latitudeDelta: 0.001,
+                longitudeDelta: 0.001,
             });
             setProfilePic(updatedRepairShopInfo.profile_pic);
             setShopImages(updatedRepairShopInfo.shop_images);
@@ -213,8 +211,8 @@ const editShop = () => {
             setLocalRegion({
                 latitude: parseFloat(updatedRepairShopInfo.latitude),
                 longitude: parseFloat(updatedRepairShopInfo.longitude),
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
+                latitudeDelta: 0.001,
+                longitudeDelta: 0.001,
             });
             setLocalProfilePic(updatedRepairShopInfo.profile_pic);
         });
@@ -289,7 +287,7 @@ const editShop = () => {
         mapRef.current?.animateToRegion(newRegion, 300);
     };
 
-    const handleUpdateRepShopInfo = async (field: string, link: string | null, arrayLink: string[] | null) => {
+    const handleUpdateRepShopInfo = async (field: string, link: string | null, arrayLink: string[] | null, imageAction: string | null) => {
         try {
             setUpdateLoading(true);
             const repairShopData: UpdateRepairShopInfo = {
@@ -347,7 +345,7 @@ const editShop = () => {
                     setMobileNum(localMobileNum);
                     break;
                 case 'email':
-                    const emailExists = userExcluded.some(repairShop => repairShop.email === localEmail !== null ? localEmail?.trim() : null);
+                    const emailExists = userExcluded.some(repairShop => repairShop.email === localEmail ? localEmail?.trim() : '');
 
                     if (emailExists) {
                         showMessage({
@@ -397,8 +395,8 @@ const editShop = () => {
                     setRegion({
                         latitude: localRegion?.latitude !== undefined ? localRegion.latitude : 0,
                         longitude: localRegion?.longitude !== undefined ? localRegion.longitude : 0,
-                        latitudeDelta: 0.01,
-                        longitudeDelta: 0.01,
+                        latitudeDelta: 0.001,
+                        longitudeDelta: 0.001,
                     })
                     break;
                 case 'profile':
@@ -406,8 +404,13 @@ const editShop = () => {
                     setProfilePic(link);
                     break;
                 case 'shop-images':
-                    repairShopData.shop_images = arrayLink ? [...shopImages, ...arrayLink] : [...shopImages];
-                    setShopImages(arrayLink ? [...shopImages, ...arrayLink] : [...shopImages]);
+                    if (imageAction === 'add') {
+                        repairShopData.shop_images = arrayLink ? [...shopImages, ...arrayLink] : [...shopImages];
+                        setShopImages(arrayLink ? [...shopImages, ...arrayLink] : [...shopImages]);
+                    } else {
+                        repairShopData.shop_images = arrayLink ? [...arrayLink] : [...shopImages];
+                        setShopImages(arrayLink ? [...arrayLink] : [...shopImages]);
+                    }
                     break;
                 default:
                     throw new Error('Unsupported field');
@@ -430,7 +433,7 @@ const editShop = () => {
             });
 
         } catch (e) {
-            console.error('Eror:', e);
+            console.error('Error:', e);
             showMessage({
                 message: 'Something went wrong. Please try again.',
                 type: 'danger',
@@ -438,6 +441,7 @@ const editShop = () => {
                 color: '#FFF',
                 icon: 'danger',
             });
+            
         } finally {
             setUpdateLoading(false);
         }
@@ -513,7 +517,7 @@ const editShop = () => {
 
         const uploadedUrl = uploadRes.data.secure_url;
         setPickedImage(false);
-        handleUpdateRepShopInfo('profile', uploadedUrl, null);
+        handleUpdateRepShopInfo('profile', uploadedUrl, null, null);
 
         } catch (e) {
             console.error('Upload Error: ', e);
@@ -552,7 +556,7 @@ const editShop = () => {
                 );
                 uploadedUrls.push(uploadRes.data.secure_url);
             }
-            handleUpdateRepShopInfo('shop-images', null, uploadedUrls);
+            handleUpdateRepShopInfo('shop-images', null, uploadedUrls, 'add');
             
         } catch (e) {
             console.error('Upload Error: ', e);
@@ -560,16 +564,28 @@ const editShop = () => {
         }
     };
 
-    const deleteProfilePic = async () => {
+    const deleteImage = async (field: string, image: string | null) => {
         setUpdateLoading(true);
-        const parts = profilePic?.split('/');
-        const lastPart = parts?.slice(-1)[0];
-        const folderName = parts?.slice(-2)[0];
-        const fileName = lastPart?.split('.')[0];
-        
-        await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/delete-profile `, {
-            public_id: `${folderName}/${fileName}`,
-        });
+        if (field === 'profile') {
+            const parts = profilePic?.split('/');
+            const lastPart = parts?.slice(-1)[0];
+            const folderName = parts?.slice(-2)[0];
+            const fileName = lastPart?.split('.')[0];
+            
+            await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/delete-image `, {
+                public_id: `${folderName}/${fileName}`,
+            });
+
+        } else {
+            const parts = image?.split('/');
+            const lastPart = parts?.slice(-1)[0];
+            const folderName = parts?.slice(-2)[0];
+            const fileName = lastPart?.split('.')[0];
+            
+            await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/delete-image `, {
+                public_id: `${folderName}/${fileName}`,
+            });
+        }
     };
 
     if (isLoading) {
@@ -617,8 +633,8 @@ const editShop = () => {
                             {localProfilePic !== null && !pickedImage && (
                                 <View style={styles.profileButtonContainer}>
                                     <TouchableOpacity style={[styles.profileButton, { backgroundColor: '#780606', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, }]} onPress={() => {
-                                        deleteProfilePic();
-                                        handleUpdateRepShopInfo('profile', null, null);
+                                        deleteImage('profile', null);
+                                        handleUpdateRepShopInfo('profile', null, null, null);
                                     }}>
                                         <MaterialCommunityIcons name='image-remove' size={20} color='#FFF' />
                                         <Text style={styles.profileButtonText}>Remove</Text>
@@ -632,7 +648,12 @@ const editShop = () => {
                                         <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity style={[styles.profileButton, { backgroundColor: '#000B58' }]} onPress={() => uploadProfileImage()}>
+                                    <TouchableOpacity style={[styles.profileButton, { backgroundColor: '#000B58' }]} onPress={() => {
+                                        if (profilePic !== null) {
+                                            deleteImage('profile', null);
+                                        }
+                                        uploadProfileImage();
+                                    }}>
                                         <Text style={styles.profileButtonText}>Save</Text>
                                     </TouchableOpacity>
                                 </View>
@@ -648,7 +669,7 @@ const editShop = () => {
                                         />
 
                                         {localRepShopName !== '' && (
-                                            <TouchableOpacity onPress={() => handleUpdateRepShopInfo('rep-shop-name', null, null)}>
+                                            <TouchableOpacity onPress={() => handleUpdateRepShopInfo('rep-shop-name', null, null, null)}>
                                                 <FontAwesome5 name='check' size={22} color='#22bb33' />
                                             </TouchableOpacity>
                                         )}
@@ -686,7 +707,7 @@ const editShop = () => {
                                             />
 
                                             {localOwnerFirstname !== '' && (
-                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('firstname', null, null)}>
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('firstname', null, null, null)}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
                                             )}
@@ -722,7 +743,7 @@ const editShop = () => {
                                             />
 
                                             {localOwnerLastname !== '' && (
-                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('lastname', null, null)}>
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('lastname', null, null, null)}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
                                             )}
@@ -765,10 +786,10 @@ const editShop = () => {
                                                 )}
                                                 renderItem={(item, _index, isSelected) => (
                                                     <View
-                                                    style={{
-                                                        ...styles.dropdownItemStyle,
-                                                        ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                                                    }}
+                                                        style={{
+                                                            ...styles.dropdownItemStyle,
+                                                            ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                                                        }}
                                                     >
                                                     <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
                                                     </View>
@@ -776,7 +797,7 @@ const editShop = () => {
                                                 showsVerticalScrollIndicator={false}
                                                 dropdownStyle={styles.dropdownMenuStyle}
                                             />
-                                            <TouchableOpacity onPress={() => handleUpdateRepShopInfo('gender', null, null)}>
+                                            <TouchableOpacity onPress={() => handleUpdateRepShopInfo('gender', null, null, null)}>
                                                 <FontAwesome5 name='check' size={16} color='#22bb33' />
                                             </TouchableOpacity>
                                         </>
@@ -806,7 +827,7 @@ const editShop = () => {
                                             />
 
                                             {localMobileNum !== '' && (
-                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('mobile-num', null, null)}>
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('mobile-num', null, null, null)}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
                                             )}
@@ -844,35 +865,35 @@ const editShop = () => {
                                 {localEmail !== null && (
                                     <View style={styles.infoEdit2}>
                                         {edit === 'email' && (
-                                        <>
-                                            <TextInput 
-                                                style={styles.input2}
-                                                value={localEmail}
-                                                onChangeText={setLocalEmail}
-                                            />
+                                            <>
+                                                <TextInput 
+                                                    style={styles.input2}
+                                                    value={localEmail}
+                                                    onChangeText={setLocalEmail}
+                                                />
 
-                                            {localEmail !== '' && (
-                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('email', null, null)}>
-                                                    <FontAwesome5 name='check' size={16} color='#22bb33' />
-                                                </TouchableOpacity>
-                                            )}  
+                                                {localEmail !== '' && (
+                                                    <TouchableOpacity onPress={() => handleUpdateRepShopInfo('email', null, null, null)}>
+                                                        <FontAwesome5 name='check' size={16} color='#22bb33' />
+                                                    </TouchableOpacity>
+                                                )}  
 
-                                            {localEmail === '' && (
-                                                <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
-                                                    <Entypo name='cross' size={18} color='#780606' />
-                                                </TouchableOpacity>
-                                            )}                                            
-                                        </>
-                                    )}
+                                                {localEmail === '' && (
+                                                    <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
+                                                        <Entypo name='cross' size={18} color='#780606' />
+                                                    </TouchableOpacity>
+                                                )}                                            
+                                            </>
+                                        )}
 
-                                    {edit !== 'email' && (
-                                        <>
-                                            <Text style={styles.infoText}>{localEmail}</Text>
-                                            <TouchableOpacity onPress={() => setEdit('email')}>
-                                                <MaterialIcons name='edit' size={16} color='#555' />
-                                            </TouchableOpacity> 
-                                        </>
-                                    )}
+                                        {edit !== 'email' && (
+                                            <>
+                                                <Text style={styles.infoText}>{localEmail}</Text>
+                                                <TouchableOpacity onPress={() => setEdit('email')}>
+                                                    <MaterialIcons name='edit' size={16} color='#555' />
+                                                </TouchableOpacity> 
+                                            </>
+                                        )}
                                     </View>
                                 )}
                             </View>
@@ -910,7 +931,7 @@ const editShop = () => {
                                     </TouchableOpacity>
 
                                     <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => {
-                                        handleUpdateRepShopInfo('services-offered', null, null);
+                                        handleUpdateRepShopInfo('services-offered', null, null, null);
                                         setIsEditServices(false);
                                     }}>
                                         <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
@@ -955,39 +976,30 @@ const editShop = () => {
 
                         <View style={styles.shopLocation}>
                             <Text style={styles.subHeader}>Shop Location</Text>
-                            {!isEditLocation && (
-                                <TouchableOpacity style={styles.editButton2} onPress={() => setMapModalVisible(true)}>
+                            <View style={styles.mapButtonContainer}>
+                                <View style={styles.mapView2}>
+                                    <MapView
+                                        style={styles.map2}
+                                        ref={mapRef}
+                                        mapType='hybrid'
+                                        region={localRegion}
+                                    >
+                                        {localRegion && (
+                                            <Marker
+                                                coordinate={{
+                                                    latitude: localRegion.latitude,
+                                                    longitude: localRegion.longitude,
+                                                }}
+                                            />
+                                        )}
+                                    </MapView>
+                                </View>
+
+                                <TouchableOpacity style={styles.editButton3} onPress={() => setMapModalVisible(true)}>
                                     <Entypo name='location' size={16} color='#555' />
                                     <Text style={[styles.editButtonText, { color: '#555' }]}>Edit Location</Text>
                                 </TouchableOpacity>
-                            )}
-
-                            {isEditLocation && (
-                                <View style={styles.mapButtonContainer}>
-                                    <View style={styles.mapView2}>
-                                        <MapView
-                                            style={styles.map2}
-                                            ref={mapRef}
-                                            mapType='hybrid'
-                                            region={localRegion}
-                                        >
-                                            {region && (
-                                                <Marker
-                                                    coordinate={{
-                                                        latitude: region.latitude,
-                                                        longitude: region.longitude,
-                                                    }}
-                                                />
-                                            )}
-                                        </MapView>
-                                    </View>
-
-                                    <TouchableOpacity style={styles.editButton3} onPress={() => setMapModalVisible(true)}>
-                                        <Entypo name='location' size={16} color='#555' />
-                                        <Text style={[styles.editButtonText, { color: '#555' }]}>Edit Location</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            )}
+                            </View>
                         </View>
 
                         <Modal
@@ -995,62 +1007,69 @@ const editShop = () => {
                             backdropColor={'rgba(0, 0, 0, 0.5)'}
                             visible={modalVisible}
                             onRequestClose={() => {
-                                setModalVisible(!setModalVisible);
+                                setModalVisible(false);
                                 setCurrentPassword('');
                                 setNewPassword('');
                                 setConfirmPassword('');
                             }}
                         >
-                            <View style={styles.centeredView}>
-                                <View style={styles.modalView}>
-                                    <Text style={styles.modalHeader}>Change Password</Text>
-                                    <View style={styles.modalInputContainer}>
-                                        <Text style={styles.modalInputLabel}>Current Password</Text>
-                                        <TextInput
-                                            value={currentPassword}
-                                            onChangeText={setCurrentPassword}
-                                            style={styles.modalInput}
-                                            secureTextEntry
-                                        />
-                                    </View>
-    
-                                    <View style={styles.modalInputContainer}>
-                                        <Text style={styles.modalInputLabel}>New Password</Text>
-                                        <TextInput
-                                            value={newPassword}
-                                            onChangeText={setNewPassword}
-                                            style={styles.modalInput}
-                                            secureTextEntry
-                                        />
-                                    </View>
-    
-                                    <View style={styles.modalInputContainer}>
-                                        <Text style={styles.modalInputLabel}>Confirm New Password</Text>
-                                        <TextInput
-                                            value={confirmPassword}
-                                            onChangeText={setConfirmPassword}
-                                            style={styles.modalInput}
-                                            secureTextEntry
-                                        />
-                                    </View>
-
-                                    {passwordError.length > 0 && (
-                                        <View style={styles.errorContainer}>
-                                            <Text style={styles.errorMessage}>{passwordError}</Text>
+                            <TouchableWithoutFeedback onPress={() => {
+                                setModalVisible(false);
+                                setCurrentPassword('');
+                                setNewPassword('');
+                                setConfirmPassword('');
+                            }}>
+                                <View style={styles.centeredView}>
+                                    <Pressable style={styles.modalView} onPress={() => {}}>
+                                        <Text style={styles.modalHeader}>Change Password</Text>
+                                        <View style={styles.modalInputContainer}>
+                                            <Text style={styles.modalInputLabel}>Current Password</Text>
+                                            <TextInput
+                                                value={currentPassword}
+                                                onChangeText={setCurrentPassword}
+                                                style={styles.modalInput}
+                                                secureTextEntry
+                                            />
                                         </View>
-                                    )}
-    
-                                    <View style={styles.cancelSaveContainer}>
-                                        <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelChangePass()}>
-                                            <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                        </TouchableOpacity>
-    
-                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleUpdateRepShopInfo('change-password', null, null)}>
-                                            <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
-                                        </TouchableOpacity>
-                                    </View>
+        
+                                        <View style={styles.modalInputContainer}>
+                                            <Text style={styles.modalInputLabel}>New Password</Text>
+                                            <TextInput
+                                                value={newPassword}
+                                                onChangeText={setNewPassword}
+                                                style={styles.modalInput}
+                                                secureTextEntry
+                                            />
+                                        </View>
+        
+                                        <View style={styles.modalInputContainer}>
+                                            <Text style={styles.modalInputLabel}>Confirm New Password</Text>
+                                            <TextInput
+                                                value={confirmPassword}
+                                                onChangeText={setConfirmPassword}
+                                                style={styles.modalInput}
+                                                secureTextEntry
+                                            />
+                                        </View>
+
+                                        {passwordError.length > 0 && (
+                                            <View style={styles.errorContainer}>
+                                                <Text style={styles.errorMessage}>{passwordError}</Text>
+                                            </View>
+                                        )}
+        
+                                        <View style={styles.cancelSaveContainer}>
+                                            <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelChangePass()}>
+                                                <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                            </TouchableOpacity>
+        
+                                            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleUpdateRepShopInfo('change-password', null, null, null)}>
+                                                <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </Pressable>
                                 </View>
-                            </View>
+                            </TouchableWithoutFeedback>
                         </Modal>
 
                         <Modal
@@ -1092,9 +1111,8 @@ const editShop = () => {
                                         </TouchableOpacity>
     
                                         <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => {
-                                            handleUpdateRepShopInfo('region', null, null);
+                                            handleUpdateRepShopInfo('region', null, null, null);
                                             setMapModalVisible(false);
-                                            setIsEditLocation(true);
                                         }}>
                                             <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                                         </TouchableOpacity>
@@ -1112,29 +1130,39 @@ const editShop = () => {
                                 setImageSource('');
                             }}
                         >
-                            <View style={styles.centeredView}>
-                                <View style={styles.imageView}>
-                                    <Image 
-                                        width={500}
-                                        height={300}
-                                        style={styles.viewImage}
-                                        source={{ uri: imageSource }}
-                                    />
-                                    
-                                    <View style={styles.cancelSaveContainer}>
-                                        <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => {
-                                            setImageModalVisible(false);
-                                            setImageSource('');
-                                        }}>
-                                            <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                        </TouchableOpacity>
-    
-                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#780606' }]}>
-                                            <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Delete</Text>
-                                        </TouchableOpacity>
-                                    </View>
+                            <TouchableWithoutFeedback onPress={() => {
+                                setImageModalVisible(false);
+                                setImageSource('');
+                            }}>
+                                <View style={styles.centeredView}>
+                                    <Pressable style={styles.imageView} onPress={() => {}}>
+                                        <Image 
+                                            width={500}
+                                            height={300}
+                                            style={styles.viewImage}
+                                            source={{ uri: imageSource }}
+                                        />
+                                        
+                                        <View style={styles.cancelSaveContainer}>
+                                            <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => {
+                                                setImageModalVisible(false);
+                                                setImageSource('');
+                                            }}>
+                                                <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                            </TouchableOpacity>
+        
+                                            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#780606' }]} onPress={() => {
+                                                deleteImage('shop-image', imageSource)
+                                                const updatedLinks = shopImages.filter(item => item !== imageSource);
+                                                setImageModalVisible(false);
+                                                handleUpdateRepShopInfo('shop-images', null, updatedLinks, 'delete');
+                                            }}>
+                                                <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Delete</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </Pressable>
                                 </View>
-                            </View>
+                            </TouchableWithoutFeedback>
                         </Modal>
                     </View>
                 </ScrollView>

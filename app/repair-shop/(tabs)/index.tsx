@@ -7,7 +7,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -33,6 +33,7 @@ export default function Home() {
   const [shopImages, setShopImages] = useState<string[]>([]);
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
   const [profileBG, setProfileBG] = useState<string>('');
+  const [imageModalVisible, setImageModalVisible] = useState<boolean>(false);
 
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
 
@@ -130,20 +131,61 @@ export default function Home() {
         <View style={styles.lowerBox}>
           <View style={styles.repShopUpperContainer}>
             {profilePic === null && (
-              <View style={[styles.profilePicWrapper, { backgroundColor: profileBG }]}>
-                <MaterialCommunityIcons name='car-wrench' size={50} color='#FFF' />
-              </View>
+              <>
+                <TouchableOpacity style={[styles.profilePicWrapper, { backgroundColor: profileBG }]} onPress={() => setImageModalVisible(true)}>
+                  <MaterialCommunityIcons name='car-wrench' size={50} color='#FFF' />
+                </TouchableOpacity>
+
+                <Modal
+                  animationType='fade'
+                  backdropColor={'rgba(0, 0, 0, 0.5)'}
+                  visible={imageModalVisible}
+                  onRequestClose={() => setImageModalVisible(false)}
+                >
+                  <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
+                    <View style={styles.centeredView}>
+                      <Pressable style={styles.imageView} onPress={() => {}}>
+                        <View style={[styles.modalProfilePicWrapper, { backgroundColor: profileBG }]}>
+                          <MaterialCommunityIcons name='car-wrench' size={100} color='#FFF' />
+                        </View>
+                      </Pressable>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </Modal>
+              </>
             )}
 
             {profilePic !== null && (
-              <View style={styles.profilePicWrapper}>
-                <Image
-                  style={styles.profilePic}
-                  source={{ uri: profilePic }}
-                  width={100}
-                  height={100}
-                />
-              </View>
+              <>
+                <TouchableOpacity style={styles.profilePicWrapper} onPress={() => setImageModalVisible(true)}>
+                  <Image
+                    style={styles.profilePic}
+                    source={{ uri: profilePic }}
+                    width={100}
+                    height={100}
+                  />
+                </TouchableOpacity>
+
+                <Modal
+                  animationType='fade'
+                  backdropColor={'rgba(0, 0, 0, 0.5)'}
+                  visible={imageModalVisible}
+                  onRequestClose={() => setImageModalVisible(false)}
+                >
+                  <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
+                    <View style={styles.centeredView}>
+                      <Pressable style={styles.imageView}>
+                          <Image 
+                            width={500}
+                            height={300}
+                            style={styles.viewImage}
+                            source={{ uri: profilePic }}
+                          />
+                      </Pressable>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </Modal>
+              </>
             )}
 
             <View style={styles.repShopNameContainer}>
@@ -239,14 +281,14 @@ export default function Home() {
           </View>
 
           <View style={styles.servicesOffered}>
-              <Text style={styles.subHeader}>Services Offered</Text>
-              {servicesOffered.map((item) => (
-                <View key={item} style={styles.services}>
-                  <Text style={styles.bullet}>{`\u2022`}</Text>
-                  <Text style={styles.servicesText}>{item}</Text>
-                </View>
-              ))}
-            </View>
+            <Text style={styles.subHeader}>Services Offered</Text>
+            {servicesOffered.map((item) => (
+              <View key={item} style={styles.services}>
+                <Text style={styles.bullet}>{`\u2022`}</Text>
+                <Text style={styles.servicesText}>{item}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -414,5 +456,37 @@ const styles = StyleSheet.create({
       fontFamily: 'LeagueSpartan',
       color: '#333',
       fontSize: 16,
+    },
+    centeredView: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    imageView: {
+      backgroundColor: '#FFF',
+      width: '85%',
+      borderRadius: 10,
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+      overflow: 'hidden',
+    },
+    viewImage: {
+      width: '100%',
+      borderTopRightRadius: 10,
+      borderTopLeftRadius: 10,
+    },
+    modalProfilePicWrapper: {
+      width: '100%',
+      height: 300,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 10,
     },
 });

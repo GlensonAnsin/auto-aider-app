@@ -5,7 +5,7 @@ import { clearTokens } from '@/services/tokenStorage';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -240,56 +240,63 @@ const Profile = () => {
                         backdropColor={'rgba(0, 0, 0, 0.5)'}
                         visible={modalVisible}
                         onRequestClose={() => {
-                            setModalVisible(!setModalVisible);
+                            setModalVisible(false);
                             setCurrentPassword('');
                             setNewPassword('');
                             setConfirmPassword('');
                         }}
                     >
-                        <View style={styles.centeredView}>
-                            <View style={styles.modalView}>
-                                <Text style={styles.modalHeader}>Change Password</Text>
-                                <View style={styles.textInputContainer}>
-                                    <Text style={styles.textInputLbl}>Current Password</Text>
-                                    <TextInput
-                                        value={currentPassword}
-                                        onChangeText={setCurrentPassword}
-                                        style={styles.input}
-                                        secureTextEntry
-                                    />
-                                </View>
+                        <TouchableWithoutFeedback onPress={() => {
+                            setModalVisible(false);
+                            setCurrentPassword('');
+                            setNewPassword('');
+                            setConfirmPassword('');
+                        }}>
+                            <View style={styles.centeredView}>
+                                <Pressable style={styles.modalView} onPress={() => {}}>
+                                    <Text style={styles.modalHeader}>Change Password</Text>
+                                    <View style={styles.textInputContainer}>
+                                        <Text style={styles.textInputLbl}>Current Password</Text>
+                                        <TextInput
+                                            value={currentPassword}
+                                            onChangeText={setCurrentPassword}
+                                            style={styles.input}
+                                            secureTextEntry
+                                        />
+                                    </View>
 
-                                <View style={styles.textInputContainer}>
-                                    <Text style={styles.textInputLbl}>New Password</Text>
-                                    <TextInput
-                                        value={newPassword}
-                                        onChangeText={setNewPassword}
-                                        style={styles.input}
-                                        secureTextEntry
-                                    />
-                                </View>
+                                    <View style={styles.textInputContainer}>
+                                        <Text style={styles.textInputLbl}>New Password</Text>
+                                        <TextInput
+                                            value={newPassword}
+                                            onChangeText={setNewPassword}
+                                            style={styles.input}
+                                            secureTextEntry
+                                        />
+                                    </View>
 
-                                <View style={styles.textInputContainer}>
-                                    <Text style={styles.textInputLbl}>Confirm New Password</Text>
-                                    <TextInput
-                                        value={confirmPassword}
-                                        onChangeText={setConfirmPassword}
-                                        style={styles.input}
-                                        secureTextEntry
-                                    />
-                                </View>
+                                    <View style={styles.textInputContainer}>
+                                        <Text style={styles.textInputLbl}>Confirm New Password</Text>
+                                        <TextInput
+                                            value={confirmPassword}
+                                            onChangeText={setConfirmPassword}
+                                            style={styles.input}
+                                            secureTextEntry
+                                        />
+                                    </View>
 
-                                <View style={styles.cancelSaveContainer}>
-                                    <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelChangePass()}>
-                                        <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                    </TouchableOpacity>
+                                    <View style={styles.cancelSaveContainer}>
+                                        <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelChangePass()}>
+                                            <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                        </TouchableOpacity>
 
-                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleChangePass()}>
-                                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
-                                    </TouchableOpacity>
-                                </View>
+                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleChangePass()}>
+                                            <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </Pressable>
                             </View>
-                        </View>
+                        </TouchableWithoutFeedback>
                     </Modal>
                 </View>
             </View>

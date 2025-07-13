@@ -7,7 +7,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -100,12 +100,14 @@ export default function Home() {
             console.log('Connected to server: ', newSocket.id);
         });
 
-        newSocket.on('updatedProfile', ({ updatedProfile }) => {
-            setProfilePic(updatedProfile);
-        })
+        newSocket.on('updatedUserInfo', ({ updatedUserInfo }) => {
+            setFirstname(updatedUserInfo.firstname);
+            setLastname(updatedUserInfo.lastname);
+            setProfilePic(updatedUserInfo.profile_pic);
+        });
 
         return () => {
-            newSocket.off('updatedProfile');
+            newSocket.off('updatedUserInfo');
             newSocket.disconnect();
         };
     }, []);
@@ -243,89 +245,97 @@ export default function Home() {
                         backdropColor={'rgba(0, 0, 0, 0.5)'}
                         visible={addVehicleModalVisible}
                         onRequestClose={() => {
-                            isAddVehicleModalVisible(!addVehicleModalVisible);
+                            isAddVehicleModalVisible(false);
                             setSelectedMake('');
                             setModel('');
                             setYear('');
                             setError('');
                         }}
                     >
-                        <View style={styles.centeredView}>
-                            <View style={styles.addCarModalView}>
-                                <Text style={styles.modalHeader}>Add Vehicle</Text>
-                                <View style={styles.textInputContainer}>
-                                    <Text style={styles.textInputLbl}>Manufacturer</Text>
-                                    <SelectDropdown 
-                                        data={targetMakes}
-                                        onSelect={(selectedItem) => setSelectedMake(selectedItem)}
-                                        renderButton={(selectedItem, isOpen) => (
-                                            <View style={styles.dropdownButtonStyle}>
-                                                <Text style={styles.dropdownButtonTxtStyle}>
-                                                    {selectedItem || 'Select manufacturer'}
-                                                </Text>
-                                                <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                                            </View>
-                                        )}
-                                        renderItem={(item, _index, isSelected) => (
-                                            <View
-                                                style={{
-                                                    ...styles.dropdownItemStyle,
-                                                    ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                                                }}
-                                                >
-                                                <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
-                                            </View>
-                                        )}
-                                        showsVerticalScrollIndicator={false}
-                                        dropdownStyle={styles.dropdownMenuStyle}
-                                    />
-                                </View>
-
-                                <View style={styles.textInputContainer}>
-                                    <Text style={styles.textInputLbl}>Model</Text>
-                                    <TextInput 
-                                        value={model}
-                                        onChangeText={setModel}
-                                        style={styles.input}
-                                        placeholder='Model'
-                                        editable={!selectedMake ? false : true}
-                                    />
-                                </View>
-
-                                <View style={styles.textInputContainer}>
-                                    <Text style={styles.textInputLbl}>Year</Text>
-                                    <TextInput 
-                                        value={year}
-                                        onChangeText={setYear}
-                                        style={styles.input}
-                                        keyboardType='numeric'
-                                        placeholder='Year'
-                                        maxLength={4}
-                                        editable={!model ? false : true}
-                                    />
-                                </View>
-
-                                {error.length > 0 && (
-                                    <View style={styles.errorContainer}>
-                                        <Text style={styles.errorMessage}>{error}</Text>
+                        <TouchableWithoutFeedback onPress={() => {
+                            isAddVehicleModalVisible(false);
+                            setSelectedMake('');
+                            setModel('');
+                            setYear('');
+                            setError('');
+                        }}>
+                            <View style={styles.centeredView}>
+                                <Pressable style={styles.addCarModalView} onPress={() => {}}>
+                                    <Text style={styles.modalHeader}>Add Vehicle</Text>
+                                    <View style={styles.textInputContainer}>
+                                        <Text style={styles.textInputLbl}>Manufacturer</Text>
+                                        <SelectDropdown 
+                                            data={targetMakes}
+                                            onSelect={(selectedItem) => setSelectedMake(selectedItem)}
+                                            renderButton={(selectedItem, isOpen) => (
+                                                <View style={styles.dropdownButtonStyle}>
+                                                    <Text style={styles.dropdownButtonTxtStyle}>
+                                                        {selectedItem || 'Select manufacturer'}
+                                                    </Text>
+                                                    <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                                                </View>
+                                            )}
+                                            renderItem={(item, _index, isSelected) => (
+                                                <View
+                                                    style={{
+                                                        ...styles.dropdownItemStyle,
+                                                        ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                                                    }}
+                                                    >
+                                                    <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+                                                </View>
+                                            )}
+                                            showsVerticalScrollIndicator={false}
+                                            dropdownStyle={styles.dropdownMenuStyle}
+                                        />
                                     </View>
-                                )}
 
-                                {isAddCarLoading === true && (
-                                    <ActivityIndicator style={{ marginTop: 20 }} size='small' color='#000B58' />
-                                )}
+                                    <View style={styles.textInputContainer}>
+                                        <Text style={styles.textInputLbl}>Model</Text>
+                                        <TextInput 
+                                            value={model}
+                                            onChangeText={setModel}
+                                            style={styles.input}
+                                            placeholder='Model'
+                                            editable={!selectedMake ? false : true}
+                                        />
+                                    </View>
 
-                                <View style={styles.cancelSaveContainer}>
-                                    <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelAddCar()}>
-                                        <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                    </TouchableOpacity>
+                                    <View style={styles.textInputContainer}>
+                                        <Text style={styles.textInputLbl}>Year</Text>
+                                        <TextInput 
+                                            value={year}
+                                            onChangeText={setYear}
+                                            style={styles.input}
+                                            keyboardType='numeric'
+                                            placeholder='Year'
+                                            maxLength={4}
+                                            editable={!model ? false : true}
+                                        />
+                                    </View>
 
-                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleCarVerification()}>
-                                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Add</Text>
-                                    </TouchableOpacity>
-                                </View>
+                                    {error.length > 0 && (
+                                        <View style={styles.errorContainer}>
+                                            <Text style={styles.errorMessage}>{error}</Text>
+                                        </View>
+                                    )}
+
+                                    {isAddCarLoading === true && (
+                                        <ActivityIndicator style={{ marginTop: 20 }} size='small' color='#000B58' />
+                                    )}
+
+                                    <View style={styles.cancelSaveContainer}>
+                                        <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelAddCar()}>
+                                            <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleCarVerification()}>
+                                            <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Add</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </Pressable>
                             </View>
-                        </View>
+                        </TouchableWithoutFeedback>
                     </Modal>
                 </View>
             </ScrollView>

@@ -24,13 +24,14 @@ export interface UserWithID {
     role: string;
 };
 
-export interface UpdateUser {
-    firstname: string;
-    lastname: string;
-    gender: string;
+export interface UpdateUserInfo {
+    firstname: string | null;
+    lastname: string | null;
+    gender: string | null;
     email: string | null;
-    mobile_num: string;
+    mobile_num: string | null;
     profile_pic: string | null;
+    field: string;
 };
 
 export interface ChangePass {

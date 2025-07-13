@@ -1,19 +1,22 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { getUserInfo, getUsers, updateUserInfo } from '@/services/backendApi';
-import { UserWithID } from '@/types/user';
+import { UpdateUserInfo, UserWithID } from '@/types/user';
+import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
+import { io, Socket } from 'socket.io-client';
 
 const EditProfile = () => {
-  const router = useRouter();
+  const [_socket, setSocket] = useState<Socket | null>(null);
 
   const [userID, setUserID] = useState<number>(0);
   const [firstname, setFirstname] = useState<string>('');
@@ -27,6 +30,14 @@ const EditProfile = () => {
   const [userInitialsBG, setUserInitialsBG] = useState<string>('');
   const [updateLoading, setUpdateLoading] = useState<boolean>(false);
   const [pickedImage, setPickedImage] = useState<boolean>(false);
+  const [edit, setEdit] = useState<string>('');
+
+  const [localFirstname, setLocalFirstname] = useState<string>('');
+  const [localLastname, setLocalLastname] = useState<string>('');
+  const [localGender, setLocalGender] = useState<string>('');
+  const [localMobileNum, setLocalMobileNum] = useState<string>('');
+  const [localEmail, setLocalEmail] = useState<string>('');
+  const [localProfilePic, setLocalProfilePic] = useState<string | null>(null);
 
   const genders = ['Male', 'Female'];
 
@@ -46,6 +57,13 @@ const EditProfile = () => {
         setUserInitials(`${res.firstname[0]}${res.lastname[0]}`);
         setUserInitialsBG(res.user_initials_bg);
 
+        setLocalFirstname(res.firstname);
+        setLocalLastname(res.lastname);
+        setLocalGender(res.gender);
+        setLocalMobileNum(res.mobile_num);
+        setLocalEmail(res.email);
+        setLocalProfilePic(res.profile_pic);
+
       } catch (e) {
         console.error('Error: ', e);
 
@@ -53,6 +71,40 @@ const EditProfile = () => {
         setIsLoading(false)
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
+      transports: ['websocket'],
+    });
+
+    setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      console.log('Connected to server: ', newSocket.id);
+    });
+
+    newSocket.on('updatedUserInfo', ({ updatedUserInfo }) => {
+      setFirstname(updatedUserInfo.firstname);
+      setLastname(updatedUserInfo.lastname);
+      setGender(updatedUserInfo.gender);
+      setMobileNum(updatedUserInfo.mobile_num);
+      setEmail(updatedUserInfo.email);
+      setProfilePic(updatedUserInfo.profile_pic);
+      setUserInitials(`${updatedUserInfo.firstname[0]}${updatedUserInfo.lastname[0]}`);
+
+      setLocalFirstname(updatedUserInfo.firstname);
+      setLocalLastname(updatedUserInfo.lastname);
+      setLocalGender(updatedUserInfo.gender);
+      setLocalMobileNum(updatedUserInfo.mobile_num);
+      setLocalEmail(updatedUserInfo.email);
+      setLocalProfilePic(updatedUserInfo.profile_pic);
+    });
+
+    return () => {
+        newSocket.off('updatedUserInfo');
+        newSocket.disconnect();
+    };
   }, []);
 
   const pickImage = async (): Promise<void> => {
@@ -70,72 +122,85 @@ const EditProfile = () => {
     });
 
     if (!result.canceled) {
-      setProfilePic(result.assets[0].uri);
+      setLocalProfilePic(result.assets[0].uri);
       setPickedImage(true);
     }
   };
 
-  const handleUpdateUserInfo = async (link: string | null) => {
-    if (!firstname || !lastname || !gender || !mobileNum) {
-      showMessage({
-        message: 'Please fill in required fields.',
-        type: 'warning',
-        floating: true,
-        color: '#FFF',
-        icon: 'warning',
-      });
-      return;
-    }
-
+  const handleUpdateUserInfo = async (field: string, link: string | null) => {
     try {
+      setUpdateLoading(true);
+      const userInfo: UpdateUserInfo = {
+        firstname: null,
+        lastname: null,
+        gender: null,
+        email: null,
+        mobile_num: null,
+        profile_pic: null,
+        field,
+      };
+
       const fetchedUsers: UserWithID[] = await getUsers();
       const userExcluded = fetchedUsers.filter(user => user.user_id !== userID);
-      const mobileNumExists = userExcluded.some(user => user.mobile_num === mobileNum.trim());
-      const emailExists = userExcluded.some(user => user.email === email.trim());
 
-      if (mobileNumExists) {
-        showMessage({
-          message: 'Mobile number is already used by another account.',
-          type: 'warning',
-          floating: true,
-          color: '#FFF',
-          icon: 'warning',
-        });
-        return;
-      };
-      
-      if (emailExists) {
-        showMessage({
-          message: 'Email is already used by another account.',
-          type: 'warning',
-          floating: true,
-          color: '#FFF',
-          icon: 'warning',
-        });
-        return;
-      };
+      switch (field) {
+        case 'firstname':
+          userInfo.firstname = localFirstname.trim();
+          setFirstname(localFirstname);
+          break;
+        case 'lastname':
+          userInfo.lastname = localLastname.trim();
+          setLastname(localLastname);
+          break;
+        case 'gender':
+          userInfo.gender = localGender.trim();
+          setGender(localGender);
+          break;
+        case 'mobile-num':
+          const mobileNumExists = userExcluded.some(user => user.mobile_num === mobileNum.trim());
 
-    } catch (e) {
-      showMessage({
-        message: 'Something went wrong. Please try again.',
-        type: 'danger',
-        floating: true,
-        color: '#FFF',
-        icon: 'danger',
-      });
-    }
+          if (mobileNumExists) {
+            showMessage({
+              message: 'Mobile number is already used by another account.',
+              type: 'warning',
+              floating: true,
+              color: '#FFF',
+              icon: 'warning',
+            });
+            return;
+          };
 
-    const userInfo = {
-      firstname: firstname.trim(),
-      lastname: lastname.trim(),
-      gender: gender.trim(),
-      email: email.trim(),
-      mobile_num: mobileNum.trim(),
-      profile_pic: link
-    };
+          userInfo.mobile_num = localMobileNum.trim();
+          setMobileNum(localMobileNum);
+          break;
+        case 'email':
+          const emailExists = userExcluded.some(user => user.email === email.trim());
 
-    try {
+          if (emailExists) {
+            showMessage({
+              message: 'Email is already used by another account.',
+              type: 'warning',
+              floating: true,
+              color: '#FFF',
+              icon: 'warning',
+            });
+            return;
+          };
+
+          userInfo.email = localEmail.trim();
+          setEmail(localEmail);
+          break;
+        case 'profile':
+          userInfo.profile_pic = link;
+          setProfilePic(link);
+          break;
+        default:
+          throw new Error('Unsupported field');
+      }
+
       await updateUserInfo(userInfo)
+
+      setEdit('');
       showMessage({
         message: 'Changes saved!',
         type: 'success',
@@ -152,8 +217,11 @@ const EditProfile = () => {
         color: '#FFF',
         icon: 'danger',
       });
+
+    } finally {
+      setUpdateLoading(false);
     }
-  }
+  };
 
   const uploadImage = async () => {
     try {
@@ -162,7 +230,7 @@ const EditProfile = () => {
 
       const formData = new FormData();
       formData.append('file', {
-        uri: profilePic,
+        uri: localProfilePic,
         type: 'image/jpeg',
         name: 'upload.jpg',
       } as any);
@@ -184,7 +252,7 @@ const EditProfile = () => {
 
       const uploadedUrl = uploadRes.data.secure_url;
       setPickedImage(false);
-      return uploadedUrl;
+      handleUpdateUserInfo('profile', uploadedUrl);
 
     } catch (e: any) {
       console.error('Upload Error: ', e);
@@ -192,18 +260,44 @@ const EditProfile = () => {
     }
   }
 
-  const handleSave = async () => {
-    setUpdateLoading(true);
-    if (pickedImage) {
-      const res = await uploadImage();
-      handleUpdateUserInfo(res);
-    } else {
-      handleUpdateUserInfo(null);
+  const handleRestoreInfo = (field: string) => {
+    switch (field) {
+      case 'firstname':
+        setLocalFirstname(firstname);
+        break;
+      case 'lastname':
+        setLocalLastname(lastname);
+        break;
+      case 'gender':
+        setLocalGender(gender);
+        break;
+      case 'mobile-num':
+        setLocalMobileNum(mobileNum);
+        break;
+      case 'email':
+        setLocalEmail(email);
+        break;
+      case 'profile':
+        setLocalProfilePic(profilePic);
+        setPickedImage(false);
+        break;
+      default:
+        throw new Error('Unsupported field');
     }
-    setUpdateLoading(false);
-    setTimeout(() => {
-        router.replace('./profile');
-      }, 1000);
+
+    setEdit('');
+  };
+
+  const deleteImage = async () => {
+    setUpdateLoading(true);
+    const parts = profilePic?.split('/');
+    const lastPart = parts?.slice(-1)[0];
+    const folderName = parts?.slice(-2)[0];
+    const fileName = lastPart?.split('.')[0];
+    
+    await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/delete-image `, {
+      public_id: `${folderName}/${fileName}`,
+    });
   };
 
   if (isLoading) {
@@ -225,17 +319,17 @@ const EditProfile = () => {
 
           <View style={styles.lowerBox}>
             <View style={styles.editPicContainer}>
-              {profilePic === null && (
+              {localProfilePic === null && (
                 <View style={[styles.profilePicWrapper, { backgroundColor: userInitialsBG }]}>
                   <Text style={styles.userInitials}>{userInitials}</Text>
                 </View>
               )}
 
-              {profilePic !== null && (
+              {localProfilePic !== null && (
                 <View style={styles.profilePicWrapper}>
                   <Image
                     style={styles.profilePic}
-                    source={{ uri: profilePic }}
+                    source={{ uri: localProfilePic }}
                     width={120}
                     height={120}
                   />
@@ -247,91 +341,247 @@ const EditProfile = () => {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.editInfoContainer}>
-              <View style={styles.row}>
-                <Text style={styles.textInputLbl}>First Name</Text>
-                <TextInput
-                  value={firstname}
-                  onChangeText={setFirstname}
-                  style={styles.input}
-                />
-              </View>
-
-              <View style={styles.row}>
-                <Text style={styles.textInputLbl}>Last Name</Text>
-                <TextInput
-                  value={lastname}
-                  onChangeText={setLastname}
-                  style={styles.input}
-                />
-              </View>
-
-              <View style={styles.row}>
-                <Text style={styles.textInputLbl}>Gender</Text>
-                <SelectDropdown
-                  data={genders}
-                  defaultValue={gender}
-                  onSelect={(selectedItem) => setGender(selectedItem)}
-                  renderButton={(selectedItem, isOpen) => (
-                    <View style={styles.dropdownButtonStyle}>
-                      <Text style={styles.dropdownButtonTxtStyle}>
-                        {selectedItem || 'Select gender'}
-                      </Text>
-                      <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                    </View>
-                  )}
-                  renderItem={(item, _index, isSelected) => (
-                    <View
-                      style={{
-                        ...styles.dropdownItemStyle,
-                        ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                      }}
-                    >
-                      <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
-                    </View>
-                  )}
-                  showsVerticalScrollIndicator={false}
-                  dropdownStyle={styles.dropdownMenuStyle}
-                />
-              </View>
-
-              <View style={styles.row}>
-                <Text style={styles.textInputLbl}>Mobile Number</Text>
-                <TextInput
-                  value={mobileNum}
-                  onChangeText={setMobileNum}
-                  style={styles.input}
-                  keyboardType='number-pad'
-                />
-              </View>
-
-              <View style={styles.row}>
-                <Text style={styles.textInputLbl}>Email</Text>
-                <TextInput
-                  value={email}
-                  onChangeText={setEmail}
-                  style={styles.input}
-                />
-              </View>
-            </View>
-
-            <View style={styles.cancelSaveContainer}>
-              <TouchableOpacity style={[styles.button, { borderWidth: 1, borderColor: '#555' }]} onPress={() => router.replace('./profile')}>
-                <Text style={[styles.buttonText, { color: '#555' }]}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={[styles.button, { backgroundColor: '#000B58' }]} onPress={() => handleSave()}>
-                <Text style={[styles.buttonText, { color: '#FFF' }]}>Save</Text>
-              </TouchableOpacity>
-            </View>
-
-            {updateLoading && (
-              <View style={styles.updateLoadingContainer}>
-                <ActivityIndicator size='large' color='#000B58'  />
+            {localProfilePic !== null && !pickedImage && (
+              <View style={styles.profileButtonContainer}>
+                <TouchableOpacity style={[styles.profileButton, { backgroundColor: '#780606', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, }]} onPress={() => {
+                  deleteImage();
+                  handleUpdateUserInfo('profile', null);
+                }}>
+                  <MaterialCommunityIcons name='image-remove' size={20} color='#FFF' />
+                  <Text style={styles.profileButtonText}>Remove</Text>
+                </TouchableOpacity>
               </View>
             )}
+
+            {localProfilePic !== null && pickedImage && (
+              <View style={styles.profileButtonContainer}>
+                <TouchableOpacity style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleRestoreInfo('profile')}>
+                  <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.profileButton, { backgroundColor: '#000B58' }]} onPress={() => {
+                  if (profilePic !== null) {
+                    deleteImage();
+                  }
+                  uploadImage();
+                }}>
+                  <Text style={styles.profileButtonText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            <View style={styles.editInfoContainer}>
+              <Text style={styles.subHeader}>User Details</Text>
+              <View style={styles.row}>
+                <Text style={styles.infoLabel}>First Name:</Text>
+                <View style={styles.infoEdit}>
+                  {edit === 'firstname' && (
+                    <>
+                      <TextInput
+                        value={localFirstname}
+                        onChangeText={setLocalFirstname}
+                        style={styles.input}
+                      />
+
+                      {localFirstname !== '' && (
+                        <TouchableOpacity onPress={() => handleUpdateUserInfo('firstname', null)}>
+                          <FontAwesome5 name='check' size={16} color='#22bb33' />
+                        </TouchableOpacity>
+                      )}
+
+                      {localFirstname === '' && (
+                        <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
+                          <Entypo name='cross' size={18} color='#780606' />
+                        </TouchableOpacity>
+                      )}
+                    </>
+                  )}
+
+                  {edit !== 'firstname' && (
+                    <>
+                      <Text style={styles.infoText}>{localFirstname}</Text>
+                      <TouchableOpacity onPress={() => setEdit('firstname')}>
+                          <MaterialIcons name='edit' size={16} color='#555' />
+                      </TouchableOpacity> 
+                    </>
+                  )}        
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <Text style={styles.infoLabel}>Last Name:</Text>
+                <View style={styles.infoEdit}>
+                  {edit === 'lastname' && (
+                    <>
+                      <TextInput
+                        value={localLastname}
+                        onChangeText={setLocalLastname}
+                        style={styles.input}
+                      />
+
+                      {localLastname !== '' && (
+                        <TouchableOpacity onPress={() => handleUpdateUserInfo('lastname', null)}>
+                          <FontAwesome5 name='check' size={16} color='#22bb33' />
+                        </TouchableOpacity>
+                      )}
+
+                      {localLastname === '' && (
+                        <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
+                          <Entypo name='cross' size={18} color='#780606' />
+                        </TouchableOpacity>
+                      )}
+                    </>
+                  )}
+
+                  {edit !== 'lastname' && (
+                    <>
+                      <Text style={styles.infoText}>{localLastname}</Text>
+                      <TouchableOpacity onPress={() => setEdit('lastname')}>
+                          <MaterialIcons name='edit' size={16} color='#555' />
+                      </TouchableOpacity> 
+                    </>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <Text style={styles.infoLabel}>Gender:</Text>
+                <View style={styles.infoEdit}>
+                  {edit === 'gender' && (
+                    <>  
+                      <SelectDropdown
+                        data={genders}
+                        defaultValue={localGender}
+                        onSelect={(selectedItem) => setLocalGender(selectedItem)}
+                        renderButton={(selectedItem, isOpen) => (
+                          <View style={styles.dropdownButtonStyle}>
+                          <Text style={styles.dropdownButtonTxtStyle}>
+                            {selectedItem || 'Select gender'}
+                          </Text>
+                          <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                          </View>
+                        )}
+                        renderItem={(item, _index, isSelected) => (
+                          <View
+                            style={{
+                              ...styles.dropdownItemStyle,
+                              ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                            }}
+                          >
+                          <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+                          </View>
+                        )}
+                        showsVerticalScrollIndicator={false}
+                        dropdownStyle={styles.dropdownMenuStyle}
+                      />
+                        <TouchableOpacity onPress={() => handleUpdateUserInfo('gender', null)}>
+                          <FontAwesome5 name='check' size={16} color='#22bb33' />
+                        </TouchableOpacity>
+                    </>
+                  )}
+
+                  {edit !== 'gender' && (
+                    <>
+                      <Text style={styles.infoText}>{localGender}</Text>
+                      <TouchableOpacity onPress={() => setEdit('gender')}>
+                        <MaterialIcons name='edit' size={16} color='#555' />
+                      </TouchableOpacity> 
+                    </>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <Text style={styles.infoLabel}>Mobile Number:</Text>
+                <View style={styles.infoEdit}>
+                  {edit === 'mobile-num' && (
+                    <>
+                      <TextInput
+                        value={localMobileNum}
+                        onChangeText={setLocalMobileNum}
+                        style={styles.input}
+                        keyboardType='number-pad'
+                      />
+
+                      {localMobileNum !== '' && (
+                        <TouchableOpacity onPress={() => handleUpdateUserInfo('mobile-num', null)}>
+                          <FontAwesome5 name='check' size={16} color='#22bb33' />
+                        </TouchableOpacity>
+                      )}
+
+                      {localMobileNum === '' && (
+                        <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
+                          <Entypo name='cross' size={18} color='#780606' />
+                        </TouchableOpacity>
+                      )}
+                    </>
+                  )}
+
+                  {edit !== 'mobile-num' && (
+                    <>
+                      <Text style={styles.infoText}>{localMobileNum}</Text>
+                      <TouchableOpacity onPress={() => setEdit('mobile-num')}>
+                          <MaterialIcons name='edit' size={16} color='#555' />
+                      </TouchableOpacity> 
+                    </>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <Text style={styles.infoLabel}>Email:</Text>
+                {localEmail === null && (
+                  <TouchableOpacity style={styles.editButton} onPress={() => {
+                    setLocalEmail('');
+                    setEdit('email');
+                  }}>
+                    <Text style={styles.editButtonText}>Add Email</Text>
+                  </TouchableOpacity>
+                )}
+                  
+                {localEmail !== null && (
+                  <View style={styles.infoEdit}>
+                    {edit === 'email' && (
+                      <>
+                        <TextInput
+                          value={email}
+                          onChangeText={setEmail}
+                          style={styles.input}
+                        />
+
+                        {localEmail !== '' && (
+                          <TouchableOpacity onPress={() => handleUpdateUserInfo('email', null)}>
+                            <FontAwesome5 name='check' size={16} color='#22bb33' />
+                          </TouchableOpacity>
+                        )}  
+
+                        {localEmail === '' && (
+                          <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
+                            <Entypo name='cross' size={18} color='#780606' />
+                          </TouchableOpacity>
+                        )}                                            
+                      </>
+                    )}
+
+                    {edit !== 'email' && (
+                      <>
+                        <Text style={styles.infoText}>{localEmail}</Text>
+                        <TouchableOpacity onPress={() => setEdit('email')}>
+                          <MaterialIcons name='edit' size={16} color='#555' />
+                        </TouchableOpacity> 
+                      </>
+                    )}
+                  </View>
+                )}
+              </View>
+            </View>
           </View>
         </ScrollView>
+        {updateLoading && (
+          <View style={styles.updateLoadingContainer}>
+            <ActivityIndicator size='large' color='#000B58'  />
+          </View>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   )
@@ -343,14 +593,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   lowerBox: {
-    alignItems: 'center',
-    flex: 1,
+    width: '90%',
+    alignSelf: 'center',
+    marginTop: 20,
+    marginBottom: 100,
   },
   editPicContainer: {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 100,
   },
   profilePicWrapper: {
     width: 120,
@@ -368,7 +619,6 @@ const styles = StyleSheet.create({
     borderRadius: 120,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute',
     zIndex: 2,
   },
   userInitials: {
@@ -384,61 +634,108 @@ const styles = StyleSheet.create({
     color: '#000B58',
   },
   editInfoContainer: {
+    marginTop: 30,
+    borderTopWidth: 1,
+    borderColor: '#EAEAEA',
+    paddingTop: 10,
+  },
+  profileButtonContainer: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    marginTop: 10,
     gap: 10,
-    marginTop: 100,
-    width: '100%',
+  },
+  profileButton: {
+    width: 100,
+    padding: 5,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileButtonText: {
+    fontFamily: 'LeagueSpartan',
+    color: '#FFF',
+    fontSize: 16,
+  },
+  subHeader: {
+    fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 20,
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: 10,
     width: '100%',
   },
-  textInputLbl: {
+  infoLabel: {
+    fontFamily: 'LeagueSpartan_Bold',
     fontSize: 16,
+    width: '38%',
+    color: '#555',
+  },
+  infoEdit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '62%',
+    gap: 10,
+  },
+  infoText: {
     fontFamily: 'LeagueSpartan',
-    color: '#333',
-    width: '35%',
+    fontSize: 16,
+    color: '#555',
+    maxWidth: '85%',
+  },
+  editButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  editButtonText: {
+    fontFamily: 'LeagueSpartan',
+    fontSize: 16,
+    color: '#000B58'
   },
   input: {
-    backgroundColor: '#EAEAEA',
-    width: '50%',
-    height: 45,
-    borderRadius: 10,
-    padding: 10,
-    fontSize: 16,
-    color: '#333',
     fontFamily: 'LeagueSpartan',
+    fontSize: 16,
+    color: '#555',
+    padding: 0,
+    borderBottomWidth: 1,
+    borderColor: '#555',
+    minWidth: 30,
+    maxWidth: '85%',
   },
   dropdownButtonStyle: {
     width: '50%',
-    height: 45,
+    padding: 0,
     backgroundColor: '#EAEAEA',
-    borderRadius: 10,
+    borderRadius: 5,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
   },
   dropdownButtonTxtStyle: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: '#555',
     fontFamily: 'LeagueSpartan',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
-    color: '#333',
+    color: '#555',
   },
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
-    borderRadius: 10,
+    borderRadius: 5,
     marginTop: -1,
   },
   dropdownItemStyle: {
     width: '100%',
     flexDirection: 'row',
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 8,
@@ -446,16 +743,8 @@ const styles = StyleSheet.create({
   dropdownItemTxtStyle: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: '#555',
     fontFamily: 'LeagueSpartan',
-  },
-  cancelSaveContainer: {
-    marginTop: 30,
-    marginBottom: 30,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    width: '100%',
-    gap: 10,
   },
   button: {
     width: '30%',
