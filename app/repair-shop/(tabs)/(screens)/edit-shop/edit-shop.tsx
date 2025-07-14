@@ -345,7 +345,7 @@ const editShop = () => {
                     setMobileNum(localMobileNum);
                     break;
                 case 'email':
-                    const emailExists = userExcluded.some(repairShop => repairShop.email === localEmail ? localEmail?.trim() : '');
+                    const emailExists = userExcluded.some(repairShop => repairShop.email === localEmail?.trim());
 
                     if (emailExists) {
                         showMessage({
@@ -358,9 +358,17 @@ const editShop = () => {
                         return;
                     };
 
-                    repairShopData.email = localEmail !== null ? localEmail.trim() : null;
-                    setEmail(localEmail);
-                    break;
+                    if (localEmail === '') {
+                        repairShopData.email = null;
+                        setEmail(null);
+                        break;
+                    };
+
+                    if (localEmail !== null) {
+                        repairShopData.email = localEmail.trim();
+                        setEmail(localEmail);
+                        break;
+                    };
                 case 'change-password':
                     if (!currentPassword || !newPassword || !confirmPassword) {
                         setPasswordError('Please fill in all fields.');
@@ -669,14 +677,20 @@ const editShop = () => {
                                         />
 
                                         {localRepShopName !== '' && (
-                                            <TouchableOpacity onPress={() => handleUpdateRepShopInfo('rep-shop-name', null, null, null)}>
-                                                <FontAwesome5 name='check' size={22} color='#22bb33' />
-                                            </TouchableOpacity>
+                                            <>
+                                                <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')}>
+                                                    <Entypo name='cross' size={26} color='#780606' />
+                                                </TouchableOpacity>
+
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('rep-shop-name', null, null, null)}>
+                                                    <FontAwesome5 name='check' size={22} color='#22bb33' />
+                                                </TouchableOpacity>
+                                            </>
                                         )}
                                         
                                         {localRepShopName === '' && (
                                             <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')}>
-                                                <Entypo name='cross' size={24} color='#780606' />
+                                                <Entypo name='cross' size={26} color='#780606' />
                                             </TouchableOpacity>
                                         )}
                                     </>
@@ -707,14 +721,20 @@ const editShop = () => {
                                             />
 
                                             {localOwnerFirstname !== '' && (
-                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('firstname', null, null, null)}>
-                                                    <FontAwesome5 name='check' size={16} color='#22bb33' />
-                                                </TouchableOpacity>
+                                                <>
+                                                    <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
+                                                        <Entypo name='cross' size={20} color='#780606' />
+                                                    </TouchableOpacity>
+
+                                                    <TouchableOpacity onPress={() => handleUpdateRepShopInfo('firstname', null, null, null)}>
+                                                        <FontAwesome5 name='check' size={16} color='#22bb33' />
+                                                    </TouchableOpacity>
+                                                </>
                                             )}
 
                                             {localOwnerFirstname === '' && (
                                                 <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
-                                                    <Entypo name='cross' size={18} color='#780606' />
+                                                    <Entypo name='cross' size={20} color='#780606' />
                                                 </TouchableOpacity>
                                             )}
                                         </>
@@ -743,14 +763,20 @@ const editShop = () => {
                                             />
 
                                             {localOwnerLastname !== '' && (
-                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('lastname', null, null, null)}>
-                                                    <FontAwesome5 name='check' size={16} color='#22bb33' />
-                                                </TouchableOpacity>
+                                                <>
+                                                    <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
+                                                        <Entypo name='cross' size={20} color='#780606' />
+                                                    </TouchableOpacity>
+
+                                                    <TouchableOpacity onPress={() => handleUpdateRepShopInfo('lastname', null, null, null)}>
+                                                        <FontAwesome5 name='check' size={16} color='#22bb33' />
+                                                    </TouchableOpacity>
+                                                </>
                                             )}
 
                                             {localOwnerLastname === '' && (
                                                 <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
-                                                    <Entypo name='cross' size={18} color='#780606' />
+                                                    <Entypo name='cross' size={20} color='#780606' />
                                                 </TouchableOpacity>
                                             )}  
                                         </>
@@ -797,6 +823,11 @@ const editShop = () => {
                                                 showsVerticalScrollIndicator={false}
                                                 dropdownStyle={styles.dropdownMenuStyle}
                                             />
+
+                                            <TouchableOpacity onPress={() => handleRestoreInfo('gender')}>
+                                                <Entypo name='cross' size={20} color='#780606' />
+                                            </TouchableOpacity>
+
                                             <TouchableOpacity onPress={() => handleUpdateRepShopInfo('gender', null, null, null)}>
                                                 <FontAwesome5 name='check' size={16} color='#22bb33' />
                                             </TouchableOpacity>
@@ -815,7 +846,7 @@ const editShop = () => {
                             </View>
 
                             <View style={styles.row}>
-                                <Text style={styles.infoLabel}>Mobile Number:</Text>
+                                <Text style={styles.infoLabel}>Number:</Text>
                                 <View style={styles.infoEdit2}>
                                     {edit === 'mobile-num' && (
                                         <>
@@ -827,14 +858,20 @@ const editShop = () => {
                                             />
 
                                             {localMobileNum !== '' && (
-                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('mobile-num', null, null, null)}>
-                                                    <FontAwesome5 name='check' size={16} color='#22bb33' />
-                                                </TouchableOpacity>
+                                                <>
+                                                    <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
+                                                        <Entypo name='cross' size={20} color='#780606' />
+                                                    </TouchableOpacity>
+
+                                                    <TouchableOpacity onPress={() => handleUpdateRepShopInfo('mobile-num', null, null, null)}>
+                                                        <FontAwesome5 name='check' size={16} color='#22bb33' />
+                                                    </TouchableOpacity>
+                                                </>
                                             )}
 
                                             {localMobileNum === '' && (
                                                 <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
-                                                    <Entypo name='cross' size={18} color='#780606' />
+                                                    <Entypo name='cross' size={20} color='#780606' />
                                                 </TouchableOpacity>
                                             )}
                                         </>
@@ -872,17 +909,13 @@ const editShop = () => {
                                                     onChangeText={setLocalEmail}
                                                 />
 
-                                                {localEmail !== '' && (
-                                                    <TouchableOpacity onPress={() => handleUpdateRepShopInfo('email', null, null, null)}>
-                                                        <FontAwesome5 name='check' size={16} color='#22bb33' />
-                                                    </TouchableOpacity>
-                                                )}  
-
-                                                {localEmail === '' && (
-                                                    <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
-                                                        <Entypo name='cross' size={18} color='#780606' />
-                                                    </TouchableOpacity>
-                                                )}                                            
+                                                <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
+                                                    <Entypo name='cross' size={20} color='#780606' />
+                                                </TouchableOpacity>  
+                                             
+                                                <TouchableOpacity onPress={() => handleUpdateRepShopInfo('email', null, null, null)}>
+                                                    <FontAwesome5 name='check' size={16} color='#22bb33' />
+                                                </TouchableOpacity>
                                             </>
                                         )}
 
@@ -1250,7 +1283,7 @@ const styles = StyleSheet.create({
     infoEdit2: {
         flexDirection: 'row',
         alignItems: 'center',
-        width: '62%',
+        width: '70%',
         gap: 10,
     },
     repShopName: {
@@ -1289,7 +1322,7 @@ const styles = StyleSheet.create({
     infoLabel: {
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 16,
-        width: '38%',
+        width: '30%',
         color: '#555',
     },
     infoText: {
@@ -1378,7 +1411,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: '#555',
         minWidth: 50,
-        maxWidth: '90%',
+        maxWidth: '79%',
     },
     input2: {
         fontFamily: 'LeagueSpartan',
@@ -1388,7 +1421,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: '#555',
         minWidth: 30,
-        maxWidth: '85%',
+        maxWidth: '75%',
     },
     dropdownButtonStyle: {
         width: '50%',
@@ -1516,8 +1549,6 @@ const styles = StyleSheet.create({
     map: {
         width: '100%',
         height: 500,
-        borderTopRightRadius: 10,
-        borderTopLeftRadius: 10,
     },
     mapButtonContainer: {
         width: '100%',
@@ -1568,8 +1599,6 @@ const styles = StyleSheet.create({
     },
     viewImage: {
         width: '100%',
-        borderTopRightRadius: 10,
-        borderTopLeftRadius: 10,
     },
     updateLoadingContainer: {
         flex: 1,

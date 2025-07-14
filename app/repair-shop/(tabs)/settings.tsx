@@ -1,15 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsTab() {
     return (
-        <SafeAreaProvider>
-            <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <Text style={styles.headerText}>Repair Shop Settings</Text>
-                </View>
-            </SafeAreaView>
-        </SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.headerText}>Repair Shop Settings</Text>
+            </View>
+        </SafeAreaView>
     );
 }
 

@@ -1,15 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NotificationsTab() {
     return (
-        <SafeAreaProvider>
-            <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <Text style={styles.headerText}>Car Owner Inbox</Text>
-                </View>
-            </SafeAreaView>
-        </SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.headerText}>Car Owner Inbox</Text>
+            </View>
+        </SafeAreaView>
     );
 }
 

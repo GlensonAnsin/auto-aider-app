@@ -23,7 +23,7 @@ const EditProfile = () => {
   const [lastname, setLastname] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [mobileNum, setMobileNum] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
+  const [email, setEmail] = useState<string | null>(null);
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [userInitials, setUserInitials] = useState<string>('');
@@ -36,7 +36,7 @@ const EditProfile = () => {
   const [localLastname, setLocalLastname] = useState<string>('');
   const [localGender, setLocalGender] = useState<string>('');
   const [localMobileNum, setLocalMobileNum] = useState<string>('');
-  const [localEmail, setLocalEmail] = useState<string>('');
+  const [localEmail, setLocalEmail] = useState<string | null>(null);
   const [localProfilePic, setLocalProfilePic] = useState<string | null>(null);
 
   const genders = ['Male', 'Female'];
@@ -157,7 +157,7 @@ const EditProfile = () => {
           setGender(localGender);
           break;
         case 'mobile-num':
-          const mobileNumExists = userExcluded.some(user => user.mobile_num === mobileNum.trim());
+          const mobileNumExists = userExcluded.some(user => user.mobile_num === localMobileNum.trim());
 
           if (mobileNumExists) {
             showMessage({
@@ -174,7 +174,7 @@ const EditProfile = () => {
           setMobileNum(localMobileNum);
           break;
         case 'email':
-          const emailExists = userExcluded.some(user => user.email === email.trim());
+          const emailExists = userExcluded.some(user => user.email === localEmail?.trim());
 
           if (emailExists) {
             showMessage({
@@ -187,9 +187,17 @@ const EditProfile = () => {
             return;
           };
 
-          userInfo.email = localEmail.trim();
-          setEmail(localEmail);
-          break;
+          if (localEmail === '') {
+            userInfo.email = null;
+            setEmail(null);
+            break;
+          };
+
+          if (localEmail !== null) {
+            userInfo.email = localEmail.trim();
+            setEmail(localEmail);
+            break;
+          };
         case 'profile':
           userInfo.profile_pic = link;
           setProfilePic(link);
@@ -384,14 +392,20 @@ const EditProfile = () => {
                       />
 
                       {localFirstname !== '' && (
-                        <TouchableOpacity onPress={() => handleUpdateUserInfo('firstname', null)}>
-                          <FontAwesome5 name='check' size={16} color='#22bb33' />
-                        </TouchableOpacity>
+                        <>
+                          <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
+                            <Entypo name='cross' size={20} color='#780606' />
+                          </TouchableOpacity>
+
+                          <TouchableOpacity onPress={() => handleUpdateUserInfo('firstname', null)}>
+                            <FontAwesome5 name='check' size={16} color='#22bb33' />
+                          </TouchableOpacity>
+                        </>
                       )}
 
                       {localFirstname === '' && (
                         <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
-                          <Entypo name='cross' size={18} color='#780606' />
+                          <Entypo name='cross' size={20} color='#780606' />
                         </TouchableOpacity>
                       )}
                     </>
@@ -401,7 +415,7 @@ const EditProfile = () => {
                     <>
                       <Text style={styles.infoText}>{localFirstname}</Text>
                       <TouchableOpacity onPress={() => setEdit('firstname')}>
-                          <MaterialIcons name='edit' size={16} color='#555' />
+                        <MaterialIcons name='edit' size={16} color='#555' />
                       </TouchableOpacity> 
                     </>
                   )}        
@@ -420,14 +434,20 @@ const EditProfile = () => {
                       />
 
                       {localLastname !== '' && (
-                        <TouchableOpacity onPress={() => handleUpdateUserInfo('lastname', null)}>
-                          <FontAwesome5 name='check' size={16} color='#22bb33' />
-                        </TouchableOpacity>
+                        <>
+                          <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
+                            <Entypo name='cross' size={20} color='#780606' />
+                          </TouchableOpacity>
+
+                          <TouchableOpacity onPress={() => handleUpdateUserInfo('lastname', null)}>
+                            <FontAwesome5 name='check' size={16} color='#22bb33' />
+                          </TouchableOpacity>
+                        </>
                       )}
 
                       {localLastname === '' && (
                         <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
-                          <Entypo name='cross' size={18} color='#780606' />
+                          <Entypo name='cross' size={20} color='#780606' />
                         </TouchableOpacity>
                       )}
                     </>
@@ -437,7 +457,7 @@ const EditProfile = () => {
                     <>
                       <Text style={styles.infoText}>{localLastname}</Text>
                       <TouchableOpacity onPress={() => setEdit('lastname')}>
-                          <MaterialIcons name='edit' size={16} color='#555' />
+                        <MaterialIcons name='edit' size={16} color='#555' />
                       </TouchableOpacity> 
                     </>
                   )}
@@ -474,6 +494,10 @@ const EditProfile = () => {
                         showsVerticalScrollIndicator={false}
                         dropdownStyle={styles.dropdownMenuStyle}
                       />
+                        <TouchableOpacity onPress={() => handleRestoreInfo('gender')}>
+                          <Entypo name='cross' size={20} color='#780606' />
+                        </TouchableOpacity>
+
                         <TouchableOpacity onPress={() => handleUpdateUserInfo('gender', null)}>
                           <FontAwesome5 name='check' size={16} color='#22bb33' />
                         </TouchableOpacity>
@@ -492,7 +516,7 @@ const EditProfile = () => {
               </View>
 
               <View style={styles.row}>
-                <Text style={styles.infoLabel}>Mobile Number:</Text>
+                <Text style={styles.infoLabel}>Number:</Text>
                 <View style={styles.infoEdit}>
                   {edit === 'mobile-num' && (
                     <>
@@ -504,14 +528,20 @@ const EditProfile = () => {
                       />
 
                       {localMobileNum !== '' && (
-                        <TouchableOpacity onPress={() => handleUpdateUserInfo('mobile-num', null)}>
-                          <FontAwesome5 name='check' size={16} color='#22bb33' />
-                        </TouchableOpacity>
+                        <>
+                          <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
+                            <Entypo name='cross' size={20} color='#780606' />
+                          </TouchableOpacity>
+
+                          <TouchableOpacity onPress={() => handleUpdateUserInfo('mobile-num', null)}>
+                            <FontAwesome5 name='check' size={16} color='#22bb33' />
+                          </TouchableOpacity>
+                        </>
                       )}
 
                       {localMobileNum === '' && (
                         <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
-                          <Entypo name='cross' size={18} color='#780606' />
+                          <Entypo name='cross' size={20} color='#780606' />
                         </TouchableOpacity>
                       )}
                     </>
@@ -544,22 +574,18 @@ const EditProfile = () => {
                     {edit === 'email' && (
                       <>
                         <TextInput
-                          value={email}
-                          onChangeText={setEmail}
+                          value={localEmail}
+                          onChangeText={setLocalEmail}
                           style={styles.input}
                         />
 
-                        {localEmail !== '' && (
-                          <TouchableOpacity onPress={() => handleUpdateUserInfo('email', null)}>
-                            <FontAwesome5 name='check' size={16} color='#22bb33' />
-                          </TouchableOpacity>
-                        )}  
+                        <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
+                          <Entypo name='cross' size={20} color='#780606' />
+                        </TouchableOpacity>   
 
-                        {localEmail === '' && (
-                          <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
-                            <Entypo name='cross' size={18} color='#780606' />
-                          </TouchableOpacity>
-                        )}                                            
+                        <TouchableOpacity onPress={() => handleUpdateUserInfo('email', null)}>
+                          <FontAwesome5 name='check' size={16} color='#22bb33' />
+                        </TouchableOpacity>                                                                         
                       </>
                     )}
 
@@ -673,13 +699,13 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontFamily: 'LeagueSpartan_Bold',
     fontSize: 16,
-    width: '38%',
+    width: '30%',
     color: '#555',
   },
   infoEdit: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '62%',
+    width: '70%',
     gap: 10,
   },
   infoText: {
@@ -705,7 +731,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#555',
     minWidth: 30,
-    maxWidth: '85%',
+    maxWidth: '75%',
   },
   dropdownButtonStyle: {
     width: '50%',

@@ -479,8 +479,6 @@ const styles = StyleSheet.create({
     },
     viewImage: {
       width: '100%',
-      borderTopRightRadius: 10,
-      borderTopLeftRadius: 10,
     },
     modalProfilePicWrapper: {
       width: '100%',

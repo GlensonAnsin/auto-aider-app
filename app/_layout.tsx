@@ -1,10 +1,9 @@
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { StatusBar } from 'react-native';
 import FlashMessage from 'react-native-flash-message';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,19 +25,17 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar barStyle='light-content' />
+      <StatusBar style='dark' />
 
-      <FlashMessage position='top' />
+      <FlashMessage position='top' style={{ marginTop: 30 }} />
 
-      <SafeAreaProvider>
-        <Stack initialRouteName='index'>
-          <Stack.Screen name='index' options={{ headerShown: false, animation: 'none'}} />
-          <Stack.Screen name='auth/login' options={{ headerShown: false, animation: 'none' }} />
-          <Stack.Screen name='auth/signup' options={{ headerShown: false, animation: 'none' }} />
-          <Stack.Screen name='car-owner/(tabs)' options={{ headerShown: false, animation: 'none' }} />
-          <Stack.Screen name='repair-shop/(tabs)' options={{ headerShown: false, animation: 'none' }} />
-        </Stack>
-      </SafeAreaProvider>
+      <Stack initialRouteName='index'>
+        <Stack.Screen name='index' options={{ headerShown: false, animation: 'none'}} />
+        <Stack.Screen name='auth/login' options={{ headerShown: false, animation: 'none' }} />
+        <Stack.Screen name='auth/signup' options={{ headerShown: false, animation: 'none' }} />
+        <Stack.Screen name='car-owner/(tabs)' options={{ headerShown: false, animation: 'none' }} />
+        <Stack.Screen name='repair-shop/(tabs)' options={{ headerShown: false, animation: 'none' }} />
+      </Stack>
     </>
   );
 }

@@ -10,6 +10,7 @@ export default function RootLayout() {
         <Stack.Screen name='run-diagnostics/run-diagnostics' options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name='run-diagnostics/diagnosis' options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name='run-diagnostics/detailed-report' options={{ headerShown: false, animation: 'none' }} />
+        <Stack.Screen name='repair-shops/repair-shops' options={{ headerShown: false, animation: 'none' }} />
     </Stack>
   );
 }

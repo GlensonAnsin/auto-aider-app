@@ -130,7 +130,7 @@ export default function Login() {
       <KeyboardAvoidingView
         behavior='padding'
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: '#000B58' }}
       >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
@@ -228,7 +228,6 @@ const styles = StyleSheet.create({
     height: 150,
   },
   formContainer: {
-    flex: 1,
     backgroundColor: '#000B58',
     alignItems: 'center',
     gap: 20,
@@ -285,7 +284,7 @@ const styles = StyleSheet.create({
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
     borderRadius: 10,
-    marginTop: -1,
+    marginTop: -37,
   },
   dropdownItemStyle: {
     width: '100%',

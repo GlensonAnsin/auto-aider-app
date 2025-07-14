@@ -205,7 +205,7 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
                             
-                        <TouchableOpacity style={styles.feature}>
+                        <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./repair-shops/repair-shops')}>
                             <Entypo name='location' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Repair Shops</Text>
