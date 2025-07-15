@@ -192,20 +192,17 @@ export default function Home() {
               <Text style={styles.repShopName}>{repShopName}</Text>
               <View style={styles.genderNameContainer}>
                 {gender === 'Male' && (
-                  <>
-                    <Fontisto name='male' size={16} color='#555' />
-                    <Text style={styles.contactText}>{`${ownerFirstname} ${ownerLastname}`}</Text>
-                  </>
+                  <Fontisto name='male' size={16} color='#555' />
                 )}
 
                 {gender === 'Female' && (
-                  <>
-                    <Fontisto name='female' size={16} color='#555' />
-                    <Text style={styles.contactText}>{`${ownerFirstname} ${ownerLastname}`}</Text>
-                  </>
+                  <Fontisto name='female' size={16} color='#555' />
                 )}
+                <Text style={styles.contactText}>{`${ownerFirstname} ${ownerLastname}`}</Text>
               </View>
+
               <Text style={styles.contactText}>{mobileNum}</Text>
+              
               {email !== null && (
                 <Text style={styles.contactText}>{email}</Text>
               )}

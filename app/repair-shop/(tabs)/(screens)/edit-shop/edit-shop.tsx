@@ -166,9 +166,8 @@ const editShop = () => {
             fetchData();
 
             return () => {
-            isActive = false;
-            setEdit('');
-
+                isActive = false;
+                setEdit('');
             };
         }, [])
     );
