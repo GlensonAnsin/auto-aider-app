@@ -251,7 +251,7 @@ export default function Home() {
             {shopImages.length === 0 && (
                 <TouchableOpacity style={styles.editButton2} onPress={() => router.navigate('./edit-shop/edit-shop')}>
                     <MaterialCommunityIcons name='image-plus' size={16} color='#555' />
-                    <Text style={[styles.editButtonText, { color: '#555' }]}>Upload Image</Text>
+                    <Text style={styles.editButtonText}>Upload Image</Text>
                 </TouchableOpacity>
             )}
 

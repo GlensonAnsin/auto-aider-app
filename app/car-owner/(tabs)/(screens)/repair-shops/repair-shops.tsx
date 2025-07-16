@@ -3,34 +3,46 @@ import { getRepairShops } from '@/services/backendApi';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MapView, { Circle, Marker, Region } from 'react-native-maps';
+import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const repairShops = () => {
     const mapRef = useRef<MapView | null>(null);
     const bottomSheetRef = useRef<BottomSheet | null>(null);
-    const [regions, setRegions] = useState<{ latitude: number, longitude: number, shopName: string, ownerFirstname: string, ownerLastname: string, gender: string, mobileNum: string, email: string | null, profilePic: string, profileBG: string, shopImages: string[], ratingsNum: number, averageRating: number }[] | undefined>(undefined);
-    const [nearbyRepShop, setNearbyRepShop] = useState<{ latitude: number, longitude: number, shopName: string, ownerFirstname: string, ownerLastname: string, gender: string, mobileNum: string, email: string | null, profilePic: string, profileBG: string, shopImages: string[], ratingsNum: number, averageRating: number }[] | undefined>(undefined);
+    const { width: screenWidth } = Dimensions.get('window');
+    const [regions, setRegions] = useState<{ latitude: number, longitude: number, shopName: string, ownerFirstname: string, ownerLastname: string, gender: string, mobileNum: string, email: string | null, profilePic: string, profileBG: string, shopImages: string[], servicesOffered: string[], ratingsNum: number, averageRating: number }[] | undefined>(undefined);
+    const [nearbyRepShop, setNearbyRepShop] = useState<{ latitude: number, longitude: number, shopName: string, ownerFirstname: string, ownerLastname: string, gender: string, mobileNum: string, email: string | null, profilePic: string, profileBG: string, shopImages: string[], servicesOffered: string[], ratingsNum: number, averageRating: number }[] | undefined>(undefined);
     const [currentLocation, setCurrentLocation] = useState<Region | undefined>(undefined);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [selectedRepShop, setSelectedRepShop] = useState<number | null>(null);
+    const [currentSnapPointIndex, setCurrentSnapPointIndex] = useState<number>(-1);
+    const [refreshKey, setRefreshKey] = useState(0);
     const maxDistanceKM = 5;
-    const snapPoints = useMemo(() => ['37%', '80%'], []);
+    const snapPoints = useMemo(() => ['37%', '99.9%'], []);
+
+    const handleRefresh = () => {
+        setRefreshKey(prev => prev + 1);
+    };
 
     useFocusEffect(
         useCallback(() => {
+            handleRefresh();
             let isActive = true;
 
             const fetchData = async () => {
                 try {
                     setIsLoading(true);
                     const res = await getRepairShops();
+
+                    if (!isActive) return;
+
                     setRegions(res.map((shop: any) => ({
                         latitude: parseFloat(shop.latitude),
                         longitude: parseFloat(shop.longitude),
@@ -43,6 +55,7 @@ const repairShops = () => {
                         profilePic: shop.profile_pic,
                         profileBG: shop.profile_bg,
                         shopImages: shop.shop_images,
+                        servicesOffered: shop.services_offered,
                         ratingsNum: shop.number_of_ratings,
                         averageRating: shop.average_rating,
                     })));
@@ -51,7 +64,7 @@ const repairShops = () => {
                     console.error('Error:', e);
 
                 } finally {
-                    setIsLoading(false);
+                    if (isActive) setIsLoading(false);
                 }
             };
 
@@ -64,45 +77,63 @@ const repairShops = () => {
     );
 
     useEffect(() => {
+        let locationSubscription: Location.LocationSubscription;
+
         (async () => {
-            let { status } = await Location.requestForegroundPermissionsAsync();
+            const { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 console.warn('Permission to access location was denied');
                 return;
             }
-    
-            let location = await Location.getCurrentPositionAsync({});
-            setCurrentLocation({
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-            });
 
-            const nearby = regions?.filter(loc => {
-                const distance = getDistance(
-                    location.coords.latitude,
-                    location.coords.longitude,
-                    loc.latitude,
-                    loc.longitude,
-                );
-                return distance <= maxDistanceKM;
-            });
-            setNearbyRepShop(nearby);
+            locationSubscription = await Location.watchPositionAsync(
+                {
+                    accuracy: Location.Accuracy.High,
+                    timeInterval: 5000,
+                    distanceInterval: 10,
+                },
+                (location) => {
+                    const newLocation = {
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
+                    };
 
-            const allCoords = [currentLocation, ...(nearby || [])]
-                .filter((coord): coord is Region => coord !== undefined)
-                .map(coord => ({
-                    latitude: coord.latitude,
-                    longitude: coord.longitude,
-                }));
+                    setCurrentLocation(newLocation);
 
-            mapRef.current?.fitToCoordinates(allCoords, {
-                edgePadding: { top: 60, right: 60, bottom: 60, left: 60 },
-                animated: true,
-            });
+                    const nearby = regions?.filter((loc) => {
+                        const distance = getDistance(
+                            newLocation.latitude,
+                            newLocation.longitude,
+                            loc.latitude,
+                            loc.longitude
+                        );
+                        return distance <= maxDistanceKM;
+                    });
+
+                    setNearbyRepShop(nearby);
+
+                    const allCoords = [newLocation, ...(nearby || [])].map((coord) => ({
+                        latitude: coord.latitude,
+                        longitude: coord.longitude,
+                    }));
+
+                    mapRef.current?.fitToCoordinates(allCoords, {
+                        edgePadding: { top: 300, right: 300, bottom: 300, left: 300 },
+                        animated: true,
+                    });
+                }
+            );
         })();
+
+        return () => {
+            if (locationSubscription) {
+                locationSubscription.remove();
+            }
+        };
     }, [regions]);
+
 
     const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
         const toRad = ((deg: number) => (deg * Math.PI) / 180);
@@ -123,18 +154,20 @@ const repairShops = () => {
 
     const handleSheetChanges = useCallback((index: number) => {
         console.log('handleSheetChanges', index);
+        setCurrentSnapPointIndex(index);
         if (index === 0) {
             bottomSheetRef.current?.close();
         };
     }, []);
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView key={refreshKey} style={styles.container}>
             <GestureHandlerRootView>
                 <Header headerTitle='Repair Shops' link='/car-owner/(tabs)' />
 
                 <View style={styles.lowerBox}>
-                    <MapView 
+                    <MapView
+                        ref={mapRef} 
                         mapType='hybrid'
                         style={styles.map}
                         initialRegion={currentLocation}
@@ -182,63 +215,109 @@ const repairShops = () => {
                         onChange={handleSheetChanges}
                         index={-1}
                         snapPoints={snapPoints}
-                        enablePanDownToClose={true}
                     >
-                        <BottomSheetView style={styles.contentContainer}>
+                        <BottomSheetScrollView style={styles.contentContainer}>
                             <View style={styles.repShopInfoContainer}>
                                 {nearbyRepShop && selectedRepShop !== null && nearbyRepShop[selectedRepShop] && (
-                                    <View style={styles.picRepNameContainer}>
-                                        {nearbyRepShop[selectedRepShop].profilePic === null && (
-                                            <View style={[styles.profilePicWrapper, { backgroundColor: nearbyRepShop[selectedRepShop].profileBG }]}>
-                                                <MaterialCommunityIcons name='car-wrench' size={50} color='#FFF' />
-                                            </View>
-                                        )}
-
-                                        {nearbyRepShop[selectedRepShop].profilePic !== null && (
-                                            <View style={styles.profilePicWrapper}>
-                                                <Image
-                                                    style={styles.profilePic}
-                                                    source={{ uri: nearbyRepShop[selectedRepShop].profilePic }}
-                                                    width={100}
-                                                    height={100}
-                                                />
-                                            </View>
-                                        )}
-
-                                        <View style={styles.repShopNameContainer}>
-                                            <Text style={styles.repShopName}>{nearbyRepShop[selectedRepShop].shopName}</Text>
-                                            <View style={styles.genderNameContainer}>
-                                                {nearbyRepShop[selectedRepShop].gender === 'Male' && (
-                                                    <>
-                                                        <Fontisto name='male' size={16} color='#555' />
-                                                    </>
-                                                )}
-
-                                                {nearbyRepShop[selectedRepShop].gender === 'Female' && (
-                                                    <>
-                                                        <Fontisto name='female' size={16} color='#555' />
-                                                    </>
-                                                )}
-                                                <Text style={styles.contactText}>{`${nearbyRepShop[selectedRepShop].ownerFirstname} ${nearbyRepShop[selectedRepShop].ownerLastname}`}</Text>
-                                            </View>
-
-                                            <Text style={styles.contactText}>{nearbyRepShop[selectedRepShop].mobileNum}</Text>
-
-                                            {nearbyRepShop[selectedRepShop].email !== null && (
-                                                <Text style={styles.contactText}>{nearbyRepShop[selectedRepShop].email}</Text>
+                                    <>
+                                        <View style={styles.picRepNameContainer}>
+                                            {nearbyRepShop[selectedRepShop].profilePic === null && (
+                                                <View style={[styles.profilePicWrapper, { backgroundColor: nearbyRepShop[selectedRepShop].profileBG }]}>
+                                                    <MaterialCommunityIcons name='car-wrench' size={50} color='#FFF' />
+                                                </View>
                                             )}
 
-                                            <View style={styles.ratingContainer}>
-                                                <Fontisto name='persons' size={16} color='#555' />
-                                                <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].ratingsNum}</Text>
-                                                <MaterialIcons name='star-rate' size={16} color='#FDCC0D' />
-                                                <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].averageRating}</Text>
+                                            {nearbyRepShop[selectedRepShop].profilePic !== null && (
+                                                <View style={styles.profilePicWrapper}>
+                                                    <Image
+                                                        style={styles.profilePic}
+                                                        source={{ uri: nearbyRepShop[selectedRepShop].profilePic }}
+                                                        width={100}
+                                                        height={100}
+                                                    />
+                                                </View>
+                                            )}
+
+                                            <View style={styles.repShopNameContainer}>
+                                                <Text style={styles.repShopName}>{nearbyRepShop[selectedRepShop].shopName}</Text>
+                                                <View style={styles.genderNameContainer}>
+                                                    {nearbyRepShop[selectedRepShop].gender === 'Male' && (
+                                                        <>
+                                                            <Fontisto name='male' size={16} color='#555' />
+                                                        </>
+                                                    )}
+
+                                                    {nearbyRepShop[selectedRepShop].gender === 'Female' && (
+                                                        <>
+                                                            <Fontisto name='female' size={16} color='#555' />
+                                                        </>
+                                                    )}
+                                                    <Text style={styles.contactText}>{`${nearbyRepShop[selectedRepShop].ownerFirstname} ${nearbyRepShop[selectedRepShop].ownerLastname}`}</Text>
+                                                </View>
+
+                                                <Text style={styles.contactText}>{nearbyRepShop[selectedRepShop].mobileNum}</Text>
+
+                                                {nearbyRepShop[selectedRepShop].email !== null && (
+                                                    <Text style={styles.contactText}>{nearbyRepShop[selectedRepShop].email}</Text>
+                                                )}
+
+                                                <View style={styles.ratingContainer}>
+                                                    <Fontisto name='persons' size={16} color='#555' />
+                                                    <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].ratingsNum}</Text>
+                                                    <MaterialIcons name='star-rate' size={16} color='#FDCC0D' />
+                                                    <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].averageRating}</Text>
+                                                </View>
                                             </View>
                                         </View>
-                                    </View>
+
+                                        {currentSnapPointIndex === 2 && (
+                                            <>
+                                                <View style={styles.shopImages}>
+                                                    <Text style={styles.subHeader}>Shop Images</Text>
+
+                                                    {nearbyRepShop[selectedRepShop].shopImages.length === 0 && (
+                                                        <View style={styles.editButton2} >
+                                                            <Text style={styles.editButtonText}>No Images</Text>
+                                                        </View>
+                                                    )}
+
+                                                    {nearbyRepShop[selectedRepShop].shopImages.length !== 0 && (
+                                                        <Carousel
+                                                            width={screenWidth * 0.9}
+                                                            height={300}
+                                                            data={nearbyRepShop[selectedRepShop].shopImages}
+                                                            mode='parallax'
+                                                            autoPlay={true}
+                                                            autoPlayInterval={3000}
+                                                            scrollAnimationDuration={2000}
+                                                            loop={true}
+                                                            renderItem={({ item }) => (
+                                                            <Image
+                                                                key={item}
+                                                                height={300}
+                                                                style={styles.image}
+                                                                source={{ uri: item }}
+                                                            />
+                                                            )}
+                                                        />
+                                                    )}
+                                                </View>
+
+                                                <View style={styles.servicesOffered}>
+                                                    <Text style={styles.subHeader}>Services Offered</Text>
+                                                    {nearbyRepShop[selectedRepShop].servicesOffered.map((item) => (
+                                                        <View key={item} style={styles.services}>
+                                                            <Text style={styles.bullet}>{`\u2022`}</Text>
+                                                            <Text style={styles.servicesText}>{item}</Text>
+                                                        </View>
+                                                    ))}
+                                                </View>
+                                            </>
+                                        )}
+                                    </>
                                 )}
                             </View>
-                        </BottomSheetView>
+                        </BottomSheetScrollView>
                     </BottomSheet>
                 </View>
             </GestureHandlerRootView>
@@ -264,6 +343,7 @@ const styles = StyleSheet.create({
     repShopInfoContainer: {
         width: '90%',
         alignSelf: 'center',
+        marginBottom: 100,
     },
     picRepNameContainer: {
         flexDirection: 'row',
@@ -309,6 +389,53 @@ const styles = StyleSheet.create({
     rating: {
         fontFamily: 'LeagueSpartan',
         color: '#555',
+        fontSize: 16,
+    },
+    shopImages: {
+        width: '100%',
+        marginTop: 20,
+        paddingBottom: 20,
+    },
+    subHeader: {
+        fontFamily: 'LeagueSpartan_Bold',
+        color: '#333',
+        fontSize: 20,
+        marginBottom: 10,
+    },
+    image: {
+        flex: 1,
+        borderRadius: 8,
+    },
+    editButton2: {
+        backgroundColor: '#D9D9D9',
+        minHeight: 200,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    editButtonText: {
+        fontFamily: 'LeagueSpartan',
+        fontSize: 16,
+        color: '#555'
+    },
+    servicesOffered: {
+        width: '100%',
+    },
+    services: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        paddingLeft: 5,
+    },
+    bullet: {
+        fontFamily: 'LeagueSpartan_Bold',
+        color: '#333',
+        fontSize: 16,
+    },
+    servicesText: {
+        fontFamily: 'LeagueSpartan',
+        color: '#333',
         fontSize: 16,
     },
 })
