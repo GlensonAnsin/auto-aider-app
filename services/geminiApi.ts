@@ -14,11 +14,14 @@ export async function verifyCar(make: string, model: string, year: string) {
     }
 }
 
-export async function codeTechnicalDescription(code: string, year: string, make: string, model: string) {
+export async function codeTechnicalDescription(code: string, car: string) {
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `What is the technical description of DTC ${code} from a ${year} ${make} ${model}? Provide only the technical description — no additional details.`.trim(),
+            contents: `What is the technical description of DTC ${code} from a ${car}? Provide only the technical description — no additional details.`.trim(),
+            config: {
+                temperature: 0,
+            },
         });
         return(response.text);
     } catch (e) {
@@ -26,11 +29,14 @@ export async function codeTechnicalDescription(code: string, year: string, make:
     }
 }
 
-export async function codeMeaning(code: string, technicalDescription: string, year: string, make: string, model: string) {
+export async function codeMeaning(code: string, technicalDescription: string, car: string) {
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `What is the full meaning of DTC ${code} (${technicalDescription}) for a ${year} ${make} ${model}? Provide only the full meaning — no additional details.`.trim(),
+            contents: `What is the explanation of this DTC ${code} (${technicalDescription}) for a ${car}? Provide only the explanation — no additional details.`.trim(),
+            config: {
+                temperature: 0,
+            },
         });
         return(response.text);
     } catch (e) {
@@ -38,11 +44,14 @@ export async function codeMeaning(code: string, technicalDescription: string, ye
     }
 }
 
-export async function codePossibleCauses(code: string, technicalDescription: string, year: string, make: string, model: string) {
+export async function codePossibleCauses(code: string, technicalDescription: string, car: string) {
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `What are the possible causes of DTC ${code} (${technicalDescription}) for a ${year} ${make} ${model}? Provide only the possible causes — no additional details.`.trim(),
+            contents: `What are the possible causes of DTC ${code} (${technicalDescription}) for a ${car}? Provide only the possible causes — no additional details.`.trim(),
+            config: {
+                temperature: 0,
+            },
         });
         return(response.text);
     } catch (e) {
@@ -50,11 +59,14 @@ export async function codePossibleCauses(code: string, technicalDescription: str
     }
 }
 
-export async function codeRecommendedRepair(code: string, technicalDescription: string, year: string, make: string, model: string) {
+export async function codeRecommendedRepair(code: string, technicalDescription: string, car: string) {
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `What are the recommended solutions or repairs of DTC ${code} (${technicalDescription}) for a ${year} ${make} ${model}? Provide only the recommended solutions or repairs — no additional details.`.trim(),
+            contents: `What are the recommended solutions or repairs of DTC ${code} (${technicalDescription}) for a ${car}? Provide only the recommended solutions or repairs — no additional details.`.trim(),
+            config: {
+                temperature: 0,
+            },
         });
         return(response.text);
     } catch (e) {

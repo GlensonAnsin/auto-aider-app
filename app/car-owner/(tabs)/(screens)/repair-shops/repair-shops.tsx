@@ -1,4 +1,5 @@
 import { Header } from '@/components/Header';
+import { Loading } from '@/components/Loading';
 import { getRepairShops } from '@/services/backendApi';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -7,7 +8,7 @@ import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MapView, { Circle, Marker, Region } from 'react-native-maps';
 import Carousel from 'react-native-reanimated-carousel';
@@ -160,6 +161,10 @@ const repairShops = () => {
         };
     }, []);
 
+    if (isLoading) {
+        return <Loading />
+    };
+
     return (
         <SafeAreaView key={refreshKey} style={styles.container}>
             <GestureHandlerRootView>
@@ -270,14 +275,24 @@ const repairShops = () => {
                                             </View>
                                         </View>
 
+                                        <View style={styles.buttonContainer}>
+                                            <TouchableOpacity style={styles.button}>
+                                                <Text style={styles.buttonText}>Request Repair</Text>
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity style={styles.button}>
+                                                <Text style={styles.buttonText}>Chat Shop</Text>
+                                            </TouchableOpacity>
+                                        </View>
+
                                         {currentSnapPointIndex === 2 && (
                                             <>
                                                 <View style={styles.shopImages}>
                                                     <Text style={styles.subHeader}>Shop Images</Text>
 
                                                     {nearbyRepShop[selectedRepShop].shopImages.length === 0 && (
-                                                        <View style={styles.editButton2} >
-                                                            <Text style={styles.editButtonText}>No Images</Text>
+                                                        <View style={styles.noImagesView} >
+                                                            <Text style={styles.noImagesText}>No Images</Text>
                                                         </View>
                                                     )}
 
@@ -349,9 +364,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: 20,
         width: '100%',
-        borderBottomWidth: 1,
-        borderColor: '#EAEAEA',
-        paddingBottom: 20,
     },
     profilePicWrapper: {
         width: 100,
@@ -391,6 +403,29 @@ const styles = StyleSheet.create({
         color: '#555',
         fontSize: 16,
     },
+    buttonContainer: {
+        justifyContent: 'space-evenly',
+        width: '100%',
+        marginTop: 10,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        borderBottomWidth: 1,
+        borderColor: '#EAEAEA',
+        paddingBottom: 20,
+    },
+    button: {
+        backgroundColor: '#000B58',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 110,
+        padding: 5,
+        borderRadius: 5,
+    },
+    buttonText: {
+        fontFamily: 'LeagueSpartan',
+        fontSize: 14,
+        color: '#FFF',
+    },
     shopImages: {
         width: '100%',
         marginTop: 20,
@@ -406,14 +441,14 @@ const styles = StyleSheet.create({
         flex: 1,
         borderRadius: 8,
     },
-    editButton2: {
+    noImagesView: {
         backgroundColor: '#D9D9D9',
         minHeight: 200,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 10,
     },
-    editButtonText: {
+    noImagesText: {
         fontFamily: 'LeagueSpartan',
         fontSize: 16,
         color: '#555'
