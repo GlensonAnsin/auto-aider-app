@@ -1,6 +1,7 @@
 import { AutoRepairShop, UpdateRepairShopInfo } from '@/types/autoRepairShop';
 import { ChangePass, LoginUser, UpdateUserInfo, User } from '@/types/user';
 import { Vehicle } from '@/types/vehicle';
+import { VehicleDiagnostic } from '@/types/vehicleDiagnostic';
 import axios from 'axios';
 import api from './interceptor';
 import { getAccessToken, storeTokens } from './tokenStorage';
@@ -247,3 +248,62 @@ export const deleteVehicle = async (vehicleID: number) => {
     console.error('Error: ', e);
   }
 };
+
+
+
+// ADD VEHICLE DIAGNOSTIC
+export const addVehicleDiagnostic = async (vehicleDiagnosticData: VehicleDiagnostic): Promise<VehicleDiagnostic | null> => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.post(`${apiURL}/vehicle_diagnostic/add-vehicle-diagnostic`,
+      vehicleDiagnosticData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Error: ', e);
+    return null;
+  }
+};
+
+// GET VEHICLE DIAGNOSTIC
+export const getVehicleDiagnostic = async (vehicleID: number, scanReference: string): Promise<VehicleDiagnostic | null> => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/vehicle_diagnostic/get-vehicle-diagnostic/${vehicleID}/${scanReference}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Error: ', e);
+    return null;
+  }
+};
+
+// DELETE VEHICLE DIAGNOSTIC
+export const deleteVehicleDiagnostic = async (vehicleDiagnosticID: number) => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.delete(`${apiURL}/vehicle_diagnostic/delete-vehicle-diagnostic/${vehicleDiagnosticID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data
+
+  } catch (e) {
+    console.error('Error: ', e);
+  }
+}

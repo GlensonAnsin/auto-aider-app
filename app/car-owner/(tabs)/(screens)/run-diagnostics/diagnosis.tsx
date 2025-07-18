@@ -1,12 +1,15 @@
 import { Header } from '@/components/Header';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Diagnosis = () => {
     const router = useRouter();
+
+    const [codes, setCodes] = useState<{ dtc: string, technicalDescription: string }[]>([]);
+    const [scanReference, setScanReference] = useState<string>('');
 
     return (
         <SafeAreaView style={styles.container}>
@@ -15,7 +18,7 @@ const Diagnosis = () => {
             
                 <View style={styles.lowerBox}>
                     <View style={styles.buttonContainer}>
-                        <Text style={styles.car}>TOYOTA HILUX 2025</Text>
+                        <Text style={styles.car}>TOYOTA HILUX 2017</Text>
                         <TouchableOpacity style={[styles.button, {backgroundColor: '#780606'}]}>
                             <Icon name='close-circle-outline' style={styles.buttonIcon} />
                             <Text style={styles.buttonText}>Disconnect</Text>
@@ -36,8 +39,8 @@ const Diagnosis = () => {
 
                         
                         <TouchableOpacity style={styles.troubleCodeButton} onPress={() => router.navigate('./detailed-report')}>
-                            <Text style={styles.troubleCodeText}>P1456</Text>
-                            <Text style={styles.troubleCodeText2}>Evaporative Emissions Control System Leakage - Fuel Tank (Small Leak)</Text>
+                            <Text style={styles.troubleCodeText}>P1604</Text>
+                            <Text style={styles.troubleCodeText2}>Startability Malfunction</Text>
                         </TouchableOpacity>
                         
 

@@ -18,7 +18,7 @@ export async function codeTechnicalDescription(code: string, car: string) {
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `What is the technical description of DTC ${code} from a ${car}? Provide only the technical description — no additional details.`.trim(),
+            contents: `What is the brief description of DTC ${code} from a ${car}? Provide only the brief description — no additional details.`.trim(),
             config: {
                 temperature: 0,
             },
@@ -33,7 +33,7 @@ export async function codeMeaning(code: string, technicalDescription: string, ca
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `What is the explanation of this DTC ${code} (${technicalDescription}) for a ${car}? Provide only the explanation — no additional details.`.trim(),
+            contents: `What is the full explanation of this DTC ${code} (${technicalDescription}) for a ${car}? Provide only the full explanation — no additional details.`.trim(),
             config: {
                 temperature: 0,
             },

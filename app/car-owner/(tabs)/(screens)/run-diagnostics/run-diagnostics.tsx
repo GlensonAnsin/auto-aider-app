@@ -1,31 +1,28 @@
 import { Header } from '@/components/Header';
-import { getVehicle } from '@/services/backendApi';
+import { addVehicleDiagnostic, getVehicle } from '@/services/backendApi';
 import { codeMeaning, codePossibleCauses, codeRecommendedRepair, codeTechnicalDescription } from '@/services/geminiApi';
+import { generateReference } from '@/services/generateReference';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const RunDiagnostics = () => {
-    const router = useRouter()
+    const router = useRouter();
 
     const [selectedCar, setSelectedCar] = useState<string>('');
+    const [selectedCarID, setSelectedCarID] = useState<number | undefined>(undefined);
     const [vehicles, setVehicles] = useState<{ id: number, make: string, model: string, year: string }[]>([])
-    const [technicalDescription, setTechnicalDescription] = useState<string>('');
-    const [meaning, setMeaning] = useState<string>('');
-    const [possibleCauses, setPossibleCauses] = useState<string>('');
-    const [recommendedRepair, setRecommendedRepair] = useState<string>('');
+    const [DTC, setDTC] = useState<string[]>(['P1604', 'P0101']);
+    const [scanLoading, setScanLoading] = useState<boolean>(false);
 
-    const handleCodeTechnicalDescription = async () => {
+    const handleCodeTechnicalDescription = async (code: string) => {
         try {
-            const res = await codeTechnicalDescription('P1604', selectedCar);
+            const res = await codeTechnicalDescription(code, selectedCar);
             console.log(`TD: ${res}`);
-            if (res) {
-                setTechnicalDescription(res);
-            };
             return res;
 
         } catch (e) {
@@ -33,39 +30,33 @@ const RunDiagnostics = () => {
         }
     };
 
-    const handleCodeMeaning = async (TD: string) => {
+    const handleCodeMeaning = async (code: string, TD: string) => {
         try {
-            const res = await codeMeaning('P1604', TD, selectedCar);
+            const res = await codeMeaning(code, TD, selectedCar);
             console.log(`M: ${res}`);
-            if (res) {
-                setMeaning(res);
-            };
+            return res;
 
         } catch (e) {
             console.error('Error code meaning: ', e);
         }
     };
 
-    const handleCodePossibleCauses = async (TD: string) => {
+    const handleCodePossibleCauses = async (code: string, TD: string) => {
         try {
-            const res = await codePossibleCauses('P1604', TD, selectedCar);
+            const res = await codePossibleCauses(code, TD, selectedCar);
             console.log(`PC: ${res}`);
-            if (res) {
-                setPossibleCauses(res);
-            };
+            return res;
 
         } catch (e) {
             console.error('Error getting possible causes: ', e);
         }
     };
 
-    const handleRecommendedRepair = async (TD: string) => {
+    const handleRecommendedRepair = async (code: string, TD: string) => {
         try {
-            const res = await codeRecommendedRepair('P1604', TD, selectedCar);
+            const res = await codeRecommendedRepair(code, TD, selectedCar);
             console.log(`RR: ${res}`);
-            if (res) {
-                setRecommendedRepair(res);
-            };
+            return res;
 
         } catch (e) {
             console.error('Error getting recommended repair: ', e);
@@ -82,32 +73,47 @@ const RunDiagnostics = () => {
                 icon: 'warning',
             });
             return;
-        };
-        
-        let sequence = 1;
+        }
 
-        switch (sequence) {
-            case 1:
-                const res = await handleCodeTechnicalDescription();
-                sequence + 1
-            case 2:
-                if (res) {
-                    await handleCodeMeaning(res);
+        try {
+            setScanLoading(true);
+
+            const scanReference = generateReference();
+
+            for (const code of DTC) {
+                const TD = await handleCodeTechnicalDescription(code);
+
+                if (!TD) throw new Error("Failed to get technical description");
+
+                const M = await handleCodeMeaning(code, TD);
+                const PC = await handleCodePossibleCauses(code, TD);
+                const RR = await handleRecommendedRepair(code, TD);
+
+                const vehicleDiagnosticData = {
+                    vehicle_id: selectedCarID ?? 0,
+                    dtc: code,
+                    technical_description: TD ?? '',
+                    meaning: M ?? '',
+                    possible_causes: PC ?? '',
+                    recommended_repair: RR ?? '',
+                    datetime: new Date(),
+                    scan_reference: scanReference,
                 };
-                sequence + 1
-            case 3:
-                if (res) {
-                    await handleCodePossibleCauses(res);
-                };
-                sequence + 1
-            case 4:
-                if (res) {
-                    await handleRecommendedRepair(res);
-                };
-                sequence = 1;
-                break;
-            default:
-                break;
+
+                await addVehicleDiagnostic(vehicleDiagnosticData);
+            }
+
+            setSelectedCarID(undefined);
+            setSelectedCar('');
+            setDTC([]);
+            setScanLoading(false);
+            router.navigate('./diagnosis');
+
+        } catch (e) {
+            console.error('Error: ', e);
+
+        } finally {
+            setScanLoading(false);
         }
     };
 
@@ -138,7 +144,10 @@ const RunDiagnostics = () => {
                     <Text style={styles.dropdownLbl}>Car to scan</Text>
                     <SelectDropdown 
                         data={vehicles}
-                        onSelect={(selectedItem) => setSelectedCar(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`)}
+                        onSelect={(selectedItem) => {
+                            setSelectedCar(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`);
+                            setSelectedCarID(selectedItem.id);
+                        }}
                         renderButton={(selectedItem, isOpen) => (
                             <View style={styles.dropdownButtonStyle}>
                                 <Text style={styles.dropdownButtonTxtStyle}>
@@ -169,16 +178,12 @@ const RunDiagnostics = () => {
                         </View>
                     </TouchableOpacity>
                 </View>
-
-                <TouchableOpacity onPress={() => {
-                    console.log(technicalDescription);
-                    console.log(meaning);
-                    console.log(possibleCauses);
-                    console.log(recommendedRepair);
-                }}>
-                    <Text>Console</Text>
-                </TouchableOpacity>
             </View>
+            {scanLoading && (
+                <View style={styles.updateLoadingContainer}>
+                <ActivityIndicator size='large' color='#000B58'  />
+                </View>
+            )}
         </SafeAreaView>
     )
 }
@@ -285,6 +290,18 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontSize: 24,
     },
+    updateLoadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 10,
+    },
 })
 
-export default RunDiagnostics
+export default RunDiagnostics;
