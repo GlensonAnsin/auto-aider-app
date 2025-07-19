@@ -1,4 +1,5 @@
 export interface VehicleDiagnostic {
+    vehicle_diagnostic_id: number | null;
     vehicle_id: number;
     dtc: string;
     technical_description: string;

@@ -272,7 +272,7 @@ export const addVehicleDiagnostic = async (vehicleDiagnosticData: VehicleDiagnos
 };
 
 // GET VEHICLE DIAGNOSTIC
-export const getVehicleDiagnostic = async (vehicleID: number, scanReference: string): Promise<VehicleDiagnostic | null> => {
+export const getVehicleDiagnostic = async (vehicleID: number, scanReference: string): Promise<[] | null> => {
   try {
     const token = await getAccessToken();
     const res = await axios.get(`${apiURL}/vehicle_diagnostic/get-vehicle-diagnostic/${vehicleID}/${scanReference}`,

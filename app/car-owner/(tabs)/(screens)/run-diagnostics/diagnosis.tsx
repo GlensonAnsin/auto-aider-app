@@ -1,15 +1,37 @@
 import { Header } from '@/components/Header';
+import { RootState } from '@/redux/store';
+import { getVehicleDiagnostic } from '@/services/backendApi';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useSelector } from 'react-redux';
 
 const Diagnosis = () => {
     const router = useRouter();
 
-    const [codes, setCodes] = useState<{ dtc: string, technicalDescription: string }[]>([]);
-    const [scanReference, setScanReference] = useState<string>('');
+    const [codeInterpretation, setCodeInterpretation] = useState<{ vehicleDiagnosticID: number, dtc: string, technicalDescription: string }[]>([]);
+    const vehicleID = useSelector((state: RootState) => state.scan.vehicleID);
+    const scanReference = useSelector((state: RootState) => state.scan.scanReference);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await getVehicleDiagnostic(vehicleID ?? 0, scanReference ?? '');
+                if (res) {
+                    setCodeInterpretation(res.map((item: any) => ({
+                        vehicleDiagnosticID: item.vehicle_diagnostic_id,
+                        dtc: item.dtc,
+                        technicalDescription: item.technical_description,
+                    })));
+                }
+
+            } catch (e) {
+                console.error('Error: ', e);
+            }
+        })();
+    }, []);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -37,32 +59,12 @@ const Diagnosis = () => {
                             </TouchableOpacity>
                         </View>
 
-                        
-                        <TouchableOpacity style={styles.troubleCodeButton} onPress={() => router.navigate('./detailed-report')}>
-                            <Text style={styles.troubleCodeText}>P1604</Text>
-                            <Text style={styles.troubleCodeText2}>Startability Malfunction</Text>
-                        </TouchableOpacity>
-                        
-
-                        <TouchableOpacity style={styles.troubleCodeButton}>
-                            <Text style={styles.troubleCodeText}>P1162</Text>
-                            <Text style={styles.troubleCodeText2}>Primary HO2S (Sensor 1) Circuit Malfunction</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.troubleCodeButton}>
-                            <Text style={styles.troubleCodeText}>P1162</Text>
-                            <Text style={styles.troubleCodeText2}>Primary HO2S (Sensor 1) Circuit Malfunction</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.troubleCodeButton}>
-                            <Text style={styles.troubleCodeText}>P1162</Text>
-                            <Text style={styles.troubleCodeText2}>Primary HO2S (Sensor 1) Circuit Malfunction</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.troubleCodeButton}>
-                            <Text style={styles.troubleCodeText}>P1162</Text>
-                            <Text style={styles.troubleCodeText2}>Primary HO2S (Sensor 1) Circuit Malfunction</Text>
-                        </TouchableOpacity>
+                        {codeInterpretation.map((item) => (
+                            <TouchableOpacity key={item.vehicleDiagnosticID} style={styles.troubleCodeButton} onPress={() => router.navigate('./detailed-report')}>
+                                <Text style={styles.troubleCodeText}>{item.dtc}</Text>
+                                <Text style={styles.troubleCodeText2}>{item.technicalDescription}</Text>
+                            </TouchableOpacity>
+                        ))}
                     </View>
 
                     <TouchableOpacity style={styles.findShopButton}>

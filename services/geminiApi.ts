@@ -33,7 +33,7 @@ export async function codeMeaning(code: string, technicalDescription: string, ca
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `What is the full explanation of this DTC ${code} (${technicalDescription}) for a ${car}? Provide only the full explanation — no additional details.`.trim(),
+            contents: `Provide a brief explanation of this DTC ${code} (${technicalDescription}) for a ${car}? Provide only the brief explanation — no additional details.`.trim(),
             config: {
                 temperature: 0,
             },
@@ -48,7 +48,7 @@ export async function codePossibleCauses(code: string, technicalDescription: str
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `What are the possible causes of DTC ${code} (${technicalDescription}) for a ${car}? Provide only the possible causes — no additional details.`.trim(),
+            contents: `What are the possible causes of DTC ${code} (${technicalDescription}) for a ${car}? Provide only the possible causes in bullet form — no additional details.`.trim(),
             config: {
                 temperature: 0,
             },
@@ -63,7 +63,7 @@ export async function codeRecommendedRepair(code: string, technicalDescription: 
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: `What are the recommended solutions or repairs of DTC ${code} (${technicalDescription}) for a ${car}? Provide only the recommended solutions or repairs — no additional details.`.trim(),
+            contents: `What are the recommended solutions or repairs of DTC ${code} (${technicalDescription}) for a ${car}? Provide only the recommended solutions or repairs in bullet form — no additional details.`.trim(),
             config: {
                 temperature: 0,
             },

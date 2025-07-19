@@ -1,9 +1,11 @@
+import { store } from '@/redux/store';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import FlashMessage from 'react-native-flash-message';
+import { Provider } from 'react-redux';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,7 +26,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <Provider store={store}>
       <StatusBar style='dark' />
 
       <FlashMessage position='top' style={{ marginTop: 30 }} />
@@ -36,6 +38,6 @@ export default function RootLayout() {
         <Stack.Screen name='car-owner/(tabs)' options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name='repair-shop/(tabs)' options={{ headerShown: false, animation: 'none' }} />
       </Stack>
-    </>
+    </Provider>
   );
 }

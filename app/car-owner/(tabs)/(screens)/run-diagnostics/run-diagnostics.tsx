@@ -1,4 +1,5 @@
 import { Header } from '@/components/Header';
+import { setScanState } from '@/redux/slices/scanSlice';
 import { addVehicleDiagnostic, getVehicle } from '@/services/backendApi';
 import { codeMeaning, codePossibleCauses, codeRecommendedRepair, codeTechnicalDescription } from '@/services/geminiApi';
 import { generateReference } from '@/services/generateReference';
@@ -9,9 +10,11 @@ import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useDispatch } from 'react-redux';
 
 const RunDiagnostics = () => {
     const router = useRouter();
+    const dispatch = useDispatch();
 
     const [selectedCar, setSelectedCar] = useState<string>('');
     const [selectedCarID, setSelectedCarID] = useState<number | undefined>(undefined);
@@ -79,6 +82,10 @@ const RunDiagnostics = () => {
             setScanLoading(true);
 
             const scanReference = generateReference();
+            dispatch(setScanState({
+                vehicleID: selectedCarID ?? 0,
+                scanReference: scanReference,
+            }));
 
             for (const code of DTC) {
                 const TD = await handleCodeTechnicalDescription(code);
@@ -90,6 +97,7 @@ const RunDiagnostics = () => {
                 const RR = await handleRecommendedRepair(code, TD);
 
                 const vehicleDiagnosticData = {
+                    vehicle_diagnostic_id: null,
                     vehicle_id: selectedCarID ?? 0,
                     dtc: code,
                     technical_description: TD ?? '',
@@ -181,7 +189,7 @@ const RunDiagnostics = () => {
             </View>
             {scanLoading && (
                 <View style={styles.updateLoadingContainer}>
-                <ActivityIndicator size='large' color='#000B58'  />
+                    <ActivityIndicator size='large' color='#000B58'  />
                 </View>
             )}
         </SafeAreaView>
