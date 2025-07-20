@@ -1,8 +1,57 @@
 import { Header } from '@/components/Header';
+import { Loading } from '@/components/Loading';
+import { RootState } from '@/redux/store';
+import { getOnSpecificVehicleDiagnostic } from '@/services/backendApi';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 
 const DetailedReport = () => {
+    const vehiclDiagID = useSelector((state: RootState) => state.vehicleDiagID.vehicleDiagID);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [dtc, setDtc] = useState<string>('');
+    const [technicalDescription, setTechnicalDescription] = useState<string>('');
+    const [meaning, setMeaning] = useState<string>('');
+    const [possibleCauses, setPossibleCauses] = useState<string>('');
+    const [recommendedRepair, setRecommendedRepair] = useState<string>('');
+
+    const bulletPossibleCauses = possibleCauses
+        .split('\n')
+        .map(item => item.replace(/^\*\s+/, ''));
+    
+    const bulletRecommendedRepair = recommendedRepair
+        .split('\n')
+        .map(item => item.replace(/^\*\s+/, ''));
+
+    useEffect(() => {
+        (async () => {
+            try {
+                setIsLoading(true);
+                const res = await getOnSpecificVehicleDiagnostic(vehiclDiagID ?? 0)
+                if (res) {
+                    setDtc(res.dtc);
+                    setTechnicalDescription(res.technical_description);
+                    setMeaning(res.meaning);
+                    setPossibleCauses(res.possible_causes);
+                    setRecommendedRepair(res.recommended_repair);
+                }
+
+            } catch (e) {
+                console.error('Error: ', e);
+
+            } finally {
+                setIsLoading(false);
+            }
+        })();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <Loading />
+        )
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
@@ -10,41 +59,33 @@ const DetailedReport = () => {
 
                 <View style={styles.lowerBox}>
                     <View style={styles.textContainer}>
-                        <Text style={styles.troubleCode}>P1456</Text>
-                        <Text style={styles.technicalDescription}>Evaporative Emissions Control System Leakage - Fuel Tank (Small Leak)</Text>
+                        <Text style={styles.troubleCode}>{dtc}</Text>
+                        <Text style={styles.technicalDescription}>{technicalDescription}</Text>
                     </View>
 
                     <View style={styles.textContainer}>
                         <Text style={styles.label}>Meaning</Text>
-                        <Text style={styles.text}>
-                            The Powertrain Control Module (PCM) has detected a small leak in the Evaporative Emission Control (EVAP) system, specifically on the fuel tank side. The EVAP system is designed to prevent fuel vapors from escaping into the atmosphere by capturing and storing them, then routing them back to the engine to be burned. This code indicates that the system is not maintaining the proper pressure/vacuum, suggesting a leak.
-                        </Text>
+                        <Text style={styles.text}>{meaning}</Text>
                     </View>
 
                     <View style={styles.textContainer}>
                         <Text style={styles.label}>Possible Causes</Text>
-                        <Text style={styles.text}>
-                            Missing, loose, or faulty fuel filler cap: This is the most common and often easiest fix.
-                            Debris in the fuel filler cap seal: Dirt or foreign objects can prevent a proper seal.
-                            Malfunctioning EVAP two-way valve: This valve controls vapor flow between the fuel tank and the EVAP canister.
-                            Bad EVAP bypass solenoid valve: This valve plays a role in the leak detection process.
-                            Faulty EVAP canister: The canister stores fuel vapors.
-                            Cracked or damaged EVAP hoses/lines: Leaks can occur anywhere in the EVAP system's plumbing.
-                            Damaged or leaking fuel tank or filler neck: Physical damage to these components can lead to leaks.
-                            Faulty Fuel Tank Pressure (FTP) sensor: While less common, a bad sensor could inaccurately report a leak.
-                        </Text>
+                        {bulletPossibleCauses.map((item, index) => (
+                            <View key={index} style={styles.bulletView}>
+                               <Text style={styles.bullet}>{`\u2022`}</Text>
+                                <Text style={styles.bulletedText}>{item}</Text> 
+                            </View>
+                        ))}
                     </View>
 
                     <View style={styles.textContainer}>
                         <Text style={styles.label}>Recommended Solutions or Repairs</Text>
-                        <Text style={styles.text}>
-                            Check and tighten/replace the fuel cap: This is the first and most frequent solution. Ensure the cap clicks at least three times to ensure a proper seal. If the cap is old, damaged, or aftermarket, consider replacing it with an OEM (Original Equipment Manufacturer) cap.
-                            Inspect the fuel filler neck: Look for any cracks, rust, or damage to the sealing surface.
-                            Inspect EVAP hoses and lines: Visually check for any cracks, disconnections, or signs of damage.
-                            Diagnose EVAP system components: This often requires specialized tools like a smoke machine to pinpoint the exact location of the leak. A mechanic can use a diagnostic scanner to monitor Fuel Tank Pressure (FTP) sensor readings and activate EVAP solenoids to test their function.
-                            Replace faulty components: Depending on the diagnosis, this could include the EVAP two-way valve, bypass solenoid valve, EVAP canister, or any leaking hoses.
-                            Clear the DTC: After any repair, the diagnostic trouble code should be cleared from the PCM using an OBD-II scanner. A drive cycle may be necessary to confirm the repair and ensure the EVAP monitor runs and passes.
-                        </Text>
+                        {bulletRecommendedRepair.map((item, index) => (
+                            <View key={index} style={styles.bulletView}>
+                                <Text style={styles.bullet}>{`\u2022`}</Text>
+                                <Text style={styles.bulletedText}>{item}</Text> 
+                            </View>
+                        ))}
                     </View>
                 </View>
             </ScrollView>
@@ -63,7 +104,6 @@ const styles = StyleSheet.create({
         marginBottom: 100,
         gap: 10,
         width: '90%',
-        flex: 1,
     },
     textContainer: {
         backgroundColor: '#EAEAEA',
@@ -83,7 +123,6 @@ const styles = StyleSheet.create({
         fontSize: 22,
         color: '#333',
         textAlign: 'center',
-
     },
     technicalDescription: {
         fontFamily: 'LeagueSpartan',
@@ -94,12 +133,30 @@ const styles = StyleSheet.create({
     label: {
         fontFamily: 'LeagueSpartan_Bold',
         fontSize: 18,
+        marginBottom: 10,
         color: '#333',
     },
     text: {
         fontFamily: 'LeagueSpartan',
         fontSize: 16,
         color: '#333',
+    },
+    bulletView: {
+      width: '100%',
+      flexDirection: 'row',
+      gap: 10,
+      paddingLeft: 5,
+    },
+    bullet: {
+      fontFamily: 'LeagueSpartan_Bold',
+      color: '#333',
+      fontSize: 16,
+    },
+    bulletedText: {
+      fontFamily: 'LeagueSpartan',
+      color: '#333',
+      fontSize: 16,
+      maxWidth: '93%',
     },
 })
 

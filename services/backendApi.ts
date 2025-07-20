@@ -233,6 +233,25 @@ export const getVehicle = async () => {
   }
 };
 
+// GET SCANNED VEHICLE
+export const getScannedVehicle = async (vehicleID: number) => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/vehicle/get-scanned-vehicle/${vehicleID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Error: ', e);
+    return null;
+  }
+}
+
 // DELETE VEHICLE
 export const deleteVehicle = async (vehicleID: number) => {
   try {
@@ -271,11 +290,11 @@ export const addVehicleDiagnostic = async (vehicleDiagnosticData: VehicleDiagnos
   }
 };
 
-// GET VEHICLE DIAGNOSTIC
-export const getVehicleDiagnostic = async (vehicleID: number, scanReference: string): Promise<[] | null> => {
+// GET ONGOING VEHICLE DIAGNOSTIC
+export const getOnVehicleDiagnostic = async (vehicleID: number, scanReference: string): Promise<[] | null> => {
   try {
     const token = await getAccessToken();
-    const res = await axios.get(`${apiURL}/vehicle_diagnostic/get-vehicle-diagnostic/${vehicleID}/${scanReference}`,
+    const res = await axios.get(`${apiURL}/vehicle_diagnostic/get-on-vehicle-diagnostic/${vehicleID}/${scanReference}`,
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -289,6 +308,25 @@ export const getVehicleDiagnostic = async (vehicleID: number, scanReference: str
     return null;
   }
 };
+
+// GET DETAILS OF ONGOING SPECIFIC VEHICLE DIAGNOSTIC
+export const getOnSpecificVehicleDiagnostic = async (vehicleDiagnosticID: number) => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/vehicle_diagnostic/get-on-spec-vehicle-diagnostic/${vehicleDiagnosticID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Error: ', e);
+    return null;
+  }
+}
 
 // DELETE VEHICLE DIAGNOSTIC
 export const deleteVehicleDiagnostic = async (vehicleDiagnosticID: number) => {

@@ -1,11 +1,14 @@
+import { RootState } from '@/redux/store';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, View } from 'react-native';
+import { useSelector } from 'react-redux';
 import TabBarItem from './TabBarItem';
 
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { memo } from 'react';
 
-export default function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const icons = {
     index: (color: string) => <Entypo name='home' size={22} color={color} />,
     inbox: (color: string) => <Entypo name='chat' size={22} color={color} />,
@@ -13,54 +16,60 @@ export default function TabBar({ state, descriptors, navigation }: BottomTabBarP
     settings: (color: string) => <Ionicons name='settings' size={22} color={color} />,
   };
 
+  const tabVisible = useSelector((state: RootState) => state.tab.tabVisible);
+
   return (
-    <View style={styles.tabBar}>
-      {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
-        const label =
-          options.tabBarLabel ??
-          options.title ??
-          route.name;
+    <>
+      {tabVisible && (
+        <View style={styles.tabBar}>
+          {state.routes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            const label =
+              options.tabBarLabel ??
+              options.title ??
+              route.name;
 
-        if (['(screens)', '_sitemap', '+not-found'].includes(route.name)) return null;
+            if (['(screens)', '_sitemap', '+not-found'].includes(route.name)) return null;
 
-        const isFocused = state.index === index;
+            const isFocused = state.index === index;
 
-        const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
 
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name, route.params);
-          }
-        };
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name, route.params);
+              }
+            };
 
-        const onLongPress = () => {
-          navigation.emit({
-            type: 'tabLongPress',
-            target: route.key,
-          });
-        };
+            const onLongPress = () => {
+              navigation.emit({
+                type: 'tabLongPress',
+                target: route.key,
+              });
+            };
 
-        return (
-          <TabBarItem
-            key={route.key}
-            label={typeof label === 'string' ? label : route.name}
-            isFocused={isFocused}
-            onPress={onPress}
-            onLongPress={onLongPress}
-            icon={
-              icons[route.name as keyof typeof icons](
-                isFocused ? '#FFF' : '#FFF'
-              )
-            }
-          />
-        );
-      })}
-    </View>
+            return (
+              <TabBarItem
+                key={route.key}
+                label={typeof label === 'string' ? label : route.name}
+                isFocused={isFocused}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                icon={
+                  icons[route.name as keyof typeof icons](
+                    isFocused ? '#FFF' : '#FFF'
+                  )
+                }
+              />
+            );
+          })}
+        </View>
+      )}
+    </>
   );
 }
 
@@ -86,3 +95,5 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
 });
+
+export default memo(TabBar);

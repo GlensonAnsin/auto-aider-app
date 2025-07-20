@@ -1,26 +1,38 @@
 import { Header } from '@/components/Header';
-import { RootState } from '@/redux/store';
-import { getVehicleDiagnostic } from '@/services/backendApi';
+import { Loading } from '@/components/Loading';
+import { setVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
+import { getOnVehicleDiagnostic, getScannedVehicle } from '@/services/backendApi';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const Diagnosis = () => {
     const router = useRouter();
+    const dispatch = useDispatch();
 
     const [codeInterpretation, setCodeInterpretation] = useState<{ vehicleDiagnosticID: number, dtc: string, technicalDescription: string }[]>([]);
-    const vehicleID = useSelector((state: RootState) => state.scan.vehicleID);
-    const scanReference = useSelector((state: RootState) => state.scan.scanReference);
+    const [scannedVehicle, setScannedVehicle] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    // const vehicleID = useSelector((state: RootState) => state.scan.vehicleID);
+    // const scanReference = useSelector((state: RootState) => state.scan.scanReference);
+
+    const vehicleID = 25;
+    const scanReference = '1752999650802549';
 
     useEffect(() => {
         (async () => {
             try {
-                const res = await getVehicleDiagnostic(vehicleID ?? 0, scanReference ?? '');
-                if (res) {
-                    setCodeInterpretation(res.map((item: any) => ({
+                setIsLoading(true);
+
+                const res1 = await getScannedVehicle(vehicleID);
+                setScannedVehicle(`${res1.year} ${res1.make} ${res1.model}`);
+
+                const res2 = await getOnVehicleDiagnostic(vehicleID ?? 0, scanReference ?? '');
+                if (res2) {
+                    setCodeInterpretation(res2.map((item: any) => ({
                         vehicleDiagnosticID: item.vehicle_diagnostic_id,
                         dtc: item.dtc,
                         technicalDescription: item.technical_description,
@@ -29,9 +41,16 @@ const Diagnosis = () => {
 
             } catch (e) {
                 console.error('Error: ', e);
+
+            } finally {
+                setIsLoading(false);
             }
         })();
-    }, []);
+    }, [vehicleID, scanReference]);
+
+    if (isLoading) {
+        return <Loading />
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -40,7 +59,7 @@ const Diagnosis = () => {
             
                 <View style={styles.lowerBox}>
                     <View style={styles.buttonContainer}>
-                        <Text style={styles.car}>TOYOTA HILUX 2017</Text>
+                        <Text style={styles.car}>{scannedVehicle}</Text>
                         <TouchableOpacity style={[styles.button, {backgroundColor: '#780606'}]}>
                             <Icon name='close-circle-outline' style={styles.buttonIcon} />
                             <Text style={styles.buttonText}>Disconnect</Text>
@@ -59,11 +78,20 @@ const Diagnosis = () => {
                             </TouchableOpacity>
                         </View>
 
-                        {codeInterpretation.map((item) => (
-                            <TouchableOpacity key={item.vehicleDiagnosticID} style={styles.troubleCodeButton} onPress={() => router.navigate('./detailed-report')}>
-                                <Text style={styles.troubleCodeText}>{item.dtc}</Text>
-                                <Text style={styles.troubleCodeText2}>{item.technicalDescription}</Text>
-                            </TouchableOpacity>
+                        {[...codeInterpretation]
+                            .sort((a, b) => a.vehicleDiagnosticID - b.vehicleDiagnosticID)
+                            .map((item) => (
+                                <TouchableOpacity
+                                    key={item.vehicleDiagnosticID}
+                                    style={styles.troubleCodeButton}
+                                    onPress={() => {
+                                        dispatch(setVehicleDiagIDState(item.vehicleDiagnosticID))
+                                        router.navigate('./detailed-report')
+                                    }}
+                                >
+                                    <Text style={styles.troubleCodeText}>{item.dtc}</Text>
+                                    <Text style={styles.troubleCodeText2}>{item.technicalDescription}</Text>
+                                </TouchableOpacity>
                         ))}
                     </View>
 

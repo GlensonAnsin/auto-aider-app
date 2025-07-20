@@ -1,11 +1,13 @@
 import { Header } from '@/components/Header';
 import { setScanState } from '@/redux/slices/scanSlice';
+import { setTabState } from '@/redux/slices/tabBarSlice';
 import { addVehicleDiagnostic, getVehicle } from '@/services/backendApi';
 import { codeMeaning, codePossibleCauses, codeRecommendedRepair, codeTechnicalDescription } from '@/services/geminiApi';
 import { generateReference } from '@/services/generateReference';
 import { useRouter } from 'expo-router';
+import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -79,6 +81,7 @@ const RunDiagnostics = () => {
         }
 
         try {
+            dispatch(setTabState(false));
             setScanLoading(true);
 
             const scanReference = generateReference();
@@ -122,6 +125,7 @@ const RunDiagnostics = () => {
 
         } finally {
             setScanLoading(false);
+            dispatch(setTabState(true));
         }
     };
 
@@ -142,6 +146,23 @@ const RunDiagnostics = () => {
           }
         })();
       }, []);
+
+      if (scanLoading) {
+        return (
+            <View style={styles.updateLoadingContainer}>
+                <LottieView 
+                    source={require('@/assets/images/scanning.json')}
+                    autoPlay
+                    loop
+                    style={{
+                        width: 200,
+                        height: 200,
+                    }}
+                />
+                <Text style={styles.loadingText}>SCANNING</Text>
+            </View>
+        )
+      }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -187,11 +208,6 @@ const RunDiagnostics = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-            {scanLoading && (
-                <View style={styles.updateLoadingContainer}>
-                    <ActivityIndicator size='large' color='#000B58'  />
-                </View>
-            )}
         </SafeAreaView>
     )
 }
@@ -307,8 +323,13 @@ const styles = StyleSheet.create({
         right: 0,
         bottom: 0,
         left: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: '#FFF',
         zIndex: 10,
+    },
+    loadingText: {
+        fontFamily: 'LeagueSpartan_Bold',
+        fontSize: 30,
+        color: '#000B58',
     },
 })
 

@@ -440,7 +440,6 @@ const styles = StyleSheet.create({
     services: {
       width: '100%',
       flexDirection: 'row',
-      alignItems: 'center',
       gap: 10,
       paddingLeft: 5,
     },
