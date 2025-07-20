@@ -185,6 +185,7 @@ const repairShops = () => {
                                         longitude: currentLocation.longitude,
                                     }}
                                     image={require('../../../../../assets/images/circle-marker.png')}
+                                    title='You'
                                 />
 
                                 <Circle 

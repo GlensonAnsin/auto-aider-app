@@ -290,6 +290,25 @@ export const addVehicleDiagnostic = async (vehicleDiagnosticData: VehicleDiagnos
   }
 };
 
+// GET ALL USER VEHICLE DIAGNOSTICS
+export const getVehicleDiagnostics = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/vehicle_diagnostic/get-vehicle-diagnostics`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Error: ', e);
+    return null;
+  }
+}
+
 // GET ONGOING VEHICLE DIAGNOSTIC
 export const getOnVehicleDiagnostic = async (vehicleID: number, scanReference: string): Promise<[] | null> => {
   try {

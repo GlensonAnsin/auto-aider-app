@@ -1,8 +1,63 @@
 import { Header } from '@/components/Header';
+import { Loading } from '@/components/Loading';
+import { getVehicleDiagnostics } from '@/services/backendApi';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const DiagnosticHistory = () => {
+    const [history, setHistory] = useState<{ vehicleID: number, vehicle: string, dtc: string, date: Date, scanReference: string }[]>([])
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const grouped = Object.values(
+        history.reduce((acc, item) => {
+            const ref = item.scanReference;
+
+            if (!acc[ref]) {
+                acc[ref] = {
+                    vehicleID: item.vehicleID,
+                    vehicle: item.vehicle,
+                    scanReference: ref,
+                    date: item.date,
+                    dtc: [item.dtc],
+                };
+            } else {
+                acc[ref].dtc.push(item.dtc);
+            }
+
+            return acc;
+        }, {} as Record<string, { vehicleID: number, vehicle: string; scanReference: string; date: Date; dtc: string[]; }>)
+    );
+
+    useEffect(() => {
+        (async () => {
+            try {
+                setIsLoading(true);
+                const res1 = await getVehicleDiagnostics();
+
+                setHistory(res1.map((item: any) => ({
+                    vehicleID: item.vehicle_id,
+                    vehicle: `${item.year} ${item.make} ${item.model}`,
+                    dtc: item.dtc,
+                    date: item.date,
+                    scanReference: item.scan_reference,
+                })));
+
+            } catch (e) {
+                console.error('Error: ', e);
+
+            } finally {
+                setIsLoading(false);
+            }
+        })();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <Loading />
+        )
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
@@ -11,52 +66,18 @@ const DiagnosticHistory = () => {
                 <View style={styles.lowerBox}>
                     <View style={styles.clearHistoryContainer}>
                         <Text style={styles.header2}>Scanned Cars</Text>
-                        <TouchableOpacity style={styles.button}>
+                        <TouchableOpacity style={styles.button} onPress={() => console.log(history)}>
                             <Text style={styles.buttonTxt}>Clear history</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity style={styles.historyContainer}>
-                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
-                        <Text style={styles.date}>2025-06-29</Text>
-                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.historyContainer}>
-                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
-                        <Text style={styles.date}>2025-06-29</Text>
-                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.historyContainer}>
-                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
-                        <Text style={styles.date}>2025-06-29</Text>
-                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.historyContainer}>
-                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
-                        <Text style={styles.date}>2025-06-29</Text>
-                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.historyContainer}>
-                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
-                        <Text style={styles.date}>2025-06-29</Text>
-                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.historyContainer}>
-                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
-                        <Text style={styles.date}>2025-06-29</Text>
-                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.historyContainer}>
-                        <Text style={styles.carDetails}>NISSAN NAVARA 2017</Text>
-                        <Text style={styles.date}>2025-06-29</Text>
-                        <Text style={styles.troubleCodes}>P1100, P1120, P1121</Text>
-                    </TouchableOpacity>
+                    {grouped.map((item) => (
+                        <TouchableOpacity key={item.scanReference} style={styles.historyContainer}>
+                            <Text style={styles.carDetails}>{item.vehicle}</Text>
+                            <Text style={styles.date}>{new Date(item.date).toDateString()}</Text>
+                            <Text style={styles.troubleCodes}>{item.dtc.join(', ')}</Text>
+                        </TouchableOpacity>
+                    ))}
                 </View>
             </ScrollView>
         </SafeAreaView>

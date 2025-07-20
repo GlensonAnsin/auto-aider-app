@@ -44,7 +44,7 @@ const DetailedReport = () => {
                 setIsLoading(false);
             }
         })();
-    }, []);
+    }, [vehiclDiagID]);
 
     if (isLoading) {
         return (

@@ -107,7 +107,7 @@ const RunDiagnostics = () => {
                     meaning: M ?? '',
                     possible_causes: PC ?? '',
                     recommended_repair: RR ?? '',
-                    datetime: new Date(),
+                    date: new Date(),
                     scan_reference: scanReference,
                 };
 

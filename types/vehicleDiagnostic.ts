@@ -6,6 +6,6 @@ export interface VehicleDiagnostic {
     meaning: string;
     possible_causes: string;
     recommended_repair: string;
-    datetime: Date;
+    date: Date;
     scan_reference: string;
 };
