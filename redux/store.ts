@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import scanReducer from './slices/scanSlice';
 import tabReducer from './slices/tabBarSlice';
+import vehicleDiagIDArrReducer from './slices/vehicleDiagIDArrSlice';
 import vehicleDiagIDReducer from './slices/vehicleDiagIDSlice';
 
 export const store = configureStore({
@@ -8,6 +9,7 @@ export const store = configureStore({
         scan: scanReducer,
         tab: tabReducer,
         vehicleDiagID: vehicleDiagIDReducer,
+        vehicleDiagIDArr: vehicleDiagIDArrReducer,
     },
 });
 

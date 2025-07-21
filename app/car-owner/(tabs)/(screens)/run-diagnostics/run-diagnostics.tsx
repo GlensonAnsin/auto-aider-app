@@ -1,4 +1,5 @@
 import { Header } from '@/components/Header';
+import { Loading } from '@/components/Loading';
 import { setScanState } from '@/redux/slices/scanSlice';
 import { setTabState } from '@/redux/slices/tabBarSlice';
 import { addVehicleDiagnostic, getVehicle } from '@/services/backendApi';
@@ -7,7 +8,7 @@ import { generateReference } from '@/services/generateReference';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableHighlight, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -23,6 +24,29 @@ const RunDiagnostics = () => {
     const [vehicles, setVehicles] = useState<{ id: number, make: string, model: string, year: string }[]>([])
     const [DTC, setDTC] = useState<string[]>(['P1604', 'P0101']);
     const [scanLoading, setScanLoading] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                setIsLoading(true);
+                const res = await getVehicle();
+                const vehicleInfo = res.map((v: { vehicle_id: number, make: string, model: string, year: string }) => ({
+                    id: v.vehicle_id,
+                    make: v.make,
+                    model: v.model,
+                    year: v.year
+                }));
+                setVehicles(vehicleInfo);
+
+            } catch (e) {
+                console.error('Error: ', e);
+
+            } finally {
+                setIsLoading(false);
+            }
+        })();
+    }, []);
 
     const handleCodeTechnicalDescription = async (code: string) => {
         try {
@@ -129,83 +153,84 @@ const RunDiagnostics = () => {
         }
     };
 
-    useEffect(() => {
-        (async () => {
-          try {
-            const res = await getVehicle();
-            const vehicleInfo = res.map((v: { vehicle_id: number, make: string, model: string, year: string }) => ({
-              id: v.vehicle_id,
-              make: v.make,
-              model: v.model,
-              year: v.year
-            }));
-            setVehicles(vehicleInfo);
-    
-          } catch (e) {
-            console.error('Error: ', e);
-          }
-        })();
-      }, []);
-
-      if (scanLoading) {
+    if (isLoading) {
         return (
-            <View style={styles.updateLoadingContainer}>
-                <LottieView 
-                    source={require('@/assets/images/scanning.json')}
-                    autoPlay
-                    loop
-                    style={{
-                        width: 200,
-                        height: 200,
-                    }}
-                />
-                <Text style={styles.loadingText}>SCANNING</Text>
-            </View>
+            <Loading />
         )
-      }
+    }
+
+    if (scanLoading) {
+    return (
+        <View style={styles.updateLoadingContainer}>
+            <LottieView 
+                source={require('@/assets/images/scanning.json')}
+                autoPlay
+                loop
+                style={{
+                    width: 200,
+                    height: 200,
+                }}
+            />
+            <Text style={styles.loadingText}>SCANNING</Text>
+        </View>
+    )
+    }
 
     return (
         <SafeAreaView style={styles.container}>
             <Header headerTitle='Diagnostic' link='/car-owner/(tabs)' />
 
             <View style={styles.lowerBox}>
-                <View style={styles.selectCarContainer}>
-                    <Text style={styles.dropdownLbl}>Car to scan</Text>
-                    <SelectDropdown 
-                        data={vehicles}
-                        onSelect={(selectedItem) => {
-                            setSelectedCar(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`);
-                            setSelectedCarID(selectedItem.id);
-                        }}
-                        renderButton={(selectedItem, isOpen) => (
-                            <View style={styles.dropdownButtonStyle}>
-                                <Text style={styles.dropdownButtonTxtStyle}>
-                                    {(selectedItem && `${selectedItem.make} ${selectedItem.model} ${selectedItem.year}`) || 'Select car'}
-                                </Text>
-                                <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                            </View>
-                        )}
-                        renderItem={(item, _index, isSelected) => (
-                            <View
-                                style={{
-                                ...styles.dropdownItemStyle,
-                                ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                                }}
-                            >
-                                <Text style={styles.dropdownItemTxtStyle}>{`${item.make} ${item.model} ${item.year}`}</Text>
-                            </View>
-                        )}
-                        showsVerticalScrollIndicator={false}
-                        dropdownStyle={styles.dropdownMenuStyle}
-                    />
-                </View>
+                <View style={styles.selectCarButtonContainer}>
+                    <View style={styles.selectCarContainer}>
+                        <Text style={styles.dropdownLbl}>Car to scan</Text>
+                        <SelectDropdown 
+                            data={vehicles}
+                            onSelect={(selectedItem) => {
+                                setSelectedCar(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`);
+                                setSelectedCarID(selectedItem.id);
+                            }}
+                            renderButton={(selectedItem, isOpen) => (
+                                <View style={styles.dropdownButtonStyle}>
+                                    <Text style={styles.dropdownButtonTxtStyle}>
+                                        {(selectedItem && `${selectedItem.make} ${selectedItem.model} ${selectedItem.year}`) || 'Select car'}
+                                    </Text>
+                                    <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                                </View>
+                            )}
+                            renderItem={(item, _index, isSelected) => (
+                                <View
+                                    style={{
+                                    ...styles.dropdownItemStyle,
+                                    ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                                    }}
+                                >
+                                    <Text style={styles.dropdownItemTxtStyle}>{`${item.make} ${item.model} ${item.year}`}</Text>
+                                </View>
+                            )}
+                            showsVerticalScrollIndicator={false}
+                            dropdownStyle={styles.dropdownMenuStyle}
+                        />
+                    </View>
 
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.scanButton} onPress={() => handleCodeInterpretation()}>
-                        <View style={styles.innerContainer}>
-                            <Text style={styles.buttonTxt}>Scan</Text>
-                        </View>
-                    </TouchableOpacity>
+                    <View style={styles.buttonContainer}>
+                        <TouchableHighlight style={styles.scanButton} onPress={() => handleCodeInterpretation()}>
+                            <View style={styles.innerContainer}>
+                                <Text style={styles.buttonTxt}>Scan</Text>
+                            </View>
+                        </TouchableHighlight>
+
+                        <LottieView 
+                            source={require('@/assets/images/scan.json')}
+                            autoPlay
+                            loop
+                            style={{
+                                width: 300,
+                                height: 300,
+                                zIndex: 1,
+                            }}
+                        />
+                    </View>
                 </View>
             </View>
         </SafeAreaView>
@@ -218,8 +243,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFF',
     },
     lowerBox: {
-        alignItems: 'center',
         width: '90%',
+        alignSelf: 'center',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 1,
+    },
+    selectCarButtonContainer: {
+        width: '100%',
         borderRadius: 10,
         shadowColor: '#000',
         shadowOffset: {
@@ -229,8 +260,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-        alignSelf: 'center',
-        marginTop: 100,
+        marginTop: -10,
     },
     selectCarContainer: {
         width: '100%',
@@ -287,25 +317,25 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#EAEAEA',
-        height: 300,
+        height: 350,
+        position: 'relative',
         borderBottomLeftRadius: 10,
         borderBottomRightRadius: 10,
     },
     scanButton: {
-        width: 190,
-        height: 190,
-        borderRadius: 190,
+        width: 120,
+        height: 120,
+        borderRadius: 120,
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 2,
-        borderColor: '#000B58',
-        
+        position: 'absolute',
+        zIndex: 2
     },
     innerContainer: {
         backgroundColor: '#000B58',
-        width: 140,
-        height: 140,
-        borderRadius: 170,
+        width: 120,
+        height: 120,
+        borderRadius: 120,
         alignItems: 'center',
         justifyContent: 'center',
     },

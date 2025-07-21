@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { RootState } from '@/redux/store';
 import { getRepairShops } from '@/services/backendApi';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -13,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MapView, { Circle, Marker, Region } from 'react-native-maps';
 import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 
 const repairShops = () => {
     const mapRef = useRef<MapView | null>(null);
@@ -25,8 +27,9 @@ const repairShops = () => {
     const [selectedRepShop, setSelectedRepShop] = useState<number | null>(null);
     const [currentSnapPointIndex, setCurrentSnapPointIndex] = useState<number>(-1);
     const [refreshKey, setRefreshKey] = useState(0);
-    const maxDistanceKM = 5;
+    const maxDistanceKM: number = 5;
     const snapPoints = useMemo(() => ['37%', '99.9%'], []);
+    const vehicleDiagIDs: number[] | null = useSelector((state: RootState) => state.vehicleDiagIDArr.vehicleDiagIDArr);
 
     const handleRefresh = () => {
         setRefreshKey(prev => prev + 1);

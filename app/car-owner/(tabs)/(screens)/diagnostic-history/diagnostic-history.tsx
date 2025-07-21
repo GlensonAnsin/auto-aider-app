@@ -1,33 +1,18 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { setScanState } from '@/redux/slices/scanSlice';
 import { getVehicleDiagnostics } from '@/services/backendApi';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch } from 'react-redux';
 
 const DiagnosticHistory = () => {
+    const router = useRouter();
+    const dispatch = useDispatch();
     const [history, setHistory] = useState<{ vehicleID: number, vehicle: string, dtc: string, date: Date, scanReference: string }[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(false);
-
-    const grouped = Object.values(
-        history.reduce((acc, item) => {
-            const ref = item.scanReference;
-
-            if (!acc[ref]) {
-                acc[ref] = {
-                    vehicleID: item.vehicleID,
-                    vehicle: item.vehicle,
-                    scanReference: ref,
-                    date: item.date,
-                    dtc: [item.dtc],
-                };
-            } else {
-                acc[ref].dtc.push(item.dtc);
-            }
-
-            return acc;
-        }, {} as Record<string, { vehicleID: number, vehicle: string; scanReference: string; date: Date; dtc: string[]; }>)
-    );
 
     useEffect(() => {
         (async () => {
@@ -52,6 +37,26 @@ const DiagnosticHistory = () => {
         })();
     }, []);
 
+    const grouped = Object.values(
+        history.reduce((acc, item) => {
+            const ref = item.scanReference;
+
+            if (!acc[ref]) {
+                acc[ref] = {
+                    vehicleID: item.vehicleID,
+                    vehicle: item.vehicle,
+                    scanReference: ref,
+                    date: item.date,
+                    dtc: [item.dtc],
+                };
+            } else {
+                acc[ref].dtc.push(item.dtc);
+            }
+
+            return acc;
+        }, {} as Record<string, { vehicleID: number, vehicle: string; scanReference: string; date: Date; dtc: string[]; }>)
+    );
+
     if (isLoading) {
         return (
             <Loading />
@@ -72,7 +77,13 @@ const DiagnosticHistory = () => {
                     </View>
 
                     {grouped.map((item) => (
-                        <TouchableOpacity key={item.scanReference} style={styles.historyContainer}>
+                        <TouchableOpacity key={item.scanReference} style={styles.historyContainer} onPress={() => {
+                            dispatch(setScanState({
+                                vehicleID: parseInt(String(item.vehicleID)),
+                                scanReference: item.scanReference,
+                            }));
+                            router.navigate('./history-detailed-report');
+                        }}>
                             <Text style={styles.carDetails}>{item.vehicle}</Text>
                             <Text style={styles.date}>{new Date(item.date).toDateString()}</Text>
                             <Text style={styles.troubleCodes}>{item.dtc.join(', ')}</Text>

@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { setVehicleDiagIDArrState } from '@/redux/slices/vehicleDiagIDArrSlice';
 import { setVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { getOnVehicleDiagnostic, getScannedVehicle } from '@/services/backendApi';
 import { useRouter } from 'expo-router';
@@ -19,8 +20,8 @@ const Diagnosis = () => {
     // const vehicleID = useSelector((state: RootState) => state.scan.vehicleID);
     // const scanReference = useSelector((state: RootState) => state.scan.scanReference);
 
-    const vehicleID = 25;
-    const scanReference = '1752999650802549';
+    const vehicleID: number = 25;
+    const scanReference: string = '1752999650802549';
 
     useEffect(() => {
         (async () => {
@@ -47,6 +48,13 @@ const Diagnosis = () => {
             }
         })();
     }, [vehicleID, scanReference]);
+
+    const handleStoreIDToRedux = () => {
+        const ids = codeInterpretation.map((item) => item.vehicleDiagnosticID);
+        dispatch(setVehicleDiagIDArrState(ids));
+
+        router.navigate('/car-owner/(tabs)/(screens)/repair-shops/repair-shops');
+    };
 
     if (isLoading) {
         return <Loading />
@@ -95,7 +103,7 @@ const Diagnosis = () => {
                         ))}
                     </View>
 
-                    <TouchableOpacity style={styles.findShopButton}>
+                    <TouchableOpacity style={styles.findShopButton} onPress={() => handleStoreIDToRedux()}>
                         <Text style={styles.findShopButtonText}>Find Repair Shop</Text>
                     </TouchableOpacity>
                 </View>
