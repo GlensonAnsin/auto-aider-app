@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     },
     troubleCodeText: {
         fontFamily: 'LeagueSpartan_Bold',
-        color: '#333',
+        color: '#780606',
         fontSize: 16,
     },
     troubleCodeText2: {

@@ -203,7 +203,7 @@ const Profile = () => {
                             name='car-outline'
                             style={styles.icon}
                         />
-                        <Text style={styles.tabName}>Manage Connected Vehicles</Text>
+                        <Text style={styles.tabName}>Manage Vehicles</Text>
                         <MaterialCommunityIcons
                             name='arrow-right-thin'
                             style={styles.forwardIcon}

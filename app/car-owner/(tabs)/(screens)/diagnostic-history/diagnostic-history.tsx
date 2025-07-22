@@ -2,17 +2,20 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { setScanState } from '@/redux/slices/scanSlice';
 import { getVehicleDiagnostics } from '@/services/backendApi';
+import Entypo from '@expo/vector-icons/Entypo';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 
 const DiagnosticHistory = () => {
     const router = useRouter();
     const dispatch = useDispatch();
+
     const [history, setHistory] = useState<{ vehicleID: number, vehicle: string, dtc: string, date: Date, scanReference: string }[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
 
     useEffect(() => {
         (async () => {
@@ -77,17 +80,60 @@ const DiagnosticHistory = () => {
                     </View>
 
                     {grouped.map((item) => (
-                        <TouchableOpacity key={item.scanReference} style={styles.historyContainer} onPress={() => {
-                            dispatch(setScanState({
-                                vehicleID: parseInt(String(item.vehicleID)),
-                                scanReference: item.scanReference,
-                            }));
-                            router.navigate('./history-detailed-report');
-                        }}>
-                            <Text style={styles.carDetails}>{item.vehicle}</Text>
-                            <Text style={styles.date}>{new Date(item.date).toDateString()}</Text>
-                            <Text style={styles.troubleCodes}>{item.dtc.join(', ')}</Text>
-                        </TouchableOpacity>
+                        <View style={{ width: '100%' }} key={item.scanReference}>
+                            <TouchableOpacity 
+                                style={styles.historyContainer} 
+                                onPress={() => {
+                                    dispatch(setScanState({
+                                        vehicleID: parseInt(String(item.vehicleID)),
+                                        scanReference: item.scanReference,
+                                    }));
+                                    router.navigate('./history-detailed-report');
+                                }}
+                                onLongPress={() => setModalVisible(true)}
+                            >
+                                <Text style={styles.carDetails}>{item.vehicle}</Text>
+                                <Text style={styles.date}>{new Date(item.date).toDateString()}</Text>
+                                <View style={styles.codeButtonContainer}>
+                                    <Text style={styles.troubleCodes}>{item.dtc.join(', ')}</Text>
+                                    <TouchableOpacity 
+                                        style={styles.historyButton}
+                                        onPress={() => {
+                                            dispatch(setScanState({
+                                                vehicleID: parseInt(String(item.vehicleID)),
+                                                scanReference: item.scanReference,
+                                            }));
+                                            router.navigate('/car-owner/(tabs)/(screens)/repair-shops/repair-shops');
+                                        }}
+                                    >
+                                        <Entypo name='location' size={16} color='#FFF' />
+                                    </TouchableOpacity>
+                                </View>
+                            </TouchableOpacity>
+
+                            <Modal
+                                animationType='fade'
+                                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                                visible={modalVisible}
+                                onRequestClose={() => setModalVisible(false)}
+                            >
+                                <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+                                    <View style={styles.centeredView}>
+                                        <Pressable style={styles.modalView} onPress={() => {}}>
+                                            <View style={styles.cancelSaveContainer}>
+                                                <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => setModalVisible(false)}>
+                                                    <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                                </TouchableOpacity>
+        
+                                                <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#780606' }]} onPress={() => {}}>
+                                                    <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Delete</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </Pressable>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            </Modal>
+                        </View>
                     ))}
                 </View>
             </ScrollView>
@@ -102,6 +148,8 @@ const styles = StyleSheet.create({
     },
     lowerBox: { 
         alignItems: 'center',
+        width: '90%',
+        alignSelf: 'center',
         flex: 1,
         marginBottom: 100,
         gap: 10,
@@ -109,7 +157,7 @@ const styles = StyleSheet.create({
     clearHistoryContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        width: '90%',
+        width: '100%',
         marginTop: 20,
     },
     header2: {
@@ -127,7 +175,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     historyContainer: {
-        width: '90%',
+        width: '100%',
         backgroundColor: '#EAEAEA',
         justifyContent: 'space-between',
         padding: 10,
@@ -156,7 +204,53 @@ const styles = StyleSheet.create({
         color: '#555',
         fontSize: 14,
     },
-
+    codeButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    historyButton: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 5,
+        borderRadius: 5,
+        backgroundColor: '#000B58'
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalView: {
+        backgroundColor: '#FFF',
+        borderRadius: 10,
+        padding: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+        width: 0,
+        height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    cancelSaveContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 10,
+    },
+    modalButton: {
+        width: 100,
+        height: 45,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    modalButtonText: {
+        fontSize: 16,
+        fontFamily: 'LeagueSpartan_Bold',
+    },
 })
 
 export default DiagnosticHistory

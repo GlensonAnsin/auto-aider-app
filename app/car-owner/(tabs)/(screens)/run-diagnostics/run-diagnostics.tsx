@@ -5,6 +5,7 @@ import { setTabState } from '@/redux/slices/tabBarSlice';
 import { addVehicleDiagnostic, getVehicle } from '@/services/backendApi';
 import { codeMeaning, codePossibleCauses, codeRecommendedRepair, codeTechnicalDescription } from '@/services/geminiApi';
 import { generateReference } from '@/services/generateReference';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
@@ -12,7 +13,6 @@ import { StyleSheet, Text, TouchableHighlight, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch } from 'react-redux';
 
 const RunDiagnostics = () => {
@@ -183,7 +183,7 @@ const RunDiagnostics = () => {
             <View style={styles.lowerBox}>
                 <View style={styles.selectCarButtonContainer}>
                     <View style={styles.selectCarContainer}>
-                        <Text style={styles.dropdownLbl}>Car to scan</Text>
+                        <Text style={styles.dropdownLbl}>Vehicle</Text>
                         <SelectDropdown 
                             data={vehicles}
                             onSelect={(selectedItem) => {
@@ -193,9 +193,9 @@ const RunDiagnostics = () => {
                             renderButton={(selectedItem, isOpen) => (
                                 <View style={styles.dropdownButtonStyle}>
                                     <Text style={styles.dropdownButtonTxtStyle}>
-                                        {(selectedItem && `${selectedItem.make} ${selectedItem.model} ${selectedItem.year}`) || 'Select car'}
+                                        {(selectedItem && `${selectedItem.make} ${selectedItem.model} ${selectedItem.year}`) || 'Select vehicle'}
                                     </Text>
-                                    <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                                    <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
                                 </View>
                             )}
                             renderItem={(item, _index, isSelected) => (
