@@ -1,13 +1,16 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { clearScanState } from '@/redux/slices/scanSlice';
 import { RootState } from '@/redux/store';
 import { getOnVehicleDiagnostic } from '@/services/backendApi';
-import { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const HistoryDetailedReport = () => {
+    const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [codes, setCodes] = useState<{ vehicleDiagID: number, dtc: string, technicalDescription: string, meaning: string, possibleCauses: string, recommendedRepair: string }[]>([]);
     const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -23,31 +26,44 @@ const HistoryDetailedReport = () => {
         ?.split('\n')
         .map(item => item.replace(/^\*\s+/, '')) || [];
 
-    useEffect(() => {
-        (async () => {
-            try {
-                setIsLoading(true);
+    useFocusEffect(
+        useCallback(() => {
+            let isActive = true;
 
-                const res = await getOnVehicleDiagnostic(vehicleID ?? 0, scanReference ?? '');
-                if (res) {
-                    setCodes(res.map((item: any) => ({
-                        vehicleDiagID: item.vehicle_diagnostic_id,
-                        dtc: item.dtc,
-                        technicalDescription: item.technical_description,
-                        meaning: item.meaning,
-                        possibleCauses: item.possible_causes,
-                        recommendedRepair: item.recommended_repair,
-                    })));
+            const fetchData = async () => {
+                try {
+                    setIsLoading(true);
+                    const res = await getOnVehicleDiagnostic(vehicleID ?? 0, scanReference ?? '');
+
+                    if (!isActive) return;
+
+                    if (res) {
+                        setCodes(res.map((item: any) => ({
+                            vehicleDiagID: item.vehicle_diagnostic_id,
+                            dtc: item.dtc,
+                            technicalDescription: item.technical_description,
+                            meaning: item.meaning,
+                            possibleCauses: item.possible_causes,
+                            recommendedRepair: item.recommended_repair,
+                        })));
+                    }
+
+                } catch (e) {
+                    console.error('Error: ', e);
+
+                } finally {
+                    if (isActive) setIsLoading(false);
                 }
+            };
 
-            } catch (e) {
-                console.error('Error: ', e);
-
-            } finally {
-                setIsLoading(false);
-            }
-        })();
-    }, [vehicleID, scanReference]);
+            fetchData();
+            
+            return () => {
+                isActive = false;
+                dispatch(clearScanState());
+            };
+        }, [])
+    );
 
     if (isLoading || codes.length === 0) {
         return <Loading />

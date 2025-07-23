@@ -113,7 +113,7 @@ const DiagnosticHistory = () => {
 
                             <Modal
                                 animationType='fade'
-                                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                                backdropColor={'rgba(0, 0, 0, 0.1)'}
                                 visible={modalVisible}
                                 onRequestClose={() => setModalVisible(false)}
                             >

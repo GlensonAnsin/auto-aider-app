@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { clearScanState } from '@/redux/slices/scanSlice';
 import { RootState } from '@/redux/store';
 import { getOnVehicleDiagnostic, getRepairShops, getVehicle } from '@/services/backendApi';
 import Fontisto from '@expo/vector-icons/Fontisto';
@@ -9,15 +10,16 @@ import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, Image, Modal, Pressable, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
 import MapView, { Circle, Marker, Region } from 'react-native-maps';
 import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const repairShops = () => {
+    const dispatch = useDispatch();
     const mapRef = useRef<MapView | null>(null);
     const bottomSheetRef = useRef<BottomSheet | null>(null);
     const { width: screenWidth } = Dimensions.get('window');
@@ -108,6 +110,7 @@ const repairShops = () => {
 
             return () => {
                 isActive = false;
+                dispatch(clearScanState());
             };
         }, [])
     );
@@ -418,12 +421,16 @@ const repairShops = () => {
 
                                                                 <View style={styles.textInputContainer}>
                                                                     <Text style={styles.textInputLabel}>Vehicle Issue</Text>
-                                                                    {codeInterpretation.map((item) => (
-                                                                        <View key={item.vehicleDiagnosticID} style={styles.troubleCodeContainer}>
-                                                                            <Text style={styles.troubleCodeText}>{item.dtc}</Text>
-                                                                            <Text style={styles.troubleCodeText2}>{item.technicalDescription}</Text>
-                                                                        </View>
-                                                                    ))}
+                                                                    <ScrollView style={{ maxHeight: 200 }}>
+                                                                        <View onStartShouldSetResponder={() => true}>
+                                                                            {codeInterpretation.map((item) => (
+                                                                                <View key={item.vehicleDiagnosticID} style={styles.troubleCodeContainer}>
+                                                                                    <Text style={styles.troubleCodeText}>{item.dtc}</Text>
+                                                                                    <Text style={styles.troubleCodeText2}>{item.technicalDescription}</Text>
+                                                                                </View>                                                     
+                                                                            ))}
+                                                                        </View>   
+                                                                    </ScrollView>
                                                                 </View>
                                                             </>
                                                         )}
@@ -484,8 +491,8 @@ const repairShops = () => {
                                                         </View>
                                                     </Pressable>
                                                 </View>
-                                            </TouchableWithoutFeedback>
-                                        </Modal>
+                                        </TouchableWithoutFeedback>
+                                    </Modal>
                                     </>
                                 )}
                             </View>
@@ -744,15 +751,8 @@ const styles = StyleSheet.create({
     },
     troubleCodeContainer: {
         backgroundColor: '#EAEAEA',
+        marginBottom: 10,
         width: '100%',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
         borderRadius: 5,
         padding: 10,
     },

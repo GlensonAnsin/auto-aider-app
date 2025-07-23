@@ -2,13 +2,14 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { setVehicleDiagIDArrState } from '@/redux/slices/vehicleDiagIDArrSlice';
 import { setVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
+import { RootState } from '@/redux/store';
 import { getOnVehicleDiagnostic, getScannedVehicle } from '@/services/backendApi';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Diagnosis = () => {
     const router = useRouter();
@@ -17,18 +18,15 @@ const Diagnosis = () => {
     const [codeInterpretation, setCodeInterpretation] = useState<{ vehicleDiagnosticID: number, dtc: string, technicalDescription: string }[]>([]);
     const [scannedVehicle, setScannedVehicle] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    // const vehicleID = useSelector((state: RootState) => state.scan.vehicleID);
-    // const scanReference = useSelector((state: RootState) => state.scan.scanReference);
-
-    const vehicleID: number = 25;
-    const scanReference: string = '1752999650802549';
+    const vehicleID: number | null = useSelector((state: RootState) => state.scan.vehicleID);
+    const scanReference: string | null = useSelector((state: RootState) => state.scan.scanReference);
 
     useEffect(() => {
         (async () => {
             try {
                 setIsLoading(true);
 
-                const res1 = await getScannedVehicle(vehicleID);
+                const res1 = await getScannedVehicle(vehicleID ?? 0);
                 setScannedVehicle(`${res1.year} ${res1.make} ${res1.model}`);
 
                 const res2 = await getOnVehicleDiagnostic(vehicleID ?? 0, scanReference ?? '');
