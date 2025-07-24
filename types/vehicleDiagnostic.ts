@@ -1,11 +1,12 @@
 export interface VehicleDiagnostic {
     vehicle_diagnostic_id: number | null;
     vehicle_id: number;
-    dtc: string;
-    technical_description: string;
-    meaning: string;
-    possible_causes: string;
-    recommended_repair: string;
+    dtc: string | null;
+    technical_description: string | null;
+    meaning: string | null;
+    possible_causes: string | null;
+    recommended_repair: string | null;
     date: Date;
     scan_reference: string;
+    vehicle_issue_description: string | null;
 };

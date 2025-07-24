@@ -2,7 +2,8 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { clearScanState } from '@/redux/slices/scanSlice';
 import { RootState } from '@/redux/store';
-import { getOnVehicleDiagnostic, getRepairShops, getVehicle } from '@/services/backendApi';
+import { addRequest, addVehicleDiagnostic, getOnVehicleDiagnostic, getRepairShops, getVehicle } from '@/services/backendApi';
+import { generateReference } from '@/services/generateReference';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -10,7 +11,8 @@ import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import { GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
 import MapView, { Circle, Marker, Region } from 'react-native-maps';
 import Carousel from 'react-native-reanimated-carousel';
@@ -23,8 +25,8 @@ const repairShops = () => {
     const mapRef = useRef<MapView | null>(null);
     const bottomSheetRef = useRef<BottomSheet | null>(null);
     const { width: screenWidth } = Dimensions.get('window');
-    const [regions, setRegions] = useState<{ latitude: number, longitude: number, shopName: string, ownerFirstname: string, ownerLastname: string, gender: string, mobileNum: string, email: string | null, profilePic: string, profileBG: string, shopImages: string[], servicesOffered: string[], ratingsNum: number, averageRating: number }[] | undefined>(undefined);
-    const [nearbyRepShop, setNearbyRepShop] = useState<{ latitude: number, longitude: number, shopName: string, ownerFirstname: string, ownerLastname: string, gender: string, mobileNum: string, email: string | null, profilePic: string, profileBG: string, shopImages: string[], servicesOffered: string[], ratingsNum: number, averageRating: number }[] | undefined>(undefined);
+    const [regions, setRegions] = useState<{ repairShopID: number, latitude: number, longitude: number, shopName: string, ownerFirstname: string, ownerLastname: string, gender: string, mobileNum: string, email: string | null, profilePic: string, profileBG: string, shopImages: string[], servicesOffered: string[], ratingsNum: number, averageRating: number }[] | undefined>(undefined);
+    const [nearbyRepShop, setNearbyRepShop] = useState<{ repairShopID: number, latitude: number, longitude: number, shopName: string, ownerFirstname: string, ownerLastname: string, gender: string, mobileNum: string, email: string | null, profilePic: string, profileBG: string, shopImages: string[], servicesOffered: string[], ratingsNum: number, averageRating: number }[] | undefined>(undefined);
     const [currentLocation, setCurrentLocation] = useState<Region | undefined>(undefined);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [selectedRepShop, setSelectedRepShop] = useState<number | null>(null);
@@ -34,11 +36,13 @@ const repairShops = () => {
     const snapPoints = useMemo(() => ['37%', '99.9%'], []);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
     const [vehicles, setVehicles] = useState<{ id: number, make: string, model: string, year: string }[]>([])
-    const [selectedVehicle, setSelectedVehicle] = useState<string>('');
+    const [selectedVehicle, setSelectedVehicle] = useState<number | undefined>(undefined);
     const [vehicleIssue, setVehicleIssue] = useState<string>('');
     const [codeInterpretation, setCodeInterpretation] = useState<{ vehicleDiagnosticID: number, dtc: string, technicalDescription: string }[]>([]);
-    const vehicleDiagIDs: number[] | null = useSelector((state: RootState) => state.vehicleDiagIDArr.vehicleDiagIDArr);
     const [scannedVehicle, setScannedVehicle] = useState<string>('');
+    const [scanReference2, setScanReference2] = useState<string>('');
+    const [requestLoading, setRequestLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string>('');
 
     const vehicleID: number | null = useSelector((state: RootState) => state.scan.vehicleID);
     const scanReference: string | null = useSelector((state: RootState) => state.scan.scanReference);
@@ -73,6 +77,7 @@ const repairShops = () => {
                     if (!isActive) return;
 
                     setRegions(res1.map((shop: any) => ({
+                        repairShopID: shop.repair_shop_id,
                         latitude: parseFloat(shop.latitude),
                         longitude: parseFloat(shop.longitude),
                         shopName: shop.shop_name,
@@ -97,6 +102,9 @@ const repairShops = () => {
                     }));
 
                     setVehicles(vehicleInfo);
+
+                    const scanReference2 = generateReference();
+                    setScanReference2(scanReference2);
 
                 } catch (e) {
                     console.error('Error:', e);
@@ -206,6 +214,119 @@ const repairShops = () => {
         }
 
         setModalVisible(true);
+    };
+
+    const handleSubmitRequest = async (repairShopID: number, vehicleDiagID: number | null, requestType: string) => {
+        setError('');
+
+        try {
+            setRequestLoading(true);
+            const datetime = new Date();
+            switch (requestType) {
+                case 'with-obd2':
+                    for (const item of codeInterpretation ?? []) {
+                        const id = item.vehicleDiagnosticID;
+                        
+                        const requestData = {
+                            vehicle_diagnostic_id: id,
+                            repair_shop_id: repairShopID,
+                            repair_procedure: null,
+                            request_datetime: datetime,
+                            status: 'Pending',
+                        };
+
+                        await addRequest(requestData);
+                    }
+
+                    showMessage({
+                        message: 'Request submitted successfully!',
+                        type: 'success',
+                        floating: true,
+                        color: '#FFF',
+                        icon: 'success',
+                    });
+                    setModalVisible(false);
+                    break;
+
+                case 'without-obd2':
+                    const requestData = {
+                        vehicle_diagnostic_id: vehicleDiagID ?? 0,
+                        repair_shop_id: repairShopID,
+                        repair_procedure: null,
+                        request_datetime: datetime,
+                        status: 'Pending',
+                    };
+
+                    await addRequest(requestData);
+                    showMessage({
+                        message: 'Request submitted successfully!',
+                        type: 'success',
+                        floating: true,
+                        color: '#FFF',
+                        icon: 'success',
+                    });
+                    setModalVisible(false);
+                    break;
+
+                default:
+                    throw new Error('Unsupported type');
+            }
+
+        } catch (e) {
+            console.error('Error: ', e);
+
+        } finally {
+            setRequestLoading(false);
+        }
+    };
+
+    const handleAddVehicleDiagnostic = async () => {
+        try {
+            const vehicleDiagnosticData = {
+                vehicle_diagnostic_id: null,
+                vehicle_id: selectedVehicle !== undefined ? selectedVehicle : 0,
+                dtc: null,
+                technical_description: null,
+                meaning: null,
+                possible_causes: null,
+                recommended_repair: null,
+                date: new Date(),
+                scan_reference: scanReference2,
+                vehicle_issue_description: vehicleIssue,
+            };
+
+            await addVehicleDiagnostic(vehicleDiagnosticData);
+
+        } catch (e) {
+            console.error('Error: ', e);
+        }
+    };
+
+    const getVehicleDiagnostic = async () => {
+        try {
+            const res = await getOnVehicleDiagnostic(selectedVehicle !== undefined ? selectedVehicle : 0, scanReference2)
+            if (res) {
+                const id = res.map((item: any) => item.vehicle_diagnostic_id);
+                return id[0];
+            };
+
+        } catch (e) {
+            console.error('Error: ', e);
+            return null;
+        }
+    };
+
+    const handleSubmitRequestWithoutOBD2 = async (repairShopID: number) => {
+        if (!selectedVehicle || !vehicleIssue) {
+            setError('Please fill in all fields.')
+            return;
+        };
+
+        setError('');
+        setRequestLoading(true);
+        await handleAddVehicleDiagnostic();
+        const res = await getVehicleDiagnostic();
+        await handleSubmitRequest(repairShopID, res, 'without-obd2');
     };
 
     if (isLoading) {
@@ -382,9 +503,15 @@ const repairShops = () => {
                                             animationType='fade'
                                             backdropColor={'rgba(0, 0, 0, 0.5)'}
                                             visible={modalVisible}
-                                            onRequestClose={() => setModalVisible(false)}
+                                            onRequestClose={() => {
+                                                setModalVisible(false);
+                                                setError('');
+                                            }}
                                         >
-                                            <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+                                            <TouchableWithoutFeedback onPress={() => {
+                                                setModalVisible(false);
+                                                setError('');
+                                            }}>
                                                 <View style={styles.centeredView}>
                                                     <Pressable style={styles.modalView} onPress={() => {}}>
                                                         <View style={styles.profileNameContainer}>
@@ -432,6 +559,29 @@ const repairShops = () => {
                                                                         </View>   
                                                                     </ScrollView>
                                                                 </View>
+
+                                                                {error.length > 0 && (
+                                                                    <View style={styles.errorContainer}>
+                                                                        <Text style={styles.errorMessage}>{error}</Text>
+                                                                    </View>
+                                                                )}
+
+                                                                {requestLoading === true && (
+                                                                    <ActivityIndicator style={{ marginTop: 20 }} size='small' color='#000B58' />
+                                                                )}
+
+                                                                <View style={styles.cancelSaveContainer}>
+                                                                    <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => {
+                                                                        setModalVisible(false);
+                                                                        setError('');
+                                                                    }}>
+                                                                        <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                                                    </TouchableOpacity>
+                            
+                                                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleSubmitRequest(nearbyRepShop[selectedRepShop].repairShopID, null, 'with-obd2')}>
+                                                                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                                                    </TouchableOpacity>
+                                                                </View>
                                                             </>
                                                         )}
 
@@ -441,11 +591,11 @@ const repairShops = () => {
                                                                     <Text style={styles.textInputLabel}>Vehicle</Text>
                                                                     <SelectDropdown 
                                                                         data={vehicles}
-                                                                        onSelect={(selectedItem) => setSelectedVehicle(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`)}
+                                                                        onSelect={(selectedItem) => setSelectedVehicle(selectedItem.id)}
                                                                         renderButton={(selectedItem, isOpen) => (
                                                                             <View style={styles.dropdownButtonStyle}>
                                                                                 <Text style={styles.dropdownButtonTxtStyle}>
-                                                                                    {(selectedItem && `${selectedItem.make} ${selectedItem.model} ${selectedItem.year}`) || 'Select vehicle'}
+                                                                                    {(selectedItem && `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) || 'Select vehicle'}
                                                                                 </Text>
                                                                                 <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
                                                                             </View>
@@ -457,7 +607,7 @@ const repairShops = () => {
                                                                                 ...(isSelected && { backgroundColor: '#D2D9DF' }),
                                                                                 }}
                                                                             >
-                                                                                <Text style={styles.dropdownItemTxtStyle}>{`${item.make} ${item.model} ${item.year}`}</Text>
+                                                                                <Text style={styles.dropdownItemTxtStyle}>{`${item.year} ${item.make} ${item.model}`}</Text>
                                                                             </View>
                                                                         )}
                                                                         showsVerticalScrollIndicator={false}
@@ -477,18 +627,31 @@ const repairShops = () => {
                                                                         textAlignVertical='top'
                                                                     />
                                                                 </View>
+
+                                                                {error.length > 0 && (
+                                                                    <View style={styles.errorContainer}>
+                                                                        <Text style={styles.errorMessage}>{error}</Text>
+                                                                    </View>
+                                                                )}
+
+                                                                {requestLoading === true && (
+                                                                    <ActivityIndicator style={{ marginTop: 20 }} size='small' color='#000B58' />
+                                                                )}
+
+                                                                <View style={styles.cancelSaveContainer}>
+                                                                    <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => {
+                                                                        setModalVisible(false);
+                                                                        setError('');
+                                                                    }}>
+                                                                        <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                                                    </TouchableOpacity>
+                            
+                                                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleSubmitRequestWithoutOBD2(nearbyRepShop[selectedRepShop].repairShopID)}>
+                                                                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                                                    </TouchableOpacity>
+                                                                </View>
                                                             </>
                                                         )}
-
-                                                        <View style={styles.cancelSaveContainer}>
-                                                            <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => setModalVisible(false)}>
-                                                                <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                                            </TouchableOpacity>
-                    
-                                                            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => {}}>
-                                                                <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
-                                                            </TouchableOpacity>
-                                                        </View>
                                                     </Pressable>
                                                 </View>
                                         </TouchableWithoutFeedback>
@@ -765,6 +928,18 @@ const styles = StyleSheet.create({
         fontFamily: 'LeagueSpartan',
         color: '#555',
         fontSize: 14,
+    },
+    errorContainer: {
+        backgroundColor: '#EAEAEA',
+        borderRadius: 5,
+        width: '100%',
+        padding: 10,
+        marginTop: 20,
+    },
+    errorMessage: {
+        fontFamily: 'LeagueSpartan',
+        color: 'red',
+        textAlign: 'center',
     },
 })
 

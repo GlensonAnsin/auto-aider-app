@@ -1,4 +1,5 @@
 import { AutoRepairShop, UpdateRepairShopInfo } from '@/types/autoRepairShop';
+import { AddRequest } from '@/types/mechanicRequest';
 import { ChangePass, LoginUser, UpdateUserInfo, User } from '@/types/user';
 import { Vehicle } from '@/types/vehicle';
 import { VehicleDiagnostic } from '@/types/vehicleDiagnostic';
@@ -364,3 +365,23 @@ export const deleteVehicleDiagnostic = async (vehicleDiagnosticID: number) => {
     console.error('Error: ', e);
   }
 }
+
+
+
+// ADD REQUEST
+export const addRequest = async (requestData: AddRequest) => {
+  try {
+    const token = await getAccessToken();
+    await axios.post(`${apiURL}/mechanic_request/add-request`,
+      requestData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+  } catch (e) {
+    console.error('Error: ', e);
+  }
+};

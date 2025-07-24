@@ -133,6 +133,7 @@ const RunDiagnostics = () => {
                     recommended_repair: RR ?? '',
                     date: new Date(),
                     scan_reference: scanReference,
+                    vehicle_issue_description: null,
                 };
 
                 await addVehicleDiagnostic(vehicleDiagnosticData);
