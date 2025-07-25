@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
 
 export default function Index() {
-  return <Redirect href='/car-owner/(tabs)' />;
+  return <Redirect href='/car-owner/(tabs)/(screens)/request-status/request-status' />;
 }

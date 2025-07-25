@@ -231,7 +231,7 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.feature}>
+                        <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./request-status/request-status')}>
                             <MaterialCommunityIcons name='clipboard-edit' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Request Status</Text>

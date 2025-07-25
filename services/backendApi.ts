@@ -359,7 +359,7 @@ export const deleteVehicleDiagnostic = async (vehicleDiagnosticID: number) => {
         }
       }
     );
-    return res.data
+    return res.data;
 
   } catch (e) {
     console.error('Error: ', e);
@@ -383,5 +383,24 @@ export const addRequest = async (requestData: AddRequest) => {
 
   } catch (e) {
     console.error('Error: ', e);
+  }
+};
+
+// GET REQUESTS
+export const getRequestsForCarOwner = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/mechanic_request/get-requests-co`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Error: ', e);
+    return null;
   }
 };
