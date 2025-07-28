@@ -22,13 +22,13 @@ const RequestStatus = () => {
 
                 const statusData: { vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[] = [];
 
-                res1.vehicles?.forEach((vehicle: any) => {
+                res1?.vehicles?.forEach((vehicle: any) => {
                     const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
-                    vehicle.vehicle_diagnostics?.forEach((diagnostic: any) => {
+                    vehicle?.vehicle_diagnostics?.forEach((diagnostic: any) => {
                         const scanReference = diagnostic.scan_reference;
-                        diagnostic.mechanic_requests?.forEach((request: any) => {
+                        diagnostic?.mechanic_requests?.forEach((request: any) => {
                             const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
-                            const datetime = dayjs(request.request_datetime).utc(true).tz(guessTimezone).format()
+                            const datetime = dayjs(request.request_datetime).utc(true).tz(guessTimezone).format();
                             if (repairShop) {
                                 statusData.push({
                                     vehicleName,
@@ -76,7 +76,7 @@ const RequestStatus = () => {
             <Header headerTitle='Request Status' link='/car-owner/(tabs)' />
 
             <View style={styles.lowerBox}>
-                {grouped && (
+                {grouped.length !== 0 && (
                     <>
                         {grouped.map((item, index) => (
                             <TouchableOpacity key={index} style={styles.requestButton}>
@@ -100,6 +100,10 @@ const RequestStatus = () => {
                             </TouchableOpacity>
                         ))}
                     </>
+                )}
+
+                {grouped.length === 0 && (
+                    <Text style={styles.noRequestText}>-- No Requests --</Text>
                 )}
             </View>
         </ScrollView>
@@ -164,6 +168,11 @@ const styles = StyleSheet.create({
         color: '#555',
         fontSize: 14,
     },
+    noRequestText: {
+    fontFamily: 'LeagueSpartan',
+    fontSize: 16,
+    color: '#555',
+  },
 })
 
 export default RequestStatus;

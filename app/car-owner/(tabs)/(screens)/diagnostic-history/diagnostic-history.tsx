@@ -3,6 +3,9 @@ import { Loading } from '@/components/Loading';
 import { setScanState } from '@/redux/slices/scanSlice';
 import { getVehicleDiagnostics } from '@/services/backendApi';
 import Entypo from '@expo/vector-icons/Entypo';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -10,10 +13,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 
 const DiagnosticHistory = () => {
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
+    const guessTimezone = dayjs.tz.guess();
+    
     const router = useRouter();
     const dispatch = useDispatch();
 
-    const [history, setHistory] = useState<{ vehicleID: number, vehicle: string, dtc: string, date: Date, scanReference: string }[]>([])
+    const [history, setHistory] = useState<{ vehicleID: number, vehicle: string, dtc: string, date: string, scanReference: string }[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 
@@ -23,13 +30,24 @@ const DiagnosticHistory = () => {
                 setIsLoading(true);
                 const res1 = await getVehicleDiagnostics();
 
-                setHistory(res1.map((item: any) => ({
-                    vehicleID: item.vehicle_id,
-                    vehicle: `${item.year} ${item.make} ${item.model}`,
-                    dtc: item.dtc,
-                    date: item.date,
-                    scanReference: item.scan_reference,
-                })));
+                const historyData: { vehicleID: number, vehicle: string, dtc: string, date: string, scanReference: string }[] = [];
+
+                console.log(guessTimezone);
+
+                res1?.forEach((item: any) => {
+                    const parseDate1 = dayjs(item.date).utc(true).tz(guessTimezone).format();
+                    const parseDate2 = dayjs(parseDate1).utc(true).tz(guessTimezone).format("ddd MMM DD YYYY");
+
+                    historyData.push({
+                        vehicleID: item.vehicle_id,
+                        vehicle: `${item.year} ${item.make} ${item.model}`,
+                        dtc: item.dtc,
+                        date: parseDate2,
+                        scanReference: item.scan_reference,
+                    });
+                });
+
+                setHistory(historyData);
 
             } catch (e) {
                 console.error('Error: ', e);
@@ -57,7 +75,7 @@ const DiagnosticHistory = () => {
             }
 
             return acc;
-        }, {} as Record<string, { vehicleID: number, vehicle: string; scanReference: string; date: Date; dtc: string[]; }>)
+        }, {} as Record<string, { vehicleID: number, vehicle: string; scanReference: string; date: string; dtc: string[]; }>)
     );
 
     if (isLoading) {
@@ -93,7 +111,7 @@ const DiagnosticHistory = () => {
                                 onLongPress={() => setModalVisible(true)}
                             >
                                 <Text style={styles.carDetails}>{item.vehicle}</Text>
-                                <Text style={styles.date}>{new Date(item.date).toDateString()}</Text>
+                                <Text style={styles.date}>{item.date}</Text>
                                 <View style={styles.codeButtonContainer}>
                                     <Text style={styles.troubleCodes}>{item.dtc.join(', ')}</Text>
                                     <TouchableOpacity 
