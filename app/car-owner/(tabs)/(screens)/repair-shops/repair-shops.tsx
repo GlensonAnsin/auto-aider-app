@@ -10,6 +10,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
@@ -22,6 +23,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 const repairShops = () => {
     const dispatch = useDispatch();
+    const router = useRouter();
     const mapRef = useRef<MapView | null>(null);
     const bottomSheetRef = useRef<BottomSheet | null>(null);
     const { width: screenWidth } = Dimensions.get('window');
@@ -210,7 +212,7 @@ const repairShops = () => {
     const handleMakeRequest = () => {
         if (vehicleID !== null) {
             const vehicle = vehicles.find((item) => Number(item.id) === vehicleID);
-            setScannedVehicle(`${vehicle?.year} ${vehicle?.make} ${vehicle?.model}`);
+            setScannedVehicle(`${vehicle?.year || ''} ${vehicle?.make || ''} ${vehicle?.model || ''}`);
         }
 
         setModalVisible(true);
@@ -246,6 +248,7 @@ const repairShops = () => {
                         icon: 'success',
                     });
                     setModalVisible(false);
+                    router.navigate('/car-owner/(tabs)/(screens)/request-status/request-status');
                     break;
 
                 case 'without-obd2':
@@ -266,6 +269,7 @@ const repairShops = () => {
                         icon: 'success',
                     });
                     setModalVisible(false);
+                    router.navigate('/car-owner/(tabs)/(screens)/request-status/request-status');
                     break;
 
                 default:
@@ -327,6 +331,7 @@ const repairShops = () => {
         await handleAddVehicleDiagnostic();
         const res = await getVehicleDiagnostic();
         await handleSubmitRequest(repairShopID, res, 'without-obd2');
+        setVehicleIssue('');
     };
 
     if (isLoading) {
@@ -654,8 +659,8 @@ const repairShops = () => {
                                                         )}
                                                     </Pressable>
                                                 </View>
-                                        </TouchableWithoutFeedback>
-                                    </Modal>
+                                            </TouchableWithoutFeedback>
+                                        </Modal>
                                     </>
                                 )}
                             </View>

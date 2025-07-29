@@ -1,16 +1,23 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { deleteVehicle, getVehicle } from '@/services/backendApi';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { io, Socket } from 'socket.io-client';
 
 const ManageVehicles = () => {
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
+  const guessTimezone = dayjs.tz.guess();
+
   const [_socket, setSocket] = useState<Socket | null>(null);
   
-  const [vehicles, setVehicles] = useState<{ id: number, make: string, model: string, year: string, dateAdded: string }[]>([]);
+  const [vehicles, setVehicles] = useState<{ vehicleID: number, make: string, model: string, year: string, dateAdded: string }[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -18,14 +25,23 @@ const ManageVehicles = () => {
       try {
         setIsLoading(true);
         const res = await getVehicle();
-        const vehicleInfo = res.map((v: { vehicle_id: number, make: string, model: string, year: string, date_added: string }) => ({
-          id: v.vehicle_id,
-          make: v.make,
-          model: v.model,
-          year: v.year,
-          dateAdded: v.date_added
-        }));
-        setVehicles(vehicleInfo)
+
+        const vehicleData: { vehicleID: number, make: string, model: string, year: string, dateAdded: string }[] = []
+
+        res?.forEach((item: any) => {
+          const parseDate1 = dayjs(item.date).utc(true).tz(guessTimezone).format();
+          const parseDate2 = dayjs(parseDate1).utc(true).tz(guessTimezone).format("ddd MMM DD YYYY");
+
+          vehicleData.push({
+            vehicleID: item.vehicle_id,
+            make: item.make,
+            model: item.model,
+            year: item.year,
+            dateAdded: parseDate2,
+          });
+        });
+
+        setVehicles(vehicleData);
 
       } catch (e) {
         console.error('Error: ', e);
@@ -48,7 +64,7 @@ const ManageVehicles = () => {
     });
 
     newSocket.on('vehicleDeleted', ({ vehicleID }) => {
-      setVehicles((prev) => prev.filter((v) => v.id !== vehicleID));
+      setVehicles((prev) => prev.filter((v) => v.vehicleID !== vehicleID));
     });
 
     return () => {
@@ -60,7 +76,7 @@ const ManageVehicles = () => {
   const handleDelete = async (vehicleID: number) => {
     try {
       await deleteVehicle(vehicleID);
-      setVehicles((prev) => prev.filter((v) => v.id !== vehicleID));
+      setVehicles((prev) => prev.filter((v) => v.vehicleID !== vehicleID));
       showMessage({
         message: 'Delete successful!',
         type: 'success',
@@ -80,6 +96,20 @@ const ManageVehicles = () => {
     }
   }
 
+  const deleteVehicleAlert = (vehicleID: number) => {
+    Alert.alert('Delete Vehicle', 'Are you sure you want to delete this vehicle?', [
+      {
+        text: 'Cancel',
+        onPress: () => {},
+        style: 'cancel',
+      },
+      {
+        text: 'Yes',
+        onPress: () => handleDelete(vehicleID),
+      },
+    ]);
+  }
+
   if (isLoading) {
     return <Loading />
   }
@@ -93,25 +123,22 @@ const ManageVehicles = () => {
           {vehicles.length === 0 && (
             <Text style={styles.noVehiclesTxt}>-- No vehicles added --</Text>
           )}
+
           {vehicles?.map((item) => (
-            <View key={item.id} style={styles.vehicleContainer}>
+            <View key={item.vehicleID} style={styles.vehicleContainer}>
               <View style={styles.carDetailsContainer}>
-                <Text style={styles.carDetail}>{item.make} </Text>
-                <Text style={styles.carDetail}>{item.model} </Text>
-                <Text style={styles.carDetail}>{item.year}</Text>
+                <Text style={styles.carDetail}>{`${item.year} ${item.make} ${item.model}`} </Text>
+                <Text style={styles.dateAdded}>{`Date added: ${item.dateAdded}`}</Text>
               </View>
 
-              <View style={styles.buttonDateContainer}>
-                <Text style={styles.dateAdded}>{`Date added: ${item.dateAdded}`}</Text>
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity style={[styles.button, { backgroundColor: '#000B58' }]}>
-                    <Text style={styles.buttonTxt}>View</Text>
-                  </TouchableOpacity>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={[styles.button, { backgroundColor: '#000B58' }]}>
+                  <Text style={styles.buttonTxt}>View</Text>
+                </TouchableOpacity>
 
-                  <TouchableOpacity style={[styles.button, { backgroundColor: '#780606' }]} onPress={() => handleDelete(item.id)}>
-                    <Text style={styles.buttonTxt}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity style={[styles.button, { backgroundColor: '#780606' }]} onPress={() => deleteVehicleAlert(item.vehicleID)}>
+                  <Text style={styles.buttonTxt}>Delete</Text>
+                </TouchableOpacity>
               </View>
             </View>
           ))}
@@ -163,11 +190,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#333',
   },
-  buttonDateContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   dateAdded: {
     fontFamily: 'LeagueSpartan',
     fontSize: 14,
@@ -176,6 +198,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     gap: 5,
+    alignSelf: 'flex-end',
+    marginTop: 10,
   },
   button: {
     width: 70,

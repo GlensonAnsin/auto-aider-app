@@ -110,7 +110,7 @@ const RunDiagnostics = () => {
 
             const scanReference = generateReference();
             dispatch(setScanState({
-                vehicleID: selectedCarID ?? 0,
+                vehicleID: parseInt(String(selectedCarID ?? 0)),
                 scanReference: scanReference,
             }));
 
@@ -194,7 +194,7 @@ const RunDiagnostics = () => {
                             renderButton={(selectedItem, isOpen) => (
                                 <View style={styles.dropdownButtonStyle}>
                                     <Text style={styles.dropdownButtonTxtStyle}>
-                                        {(selectedItem && `${selectedItem.make} ${selectedItem.model} ${selectedItem.year}`) || 'Select vehicle'}
+                                        {(selectedItem && `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) || 'Select vehicle'}
                                     </Text>
                                     <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
                                 </View>
@@ -206,7 +206,7 @@ const RunDiagnostics = () => {
                                     ...(isSelected && { backgroundColor: '#D2D9DF' }),
                                     }}
                                 >
-                                    <Text style={styles.dropdownItemTxtStyle}>{`${item.make} ${item.model} ${item.year}`}</Text>
+                                    <Text style={styles.dropdownItemTxtStyle}>{`${item.year} ${item.make} ${item.model}`}</Text>
                                 </View>
                             )}
                             showsVerticalScrollIndicator={false}

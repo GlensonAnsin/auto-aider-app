@@ -1,6 +1,5 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
-import { setVehicleDiagIDArrState } from '@/redux/slices/vehicleDiagIDArrSlice';
 import { setVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { RootState } from '@/redux/store';
 import { getOnVehicleDiagnostic, getScannedVehicle } from '@/services/backendApi';
@@ -46,13 +45,6 @@ const Diagnosis = () => {
             }
         })();
     }, [vehicleID, scanReference]);
-
-    const handleStoreIDToRedux = () => {
-        const ids = codeInterpretation.map((item) => item.vehicleDiagnosticID);
-        dispatch(setVehicleDiagIDArrState(ids));
-
-        router.navigate('/car-owner/(tabs)/(screens)/repair-shops/repair-shops');
-    };
 
     if (isLoading) {
         return <Loading />
@@ -101,7 +93,7 @@ const Diagnosis = () => {
                         ))}
                     </View>
 
-                    <TouchableOpacity style={styles.findShopButton} onPress={() => handleStoreIDToRedux()}>
+                    <TouchableOpacity style={styles.findShopButton} onPress={() => router.navigate('/car-owner/(tabs)/(screens)/repair-shops/repair-shops')}>
                         <Text style={styles.findShopButtonText}>Find Repair Shop</Text>
                     </TouchableOpacity>
                 </View>

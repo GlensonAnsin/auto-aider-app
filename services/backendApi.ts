@@ -16,7 +16,7 @@ export const createUser = async (userData: User): Promise<User | null> => {
     return res.data;
 
   } catch (e) {
-    console.error('Error:', e);
+    console.error('Signup Error:', e);
     return null;
   }
 };
@@ -28,7 +28,7 @@ export const getUsers = async () => {
     return res.data;
     
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Get All Users Error: ', e);
     return null;
   }
 };
@@ -46,7 +46,7 @@ export const loginUser = async (userData: LoginUser): Promise<string | null> => 
       return '401';
 
     } else {
-      console.error('Error: ', e);
+      console.error('Login Error: ', e);
       return null;
     }
   }
@@ -64,7 +64,7 @@ export const getUserInfo = async () => {
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Get User Info Error: ', e);
     return null;
   }
 };
@@ -82,7 +82,7 @@ export const updateUserInfo = async (userData: UpdateUserInfo): Promise<UpdateUs
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Update User Info Error: ', e);
     return null;
   }
 };
@@ -104,7 +104,7 @@ export const changePass = async (userData: ChangePass): Promise<ChangePass | str
       return '401';
 
     } else {
-      console.error('Error: ', e);
+      console.error('Change Pass Error: ', e);
       return null;
     }
   }
@@ -119,7 +119,7 @@ export const createRepairShop = async (repairShopData: AutoRepairShop): Promise<
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Signup Error: ', e);
     return null;
   }
 };
@@ -131,7 +131,7 @@ export const getRepairShops = async () => {
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Get All Repair Shops Error: ', e);
     return null;
   }
 };
@@ -149,7 +149,7 @@ export const loginRepairShop = async (userData: LoginUser): Promise<string | nul
       return '401';
 
     } else {
-      console.error('Error: ', e);
+      console.error('Login Error: ', e);
       return null;
     }
   }
@@ -167,7 +167,7 @@ export const getRepairShopInfo = async () => {
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Get Repair Shop Info Error: ', e);
     return null;
   }
 };
@@ -191,7 +191,7 @@ export const updateRepairShopInfo = async (userData: UpdateRepairShopInfo): Prom
       return '401';
       
     } else {
-      console.error('Error: ', e);
+      console.error('Update Repair Shop Info Error: ', e);
       return null;
     }
   }
@@ -212,7 +212,7 @@ export const addVehicle = async (vehicleInfo: Vehicle): Promise<Vehicle | null> 
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Add Vehicle Error: ', e);
     return null;
   }
 };
@@ -229,7 +229,7 @@ export const getVehicle = async () => {
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Get Vehicle Error: ', e);
     return null;
   }
 };
@@ -248,7 +248,7 @@ export const getScannedVehicle = async (vehicleID: number) => {
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Get Scanned Vehicle Error: ', e);
     return null;
   }
 }
@@ -265,7 +265,7 @@ export const deleteVehicle = async (vehicleID: number) => {
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Delete Vehicle Error: ', e);
   }
 };
 
@@ -286,7 +286,7 @@ export const addVehicleDiagnostic = async (vehicleDiagnosticData: VehicleDiagnos
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Add Vehicle Diagnostic Error: ', e);
     return null;
   }
 };
@@ -305,7 +305,7 @@ export const getVehicleDiagnostics = async () => {
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Get All User Vehicle Diagnostics Error: ', e);
     return null;
   }
 }
@@ -324,7 +324,7 @@ export const getOnVehicleDiagnostic = async (vehicleID: number, scanReference: s
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Get Ongoing Vehicle Diagnostic Error: ', e);
     return null;
   }
 };
@@ -343,7 +343,7 @@ export const getOnSpecificVehicleDiagnostic = async (vehicleDiagnosticID: number
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Get Details of Ongoing Specific Vehicle Diagnostic Error: ', e);
     return null;
   }
 }
@@ -362,7 +362,7 @@ export const deleteVehicleDiagnostic = async (vehicleDiagnosticID: number) => {
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Delete Vehicle Diagnostic Error: ', e);
   }
 }
 
@@ -382,7 +382,7 @@ export const addRequest = async (requestData: AddRequest) => {
     );
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Add Request Error: ', e);
   }
 };
 
@@ -400,7 +400,7 @@ export const getRequestsForCarOwner = async () => {
     return res.data;
 
   } catch (e) {
-    console.error('Error: ', e);
+    console.error('Get Requests Error: ', e);
     return null;
   }
 };

@@ -1,4 +1,5 @@
 import { Header } from '@/components/Header';
+import { Loading } from '@/components/Loading';
 import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
@@ -13,39 +14,54 @@ const RequestStatus = () => {
     const guessTimezone = dayjs.tz.guess();
     
     const [requestStatus, setRequestStatus] = useState<{ vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     useEffect(() => {
         (async () => {
             try {
+                setIsLoading(true);
                 const res1 = await getRequestsForCarOwner();
                 const res2 = await getRepairShops();
 
                 const statusData: { vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[] = [];
 
-                res1?.vehicles?.forEach((vehicle: any) => {
-                    const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
-                    vehicle?.vehicle_diagnostics?.forEach((diagnostic: any) => {
-                        const scanReference = diagnostic.scan_reference;
-                        diagnostic?.mechanic_requests?.forEach((request: any) => {
-                            const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
-                            const datetime = dayjs(request.request_datetime).utc(true).tz(guessTimezone).format();
-                            if (repairShop) {
-                                statusData.push({
-                                    vehicleName,
-                                    repairShop: repairShop.shop_name,
-                                    scanReference,
-                                    datetime: dayjs(datetime).utc(true).tz(guessTimezone).format("ddd MMM DD YYYY, h:mm A"),
-                                    status: request.status,
-                                });
+                if (res1) {
+                    res1.vehicles.forEach((vehicle: any) => {
+                        if (vehicle) {
+                            const vehicleName = `${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''}`;
+                            if (vehicle.vehicle_diagnostics) {
+                                vehicle.vehicle_diagnostics.forEach((diagnostic: any) => {
+                                    if (diagnostic) {
+                                        const scanReference = diagnostic.scan_reference;
+                                        if (diagnostic.mechanic_requests) {
+                                            diagnostic.mechanic_requests.forEach((request: any) => {
+                                                const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
+                                                const datetime = dayjs(request.request_datetime).utc(true).tz(guessTimezone).format();
+                                                if (repairShop) {
+                                                    statusData.push({
+                                                        vehicleName,
+                                                        repairShop: repairShop.shop_name,
+                                                        scanReference,
+                                                        datetime: dayjs(datetime).utc(true).tz(guessTimezone).format("ddd MMM DD YYYY, h:mm A"),
+                                                        status: request.status,
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    }
+                                });   
                             }
-                        });
+                        }
                     });
-                });
+                }
 
                 setRequestStatus(statusData);
 
             } catch (e) {
                 console.error('Error: ', e);
+
+            } finally {
+                setIsLoading(false);
             }
         })();
     }, []);
@@ -70,41 +86,43 @@ const RequestStatus = () => {
         }, {} as Record<string, { vehicleName: string; repairShop: string; scanReference: string; datetime: string; status: string; }>)
     );
 
+    if (isLoading) {
+        return (
+            <Loading />
+        )
+    }
+
     return (
         <SafeAreaView style={styles.container}>
         <ScrollView>
             <Header headerTitle='Request Status' link='/car-owner/(tabs)' />
 
             <View style={styles.lowerBox}>
-                {grouped.length !== 0 && (
-                    <>
-                        {grouped.map((item, index) => (
-                            <TouchableOpacity key={index} style={styles.requestButton}>
-                                <View style={styles.vehicleShopContainer}>
-                                    <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                                    <Text style={styles.requestText}>{item.repairShop}</Text>
-                                    <Text style={styles.requestText}>{item.datetime}</Text>
-                                </View>
-                                <View style={styles.statusContainer}>
-                                    <Text style={styles.statusText}>{item.status}</Text>
-                                    <View style={[styles.statusColor, { backgroundColor:
-                                        item.status === 'Pending'
-                                        ? '#FFC107'
-                                        : item.status === 'Rejected'
-                                        ? '#F44336'
-                                        : item.status === 'Ongoing'
-                                        ? '#2196F3'
-                                        : '#4CAF50'
-                                    }]}></View>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
-                    </>
-                )}
-
                 {grouped.length === 0 && (
                     <Text style={styles.noRequestText}>-- No Requests --</Text>
                 )}
+                
+                {grouped.map((item, index) => (
+                    <TouchableOpacity key={index} style={styles.requestButton}>
+                        <View style={styles.vehicleShopContainer}>
+                            <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                            <Text style={styles.requestText}>{item.repairShop}</Text>
+                            <Text style={styles.requestText}>{item.datetime}</Text>
+                        </View>
+                        <View style={styles.statusContainer}>
+                            <Text style={styles.statusText}>{item.status}</Text>
+                            <View style={[styles.statusColor, { backgroundColor:
+                                item.status === 'Pending'
+                                ? '#FFC107'
+                                : item.status === 'Rejected'
+                                ? '#F44336'
+                                : item.status === 'Ongoing'
+                                ? '#2196F3'
+                                : '#4CAF50'
+                            }]}></View>
+                        </View>
+                    </TouchableOpacity>
+                ))}
             </View>
         </ScrollView>
         </SafeAreaView>
@@ -172,6 +190,7 @@ const styles = StyleSheet.create({
     fontFamily: 'LeagueSpartan',
     fontSize: 16,
     color: '#555',
+    textAlign: 'center',
   },
 })
 

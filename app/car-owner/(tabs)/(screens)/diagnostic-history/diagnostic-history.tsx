@@ -32,8 +32,6 @@ const DiagnosticHistory = () => {
 
                 const historyData: { vehicleID: number, vehicle: string, dtc: string, date: string, scanReference: string }[] = [];
 
-                console.log(guessTimezone);
-
                 res1?.forEach((item: any) => {
                     const parseDate1 = dayjs(item.date).utc(true).tz(guessTimezone).format();
                     const parseDate2 = dayjs(parseDate1).utc(true).tz(guessTimezone).format("ddd MMM DD YYYY");
@@ -97,60 +95,68 @@ const DiagnosticHistory = () => {
                         </TouchableOpacity>
                     </View>
 
+                    {grouped.length === 0 && (
+                        <Text style={styles.noHistoriesText}>-- No Histories --</Text>
+                    )}
+
                     {grouped.map((item) => (
                         <View style={{ width: '100%' }} key={item.scanReference}>
-                            <TouchableOpacity 
-                                style={styles.historyContainer} 
-                                onPress={() => {
-                                    dispatch(setScanState({
-                                        vehicleID: parseInt(String(item.vehicleID)),
-                                        scanReference: item.scanReference,
-                                    }));
-                                    router.navigate('./history-detailed-report');
-                                }}
-                                onLongPress={() => setModalVisible(true)}
-                            >
-                                <Text style={styles.carDetails}>{item.vehicle}</Text>
-                                <Text style={styles.date}>{item.date}</Text>
-                                <View style={styles.codeButtonContainer}>
-                                    <Text style={styles.troubleCodes}>{item.dtc.join(', ')}</Text>
+                            {item.dtc[0] !== null  && (
+                                <>
                                     <TouchableOpacity 
-                                        style={styles.historyButton}
+                                        style={styles.historyContainer} 
                                         onPress={() => {
                                             dispatch(setScanState({
                                                 vehicleID: parseInt(String(item.vehicleID)),
                                                 scanReference: item.scanReference,
                                             }));
-                                            router.navigate('/car-owner/(tabs)/(screens)/repair-shops/repair-shops');
+                                            router.navigate('./history-detailed-report');
                                         }}
+                                        onLongPress={() => setModalVisible(true)}
                                     >
-                                        <Entypo name='location' size={16} color='#FFF' />
+                                        <Text style={styles.carDetails}>{item.vehicle}</Text>
+                                        <Text style={styles.date}>{item.date}</Text>
+                                        <View style={styles.codeButtonContainer}>
+                                            <Text style={styles.troubleCodes}>{item.dtc.join(', ')}</Text>
+                                            <TouchableOpacity 
+                                                style={styles.historyButton}
+                                                onPress={() => {
+                                                    dispatch(setScanState({
+                                                        vehicleID: parseInt(String(item.vehicleID)),
+                                                        scanReference: item.scanReference,
+                                                    }));
+                                                    router.navigate('/car-owner/(tabs)/(screens)/repair-shops/repair-shops');
+                                                }}
+                                            >
+                                                <Entypo name='location' size={16} color='#FFF' />
+                                            </TouchableOpacity>
+                                        </View>
                                     </TouchableOpacity>
-                                </View>
-                            </TouchableOpacity>
 
-                            <Modal
-                                animationType='fade'
-                                backdropColor={'rgba(0, 0, 0, 0.1)'}
-                                visible={modalVisible}
-                                onRequestClose={() => setModalVisible(false)}
-                            >
-                                <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-                                    <View style={styles.centeredView}>
-                                        <Pressable style={styles.modalView} onPress={() => {}}>
-                                            <View style={styles.cancelSaveContainer}>
-                                                <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => setModalVisible(false)}>
-                                                    <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                                </TouchableOpacity>
-        
-                                                <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#780606' }]} onPress={() => {}}>
-                                                    <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Delete</Text>
-                                                </TouchableOpacity>
+                                    <Modal
+                                        animationType='fade'
+                                        backdropColor={'rgba(0, 0, 0, 0.1)'}
+                                        visible={modalVisible}
+                                        onRequestClose={() => setModalVisible(false)}
+                                    >
+                                        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+                                            <View style={styles.centeredView}>
+                                                <Pressable style={styles.modalView} onPress={() => {}}>
+                                                    <View style={styles.cancelSaveContainer}>
+                                                        <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => setModalVisible(false)}>
+                                                            <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                                        </TouchableOpacity>
+                
+                                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#780606' }]} onPress={() => {}}>
+                                                            <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Delete</Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                </Pressable>
                                             </View>
-                                        </Pressable>
-                                    </View>
-                                </TouchableWithoutFeedback>
-                            </Modal>
+                                        </TouchableWithoutFeedback>
+                                    </Modal>
+                                </>
+                            )}
                         </View>
                     ))}
                 </View>
@@ -268,6 +274,11 @@ const styles = StyleSheet.create({
     modalButtonText: {
         fontSize: 16,
         fontFamily: 'LeagueSpartan_Bold',
+    },
+    noHistoriesText: {
+        fontFamily: 'LeagueSpartan',
+        fontSize: 16,
+        color: '#555',
     },
 })
 
