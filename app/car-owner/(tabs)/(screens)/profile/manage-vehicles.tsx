@@ -94,7 +94,7 @@ const ManageVehicles = () => {
         icon: 'danger',
       });
     }
-  }
+  };
 
   const deleteVehicleAlert = (vehicleID: number) => {
     Alert.alert('Delete Vehicle', 'Are you sure you want to delete this vehicle?', [
@@ -108,7 +108,7 @@ const ManageVehicles = () => {
         onPress: () => handleDelete(vehicleID),
       },
     ]);
-  }
+  };
 
   if (isLoading) {
     return <Loading />
@@ -124,7 +124,7 @@ const ManageVehicles = () => {
             <Text style={styles.noVehiclesTxt}>-- No vehicles added --</Text>
           )}
 
-          {vehicles?.map((item) => (
+          {vehicles.map((item) => (
             <View key={item.vehicleID} style={styles.vehicleContainer}>
               <View style={styles.carDetailsContainer}>
                 <Text style={styles.carDetail}>{`${item.year} ${item.make} ${item.model}`} </Text>

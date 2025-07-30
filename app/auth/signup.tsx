@@ -97,13 +97,22 @@ const Signup = () => {
         return;
       }
 
-      let location = await Location.getCurrentPositionAsync({});
+      let location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
       setRegion({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       });
+
+      mapRef.current?.animateToRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 300);
     })();
   }, []);
 
@@ -204,7 +213,8 @@ const Signup = () => {
       creation_date: new Date(),
       profile_pic: null,
       role: role.trim(),
-      user_initials_bg: getRandomHexColor()
+      user_initials_bg: getRandomHexColor(),
+      is_deleted: false,
     };
 
     try {
@@ -326,6 +336,7 @@ const Signup = () => {
         total_score: 0,
         profile_bg: getRandomHexColor(),
         availability: 'close',
+        is_deleted: false,
       };
 
       try {
@@ -365,7 +376,7 @@ const Signup = () => {
           keyboardShouldPersistTaps='handled' 
         >
           <View style={styles.upperBox}>
-            <Text style={styles.welcomeTxt}>Welcome To</Text>
+            <Text style={styles.welcomeTxt}>Welcome to</Text>
             <Image 
               source={require('../../assets/images/logo.png')}
             />
@@ -660,7 +671,7 @@ const Signup = () => {
                   ref={mapRef}
                   mapType='hybrid'
                   initialRegion={region}
-                  onRegionChangeComplete={(newRegion) => setRegion(newRegion)}
+                  onRegionChange={(newRegion) => setRegion(newRegion)}
                 >
                   {region && (
                     <Marker
@@ -778,6 +789,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   textInputContainer1: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 10,
     marginTop: 10,
     width: '50%',

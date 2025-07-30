@@ -19,7 +19,8 @@ export interface AutoRepairShop {
     total_score:  number;
     profile_bg: string;
     availability: string;
-}
+    is_deleted: boolean;
+};
 
 export interface UpdateRepairShopInfo {
     owner_firstname: string | null;

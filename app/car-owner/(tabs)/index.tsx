@@ -117,7 +117,8 @@ export default function Home() {
             make: selectedMake.toUpperCase().trim(),
             model: model.toUpperCase().trim(),
             year: year.trim(),
-            date_added: new Date()
+            date_added: new Date(),
+            is_deleted: false,
         };
 
         try {

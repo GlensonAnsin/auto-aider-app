@@ -9,6 +9,7 @@ export interface User {
     profile_pic: string | null;
     role: string;
     user_initials_bg: string;
+    is_deleted: boolean;
 };
 
 export interface UserWithID {

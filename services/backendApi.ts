@@ -10,14 +10,12 @@ import { getAccessToken, storeTokens } from './tokenStorage';
 const apiURL = process.env.EXPO_PUBLIC_BACKEND_API_URL;
 
 // SIGNUP USER
-export const createUser = async (userData: User): Promise<User | null> => {
+export const createUser = async (userData: User) => {
   try {
-    const res = await axios.post(`${apiURL}/user/signup`, userData);
-    return res.data;
+    await axios.post(`${apiURL}/user/signup`, userData);
 
   } catch (e) {
     console.error('Signup Error:', e);
-    return null;
   }
 };
 
@@ -113,14 +111,12 @@ export const changePass = async (userData: ChangePass): Promise<ChangePass | str
 
 
 // SIGNUP REPAIR SHOP
-export const createRepairShop = async (repairShopData: AutoRepairShop): Promise<AutoRepairShop | null> => {
+export const createRepairShop = async (repairShopData: AutoRepairShop) => {
   try {
     const res = await axios.post(`${apiURL}/auto_repair_shop/signup`, repairShopData);
-    return res.data;
 
   } catch (e) {
     console.error('Signup Error: ', e);
-    return null;
   }
 };
 
@@ -200,20 +196,18 @@ export const updateRepairShopInfo = async (userData: UpdateRepairShopInfo): Prom
 
 
 // ADD VEHICLE
-export const addVehicle = async (vehicleInfo: Vehicle): Promise<Vehicle | null> => {
+export const addVehicle = async (vehicleInfo: Vehicle) => {
   try {
     const token = await getAccessToken();
-    const res = await axios.post(`${apiURL}/vehicle/add-vehicle`,
+    await axios.post(`${apiURL}/vehicle/add-vehicle`,
       vehicleInfo,
       { headers: {
         Authorization: `Bearer ${token}`
       }}
     );
-    return res.data;
 
   } catch (e) {
     console.error('Add Vehicle Error: ', e);
-    return null;
   }
 };
 
@@ -257,12 +251,13 @@ export const getScannedVehicle = async (vehicleID: number) => {
 export const deleteVehicle = async (vehicleID: number) => {
   try {
     const token = await getAccessToken();
-    const res = await axios.delete(`${apiURL}/vehicle/delete-vehicle/${vehicleID}`,
-      { headers: {
-        Authorization: `Bearer ${token}`
+    await axios.delete(`${apiURL}/vehicle/delete-vehicle/${vehicleID}`,
+      { 
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }
-    });
-    return res.data;
+    );
 
   } catch (e) {
     console.error('Delete Vehicle Error: ', e);
