@@ -14,7 +14,7 @@ const ManageVehicles = () => {
   dayjs.extend(utc);
   dayjs.extend(timezone);
   const guessTimezone = dayjs.tz.guess();
-
+  
   const [_socket, setSocket] = useState<Socket | null>(null);
   
   const [vehicles, setVehicles] = useState<{ vehicleID: number, make: string, model: string, year: string, dateAdded: string }[]>([]);
@@ -31,7 +31,7 @@ const ManageVehicles = () => {
         res?.forEach((item: any) => {
           const parseDate1 = dayjs(item.date).utc(true).tz(guessTimezone).format();
           const parseDate2 = dayjs(parseDate1).utc(true).tz(guessTimezone).format("ddd MMM DD YYYY");
-
+          
           vehicleData.push({
             vehicleID: item.vehicle_id,
             make: item.make,

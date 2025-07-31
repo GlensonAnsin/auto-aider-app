@@ -28,7 +28,7 @@ const RequestStatus = () => {
                 if (res1) {
                     res1.vehicles.forEach((vehicle: any) => {
                         if (vehicle) {
-                            const vehicleName = `${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''}`;
+                            const vehicleName = `${vehicle?.year || ''} ${vehicle?.make || ''} ${vehicle?.model || ''}`;
                             if (vehicle.vehicle_diagnostics) {
                                 vehicle.vehicle_diagnostics.forEach((diagnostic: any) => {
                                     if (diagnostic) {

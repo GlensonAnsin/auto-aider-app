@@ -4,4 +4,5 @@ export interface AddRequest {
     repair_procedure: string | null;
     request_datetime: Date;
     status: string;
+    is_deleted: boolean;
 };

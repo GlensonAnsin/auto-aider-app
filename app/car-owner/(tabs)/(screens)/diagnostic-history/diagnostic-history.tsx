@@ -28,22 +28,24 @@ const DiagnosticHistory = () => {
         (async () => {
             try {
                 setIsLoading(true);
-                const res1 = await getVehicleDiagnostics();
+                const res = await getVehicleDiagnostics();
 
                 const historyData: { vehicleID: number, vehicle: string, dtc: string, date: string, scanReference: string }[] = [];
 
-                res1?.forEach((item: any) => {
-                    const parseDate1 = dayjs(item.date).utc(true).tz(guessTimezone).format();
-                    const parseDate2 = dayjs(parseDate1).utc(true).tz(guessTimezone).format("ddd MMM DD YYYY");
+                if (res) {
+                    res.forEach((item: any) => {
+                        const parseDate1 = dayjs(item.date).utc(true).tz(guessTimezone).format();
+                        const parseDate2 = dayjs(parseDate1).utc(true).tz(guessTimezone).format("ddd MMM DD YYYY");
 
-                    historyData.push({
-                        vehicleID: item.vehicle_id,
-                        vehicle: `${item.year} ${item.make} ${item.model}`,
-                        dtc: item.dtc,
-                        date: parseDate2,
-                        scanReference: item.scan_reference,
+                        historyData.push({
+                            vehicleID: item.vehicle_id,
+                            vehicle: `${item.year} ${item.make} ${item.model}`,
+                            dtc: item.dtc,
+                            date: parseDate2,
+                            scanReference: item.scan_reference,
+                        });
                     });
-                });
+                }
 
                 setHistory(historyData);
 

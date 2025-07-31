@@ -54,11 +54,13 @@ export const loginUser = async (userData: LoginUser): Promise<string | null> => 
 export const getUserInfo = async () => {
   try {
     const token = await getAccessToken();
-    const res = await axios.get(`${apiURL}/user/get-user-info`, {
-      headers: {
-        Authorization: `Bearer ${token}`
+    const res = await axios.get(`${apiURL}/user/get-user-info`, 
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }
-    });
+    );
     return res.data;
 
   } catch (e) {
@@ -68,34 +70,35 @@ export const getUserInfo = async () => {
 };
 
 // UPDATE USER INFO
-export const updateUserInfo = async (userData: UpdateUserInfo): Promise<UpdateUserInfo | null> => {
+export const updateUserInfo = async (userData: UpdateUserInfo) => {
   try {
     const token = await getAccessToken();
-    const res = await axios.patch(`${apiURL}/user/update-user-info`,
+    await axios.patch(`${apiURL}/user/update-user-info`,
       userData,
-      { headers: {
-        Authorization: `Bearer ${token}`
-      }}
+      { 
+        headers: {
+          Authorization: `Bearer ${token}`
+        } 
+      }
     );
-    return res.data;
 
   } catch (e) {
     console.error('Update User Info Error: ', e);
-    return null;
   }
 };
 
 // USER CHANGE PASS
-export const changePass = async (userData: ChangePass): Promise<ChangePass | string | null> => {
+export const changePass = async (userData: ChangePass) => {
   try {
     const token = await getAccessToken();
-    const res = await axios.patch(`${apiURL}/user/change-password`,
+    await axios.patch(`${apiURL}/user/change-password`,
       userData,
-      { headers: {
-        Authorization: `Bearer ${token}`
-      }}
+      { 
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
     );
-    return res.data;
 
   } catch (e: any) {
     if (e.response?.status === 401) {
@@ -103,7 +106,6 @@ export const changePass = async (userData: ChangePass): Promise<ChangePass | str
 
     } else {
       console.error('Change Pass Error: ', e);
-      return null;
     }
   }
 };
@@ -113,7 +115,7 @@ export const changePass = async (userData: ChangePass): Promise<ChangePass | str
 // SIGNUP REPAIR SHOP
 export const createRepairShop = async (repairShopData: AutoRepairShop) => {
   try {
-    const res = await axios.post(`${apiURL}/auto_repair_shop/signup`, repairShopData);
+    await axios.post(`${apiURL}/auto_repair_shop/signup`, repairShopData);
 
   } catch (e) {
     console.error('Signup Error: ', e);
@@ -155,11 +157,13 @@ export const loginRepairShop = async (userData: LoginUser): Promise<string | nul
 export const getRepairShopInfo = async () => {
   try {
     const token = await getAccessToken();
-    const res = await axios.get(`${apiURL}/auto_repair_shop/get-repair-shop-info`, {
-      headers: {
-        Authorization: `Bearer ${token}`
+    const res = await axios.get(`${apiURL}/auto_repair_shop/get-repair-shop-info`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }
-    });
+    );
     return res.data;
 
   } catch (e) {
@@ -169,10 +173,10 @@ export const getRepairShopInfo = async () => {
 };
 
 // UPDATE REPAIR SHOP INFO
-export const updateRepairShopInfo = async (userData: UpdateRepairShopInfo): Promise<UpdateRepairShopInfo | string | null> => {
+export const updateRepairShopInfo = async (userData: UpdateRepairShopInfo) => {
   try {
     const token = await getAccessToken();
-    const res = await axios.patch(`${apiURL}/auto_repair_shop/update-repair-shop-info`,
+    await axios.patch(`${apiURL}/auto_repair_shop/update-repair-shop-info`,
       userData,
       {
         headers: {
@@ -180,7 +184,6 @@ export const updateRepairShopInfo = async (userData: UpdateRepairShopInfo): Prom
         }
       }
     );
-    return res.data;
 
   } catch (e: any) {
     if (e.response?.status === 401) {
@@ -188,7 +191,6 @@ export const updateRepairShopInfo = async (userData: UpdateRepairShopInfo): Prom
       
     } else {
       console.error('Update Repair Shop Info Error: ', e);
-      return null;
     }
   }
 };
@@ -201,9 +203,11 @@ export const addVehicle = async (vehicleInfo: Vehicle) => {
     const token = await getAccessToken();
     await axios.post(`${apiURL}/vehicle/add-vehicle`,
       vehicleInfo,
-      { headers: {
-        Authorization: `Bearer ${token}`
-      }}
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
     );
 
   } catch (e) {
@@ -215,11 +219,13 @@ export const addVehicle = async (vehicleInfo: Vehicle) => {
 export const getVehicle = async () => {
   try {
     const token = await getAccessToken();
-    const res = await axios.get(`${apiURL}/vehicle/get-vehicles`, {
-      headers: {
-        Authorization: `Bearer ${token}`
+    const res = await axios.get(`${apiURL}/vehicle/get-vehicles`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }
-    });
+    );
     return res.data;
 
   } catch (e) {
@@ -251,7 +257,10 @@ export const getScannedVehicle = async (vehicleID: number) => {
 export const deleteVehicle = async (vehicleID: number) => {
   try {
     const token = await getAccessToken();
-    await axios.delete(`${apiURL}/vehicle/delete-vehicle/${vehicleID}`,
+    await axios.patch(`${apiURL}/vehicle/delete-vehicle`,
+      { 
+        vehicle_id: vehicleID,
+      },
       { 
         headers: {
           Authorization: `Bearer ${token}`
@@ -267,10 +276,10 @@ export const deleteVehicle = async (vehicleID: number) => {
 
 
 // ADD VEHICLE DIAGNOSTIC
-export const addVehicleDiagnostic = async (vehicleDiagnosticData: VehicleDiagnostic): Promise<VehicleDiagnostic | null> => {
+export const addVehicleDiagnostic = async (vehicleDiagnosticData: VehicleDiagnostic) => {
   try {
     const token = await getAccessToken();
-    const res = await axios.post(`${apiURL}/vehicle_diagnostic/add-vehicle-diagnostic`,
+    await axios.post(`${apiURL}/vehicle_diagnostic/add-vehicle-diagnostic`,
       vehicleDiagnosticData,
       {
         headers: {
@@ -278,11 +287,9 @@ export const addVehicleDiagnostic = async (vehicleDiagnosticData: VehicleDiagnos
         }
       }
     );
-    return res.data;
 
   } catch (e) {
     console.error('Add Vehicle Diagnostic Error: ', e);
-    return null;
   }
 };
 
@@ -347,14 +354,13 @@ export const getOnSpecificVehicleDiagnostic = async (vehicleDiagnosticID: number
 export const deleteVehicleDiagnostic = async (vehicleDiagnosticID: number) => {
   try {
     const token = await getAccessToken();
-    const res = await axios.delete(`${apiURL}/vehicle_diagnostic/delete-vehicle-diagnostic/${vehicleDiagnosticID}`,
+    await axios.delete(`${apiURL}/vehicle_diagnostic/delete-vehicle-diagnostic/${vehicleDiagnosticID}`,
       {
         headers: {
           Authorization: `Bearer ${token}`
         }
       }
     );
-    return res.data;
 
   } catch (e) {
     console.error('Delete Vehicle Diagnostic Error: ', e);

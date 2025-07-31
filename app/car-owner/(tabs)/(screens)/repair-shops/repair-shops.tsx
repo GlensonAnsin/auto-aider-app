@@ -235,6 +235,7 @@ const repairShops = () => {
                             repair_procedure: null,
                             request_datetime: datetime,
                             status: 'Pending',
+                            is_deleted: false,
                         };
 
                         await addRequest(requestData);
@@ -258,6 +259,7 @@ const repairShops = () => {
                         repair_procedure: null,
                         request_datetime: datetime,
                         status: 'Pending',
+                        is_deleted: false,
                     };
 
                     await addRequest(requestData);
@@ -297,6 +299,7 @@ const repairShops = () => {
                 date: new Date(),
                 scan_reference: scanReference2,
                 vehicle_issue_description: vehicleIssue,
+                is_deleted: false,
             };
 
             await addVehicleDiagnostic(vehicleDiagnosticData);

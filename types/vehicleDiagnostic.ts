@@ -9,4 +9,5 @@ export interface VehicleDiagnostic {
     date: Date;
     scan_reference: string;
     vehicle_issue_description: string | null;
+    is_deleted: boolean;
 };

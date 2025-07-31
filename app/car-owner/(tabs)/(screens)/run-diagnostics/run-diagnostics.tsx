@@ -134,6 +134,7 @@ const RunDiagnostics = () => {
                     date: new Date(),
                     scan_reference: scanReference,
                     vehicle_issue_description: null,
+                    is_deleted: false,
                 };
 
                 await addVehicleDiagnostic(vehicleDiagnosticData);
