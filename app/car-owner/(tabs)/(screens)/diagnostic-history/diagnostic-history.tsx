@@ -1,16 +1,18 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { setScanState } from '@/redux/slices/scanSlice';
-import { getVehicleDiagnostics } from '@/services/backendApi';
+import { deleteAllVehicleDiagnostics, deleteVehicleDiagnostic, getVehicleDiagnostics } from '@/services/backendApi';
 import Entypo from '@expo/vector-icons/Entypo';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
+import { io, Socket } from 'socket.io-client';
 
 const DiagnosticHistory = () => {
     dayjs.extend(utc);
@@ -20,9 +22,11 @@ const DiagnosticHistory = () => {
     const router = useRouter();
     const dispatch = useDispatch();
 
+    const [_socket, setSocket] = useState<Socket | null>(null);
+
     const [history, setHistory] = useState<{ vehicleID: number, vehicle: string, dtc: string, date: string, scanReference: string }[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [modalVisible, setModalVisible] = useState<boolean>(false);
+    const [selectedScanReference, setSelectedScanReference] = useState<string>('');
 
     useEffect(() => {
         (async () => {
@@ -58,6 +62,36 @@ const DiagnosticHistory = () => {
         })();
     }, []);
 
+    useEffect(() => {
+        const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
+            transports: ['websocket'],
+        });
+
+        setSocket(newSocket);
+
+        newSocket.on('connect', () => {
+            console.log('Connected to server: ', newSocket.id);
+        });
+
+        newSocket.on('vehicleDiagnosticDeleted', ({ deletedVehicleDiag }) => {
+            setHistory((prev) => 
+                prev.filter((v) => !deletedVehicleDiag.includes(v.scanReference))
+            );
+        });
+
+        newSocket.on('allVehicleDiagnosticDeleted', ({ allDeletedVehicleDiag }) => {
+            setHistory((prev) =>
+                prev.filter((v) => !allDeletedVehicleDiag.includes(v.scanReference))
+            );
+        });
+
+        return () => {
+            newSocket.off('vehicleDiagnosticDeleted');
+            newSocket.off('allVehicleDiagnosticDeleted');
+            newSocket.disconnect();
+        };
+  }, []);
+
     const grouped = Object.values(
         history.reduce((acc, item) => {
             const ref = item.scanReference;
@@ -78,6 +112,78 @@ const DiagnosticHistory = () => {
         }, {} as Record<string, { vehicleID: number, vehicle: string; scanReference: string; date: string; dtc: string[]; }>)
     );
 
+    const deleteVehicleDiagAlert = () => {
+        Alert.alert('Delete Diagnostic', 'Are you sure you want to delete this diagnostic?', [
+            {
+                text: 'Cancel',
+                onPress: () => {},
+                style: 'cancel',
+            },
+            {
+                text: 'Yes',
+                onPress: () => handleDelete(),
+            },
+        ]);
+    };
+
+    const deleteAllVehicleDiagAlert = () => {
+        Alert.alert('Clear History', 'Are you sure you want to clear your history?', [
+            {
+                text: 'Cancel',
+                onPress: () => {},
+                style: 'cancel',
+            },
+            {
+                text: 'Yes',
+                onPress: () => handleDeleteAll(),
+            },
+        ]);
+    };
+
+    const handleDelete = async () => {
+        try {
+            await deleteVehicleDiagnostic(selectedScanReference);
+            showMessage({
+                message: 'Delete successful!',
+                type: 'success',
+                floating: true,
+                color: '#fff',
+                icon: 'success',
+            });
+
+        } catch (e) {
+            showMessage({
+                message: 'Something went wrong. Please try again.',
+                type: 'danger',
+                floating: true,
+                color: '#fff',
+                icon: 'danger',
+            });
+        }
+    };
+
+    const handleDeleteAll = async () => {
+        try {
+            await deleteAllVehicleDiagnostics();
+            showMessage({
+                message: 'History cleared!',
+                type: 'success',
+                floating: true,
+                color: '#fff',
+                icon: 'success',
+            });
+
+        } catch (e) {
+            showMessage({
+                message: 'Something went wrong. Please try again.',
+                type: 'danger',
+                floating: true,
+                color: '#fff',
+                icon: 'danger',
+            });
+        }
+    }
+
     if (isLoading) {
         return (
             <Loading />
@@ -92,7 +198,7 @@ const DiagnosticHistory = () => {
                 <View style={styles.lowerBox}>
                     <View style={styles.clearHistoryContainer}>
                         <Text style={styles.header2}>Scanned Cars</Text>
-                        <TouchableOpacity style={styles.button} onPress={() => console.log(history)}>
+                        <TouchableOpacity style={styles.button} onPress={() => deleteAllVehicleDiagAlert()}>
                             <Text style={styles.buttonTxt}>Clear history</Text>
                         </TouchableOpacity>
                     </View>
@@ -103,62 +209,38 @@ const DiagnosticHistory = () => {
 
                     {grouped.map((item) => (
                         <View style={{ width: '100%' }} key={item.scanReference}>
-                            {item.dtc[0] !== null  && (
-                                <>
+                            <TouchableOpacity 
+                                style={styles.historyContainer} 
+                                onPress={() => {
+                                    dispatch(setScanState({
+                                        vehicleID: parseInt(String(item.vehicleID)),
+                                        scanReference: item.scanReference,
+                                    }));
+                                    router.navigate('./history-detailed-report');
+                                }}
+                                onLongPress={() => {
+                                    deleteVehicleDiagAlert();
+                                    setSelectedScanReference(item.scanReference);
+                                }}
+                            >
+                                <Text style={styles.carDetails}>{item.vehicle}</Text>
+                                <Text style={styles.date}>{item.date}</Text>
+                                <View style={styles.codeButtonContainer}>
+                                    <Text style={styles.troubleCodes}>{item.dtc.join(', ')}</Text>
                                     <TouchableOpacity 
-                                        style={styles.historyContainer} 
+                                        style={styles.historyButton}
                                         onPress={() => {
                                             dispatch(setScanState({
                                                 vehicleID: parseInt(String(item.vehicleID)),
                                                 scanReference: item.scanReference,
                                             }));
-                                            router.navigate('./history-detailed-report');
+                                            router.navigate('/car-owner/(tabs)/(screens)/repair-shops/repair-shops');
                                         }}
-                                        onLongPress={() => setModalVisible(true)}
                                     >
-                                        <Text style={styles.carDetails}>{item.vehicle}</Text>
-                                        <Text style={styles.date}>{item.date}</Text>
-                                        <View style={styles.codeButtonContainer}>
-                                            <Text style={styles.troubleCodes}>{item.dtc.join(', ')}</Text>
-                                            <TouchableOpacity 
-                                                style={styles.historyButton}
-                                                onPress={() => {
-                                                    dispatch(setScanState({
-                                                        vehicleID: parseInt(String(item.vehicleID)),
-                                                        scanReference: item.scanReference,
-                                                    }));
-                                                    router.navigate('/car-owner/(tabs)/(screens)/repair-shops/repair-shops');
-                                                }}
-                                            >
-                                                <Entypo name='location' size={16} color='#FFF' />
-                                            </TouchableOpacity>
-                                        </View>
+                                        <Entypo name='location' size={16} color='#FFF' />
                                     </TouchableOpacity>
-
-                                    <Modal
-                                        animationType='fade'
-                                        backdropColor={'rgba(0, 0, 0, 0.1)'}
-                                        visible={modalVisible}
-                                        onRequestClose={() => setModalVisible(false)}
-                                    >
-                                        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-                                            <View style={styles.centeredView}>
-                                                <Pressable style={styles.modalView} onPress={() => {}}>
-                                                    <View style={styles.cancelSaveContainer}>
-                                                        <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => setModalVisible(false)}>
-                                                            <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                                        </TouchableOpacity>
-                
-                                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#780606' }]} onPress={() => {}}>
-                                                            <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Delete</Text>
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                </Pressable>
-                                            </View>
-                                        </TouchableWithoutFeedback>
-                                    </Modal>
-                                </>
-                            )}
+                                </View>
+                            </TouchableOpacity>
                         </View>
                     ))}
                 </View>
@@ -240,42 +322,6 @@ const styles = StyleSheet.create({
         padding: 5,
         borderRadius: 5,
         backgroundColor: '#000B58'
-    },
-    centeredView: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalView: {
-        backgroundColor: '#FFF',
-        borderRadius: 10,
-        padding: 20,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-        width: 0,
-        height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    cancelSaveContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 10,
-    },
-    modalButton: {
-        width: 100,
-        height: 45,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 10,
-    },
-    modalButtonText: {
-        fontSize: 16,
-        fontFamily: 'LeagueSpartan_Bold',
     },
     noHistoriesText: {
         fontFamily: 'LeagueSpartan',

@@ -351,10 +351,13 @@ export const getOnSpecificVehicleDiagnostic = async (vehicleDiagnosticID: number
 }
 
 // DELETE VEHICLE DIAGNOSTIC
-export const deleteVehicleDiagnostic = async (vehicleDiagnosticID: number) => {
+export const deleteVehicleDiagnostic = async (scanReference: string) => {
   try {
     const token = await getAccessToken();
-    await axios.delete(`${apiURL}/vehicle_diagnostic/delete-vehicle-diagnostic/${vehicleDiagnosticID}`,
+    await axios.patch(`${apiURL}/vehicle_diagnostic/delete-vehicle-diagnostic`,
+      {
+        scan_reference: scanReference,
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -365,7 +368,25 @@ export const deleteVehicleDiagnostic = async (vehicleDiagnosticID: number) => {
   } catch (e) {
     console.error('Delete Vehicle Diagnostic Error: ', e);
   }
-}
+};
+
+// DELETE ALL VEHICLE DIAGNOSTICS
+export const deleteAllVehicleDiagnostics = async () => {
+  try {
+    const token = await getAccessToken();
+    await axios.patch(`${apiURL}/vehicle_diagnostic/delete-all-vehicle-diagnostics`,
+      null,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+  } catch (e) {
+    console.error('Delete All Vehicle Diagnostics Error: ', e);
+  }
+};
 
 
 
