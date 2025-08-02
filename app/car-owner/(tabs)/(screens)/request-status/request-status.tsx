@@ -1,12 +1,15 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SelectDropdown from 'react-native-select-dropdown';
 
 const RequestStatus = () => {
     dayjs.extend(utc);
@@ -15,6 +18,9 @@ const RequestStatus = () => {
     
     const [requestStatus, setRequestStatus] = useState<{ vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [activeButton, setActiveButton] = useState<string>('All');
+
+    const buttons: string[] = ['All', 'Pending', 'Rejected', 'Ongoing', 'Completed'];
 
     useEffect(() => {
         (async () => {
@@ -86,6 +92,11 @@ const RequestStatus = () => {
         }, {} as Record<string, { vehicleName: string; repairShop: string; scanReference: string; datetime: string; status: string; }>)
     );
 
+    const filterPending = grouped.filter((item) => item.status === 'Pending');
+    const filterRejected = grouped.filter((item) => item.status === 'Rejected');
+    const filterOngoing = grouped.filter((item) => item.status === 'Ongoing');
+    const filterCompleted = grouped.filter((item) => item.status === 'Completed');
+
     if (isLoading) {
         return (
             <Loading />
@@ -98,31 +109,226 @@ const RequestStatus = () => {
             <Header headerTitle='Request Status' link='/car-owner/(tabs)' />
 
             <View style={styles.lowerBox}>
-                {grouped.length === 0 && (
-                    <Text style={styles.noRequestText}>-- No Requests --</Text>
+                <SelectDropdown 
+                    data={buttons}
+                    defaultValue={activeButton}
+                    onSelect={(selectedItem) => setActiveButton(selectedItem)}
+                    renderButton={(selectedItem, isOpen) => (
+                        <View style={styles.dropdownButtonStyle}>
+                            <Text style={styles.dropdownButtonTxtStyle}>
+                                {(selectedItem)}
+                            </Text>
+                            <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                        </View>
+                    )}
+                    renderItem={(item, _index, isSelected) => (
+                        <View
+                            style={{
+                            ...styles.dropdownItemStyle,
+                            ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                            }}
+                        >
+                            <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+                        </View>
+                    )}
+                    showsVerticalScrollIndicator={false}
+                    dropdownStyle={styles.dropdownMenuStyle}
+                />
+
+                {activeButton === 'All' && (
+                    <>
+                        {grouped.map((item, index) => (
+                            <View key={index}>
+                                <TouchableOpacity style={styles.requestButton}>
+                                    <View style={styles.vehicleShopContainer}>
+                                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                                        <Text style={styles.requestText}>{item.repairShop}</Text>
+                                        <Text style={styles.requestText}>{item.datetime}</Text>
+                                    </View>
+                                    <View style={styles.statusContainer}>
+                                        <Text style={styles.statusText}>{item.status}</Text>
+                                        {item.status === 'Pending' && (
+                                            <LottieView 
+                                                source={require('@/assets/images/pending.json')}
+                                                autoPlay
+                                                loop
+                                                style={{
+                                                    width: 26,
+                                                    height: 26,
+                                                }}
+                                            />
+                                        )}
+                                        {item.status === 'Rejected' && (
+                                            <LottieView 
+                                                source={require('@/assets/images/rejected.json')}
+                                                autoPlay
+                                                loop
+                                                style={{
+                                                    width: 26,
+                                                    height: 26,
+                                                }}
+                                            />
+                                        )}
+                                        {item.status === 'Ongoing' && (
+                                            <LottieView 
+                                                source={require('@/assets/images/ongoing.json')}
+                                                autoPlay
+                                                loop
+                                                style={{
+                                                    width: 26,
+                                                    height: 26,
+                                                }}
+                                            />
+                                        )}
+                                        {item.status === 'Completed' && (
+                                            <LottieView 
+                                                source={require('@/assets/images/completed.json')}
+                                                autoPlay
+                                                loop
+                                                style={{
+                                                    width: 26,
+                                                    height: 26,
+                                                }}
+                                            />
+                                        )}
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+
+                        {grouped.length === 0 && (
+                            <Text style={styles.noRequestText}>-- No Requests --</Text>
+                        )}
+                    </>
                 )}
-                
-                {grouped.map((item, index) => (
-                    <TouchableOpacity key={index} style={styles.requestButton}>
-                        <View style={styles.vehicleShopContainer}>
-                            <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                            <Text style={styles.requestText}>{item.repairShop}</Text>
-                            <Text style={styles.requestText}>{item.datetime}</Text>
-                        </View>
-                        <View style={styles.statusContainer}>
-                            <Text style={styles.statusText}>{item.status}</Text>
-                            <View style={[styles.statusColor, { backgroundColor:
-                                item.status === 'Pending'
-                                ? '#FFC107'
-                                : item.status === 'Rejected'
-                                ? '#F44336'
-                                : item.status === 'Ongoing'
-                                ? '#2196F3'
-                                : '#4CAF50'
-                            }]}></View>
-                        </View>
-                    </TouchableOpacity>
-                ))}
+
+                {activeButton === 'Pending' && (
+                    <>
+                        {filterPending.map((item, index) => (
+                            <View key={index}>
+                                <TouchableOpacity style={styles.requestButton}>
+                                    <View style={styles.vehicleShopContainer}>
+                                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                                        <Text style={styles.requestText}>{item.repairShop}</Text>
+                                        <Text style={styles.requestText}>{item.datetime}</Text>
+                                    </View>
+                                    <View style={styles.statusContainer}>
+                                        <Text style={styles.statusText}>{item.status}</Text>
+                                        <LottieView 
+                                            source={require('@/assets/images/pending.json')}
+                                            autoPlay
+                                            loop
+                                            style={{
+                                                width: 26,
+                                                height: 26,
+                                            }}
+                                        />   
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+
+                        {filterPending.length === 0 && (
+                            <Text style={styles.noRequestText}>-- No Requests --</Text>
+                        )}
+                    </>
+                )}
+
+                {activeButton === 'Rejected' && (
+                    <>
+                        {filterRejected.map((item, index) => (
+                            <View key={index}>
+                                <TouchableOpacity style={styles.requestButton}>
+                                    <View style={styles.vehicleShopContainer}>
+                                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                                        <Text style={styles.requestText}>{item.repairShop}</Text>
+                                        <Text style={styles.requestText}>{item.datetime}</Text>
+                                    </View>
+                                    <View style={styles.statusContainer}>
+                                        <Text style={styles.statusText}>{item.status}</Text>
+                                        <LottieView 
+                                            source={require('@/assets/images/rejected.json')}
+                                            autoPlay
+                                            loop
+                                            style={{
+                                                width: 26,
+                                                height: 26,
+                                            }}
+                                        />   
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+
+                        {filterRejected.length === 0 && (
+                            <Text style={styles.noRequestText}>-- No Requests --</Text>
+                        )}
+                    </>
+                )}
+
+                {activeButton === 'Ongoing' && (
+                    <>
+                        {filterOngoing.map((item, index) => (
+                            <View key={index}>
+                                <TouchableOpacity style={styles.requestButton}>
+                                    <View style={styles.vehicleShopContainer}>
+                                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                                        <Text style={styles.requestText}>{item.repairShop}</Text>
+                                        <Text style={styles.requestText}>{item.datetime}</Text>
+                                    </View>
+                                    <View style={styles.statusContainer}>
+                                        <Text style={styles.statusText}>{item.status}</Text>
+                                        <LottieView 
+                                            source={require('@/assets/images/ongoing.json')}
+                                            autoPlay
+                                            loop
+                                            style={{
+                                                width: 26,
+                                                height: 26,
+                                            }}
+                                        />   
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+
+                        {filterOngoing.length === 0 && (
+                            <Text style={styles.noRequestText}>-- No Requests --</Text>
+                        )}
+                    </>
+                )}
+
+                {activeButton === 'Completed' && (
+                    <>
+                        {filterCompleted.map((item, index) => (
+                            <View key={index}>
+                                <TouchableOpacity style={styles.requestButton}>
+                                    <View style={styles.vehicleShopContainer}>
+                                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                                        <Text style={styles.requestText}>{item.repairShop}</Text>
+                                        <Text style={styles.requestText}>{item.datetime}</Text>
+                                    </View>
+                                    <View style={styles.statusContainer}>
+                                        <Text style={styles.statusText}>{item.status}</Text>
+                                        <LottieView 
+                                            source={require('@/assets/images/completed.json')}
+                                            autoPlay
+                                            loop
+                                            style={{
+                                                width: 26,
+                                                height: 26,
+                                            }}
+                                        />   
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+
+                        {filterCompleted.length === 0 && (
+                            <Text style={styles.noRequestText}>-- No Requests --</Text>
+                        )}
+                    </>
+                )}
             </View>
         </ScrollView>
         </SafeAreaView>
@@ -139,6 +345,47 @@ const styles = StyleSheet.create({
         marginTop: 20,
         marginBottom: 100,
         width: '90%',
+    },
+    dropdownButtonStyle: {
+        width: 120,
+        height: 45,
+        borderRadius: 10,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: '#EAEAEA',
+    },
+    dropdownButtonTxtStyle: {
+        flex: 1,
+        fontSize: 16,
+        fontFamily: 'LeagueSpartan',
+        color: '#333',
+    },
+    dropdownButtonArrowStyle: {
+        fontSize: 24,
+        color: '#333',
+    },
+    dropdownItemStyle: {
+        width: 120,
+        flexDirection: 'row',
+        paddingHorizontal: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 8,
+    },
+    dropdownItemTxtStyle: {
+        flex: 1,
+        fontSize: 16,
+        fontFamily: 'LeagueSpartan',
+        color: '#333',
+    },
+    dropdownMenuStyle: {
+        backgroundColor: '#EAEAEA',
+        borderRadius: 10,
+        marginTop: -37,
     },
     requestButton: {
         width: '100%',
@@ -175,11 +422,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         gap: 10,
-    },
-    statusColor: {
-        width: 10,
-        height: 10,
-        borderRadius: 10
     },
     statusText: {
         fontFamily: 'LeagueSpartan_Bold',
