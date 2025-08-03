@@ -10,7 +10,7 @@ export interface AutoRepairShop {
     services_offered: string[];
     longitude: string;
     latitude: string;
-    creation_date: Date | null;
+    creation_date: string | null;
     profile_pic: string | null;
     shop_images: string[] | null;
     number_of_ratings: number;

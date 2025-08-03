@@ -6,7 +6,7 @@ const repairRequests = () => {
   return (
     <SafeAreaView style={styles.container}>
         <ScrollView>
-            <Header headerTitle='Repair Requests' link='/repair-shop/(tabs)' />
+            <Header headerTitle='Repair Requests' />
         </ScrollView>
     </SafeAreaView>
   )

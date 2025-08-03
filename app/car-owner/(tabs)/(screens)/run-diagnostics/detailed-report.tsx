@@ -55,7 +55,7 @@ const DetailedReport = () => {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
-                <Header headerTitle='Detailed Report' link='./diagnosis' />
+                <Header headerTitle='Detailed Report' />
 
                 <View style={styles.lowerBox}>
                     <View style={styles.textContainer}>

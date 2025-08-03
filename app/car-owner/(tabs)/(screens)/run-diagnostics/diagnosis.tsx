@@ -53,7 +53,7 @@ const Diagnosis = () => {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
-                <Header headerTitle='Diagnosis' link='./run-diagnostics' />
+                <Header headerTitle='Diagnosis' />
             
                 <View style={styles.lowerBox}>
                     <View style={styles.buttonContainer}>
@@ -84,7 +84,7 @@ const Diagnosis = () => {
                                     style={styles.troubleCodeButton}
                                     onPress={() => {
                                         dispatch(setVehicleDiagIDState(item.vehicleDiagnosticID))
-                                        router.navigate('./detailed-report')
+                                        router.push('./detailed-report')
                                     }}
                                 >
                                     <Text style={styles.troubleCodeText}>{item.dtc}</Text>
@@ -93,7 +93,7 @@ const Diagnosis = () => {
                         ))}
                     </View>
 
-                    <TouchableOpacity style={styles.findShopButton} onPress={() => router.navigate('/car-owner/(tabs)/(screens)/repair-shops/repair-shops')}>
+                    <TouchableOpacity style={styles.findShopButton} onPress={() => router.push('/car-owner/(tabs)/(screens)/repair-shops/repair-shops')}>
                         <Text style={styles.findShopButtonText}>Find Repair Shop</Text>
                     </TouchableOpacity>
                 </View>

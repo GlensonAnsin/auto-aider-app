@@ -323,7 +323,7 @@ const EditProfile = () => {
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps='handled' 
         >
-          <Header headerTitle='Edit Profile' link='./profile' />
+          <Header headerTitle='Edit Profile' />
 
           <View style={styles.lowerBox}>
             <View style={styles.editPicContainer}>

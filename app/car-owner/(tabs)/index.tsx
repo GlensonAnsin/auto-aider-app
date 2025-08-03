@@ -1,10 +1,11 @@
 import { Loading } from '@/components/Loading';
-import { addVehicle, getUserInfo } from '@/services/backendApi';
+import { addVehicle, getUserInfo, getVehicle } from '@/services/backendApi';
 import { verifyCar } from '@/services/geminiApi';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -28,6 +29,7 @@ export default function Home() {
     const [lastname, setLastname] = useState<string>('');
     const [profilePic, setProfilePic] = useState<string | null>(null)
     const [userInitialsBG, setUserInitialsBG] = useState<string>('');
+    const [isVehicles, setIsVehicles] = useState<boolean>(false);
 
     const targetMakes = ['Acura', 'Audi', 'BMW', 'Chevrolet', 'Dodge', 'Chrysler', 'Jeep', 'Ford', 'Foton', 'Geely', 'Honda', 'Hyundai', 'Infiniti', 'Isuzu', 'Jaguar', 'Kia', 'Land Rover', 'Lexus', 'Mazda', 'Mercedes-Benz', 'MG', 'Mitsubishi', 'Nissan', 'RAM', 'Subaru', 'Suzuki', 'Toyota', 'Volkswagen'];
 
@@ -73,12 +75,19 @@ export default function Home() {
         (async () => {
             try {
                 setIsLoading(true)
-                const res = await getUserInfo();
+                const res1 = await getUserInfo();
+                const res2 = await getVehicle();
                 
-                setFirstname(res.firstname);
-                setLastname(res.lastname);
-                setProfilePic(res.profile_pic);
-                setUserInitialsBG(res.user_initials_bg);
+                setFirstname(res1.firstname);
+                setLastname(res1.lastname);
+                setProfilePic(res1.profile_pic);
+                setUserInitialsBG(res1.user_initials_bg);
+
+                if (res2.length === 0) {
+                    setIsVehicles(false);
+                } else {
+                    setIsVehicles(true);
+                }
 
             } catch (e) {
                 console.error('Error: ', e);
@@ -106,8 +115,18 @@ export default function Home() {
             setProfilePic(updatedUserInfo.profile_pic);
         });
 
+        newSocket.on('vehicleAdded', ({ vehicleAdded }) => {
+            setIsVehicles(vehicleAdded);
+        });
+
+        newSocket.on('noVehicles', ({ noVehicles }) => {
+            setIsVehicles(noVehicles);
+        });
+
         return () => {
             newSocket.off('updatedUserInfo');
+            newSocket.off('vehicleAdded');
+            newSocket.off('noVehicles');
             newSocket.disconnect();
         };
     }, []);
@@ -117,7 +136,7 @@ export default function Home() {
             make: selectedMake.toUpperCase().trim(),
             model: model.toUpperCase().trim(),
             year: year.trim(),
-            date_added: new Date(),
+            date_added: dayjs().format(),
             is_deleted: false,
         };
 
@@ -166,13 +185,13 @@ export default function Home() {
                     </View>
 
                     {profilePic === null && (
-                        <TouchableOpacity style={[styles.profileWrapper, { backgroundColor: userInitialsBG }]} onPress={() => router.navigate('./profile/profile')}>
+                        <TouchableOpacity style={[styles.profileWrapper, { backgroundColor: userInitialsBG }]} onPress={() => router.push('./profile/profile')}>
                             <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
                         </TouchableOpacity>
                     )}
     
                     {profilePic !== null && (
-                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.navigate('./profile/profile')}>
+                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.push('./profile/profile')}>
                             <Image
                             style={styles.profilePic}
                             source={{ uri: profilePic }}
@@ -190,7 +209,7 @@ export default function Home() {
 
                 <View style={styles.featuresContainer}>
                     <View style={styles.column}>
-                        <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./diagnostic-history/diagnostic-history')} >
+                        <TouchableOpacity style={styles.feature} onPress={() => router.push('./diagnostic-history/diagnostic-history')}>
                             <MaterialIcons name='history' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Diagnostic History</Text>
@@ -198,7 +217,19 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
                         
-                        <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./run-diagnostics/run-diagnostics')} >
+                        <TouchableOpacity style={styles.feature} onPress={() => {
+                            if (!isVehicles) {
+                                showMessage({
+                                    message: 'You have not added a car yet.',
+                                    type: 'warning',
+                                    floating: true,
+                                    color: '#FFF',
+                                    icon: 'warning',
+                                });
+                            } else {
+                                router.push('./run-diagnostics/run-diagnostics');
+                            }
+                        }}>
                             <Ionicons name='scan' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Scan Car</Text>
@@ -206,7 +237,7 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
                             
-                        <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./repair-shops/repair-shops')}>
+                        <TouchableOpacity style={styles.feature} onPress={() => router.push('./repair-shops/repair-shops')}>
                             <Entypo name='location' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Repair Shops</Text>
@@ -224,7 +255,7 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./profile/profile')}>
+                        <TouchableOpacity style={styles.feature} onPress={() => router.push('./profile/profile')}>
                             <MaterialCommunityIcons name='account' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>My Profile</Text>
@@ -232,7 +263,7 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.feature} onPress={() => router.navigate('./request-status/request-status')}>
+                        <TouchableOpacity style={styles.feature} onPress={() => router.push('./request-status/request-status')}>
                             <MaterialCommunityIcons name='clipboard-edit' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Request Status</Text>

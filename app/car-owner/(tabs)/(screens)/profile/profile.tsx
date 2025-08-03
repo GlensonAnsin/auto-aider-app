@@ -152,7 +152,7 @@ const Profile = () => {
     
     return (
         <SafeAreaView style={styles.container}>
-            <Header headerTitle='Profile' link='/car-owner/(tabs)' />
+            <Header headerTitle='Profile' />
 
             <View style={styles.lowerBox}>
                 <View style={styles.userContainer}>
@@ -184,7 +184,7 @@ const Profile = () => {
 
                 <View style={styles.profileTabContainer}>
                     
-                    <TouchableOpacity style={styles.profileTab} onPress={() => router.navigate('./edit-profile')}>
+                    <TouchableOpacity style={styles.profileTab} onPress={() => router.push('./edit-profile')}>
                         <MaterialCommunityIcons
                             name='account-edit-outline'
                             style={styles.icon}
@@ -198,7 +198,7 @@ const Profile = () => {
                     
 
                     
-                    <TouchableOpacity style={styles.profileTab} onPress={() => router.navigate('./manage-vehicles')}>
+                    <TouchableOpacity style={styles.profileTab} onPress={() => router.push('./manage-vehicles')}>
                         <MaterialCommunityIcons
                             name='car-outline'
                             style={styles.icon}

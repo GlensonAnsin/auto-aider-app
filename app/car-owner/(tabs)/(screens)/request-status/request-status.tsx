@@ -3,7 +3,6 @@ import { Loading } from '@/components/Loading';
 import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
@@ -13,9 +12,6 @@ import SelectDropdown from 'react-native-select-dropdown';
 
 const RequestStatus = () => {
     dayjs.extend(utc);
-    dayjs.extend(timezone);
-    const guessTimezone = dayjs.tz.guess();
-    
     const [requestStatus, setRequestStatus] = useState<{ vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [activeButton, setActiveButton] = useState<string>('All');
@@ -34,7 +30,7 @@ const RequestStatus = () => {
                 if (res1) {
                     res1.vehicles.forEach((vehicle: any) => {
                         if (vehicle) {
-                            const vehicleName = `${vehicle?.year || ''} ${vehicle?.make || ''} ${vehicle?.model || ''}`;
+                            const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
                             if (vehicle.vehicle_diagnostics) {
                                 vehicle.vehicle_diagnostics.forEach((diagnostic: any) => {
                                     if (diagnostic) {
@@ -42,13 +38,12 @@ const RequestStatus = () => {
                                         if (diagnostic.mechanic_requests) {
                                             diagnostic.mechanic_requests.forEach((request: any) => {
                                                 const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
-                                                const datetime = dayjs(request.request_datetime).utc(true).tz(guessTimezone).format();
                                                 if (repairShop) {
                                                     statusData.push({
                                                         vehicleName,
                                                         repairShop: repairShop.shop_name,
                                                         scanReference,
-                                                        datetime: dayjs(datetime).utc(true).tz(guessTimezone).format("ddd MMM DD YYYY, h:mm A"),
+                                                        datetime: dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A'),
                                                         status: request.status,
                                                     });
                                                 }
@@ -106,7 +101,7 @@ const RequestStatus = () => {
     return (
         <SafeAreaView style={styles.container}>
         <ScrollView>
-            <Header headerTitle='Request Status' link='/car-owner/(tabs)' />
+            <Header headerTitle='Request Status' />
 
             <View style={styles.lowerBox}>
                 <SelectDropdown 

@@ -9,6 +9,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
+import dayjs from 'dayjs';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -212,7 +213,7 @@ const repairShops = () => {
     const handleMakeRequest = () => {
         if (vehicleID !== null) {
             const vehicle = vehicles.find((item) => Number(item.id) === vehicleID);
-            setScannedVehicle(`${vehicle?.year || ''} ${vehicle?.make || ''} ${vehicle?.model || ''}`);
+            setScannedVehicle(`${vehicle?.year} ${vehicle?.make} ${vehicle?.model}`);
         }
 
         setModalVisible(true);
@@ -223,9 +224,9 @@ const repairShops = () => {
 
         try {
             setRequestLoading(true);
-            const datetime = new Date();
             switch (requestType) {
                 case 'with-obd2':
+                    const datetimeWithObd2 = dayjs().format();
                     for (const item of codeInterpretation ?? []) {
                         const id = item.vehicleDiagnosticID;
                         
@@ -233,7 +234,7 @@ const repairShops = () => {
                             vehicle_diagnostic_id: id,
                             repair_shop_id: repairShopID,
                             repair_procedure: null,
-                            request_datetime: datetime,
+                            request_datetime: datetimeWithObd2,
                             status: 'Pending',
                             is_deleted: false,
                         };
@@ -249,7 +250,7 @@ const repairShops = () => {
                         icon: 'success',
                     });
                     setModalVisible(false);
-                    router.navigate('/car-owner/(tabs)/(screens)/request-status/request-status');
+                    router.push('/car-owner/(tabs)/(screens)/request-status/request-status');
                     break;
 
                 case 'without-obd2':
@@ -257,7 +258,7 @@ const repairShops = () => {
                         vehicle_diagnostic_id: vehicleDiagID ?? 0,
                         repair_shop_id: repairShopID,
                         repair_procedure: null,
-                        request_datetime: datetime,
+                        request_datetime: dayjs().format(),
                         status: 'Pending',
                         is_deleted: false,
                     };
@@ -271,7 +272,7 @@ const repairShops = () => {
                         icon: 'success',
                     });
                     setModalVisible(false);
-                    router.navigate('/car-owner/(tabs)/(screens)/request-status/request-status');
+                    router.push('/car-owner/(tabs)/(screens)/request-status/request-status');
                     break;
 
                 default:
@@ -296,7 +297,7 @@ const repairShops = () => {
                 meaning: null,
                 possible_causes: null,
                 recommended_repair: null,
-                date: new Date(),
+                date: dayjs().format(),
                 scan_reference: scanReference2,
                 vehicle_issue_description: vehicleIssue,
                 is_deleted: false,
@@ -344,7 +345,7 @@ const repairShops = () => {
     return (
         <SafeAreaView key={refreshKey} style={styles.container}>
             <GestureHandlerRootView>
-                <Header headerTitle='Repair Shops' link='/car-owner/(tabs)' />
+                <Header headerTitle='Repair Shops' />
 
                 <View style={styles.lowerBox}>
                     <MapView

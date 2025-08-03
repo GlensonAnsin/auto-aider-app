@@ -1,6 +1,7 @@
 import { createRepairShop, createUser, getRepairShops, getUsers } from '@/services/backendApi';
 import { AutoRepairShop } from '@/types/autoRepairShop';
 import { User } from '@/types/user';
+import dayjs from 'dayjs';
 import Checkbox from 'expo-checkbox';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
@@ -210,7 +211,7 @@ const Signup = () => {
       email: null,
       mobile_num: mobileNum.trim(),
       password: password.trim(),
-      creation_date: new Date(),
+      creation_date: dayjs().format(),
       profile_pic: null,
       role: role.trim(),
       user_initials_bg: getRandomHexColor(),

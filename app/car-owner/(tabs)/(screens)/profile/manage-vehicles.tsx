@@ -2,8 +2,6 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { deleteVehicle, getVehicle } from '@/services/backendApi';
 import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
-import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
@@ -11,10 +9,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { io, Socket } from 'socket.io-client';
 
 const ManageVehicles = () => {
-  dayjs.extend(utc);
-  dayjs.extend(timezone);
-  const guessTimezone = dayjs.tz.guess();
-  
   const [_socket, setSocket] = useState<Socket | null>(null);
   
   const [vehicles, setVehicles] = useState<{ vehicleID: number, make: string, model: string, year: string, dateAdded: string }[]>([]);
@@ -29,15 +23,12 @@ const ManageVehicles = () => {
         const vehicleData: { vehicleID: number, make: string, model: string, year: string, dateAdded: string }[] = []
 
         res?.forEach((item: any) => {
-          const parseDate1 = dayjs(item.date).utc(true).tz(guessTimezone).format();
-          const parseDate2 = dayjs(parseDate1).utc(true).tz(guessTimezone).format("ddd MMM DD YYYY");
-          
           vehicleData.push({
             vehicleID: item.vehicle_id,
             make: item.make,
             model: item.model,
             year: item.year,
-            dateAdded: parseDate2,
+            dateAdded: dayjs(item.date).format('ddd MMM DD YYYY'),
           });
         });
 
@@ -117,7 +108,7 @@ const ManageVehicles = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <Header headerTitle='Vehicles' link='./profile' />
+        <Header headerTitle='Vehicles' />
 
         <View style={styles.lowerBox}>
           {vehicles.length === 0 && (

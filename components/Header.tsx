@@ -4,16 +4,15 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface HeaderProps {
     headerTitle: string;
-    link: any
 };
 
-export const Header = ({ headerTitle, link }: HeaderProps) => {
+export const Header = ({ headerTitle }: HeaderProps) => {
     const router = useRouter();
     
     return (
         <View style={styles.upperBox}>
             <Text style={styles.header}>{`|  ${headerTitle}`}</Text>
-            <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.replace(link)}>
+            <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.back()}>
                 <Icon name='arrow-left' style={styles.arrowBack} />
             </TouchableOpacity>
         </View>

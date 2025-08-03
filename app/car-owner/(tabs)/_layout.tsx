@@ -5,6 +5,8 @@ export default function TabsLayout() {
   return (
     <Tabs
       tabBar={props => <TabBar {...props} />}
+      backBehavior='history'
+      initialRouteName='index'
     >
       <Tabs.Screen
         name='index'

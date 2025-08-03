@@ -610,7 +610,7 @@ const editShop = () => {
                     contentContainerStyle={{ flexGrow: 1 }}
                     keyboardShouldPersistTaps='handled' 
                 >
-                    <Header headerTitle='Edit Shop' link='/repair-shop/(tabs)' />
+                    <Header headerTitle='Edit Shop' />
 
                     <View style={styles.lowerBox}>
                         <View style={styles.picRepNameContainer}>

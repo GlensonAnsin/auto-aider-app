@@ -72,7 +72,7 @@ const HistoryDetailedReport = () => {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
-                <Header headerTitle='Detailed Report' link='./diagnostic-history' />
+                <Header headerTitle='Report Details' />
 
                 <View style={styles.lowerBox}>
                     <View style={styles.codeContainer}>

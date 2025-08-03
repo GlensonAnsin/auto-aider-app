@@ -4,7 +4,6 @@ import { setScanState } from '@/redux/slices/scanSlice';
 import { deleteAllVehicleDiagnostics, deleteVehicleDiagnostic, getVehicleDiagnostics } from '@/services/backendApi';
 import Entypo from '@expo/vector-icons/Entypo';
 import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -16,9 +15,6 @@ import { io, Socket } from 'socket.io-client';
 
 const DiagnosticHistory = () => {
     dayjs.extend(utc);
-    dayjs.extend(timezone);
-    const guessTimezone = dayjs.tz.guess();
-    
     const router = useRouter();
     const dispatch = useDispatch();
 
@@ -36,20 +32,15 @@ const DiagnosticHistory = () => {
 
                 const historyData: { vehicleID: number, vehicle: string, dtc: string, date: string, scanReference: string }[] = [];
 
-                if (res) {
-                    res.forEach((item: any) => {
-                        const parseDate1 = dayjs(item.date).utc(true).tz(guessTimezone).format();
-                        const parseDate2 = dayjs(parseDate1).utc(true).tz(guessTimezone).format("ddd MMM DD YYYY");
-
-                        historyData.push({
-                            vehicleID: item.vehicle_id,
-                            vehicle: `${item.year} ${item.make} ${item.model}`,
-                            dtc: item.dtc,
-                            date: parseDate2,
-                            scanReference: item.scan_reference,
-                        });
+                res?.forEach((item: any) => {
+                    historyData.push({
+                        vehicleID: item.vehicle_id,
+                        vehicle: `${item.year} ${item.make} ${item.model}`,
+                        dtc: item.dtc,
+                        date: dayjs(item.date).utc(true).local().format('ddd MMM DD YYYY'),
+                        scanReference: item.scan_reference,
                     });
-                }
+                });
 
                 setHistory(historyData);
 
@@ -193,7 +184,7 @@ const DiagnosticHistory = () => {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
-                <Header headerTitle='History' link='/car-owner/(tabs)' />
+                <Header headerTitle='History' />
 
                 <View style={styles.lowerBox}>
                     <View style={styles.clearHistoryContainer}>
@@ -216,7 +207,7 @@ const DiagnosticHistory = () => {
                                         vehicleID: parseInt(String(item.vehicleID)),
                                         scanReference: item.scanReference,
                                     }));
-                                    router.navigate('./history-detailed-report');
+                                    router.push('./history-detailed-report');
                                 }}
                                 onLongPress={() => {
                                     deleteVehicleDiagAlert();
@@ -234,7 +225,7 @@ const DiagnosticHistory = () => {
                                                 vehicleID: parseInt(String(item.vehicleID)),
                                                 scanReference: item.scanReference,
                                             }));
-                                            router.navigate('/car-owner/(tabs)/(screens)/repair-shops/repair-shops');
+                                            router.push('/car-owner/(tabs)/(screens)/repair-shops/repair-shops');
                                         }}
                                     >
                                         <Entypo name='location' size={16} color='#FFF' />

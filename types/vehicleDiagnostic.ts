@@ -6,7 +6,7 @@ export interface VehicleDiagnostic {
     meaning: string | null;
     possible_causes: string | null;
     recommended_repair: string | null;
-    date: Date;
+    date: string;
     scan_reference: string;
     vehicle_issue_description: string | null;
     is_deleted: boolean;

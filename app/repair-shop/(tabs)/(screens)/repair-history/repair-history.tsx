@@ -6,7 +6,7 @@ const repairHistory = () => {
   return (
     <SafeAreaView style={styles.container}>
         <ScrollView>
-            <Header headerTitle='Repair History' link='/repair-shop/(tabs)' />
+            <Header headerTitle='Repair History' />
         </ScrollView>
     </SafeAreaView>
   )

@@ -6,6 +6,7 @@ import { addVehicleDiagnostic, getVehicle } from '@/services/backendApi';
 import { codeMeaning, codePossibleCauses, codeRecommendedRepair, codeTechnicalDescription } from '@/services/geminiApi';
 import { generateReference } from '@/services/generateReference';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
@@ -14,11 +15,12 @@ import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import { useDispatch } from 'react-redux';
+import { io, Socket } from 'socket.io-client';
 
 const RunDiagnostics = () => {
     const router = useRouter();
     const dispatch = useDispatch();
-
+    const [_socket, setSocket] = useState<Socket | null>(null);
     const [selectedCar, setSelectedCar] = useState<string>('');
     const [selectedCarID, setSelectedCarID] = useState<number | undefined>(undefined);
     const [vehicles, setVehicles] = useState<{ id: number, make: string, model: string, year: string }[]>([])
@@ -46,6 +48,33 @@ const RunDiagnostics = () => {
                 setIsLoading(false);
             }
         })();
+    }, []);
+
+    useEffect(() => {
+        const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
+            transports: ['websocket'],
+        });
+
+        setSocket(newSocket);
+
+        newSocket.on('connect', () => {
+            console.log('Connected to server: ', newSocket.id);
+        });
+
+        newSocket.on('updatedVehicleList', ({ updatedVehicleList }) => {
+            const vehicleInfo = updatedVehicleList.map((v: { vehicle_id: number, make: string, model: string, year: string }) => ({
+                id: v.vehicle_id,
+                make: v.make,
+                model: v.model,
+                year: v.year
+            }));
+            setVehicles(vehicleInfo);
+        });
+
+        return () => {
+            newSocket.off('updatedVehicleList');
+            newSocket.disconnect();
+        };
     }, []);
 
     const handleCodeTechnicalDescription = async (code: string) => {
@@ -131,7 +160,7 @@ const RunDiagnostics = () => {
                     meaning: M ?? '',
                     possible_causes: PC ?? '',
                     recommended_repair: RR ?? '',
-                    date: new Date(),
+                    date: dayjs().format(),
                     scan_reference: scanReference,
                     vehicle_issue_description: null,
                     is_deleted: false,
@@ -144,7 +173,7 @@ const RunDiagnostics = () => {
             setSelectedCar('');
             setDTC([]);
             setScanLoading(false);
-            router.navigate('./diagnosis');
+            router.push('./diagnosis');
 
         } catch (e) {
             console.error('Error: ', e);
@@ -162,25 +191,25 @@ const RunDiagnostics = () => {
     }
 
     if (scanLoading) {
-    return (
-        <View style={styles.updateLoadingContainer}>
-            <LottieView 
-                source={require('@/assets/images/scanning.json')}
-                autoPlay
-                loop
-                style={{
-                    width: 200,
-                    height: 200,
-                }}
-            />
-            <Text style={styles.loadingText}>SCANNING</Text>
-        </View>
-    )
+        return (
+            <View style={styles.updateLoadingContainer}>
+                <LottieView 
+                    source={require('@/assets/images/scanning.json')}
+                    autoPlay
+                    loop
+                    style={{
+                        width: 200,
+                        height: 200,
+                    }}
+                />
+                <Text style={styles.loadingText}>SCANNING</Text>
+            </View>
+        )
     }
 
     return (
         <SafeAreaView style={styles.container}>
-            <Header headerTitle='Diagnostic' link='/car-owner/(tabs)' />
+            <Header headerTitle='Diagnostic' />
 
             <View style={styles.lowerBox}>
                 <View style={styles.selectCarButtonContainer}>

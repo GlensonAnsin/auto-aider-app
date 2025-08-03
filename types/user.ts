@@ -5,7 +5,7 @@ export interface User {
     email: string | null;
     mobile_num: string;
     password: string;
-    creation_date: Date;
+    creation_date: string;
     profile_pic: string | null;
     role: string;
     user_initials_bg: string;

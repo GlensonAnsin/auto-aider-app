@@ -230,17 +230,17 @@ export default function Home() {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={() => router.navigate('./repair-history/repair-history')}>
+            <TouchableOpacity style={styles.button} onPress={() => router.push('./repair-history/repair-history')}>
                 <MaterialIcons name='manage-history' size={15} color='#FFF' />
                 <Text style={styles.buttonText}>History</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.button} onPress={() => router.navigate('./repair-requests/repair-requests')}>
+              <TouchableOpacity style={styles.button} onPress={() => router.push('./repair-requests/repair-requests')}>
                 <FontAwesome6 name='screwdriver-wrench' size={10} color='#FFF' />
                 <Text style={styles.buttonText}>Requests</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.button} onPress={() => router.navigate('./edit-shop/edit-shop')}>
+              <TouchableOpacity style={styles.button} onPress={() => router.push('./edit-shop/edit-shop')}>
                 <FontAwesome6 name='edit' size={10} color='#FFF' />
                 <Text style={styles.buttonText}>Edit Shop</Text>
               </TouchableOpacity>
@@ -249,7 +249,7 @@ export default function Home() {
           <View style={styles.shopImages}>
             <Text style={styles.subHeader}>Shop Images</Text>
             {shopImages.length === 0 && (
-                <TouchableOpacity style={styles.editButton2} onPress={() => router.navigate('./edit-shop/edit-shop')}>
+                <TouchableOpacity style={styles.editButton2} onPress={() => router.push('./edit-shop/edit-shop')}>
                     <MaterialCommunityIcons name='image-plus' size={16} color='#555' />
                     <Text style={styles.editButtonText}>Upload Image</Text>
                 </TouchableOpacity>
