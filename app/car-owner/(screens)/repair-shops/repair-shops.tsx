@@ -250,7 +250,7 @@ const repairShops = () => {
                         icon: 'success',
                     });
                     setModalVisible(false);
-                    router.push('/car-owner/(tabs)/(screens)/request-status/request-status');
+                    router.push('/car-owner/(screens)/request-status/request-status');
                     break;
 
                 case 'without-obd2':
@@ -272,7 +272,7 @@ const repairShops = () => {
                         icon: 'success',
                     });
                     setModalVisible(false);
-                    router.push('/car-owner/(tabs)/(screens)/request-status/request-status');
+                    router.push('/car-owner/(screens)/request-status/request-status');
                     break;
 
                 default:
@@ -361,7 +361,7 @@ const repairShops = () => {
                                         latitude: currentLocation.latitude,
                                         longitude: currentLocation.longitude,
                                     }}
-                                    image={require('../../../../../assets/images/circle-marker.png')}
+                                    image={require('../../../../assets/images/circle-marker.png')}
                                     title='You'
                                 />
 

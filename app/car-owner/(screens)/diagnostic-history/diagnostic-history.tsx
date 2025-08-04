@@ -225,7 +225,7 @@ const DiagnosticHistory = () => {
                                                 vehicleID: parseInt(String(item.vehicleID)),
                                                 scanReference: item.scanReference,
                                             }));
-                                            router.push('/car-owner/(tabs)/(screens)/repair-shops/repair-shops');
+                                            router.push('/car-owner/(screens)/repair-shops/repair-shops');
                                         }}
                                     >
                                         <Entypo name='location' size={16} color='#FFF' />

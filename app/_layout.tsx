@@ -31,12 +31,12 @@ export default function RootLayout() {
 
       <FlashMessage position='top' style={{ marginTop: 30 }} />
 
-      <Stack initialRouteName='index'>
-        <Stack.Screen name='index' options={{ headerShown: false, animation: 'none'}} />
-        <Stack.Screen name='auth/login' options={{ headerShown: false, animation: 'none' }} />
-        <Stack.Screen name='auth/signup' options={{ headerShown: false, animation: 'none' }} />
-        <Stack.Screen name='car-owner/(tabs)' options={{ headerShown: false, animation: 'none' }} />
-        <Stack.Screen name='repair-shop/(tabs)' options={{ headerShown: false, animation: 'none' }} />
+      <Stack initialRouteName='index' screenOptions={{ headerShown: false, animation: 'none' }}>
+        <Stack.Screen name='index' />
+        <Stack.Screen name='auth/login' />
+        <Stack.Screen name='auth/signup' />
+        <Stack.Screen name='car-owner' />
+        <Stack.Screen name='repair-shop/(tabs)' />
       </Stack>
     </Provider>
   );

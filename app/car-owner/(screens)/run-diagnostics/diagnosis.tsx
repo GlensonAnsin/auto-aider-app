@@ -93,7 +93,7 @@ const Diagnosis = () => {
                         ))}
                     </View>
 
-                    <TouchableOpacity style={styles.findShopButton} onPress={() => router.push('/car-owner/(tabs)/(screens)/repair-shops/repair-shops')}>
+                    <TouchableOpacity style={styles.findShopButton} onPress={() => router.push('/car-owner/(screens)/repair-shops/repair-shops')}>
                         <Text style={styles.findShopButtonText}>Find Repair Shop</Text>
                     </TouchableOpacity>
                 </View>
