@@ -1,4 +1,6 @@
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
+import { clearRouteState } from '@/redux/slices/routeSlice';
 import { addVehicle, getUserInfo, getVehicle } from '@/services/backendApi';
 import { verifyCar } from '@/services/geminiApi';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -12,12 +14,14 @@ import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Tex
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
+import { useDispatch } from 'react-redux';
 import { io, Socket } from 'socket.io-client';
 
 export default function Home() {
+    const dispatch = useDispatch();
+    const backRoute = useBackRoute('/car-owner');
     const router = useRouter();
     const [_socket, setSocket] = useState<Socket | null>(null);
-
     const [addVehicleModalVisible, isAddVehicleModalVisible] = useState(false);
     const [selectedMake, setSelectedMake] = useState<string>('');
     const [model, setModel] = useState<string>('');
@@ -75,6 +79,7 @@ export default function Home() {
         (async () => {
             try {
                 setIsLoading(true)
+                dispatch(clearRouteState());
                 const res1 = await getUserInfo();
                 const res2 = await getVehicle();
                 
@@ -185,13 +190,13 @@ export default function Home() {
                     </View>
 
                     {profilePic === null && (
-                        <TouchableOpacity style={[styles.profileWrapper, { backgroundColor: userInitialsBG }]} onPress={() => router.push('./profile/profile')}>
+                        <TouchableOpacity style={[styles.profileWrapper, { backgroundColor: userInitialsBG }]} onPress={() => router.replace('./profile/profile')}>
                             <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
                         </TouchableOpacity>
                     )}
     
                     {profilePic !== null && (
-                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.push('./profile/profile')}>
+                        <TouchableOpacity style={styles.profileWrapper} onPress={() => router.replace('./profile/profile')}>
                             <Image
                             style={styles.profilePic}
                             source={{ uri: profilePic }}
@@ -209,7 +214,10 @@ export default function Home() {
 
                 <View style={styles.featuresContainer}>
                     <View style={styles.column}>
-                        <TouchableOpacity style={styles.feature} onPress={() => router.push('./diagnostic-history/diagnostic-history')}>
+                        <TouchableOpacity style={styles.feature} onPress={() => {
+                            backRoute();
+                            router.replace('./diagnostic-history/diagnostic-history');
+                        }}>
                             <MaterialIcons name='history' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Diagnostic History</Text>
@@ -227,7 +235,8 @@ export default function Home() {
                                     icon: 'warning',
                                 });
                             } else {
-                                router.push('./run-diagnostics/run-diagnostics');
+                                backRoute();
+                                router.replace('./run-diagnostics/run-diagnostics');
                             }
                         }}>
                             <Ionicons name='scan' size={35} color='#FFF' />
@@ -237,7 +246,10 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
                             
-                        <TouchableOpacity style={styles.feature} onPress={() => router.push('./repair-shops/repair-shops')}>
+                        <TouchableOpacity style={styles.feature} onPress={() => {
+                            backRoute();
+                            router.replace('./repair-shops/repair-shops');
+                        }}>
                             <Entypo name='location' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Repair Shops</Text>
@@ -255,7 +267,10 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.feature} onPress={() => router.push('./profile/profile')}>
+                        <TouchableOpacity style={styles.feature} onPress={() => {
+                            backRoute();
+                            router.replace('./profile/profile');
+                        }}>
                             <MaterialCommunityIcons name='account' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>My Profile</Text>
@@ -263,7 +278,10 @@ export default function Home() {
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.feature} onPress={() => router.push('./request-status/request-status')}>
+                        <TouchableOpacity style={styles.feature} onPress={() => {
+                            backRoute();
+                            router.replace('./request-status/request-status');
+                        }}>
                             <MaterialCommunityIcons name='clipboard-edit' size={35} color='#FFF' />
                             <View style={styles.featureTxtWrapper}>
                                 <Text style={styles.featureHeader}>Request Status</Text>
