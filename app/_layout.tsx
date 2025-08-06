@@ -36,7 +36,7 @@ export default function RootLayout() {
         <Stack.Screen name='auth/login' />
         <Stack.Screen name='auth/signup' />
         <Stack.Screen name='car-owner' />
-        <Stack.Screen name='repair-shop/(tabs)' />
+        <Stack.Screen name='repair-shop' />
       </Stack>
     </Provider>
   );

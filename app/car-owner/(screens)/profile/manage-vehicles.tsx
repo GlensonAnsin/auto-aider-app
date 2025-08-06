@@ -2,6 +2,7 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { deleteVehicle, getVehicle } from '@/services/backendApi';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
@@ -9,8 +10,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { io, Socket } from 'socket.io-client';
 
 const ManageVehicles = () => {
+  dayjs.extend(utc);
   const [_socket, setSocket] = useState<Socket | null>(null);
-  
   const [vehicles, setVehicles] = useState<{ vehicleID: number, make: string, model: string, year: string, dateAdded: string }[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -28,7 +29,7 @@ const ManageVehicles = () => {
             make: item.make,
             model: item.model,
             year: item.year,
-            dateAdded: dayjs(item.date).format('ddd MMM DD YYYY'),
+            dateAdded: dayjs(item.date_added).utc(true).local().format('ddd MMM DD YYYY'),
           });
         });
 

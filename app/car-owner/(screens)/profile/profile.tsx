@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
 import { changePass, getUserInfo } from '@/services/backendApi';
 import { clearTokens } from '@/services/tokenStorage';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -11,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Profile = () => {
     const router = useRouter();
-
+    const backRoute = useBackRoute('/car-owner/(screens)/profile/profile');
     const [currentPassword, setCurrentPassword] = useState<string>('');
     const [newPassword, setNewPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -184,7 +185,10 @@ const Profile = () => {
 
                 <View style={styles.profileTabContainer}>
                     
-                    <TouchableOpacity style={styles.profileTab} onPress={() => router.push('./edit-profile')}>
+                    <TouchableOpacity style={styles.profileTab} onPress={() => {
+                        backRoute();
+                        router.replace('./edit-profile');
+                    }}>
                         <MaterialCommunityIcons
                             name='account-edit-outline'
                             style={styles.icon}
@@ -198,7 +202,10 @@ const Profile = () => {
                     
 
                     
-                    <TouchableOpacity style={styles.profileTab} onPress={() => router.push('./manage-vehicles')}>
+                    <TouchableOpacity style={styles.profileTab} onPress={() => {
+                        backRoute();
+                        router.replace('./manage-vehicles');
+                    }}>
                         <MaterialCommunityIcons
                             name='car-outline'
                             style={styles.icon}

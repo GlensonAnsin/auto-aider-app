@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
 import { clearScanState } from '@/redux/slices/scanSlice';
 import { RootState } from '@/redux/store';
 import { addRequest, addVehicleDiagnostic, getOnVehicleDiagnostic, getRepairShops, getVehicle } from '@/services/backendApi';
@@ -25,6 +26,7 @@ import { useDispatch, useSelector } from 'react-redux';
 const repairShops = () => {
     const dispatch = useDispatch();
     const router = useRouter();
+    const backRoute = useBackRoute('/car-owner/(screens)/repair-shops/repair-shops');
     const mapRef = useRef<MapView | null>(null);
     const bottomSheetRef = useRef<BottomSheet | null>(null);
     const { width: screenWidth } = Dimensions.get('window');
@@ -250,7 +252,8 @@ const repairShops = () => {
                         icon: 'success',
                     });
                     setModalVisible(false);
-                    router.push('/car-owner/(screens)/request-status/request-status');
+                    backRoute();
+                    router.replace('/car-owner/(screens)/request-status/request-status');
                     break;
 
                 case 'without-obd2':
@@ -272,7 +275,8 @@ const repairShops = () => {
                         icon: 'success',
                     });
                     setModalVisible(false);
-                    router.push('/car-owner/(screens)/request-status/request-status');
+                    backRoute();
+                    router.replace('/car-owner/(screens)/request-status/request-status');
                     break;
 
                 default:

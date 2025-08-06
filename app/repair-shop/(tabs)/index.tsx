@@ -1,4 +1,6 @@
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
+import { clearRouteState } from '@/redux/slices/routeSlice';
 import { getRepairShopInfo } from '@/services/backendApi';
 import { clearTokens } from '@/services/tokenStorage';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -11,14 +13,15 @@ import { Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Switch, Te
 import { showMessage } from 'react-native-flash-message';
 import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch } from 'react-redux';
 import { io, Socket } from 'socket.io-client';
 
 export default function Home() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const backRoute = useBackRoute('/repair-shop');
   const [_socket, setSocket] = useState<Socket | null>(null);
-
   const { width: screenWidth } = Dimensions.get('window');
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [repShopName, setRepShopName] = useState<string>('');
   const [ownerFirstname, setOwnerFirstname] = useState<string>('');
@@ -41,6 +44,7 @@ export default function Home() {
     (async () => {
       try {
         setIsLoading(true);
+        dispatch(clearRouteState());
         const res = await getRepairShopInfo();
 
         setRepShopName(res.shop_name);
@@ -230,17 +234,26 @@ export default function Home() {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={() => router.push('./repair-history/repair-history')}>
+            <TouchableOpacity style={styles.button} onPress={() => {
+              backRoute();
+              router.replace('./repair-history/repair-history');
+            }}>
                 <MaterialIcons name='manage-history' size={15} color='#FFF' />
                 <Text style={styles.buttonText}>History</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.button} onPress={() => router.push('./repair-requests/repair-requests')}>
+              <TouchableOpacity style={styles.button} onPress={() => {
+                backRoute();
+                router.replace('./repair-requests/repair-requests');
+              }}>
                 <FontAwesome6 name='screwdriver-wrench' size={10} color='#FFF' />
                 <Text style={styles.buttonText}>Requests</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.button} onPress={() => router.push('./edit-shop/edit-shop')}>
+              <TouchableOpacity style={styles.button} onPress={() => {
+                backRoute();
+                router.replace('./edit-shop/edit-shop');
+              }}>
                 <FontAwesome6 name='edit' size={10} color='#FFF' />
                 <Text style={styles.buttonText}>Edit Shop</Text>
               </TouchableOpacity>
@@ -249,7 +262,10 @@ export default function Home() {
           <View style={styles.shopImages}>
             <Text style={styles.subHeader}>Shop Images</Text>
             {shopImages.length === 0 && (
-                <TouchableOpacity style={styles.editButton2} onPress={() => router.push('./edit-shop/edit-shop')}>
+                <TouchableOpacity style={styles.editButton2} onPress={() => {
+                  backRoute();
+                  router.replace('./edit-shop/edit-shop');
+                }}>
                     <MaterialCommunityIcons name='image-plus' size={16} color='#555' />
                     <Text style={styles.editButtonText}>Upload Image</Text>
                 </TouchableOpacity>

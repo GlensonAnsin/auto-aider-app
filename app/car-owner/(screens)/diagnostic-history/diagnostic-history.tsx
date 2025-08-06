@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
 import { setScanState } from '@/redux/slices/scanSlice';
 import { deleteAllVehicleDiagnostics, deleteVehicleDiagnostic, getVehicleDiagnostics } from '@/services/backendApi';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -17,9 +18,8 @@ const DiagnosticHistory = () => {
     dayjs.extend(utc);
     const router = useRouter();
     const dispatch = useDispatch();
-
+    const backRoute = useBackRoute('/car-owner/(screens)/diagnostic-history/diagnostic-history');
     const [_socket, setSocket] = useState<Socket | null>(null);
-
     const [history, setHistory] = useState<{ vehicleID: number, vehicle: string, dtc: string, date: string, scanReference: string }[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [selectedScanReference, setSelectedScanReference] = useState<string>('');
@@ -207,7 +207,8 @@ const DiagnosticHistory = () => {
                                         vehicleID: parseInt(String(item.vehicleID)),
                                         scanReference: item.scanReference,
                                     }));
-                                    router.push('./history-detailed-report');
+                                    backRoute();
+                                    router.replace('./history-detailed-report');
                                 }}
                                 onLongPress={() => {
                                     deleteVehicleDiagAlert();
@@ -225,7 +226,8 @@ const DiagnosticHistory = () => {
                                                 vehicleID: parseInt(String(item.vehicleID)),
                                                 scanReference: item.scanReference,
                                             }));
-                                            router.push('/car-owner/(screens)/repair-shops/repair-shops');
+                                            backRoute();
+                                            router.replace('/car-owner/(screens)/repair-shops/repair-shops');
                                         }}
                                     >
                                         <Entypo name='location' size={16} color='#FFF' />

@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
 import { setVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { RootState } from '@/redux/store';
 import { getOnVehicleDiagnostic, getScannedVehicle } from '@/services/backendApi';
@@ -13,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 const Diagnosis = () => {
     const router = useRouter();
     const dispatch = useDispatch();
-
+    const backRoute = useBackRoute('/car-owner/(screens)/run-diagnostics/diagnosis');
     const [codeInterpretation, setCodeInterpretation] = useState<{ vehicleDiagnosticID: number, dtc: string, technicalDescription: string }[]>([]);
     const [scannedVehicle, setScannedVehicle] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -83,8 +84,9 @@ const Diagnosis = () => {
                                     key={item.vehicleDiagnosticID}
                                     style={styles.troubleCodeButton}
                                     onPress={() => {
-                                        dispatch(setVehicleDiagIDState(item.vehicleDiagnosticID))
-                                        router.push('./detailed-report')
+                                        dispatch(setVehicleDiagIDState(item.vehicleDiagnosticID));
+                                        backRoute();
+                                        router.replace('./detailed-report');
                                     }}
                                 >
                                     <Text style={styles.troubleCodeText}>{item.dtc}</Text>
@@ -93,7 +95,10 @@ const Diagnosis = () => {
                         ))}
                     </View>
 
-                    <TouchableOpacity style={styles.findShopButton} onPress={() => router.push('/car-owner/(screens)/repair-shops/repair-shops')}>
+                    <TouchableOpacity style={styles.findShopButton} onPress={() => {
+                        backRoute();
+                        router.replace('/car-owner/(screens)/repair-shops/repair-shops');
+                    }}>
                         <Text style={styles.findShopButtonText}>Find Repair Shop</Text>
                     </TouchableOpacity>
                 </View>

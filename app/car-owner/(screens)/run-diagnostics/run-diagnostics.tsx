@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
 import { setScanState } from '@/redux/slices/scanSlice';
 import { setTabState } from '@/redux/slices/tabBarSlice';
 import { addVehicleDiagnostic, getVehicle } from '@/services/backendApi';
@@ -20,6 +21,7 @@ import { io, Socket } from 'socket.io-client';
 const RunDiagnostics = () => {
     const router = useRouter();
     const dispatch = useDispatch();
+    const backRoute = useBackRoute('/car-owner/(screens)/run-diagnostics/run-diagnostics');
     const [_socket, setSocket] = useState<Socket | null>(null);
     const [selectedCar, setSelectedCar] = useState<string>('');
     const [selectedCarID, setSelectedCarID] = useState<number | undefined>(undefined);
@@ -143,6 +145,7 @@ const RunDiagnostics = () => {
                 scanReference: scanReference,
             }));
 
+            const date = dayjs().format();
             for (const code of DTC) {
                 const TD = await handleCodeTechnicalDescription(code);
 
@@ -160,7 +163,7 @@ const RunDiagnostics = () => {
                     meaning: M ?? '',
                     possible_causes: PC ?? '',
                     recommended_repair: RR ?? '',
-                    date: dayjs().format(),
+                    date: date,
                     scan_reference: scanReference,
                     vehicle_issue_description: null,
                     is_deleted: false,
@@ -173,7 +176,8 @@ const RunDiagnostics = () => {
             setSelectedCar('');
             setDTC([]);
             setScanLoading(false);
-            router.push('./diagnosis');
+            backRoute();
+            router.replace('./diagnosis');
 
         } catch (e) {
             console.error('Error: ', e);
