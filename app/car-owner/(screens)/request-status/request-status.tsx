@@ -100,49 +100,115 @@ const RequestStatus = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-        <ScrollView>
-            <Header headerTitle='Request Status' />
+            <ScrollView>
+                <Header headerTitle='Request Status' />
 
-            <View style={styles.lowerBox}>
-                <SelectDropdown 
-                    data={buttons}
-                    defaultValue={activeButton}
-                    onSelect={(selectedItem) => setActiveButton(selectedItem)}
-                    renderButton={(selectedItem, isOpen) => (
-                        <View style={styles.dropdownButtonStyle}>
-                            <Text style={styles.dropdownButtonTxtStyle}>
-                                {(selectedItem)}
-                            </Text>
-                            <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                        </View>
-                    )}
-                    renderItem={(item, _index, isSelected) => (
-                        <View
-                            style={{
-                            ...styles.dropdownItemStyle,
-                            ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                            }}
-                        >
-                            <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
-                        </View>
-                    )}
-                    showsVerticalScrollIndicator={false}
-                    dropdownStyle={styles.dropdownMenuStyle}
-                />
+                <View style={styles.lowerBox}>
+                    <SelectDropdown 
+                        data={buttons}
+                        defaultValue={activeButton}
+                        onSelect={(selectedItem) => setActiveButton(selectedItem)}
+                        renderButton={(selectedItem, isOpen) => (
+                            <View style={styles.dropdownButtonStyle}>
+                                <Text style={styles.dropdownButtonTxtStyle}>
+                                    {(selectedItem)}
+                                </Text>
+                                <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                            </View>
+                        )}
+                        renderItem={(item, _index, isSelected) => (
+                            <View
+                                style={{
+                                ...styles.dropdownItemStyle,
+                                ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                                }}
+                            >
+                                <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+                            </View>
+                        )}
+                        showsVerticalScrollIndicator={false}
+                        dropdownStyle={styles.dropdownMenuStyle}
+                    />
 
-                {activeButton === 'All' && (
-                    <>
-                        {grouped.map((item, index) => (
-                            <View key={index}>
-                                <TouchableOpacity style={styles.requestButton}>
-                                    <View style={styles.vehicleShopContainer}>
-                                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                                        <Text style={styles.requestText}>{item.repairShop}</Text>
-                                        <Text style={styles.requestText}>{item.datetime}</Text>
-                                    </View>
-                                    <View style={styles.statusContainer}>
-                                        <Text style={styles.statusText}>{item.status}</Text>
-                                        {item.status === 'Pending' && (
+                    {activeButton === 'All' && (
+                        <>
+                            {grouped.map((item, index) => (
+                                <View key={index}>
+                                    <TouchableOpacity style={styles.requestButton}>
+                                        <View style={styles.vehicleShopContainer}>
+                                            <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                                            <Text style={styles.requestText}>{item.repairShop}</Text>
+                                            <Text style={styles.requestText}>{item.datetime}</Text>
+                                        </View>
+                                        <View style={styles.statusContainer}>
+                                            <Text style={styles.statusText}>{item.status}</Text>
+                                            {item.status === 'Pending' && (
+                                                <LottieView 
+                                                    source={require('@/assets/images/pending.json')}
+                                                    autoPlay
+                                                    loop
+                                                    style={{
+                                                        width: 26,
+                                                        height: 26,
+                                                    }}
+                                                />
+                                            )}
+                                            {item.status === 'Rejected' && (
+                                                <LottieView 
+                                                    source={require('@/assets/images/rejected.json')}
+                                                    autoPlay
+                                                    loop
+                                                    style={{
+                                                        width: 26,
+                                                        height: 26,
+                                                    }}
+                                                />
+                                            )}
+                                            {item.status === 'Ongoing' && (
+                                                <LottieView 
+                                                    source={require('@/assets/images/ongoing.json')}
+                                                    autoPlay
+                                                    loop
+                                                    style={{
+                                                        width: 26,
+                                                        height: 26,
+                                                    }}
+                                                />
+                                            )}
+                                            {item.status === 'Completed' && (
+                                                <LottieView 
+                                                    source={require('@/assets/images/completed.json')}
+                                                    autoPlay
+                                                    loop
+                                                    style={{
+                                                        width: 26,
+                                                        height: 26,
+                                                    }}
+                                                />
+                                            )}
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+
+                            {grouped.length === 0 && (
+                                <Text style={styles.noRequestText}>-- No Requests --</Text>
+                            )}
+                        </>
+                    )}
+
+                    {activeButton === 'Pending' && (
+                        <>
+                            {filterPending.map((item, index) => (
+                                <View key={index}>
+                                    <TouchableOpacity style={styles.requestButton}>
+                                        <View style={styles.vehicleShopContainer}>
+                                            <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                                            <Text style={styles.requestText}>{item.repairShop}</Text>
+                                            <Text style={styles.requestText}>{item.datetime}</Text>
+                                        </View>
+                                        <View style={styles.statusContainer}>
+                                            <Text style={styles.statusText}>{item.status}</Text>
                                             <LottieView 
                                                 source={require('@/assets/images/pending.json')}
                                                 autoPlay
@@ -151,9 +217,30 @@ const RequestStatus = () => {
                                                     width: 26,
                                                     height: 26,
                                                 }}
-                                            />
-                                        )}
-                                        {item.status === 'Rejected' && (
+                                            />   
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+
+                            {filterPending.length === 0 && (
+                                <Text style={styles.noRequestText}>-- No Requests --</Text>
+                            )}
+                        </>
+                    )}
+
+                    {activeButton === 'Rejected' && (
+                        <>
+                            {filterRejected.map((item, index) => (
+                                <View key={index}>
+                                    <TouchableOpacity style={styles.requestButton}>
+                                        <View style={styles.vehicleShopContainer}>
+                                            <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                                            <Text style={styles.requestText}>{item.repairShop}</Text>
+                                            <Text style={styles.requestText}>{item.datetime}</Text>
+                                        </View>
+                                        <View style={styles.statusContainer}>
+                                            <Text style={styles.statusText}>{item.status}</Text>
                                             <LottieView 
                                                 source={require('@/assets/images/rejected.json')}
                                                 autoPlay
@@ -162,9 +249,30 @@ const RequestStatus = () => {
                                                     width: 26,
                                                     height: 26,
                                                 }}
-                                            />
-                                        )}
-                                        {item.status === 'Ongoing' && (
+                                            />   
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+
+                            {filterRejected.length === 0 && (
+                                <Text style={styles.noRequestText}>-- No Requests --</Text>
+                            )}
+                        </>
+                    )}
+
+                    {activeButton === 'Ongoing' && (
+                        <>
+                            {filterOngoing.map((item, index) => (
+                                <View key={index}>
+                                    <TouchableOpacity style={styles.requestButton}>
+                                        <View style={styles.vehicleShopContainer}>
+                                            <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                                            <Text style={styles.requestText}>{item.repairShop}</Text>
+                                            <Text style={styles.requestText}>{item.datetime}</Text>
+                                        </View>
+                                        <View style={styles.statusContainer}>
+                                            <Text style={styles.statusText}>{item.status}</Text>
                                             <LottieView 
                                                 source={require('@/assets/images/ongoing.json')}
                                                 autoPlay
@@ -173,9 +281,30 @@ const RequestStatus = () => {
                                                     width: 26,
                                                     height: 26,
                                                 }}
-                                            />
-                                        )}
-                                        {item.status === 'Completed' && (
+                                            />   
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+
+                            {filterOngoing.length === 0 && (
+                                <Text style={styles.noRequestText}>-- No Requests --</Text>
+                            )}
+                        </>
+                    )}
+
+                    {activeButton === 'Completed' && (
+                        <>
+                            {filterCompleted.map((item, index) => (
+                                <View key={index}>
+                                    <TouchableOpacity style={styles.requestButton}>
+                                        <View style={styles.vehicleShopContainer}>
+                                            <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                                            <Text style={styles.requestText}>{item.repairShop}</Text>
+                                            <Text style={styles.requestText}>{item.datetime}</Text>
+                                        </View>
+                                        <View style={styles.statusContainer}>
+                                            <Text style={styles.statusText}>{item.status}</Text>
                                             <LottieView 
                                                 source={require('@/assets/images/completed.json')}
                                                 autoPlay
@@ -184,148 +313,19 @@ const RequestStatus = () => {
                                                     width: 26,
                                                     height: 26,
                                                 }}
-                                            />
-                                        )}
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        ))}
+                                            />   
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
 
-                        {grouped.length === 0 && (
-                            <Text style={styles.noRequestText}>-- No Requests --</Text>
-                        )}
-                    </>
-                )}
-
-                {activeButton === 'Pending' && (
-                    <>
-                        {filterPending.map((item, index) => (
-                            <View key={index}>
-                                <TouchableOpacity style={styles.requestButton}>
-                                    <View style={styles.vehicleShopContainer}>
-                                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                                        <Text style={styles.requestText}>{item.repairShop}</Text>
-                                        <Text style={styles.requestText}>{item.datetime}</Text>
-                                    </View>
-                                    <View style={styles.statusContainer}>
-                                        <Text style={styles.statusText}>{item.status}</Text>
-                                        <LottieView 
-                                            source={require('@/assets/images/pending.json')}
-                                            autoPlay
-                                            loop
-                                            style={{
-                                                width: 26,
-                                                height: 26,
-                                            }}
-                                        />   
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        ))}
-
-                        {filterPending.length === 0 && (
-                            <Text style={styles.noRequestText}>-- No Requests --</Text>
-                        )}
-                    </>
-                )}
-
-                {activeButton === 'Rejected' && (
-                    <>
-                        {filterRejected.map((item, index) => (
-                            <View key={index}>
-                                <TouchableOpacity style={styles.requestButton}>
-                                    <View style={styles.vehicleShopContainer}>
-                                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                                        <Text style={styles.requestText}>{item.repairShop}</Text>
-                                        <Text style={styles.requestText}>{item.datetime}</Text>
-                                    </View>
-                                    <View style={styles.statusContainer}>
-                                        <Text style={styles.statusText}>{item.status}</Text>
-                                        <LottieView 
-                                            source={require('@/assets/images/rejected.json')}
-                                            autoPlay
-                                            loop
-                                            style={{
-                                                width: 26,
-                                                height: 26,
-                                            }}
-                                        />   
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        ))}
-
-                        {filterRejected.length === 0 && (
-                            <Text style={styles.noRequestText}>-- No Requests --</Text>
-                        )}
-                    </>
-                )}
-
-                {activeButton === 'Ongoing' && (
-                    <>
-                        {filterOngoing.map((item, index) => (
-                            <View key={index}>
-                                <TouchableOpacity style={styles.requestButton}>
-                                    <View style={styles.vehicleShopContainer}>
-                                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                                        <Text style={styles.requestText}>{item.repairShop}</Text>
-                                        <Text style={styles.requestText}>{item.datetime}</Text>
-                                    </View>
-                                    <View style={styles.statusContainer}>
-                                        <Text style={styles.statusText}>{item.status}</Text>
-                                        <LottieView 
-                                            source={require('@/assets/images/ongoing.json')}
-                                            autoPlay
-                                            loop
-                                            style={{
-                                                width: 26,
-                                                height: 26,
-                                            }}
-                                        />   
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        ))}
-
-                        {filterOngoing.length === 0 && (
-                            <Text style={styles.noRequestText}>-- No Requests --</Text>
-                        )}
-                    </>
-                )}
-
-                {activeButton === 'Completed' && (
-                    <>
-                        {filterCompleted.map((item, index) => (
-                            <View key={index}>
-                                <TouchableOpacity style={styles.requestButton}>
-                                    <View style={styles.vehicleShopContainer}>
-                                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                                        <Text style={styles.requestText}>{item.repairShop}</Text>
-                                        <Text style={styles.requestText}>{item.datetime}</Text>
-                                    </View>
-                                    <View style={styles.statusContainer}>
-                                        <Text style={styles.statusText}>{item.status}</Text>
-                                        <LottieView 
-                                            source={require('@/assets/images/completed.json')}
-                                            autoPlay
-                                            loop
-                                            style={{
-                                                width: 26,
-                                                height: 26,
-                                            }}
-                                        />   
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        ))}
-
-                        {filterCompleted.length === 0 && (
-                            <Text style={styles.noRequestText}>-- No Requests --</Text>
-                        )}
-                    </>
-                )}
-            </View>
-        </ScrollView>
+                            {filterCompleted.length === 0 && (
+                                <Text style={styles.noRequestText}>-- No Requests --</Text>
+                            )}
+                        </>
+                    )}
+                </View>
+            </ScrollView>
         </SafeAreaView>
     )
 };
