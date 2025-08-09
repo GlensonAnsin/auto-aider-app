@@ -1,18 +1,25 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
+import { setRequestIDState } from '@/redux/slices/requestIDSlice';
 import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
+import { useDispatch } from 'react-redux';
 
 const RequestStatus = () => {
     dayjs.extend(utc);
-    const [requestStatus, setRequestStatus] = useState<{ vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[]>([]);
+    const dispatch = useDispatch();
+    const router = useRouter();
+    const backRoute = useBackRoute('/car-owner/(screens)/request-status/request-status');
+    const [requestStatus, setRequestStatus] = useState<{ requestID: number, vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [activeButton, setActiveButton] = useState<string>('All');
 
@@ -25,7 +32,7 @@ const RequestStatus = () => {
                 const res1 = await getRequestsForCarOwner();
                 const res2 = await getRepairShops();
 
-                const statusData: { vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[] = [];
+                const statusData: { requestID: number, vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[] = [];
 
                 if (res1) {
                     res1.vehicles.forEach((vehicle: any) => {
@@ -40,6 +47,7 @@ const RequestStatus = () => {
                                                 const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
                                                 if (repairShop) {
                                                     statusData.push({
+                                                        requestID: request.mechanic_request_id,
                                                         vehicleName,
                                                         repairShop: repairShop.shop_name,
                                                         scanReference,
@@ -50,7 +58,7 @@ const RequestStatus = () => {
                                             });
                                         }
                                     }
-                                });   
+                                });
                             }
                         }
                     });
@@ -73,6 +81,7 @@ const RequestStatus = () => {
 
             if (!acc[ref]) {
                 acc[ref] = {
+                    requestID: item.requestID,
                     vehicleName: item.vehicleName,
                     repairShop: item.repairShop,
                     scanReference: ref,
@@ -84,7 +93,7 @@ const RequestStatus = () => {
 
             return acc;
 
-        }, {} as Record<string, { vehicleName: string; repairShop: string; scanReference: string; datetime: string; status: string; }>)
+        }, {} as Record<string, { requestID: number; vehicleName: string; repairShop: string; scanReference: string; datetime: string; status: string; }>)
     );
 
     const filterPending = grouped.filter((item) => item.status === 'Pending');
@@ -104,7 +113,7 @@ const RequestStatus = () => {
                 <Header headerTitle='Request Status' />
 
                 <View style={styles.lowerBox}>
-                    <SelectDropdown 
+                    <SelectDropdown
                         data={buttons}
                         defaultValue={activeButton}
                         onSelect={(selectedItem) => setActiveButton(selectedItem)}
@@ -119,8 +128,8 @@ const RequestStatus = () => {
                         renderItem={(item, _index, isSelected) => (
                             <View
                                 style={{
-                                ...styles.dropdownItemStyle,
-                                ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                                    ...styles.dropdownItemStyle,
+                                    ...(isSelected && { backgroundColor: '#D2D9DF' }),
                                 }}
                             >
                                 <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
@@ -134,7 +143,11 @@ const RequestStatus = () => {
                         <>
                             {grouped.map((item, index) => (
                                 <View key={index}>
-                                    <TouchableOpacity style={styles.requestButton}>
+                                    <TouchableOpacity style={styles.requestButton} onPress={() => {
+                                        backRoute();
+                                        dispatch(setRequestIDState(item.requestID));
+                                        router.replace('./request-details');
+                                    }}>
                                         <View style={styles.vehicleShopContainer}>
                                             <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                                             <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -143,7 +156,7 @@ const RequestStatus = () => {
                                         <View style={styles.statusContainer}>
                                             <Text style={styles.statusText}>{item.status}</Text>
                                             {item.status === 'Pending' && (
-                                                <LottieView 
+                                                <LottieView
                                                     source={require('@/assets/images/pending.json')}
                                                     autoPlay
                                                     loop
@@ -154,7 +167,7 @@ const RequestStatus = () => {
                                                 />
                                             )}
                                             {item.status === 'Rejected' && (
-                                                <LottieView 
+                                                <LottieView
                                                     source={require('@/assets/images/rejected.json')}
                                                     autoPlay
                                                     loop
@@ -165,7 +178,7 @@ const RequestStatus = () => {
                                                 />
                                             )}
                                             {item.status === 'Ongoing' && (
-                                                <LottieView 
+                                                <LottieView
                                                     source={require('@/assets/images/ongoing.json')}
                                                     autoPlay
                                                     loop
@@ -176,7 +189,7 @@ const RequestStatus = () => {
                                                 />
                                             )}
                                             {item.status === 'Completed' && (
-                                                <LottieView 
+                                                <LottieView
                                                     source={require('@/assets/images/completed.json')}
                                                     autoPlay
                                                     loop
@@ -201,7 +214,11 @@ const RequestStatus = () => {
                         <>
                             {filterPending.map((item, index) => (
                                 <View key={index}>
-                                    <TouchableOpacity style={styles.requestButton}>
+                                    <TouchableOpacity style={styles.requestButton} onPress={() => {
+                                        backRoute();
+                                        dispatch(setRequestIDState(item.requestID));
+                                        router.replace('./request-details');
+                                    }}>
                                         <View style={styles.vehicleShopContainer}>
                                             <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                                             <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -209,7 +226,7 @@ const RequestStatus = () => {
                                         </View>
                                         <View style={styles.statusContainer}>
                                             <Text style={styles.statusText}>{item.status}</Text>
-                                            <LottieView 
+                                            <LottieView
                                                 source={require('@/assets/images/pending.json')}
                                                 autoPlay
                                                 loop
@@ -217,7 +234,7 @@ const RequestStatus = () => {
                                                     width: 26,
                                                     height: 26,
                                                 }}
-                                            />   
+                                            />
                                         </View>
                                     </TouchableOpacity>
                                 </View>
@@ -233,7 +250,11 @@ const RequestStatus = () => {
                         <>
                             {filterRejected.map((item, index) => (
                                 <View key={index}>
-                                    <TouchableOpacity style={styles.requestButton}>
+                                    <TouchableOpacity style={styles.requestButton} onPress={() => {
+                                        backRoute();
+                                        dispatch(setRequestIDState(item.requestID));
+                                        router.replace('./request-details');
+                                    }}>
                                         <View style={styles.vehicleShopContainer}>
                                             <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                                             <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -241,7 +262,7 @@ const RequestStatus = () => {
                                         </View>
                                         <View style={styles.statusContainer}>
                                             <Text style={styles.statusText}>{item.status}</Text>
-                                            <LottieView 
+                                            <LottieView
                                                 source={require('@/assets/images/rejected.json')}
                                                 autoPlay
                                                 loop
@@ -249,7 +270,7 @@ const RequestStatus = () => {
                                                     width: 26,
                                                     height: 26,
                                                 }}
-                                            />   
+                                            />
                                         </View>
                                     </TouchableOpacity>
                                 </View>
@@ -265,7 +286,11 @@ const RequestStatus = () => {
                         <>
                             {filterOngoing.map((item, index) => (
                                 <View key={index}>
-                                    <TouchableOpacity style={styles.requestButton}>
+                                    <TouchableOpacity style={styles.requestButton} onPress={() => {
+                                        backRoute();
+                                        dispatch(setRequestIDState(item.requestID));
+                                        router.replace('./request-details');
+                                    }}>
                                         <View style={styles.vehicleShopContainer}>
                                             <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                                             <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -273,7 +298,7 @@ const RequestStatus = () => {
                                         </View>
                                         <View style={styles.statusContainer}>
                                             <Text style={styles.statusText}>{item.status}</Text>
-                                            <LottieView 
+                                            <LottieView
                                                 source={require('@/assets/images/ongoing.json')}
                                                 autoPlay
                                                 loop
@@ -281,7 +306,7 @@ const RequestStatus = () => {
                                                     width: 26,
                                                     height: 26,
                                                 }}
-                                            />   
+                                            />
                                         </View>
                                     </TouchableOpacity>
                                 </View>
@@ -297,7 +322,11 @@ const RequestStatus = () => {
                         <>
                             {filterCompleted.map((item, index) => (
                                 <View key={index}>
-                                    <TouchableOpacity style={styles.requestButton}>
+                                    <TouchableOpacity style={styles.requestButton} onPress={() => {
+                                        backRoute();
+                                        dispatch(setRequestIDState(item.requestID));
+                                        router.replace('./request-details');
+                                    }}>
                                         <View style={styles.vehicleShopContainer}>
                                             <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                                             <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -305,7 +334,7 @@ const RequestStatus = () => {
                                         </View>
                                         <View style={styles.statusContainer}>
                                             <Text style={styles.statusText}>{item.status}</Text>
-                                            <LottieView 
+                                            <LottieView
                                                 source={require('@/assets/images/completed.json')}
                                                 autoPlay
                                                 loop
@@ -313,7 +342,7 @@ const RequestStatus = () => {
                                                     width: 26,
                                                     height: 26,
                                                 }}
-                                            />   
+                                            />
                                         </View>
                                     </TouchableOpacity>
                                 </View>
@@ -424,11 +453,11 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     noRequestText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
-    color: '#555',
-    textAlign: 'center',
-  },
+        fontFamily: 'LeagueSpartan',
+        fontSize: 16,
+        color: '#555',
+        textAlign: 'center',
+    },
 })
 
 export default RequestStatus;

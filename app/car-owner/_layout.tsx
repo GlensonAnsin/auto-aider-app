@@ -5,9 +5,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       tabBar={props => <TabBar {...props} />}
-      backBehavior='history'
-      initialRouteName='(tabs)/index'
-      screenOptions={{ headerShown: false, animation: 'none' }}
+      screenOptions={{ headerShown: false, animation: 'shift' }}
     >
       <Tabs.Screen
         name='(tabs)/index'

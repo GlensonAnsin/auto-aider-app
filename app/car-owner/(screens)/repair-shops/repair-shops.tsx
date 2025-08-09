@@ -233,6 +233,7 @@ const repairShops = () => {
                         const id = item.vehicleDiagnosticID;
                         
                         const requestData = {
+                            mechanic_request_id: null,
                             vehicle_diagnostic_id: id,
                             repair_shop_id: repairShopID,
                             repair_procedure: null,
@@ -258,6 +259,7 @@ const repairShops = () => {
 
                 case 'without-obd2':
                     const requestData = {
+                        mechanic_request_id: null,
                         vehicle_diagnostic_id: vehicleDiagID ?? 0,
                         repair_shop_id: repairShopID,
                         repair_procedure: null,

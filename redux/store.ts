@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import requestIDReducer from './slices/requestIDSlice';
 import routeReducer from './slices/routeSlice';
 import scanReducer from './slices/scanSlice';
 import tabReducer from './slices/tabBarSlice';
@@ -12,6 +13,7 @@ export const store = configureStore({
         vehicleDiagID: vehicleDiagIDReducer,
         vehicleDiagIDArr: vehicleDiagIDArrReducer,
         route: routeReducer,
+        requestID: requestIDReducer,
     },
 });
 
