@@ -231,9 +231,8 @@ const repairShops = () => {
                     const datetimeWithObd2 = dayjs().format();
                     for (const item of codeInterpretation ?? []) {
                         const id = item.vehicleDiagnosticID;
-                        
+
                         const requestData = {
-                            mechanic_request_id: null,
                             vehicle_diagnostic_id: id,
                             repair_shop_id: repairShopID,
                             repair_procedure: null,
@@ -259,7 +258,6 @@ const repairShops = () => {
 
                 case 'without-obd2':
                     const requestData = {
-                        mechanic_request_id: null,
                         vehicle_diagnostic_id: vehicleDiagID ?? 0,
                         repair_shop_id: repairShopID,
                         repair_procedure: null,
@@ -355,7 +353,7 @@ const repairShops = () => {
 
                 <View style={styles.lowerBox}>
                     <MapView
-                        ref={mapRef} 
+                        ref={mapRef}
                         mapType='hybrid'
                         style={styles.map}
                         initialRegion={currentLocation}
@@ -371,9 +369,9 @@ const repairShops = () => {
                                     title='You'
                                 />
 
-                                <Circle 
+                                <Circle
                                     center={{
-                                        latitude: currentLocation. latitude,
+                                        latitude: currentLocation.latitude,
                                         longitude: currentLocation.longitude,
                                     }}
                                     radius={5000}
@@ -491,12 +489,12 @@ const repairShops = () => {
                                                             scrollAnimationDuration={2000}
                                                             loop={true}
                                                             renderItem={({ item }) => (
-                                                            <Image
-                                                                key={item}
-                                                                height={300}
-                                                                style={styles.image}
-                                                                source={{ uri: item }}
-                                                            />
+                                                                <Image
+                                                                    key={item}
+                                                                    height={300}
+                                                                    style={styles.image}
+                                                                    source={{ uri: item }}
+                                                                />
                                                             )}
                                                         />
                                                     )}
@@ -528,7 +526,7 @@ const repairShops = () => {
                                                 setError('');
                                             }}>
                                                 <View style={styles.centeredView}>
-                                                    <Pressable style={styles.modalView} onPress={() => {}}>
+                                                    <Pressable style={styles.modalView} onPress={() => { }}>
                                                         <View style={styles.profileNameContainer}>
                                                             {nearbyRepShop[selectedRepShop].profilePic === null && (
                                                                 <View style={[styles.profilePicWrapper, { backgroundColor: nearbyRepShop[selectedRepShop].profileBG }]}>
@@ -554,7 +552,7 @@ const repairShops = () => {
                                                             <>
                                                                 <View style={styles.textInputContainer}>
                                                                     <Text style={styles.textInputLabel}>Vehicle</Text>
-                                                                    <TextInput 
+                                                                    <TextInput
                                                                         style={styles.input}
                                                                         value={scannedVehicle}
                                                                         readOnly
@@ -569,9 +567,9 @@ const repairShops = () => {
                                                                                 <View key={item.vehicleDiagnosticID} style={styles.troubleCodeContainer}>
                                                                                     <Text style={styles.troubleCodeText}>{item.dtc}</Text>
                                                                                     <Text style={styles.troubleCodeText2}>{item.technicalDescription}</Text>
-                                                                                </View>                                                     
+                                                                                </View>
                                                                             ))}
-                                                                        </View>   
+                                                                        </View>
                                                                     </ScrollView>
                                                                 </View>
 
@@ -592,7 +590,7 @@ const repairShops = () => {
                                                                     }}>
                                                                         <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                                                                     </TouchableOpacity>
-                            
+
                                                                     <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleSubmitRequest(nearbyRepShop[selectedRepShop].repairShopID, null, 'with-obd2')}>
                                                                         <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
                                                                     </TouchableOpacity>
@@ -604,7 +602,7 @@ const repairShops = () => {
                                                             <>
                                                                 <View style={styles.textInputContainer}>
                                                                     <Text style={styles.textInputLabel}>Vehicle</Text>
-                                                                    <SelectDropdown 
+                                                                    <SelectDropdown
                                                                         data={vehicles}
                                                                         onSelect={(selectedItem) => setSelectedVehicle(selectedItem.id)}
                                                                         renderButton={(selectedItem, isOpen) => (
@@ -618,8 +616,8 @@ const repairShops = () => {
                                                                         renderItem={(item, _index, isSelected) => (
                                                                             <View
                                                                                 style={{
-                                                                                ...styles.dropdownItemStyle,
-                                                                                ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                                                                                    ...styles.dropdownItemStyle,
+                                                                                    ...(isSelected && { backgroundColor: '#D2D9DF' }),
                                                                                 }}
                                                                             >
                                                                                 <Text style={styles.dropdownItemTxtStyle}>{`${item.year} ${item.make} ${item.model}`}</Text>
@@ -632,7 +630,7 @@ const repairShops = () => {
 
                                                                 <View style={styles.textInputContainer}>
                                                                     <Text style={styles.textInputLabel}>Vehicle Issue Description</Text>
-                                                                    <TextInput 
+                                                                    <TextInput
                                                                         style={styles.textArea}
                                                                         placeholder='Message...'
                                                                         multiline={true}
@@ -660,7 +658,7 @@ const repairShops = () => {
                                                                     }}>
                                                                         <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                                                                     </TouchableOpacity>
-                            
+
                                                                     <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleSubmitRequestWithoutOBD2(nearbyRepShop[selectedRepShop].repairShopID)}>
                                                                         <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
                                                                     </TouchableOpacity>
@@ -827,8 +825,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: {
-        width: 0,
-        height: 2,
+            width: 0,
+            height: 2,
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,

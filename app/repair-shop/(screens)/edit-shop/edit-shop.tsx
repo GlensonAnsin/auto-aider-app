@@ -174,15 +174,15 @@ const editShop = () => {
 
     useEffect(() => {
         const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
-          transports: ['websocket'],
+            transports: ['websocket'],
         });
-    
+
         setSocket(newSocket);
-    
+
         newSocket.on('connect', () => {
-          console.log('Connected to server: ', newSocket.id);
+            console.log('Connected to server: ', newSocket.id);
         });
-    
+
         newSocket.on('updatedRepairShopInfo', ({ updatedRepairShopInfo }) => {
             setRepShopName(updatedRepairShopInfo.shop_name);
             setOwnerFirstname(updatedRepairShopInfo.owner_firstname);
@@ -215,7 +215,7 @@ const editShop = () => {
             });
             setLocalProfilePic(updatedRepairShopInfo.profile_pic);
         });
-    
+
         return () => {
             newSocket.off('updatedRepairShopInfo');
             newSocket.disconnect();
@@ -261,14 +261,14 @@ const editShop = () => {
 
     const handleCancelChangePass = () => {
         setCurrentPassword(''),
-        setNewPassword('');
+            setNewPassword('');
         setConfirmPassword('');
         setPasswordError('');
         setModalVisible(!modalVisible);
     };
 
     const toggleCheckbox = (id: string) => {
-        setLocalServicesOffered(prev => 
+        setLocalServicesOffered(prev =>
             prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
         );
         setIsEditServices(true);
@@ -380,10 +380,10 @@ const editShop = () => {
                     }
 
                     if (newPassword.length < 8) {
-                         setPasswordError('Password must be at least 8 characters.');
+                        setPasswordError('Password must be at least 8 characters.');
                         return;
                     }
-                    
+
                     repairShopData.currentPassword = currentPassword.trim();
                     repairShopData.newPassword = newPassword.trim();
                     setModalVisible(false);
@@ -398,13 +398,13 @@ const editShop = () => {
                     break;
                 case 'region':
                     repairShopData.longitude = localRegion?.longitude !== undefined ? localRegion.longitude.toString() : '',
-                    repairShopData.latitude = localRegion?.latitude !== undefined ? localRegion.latitude.toString() : '',
-                    setRegion({
-                        latitude: localRegion?.latitude !== undefined ? localRegion.latitude : 0,
-                        longitude: localRegion?.longitude !== undefined ? localRegion.longitude : 0,
-                        latitudeDelta: 0.001,
-                        longitudeDelta: 0.001,
-                    })
+                        repairShopData.latitude = localRegion?.latitude !== undefined ? localRegion.latitude.toString() : '',
+                        setRegion({
+                            latitude: localRegion?.latitude !== undefined ? localRegion.latitude : 0,
+                            longitude: localRegion?.longitude !== undefined ? localRegion.longitude : 0,
+                            latitudeDelta: 0.001,
+                            longitudeDelta: 0.001,
+                        })
                     break;
                 case 'profile':
                     repairShopData.profile_pic = link;
@@ -448,7 +448,7 @@ const editShop = () => {
                 color: '#FFF',
                 icon: 'danger',
             });
-            
+
         } finally {
             setUpdateLoading(false);
         }
@@ -460,41 +460,41 @@ const editShop = () => {
             Alert.alert('Permission required', 'Please grant access to photos.');
             return;
         }
-    
+
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
             quality: 1,
         });
-    
+
         if (!result.canceled) {
             setLocalProfilePic(result.assets[0].uri);
             setPickedImage(true);
         }
-      };
+    };
 
-      const pickShopImages = async (): Promise<void> => {
+    const pickShopImages = async (): Promise<void> => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
             Alert.alert('Permission required', 'Please grant access to photos.');
             return;
         }
-    
+
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsMultipleSelection: true,
             quality: 1,
         });
-    
+
         if (!result.canceled) {
             const uris = result.assets.map(asset => asset.uri);
             setShopImages([...(shopImages ?? []), ...uris]);
             uploadShopImages(uris);
         }
-      };
+    };
 
-      const uploadProfileImage = async () => {
+    const uploadProfileImage = async () => {
         try {
             setUpdateLoading(true);
             const signRes = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/generate-signature`);
@@ -505,26 +505,26 @@ const editShop = () => {
                 uri: localProfilePic,
                 type: 'image/jpeg',
                 name: 'upload.jpg',
-        } as any);
+            } as any);
 
-        formData.append('api_key', apiKey);
-        formData.append('timestamp', timestamp.toString());
-        formData.append('signature', signature);
-        formData.append('folder', folder);
+            formData.append('api_key', apiKey);
+            formData.append('timestamp', timestamp.toString());
+            formData.append('signature', signature);
+            formData.append('folder', folder);
 
-        const uploadRes = await axios.post(
-            `${process.env.EXPO_PUBLIC_CLOUDINARY_BASE_URL}/${cloudName}/image/upload`,
-            formData,
-            { 
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            }
-        );
+            const uploadRes = await axios.post(
+                `${process.env.EXPO_PUBLIC_CLOUDINARY_BASE_URL}/${cloudName}/image/upload`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
 
-        const uploadedUrl = uploadRes.data.secure_url;
-        setPickedImage(false);
-        handleUpdateRepShopInfo('profile', uploadedUrl, null, null);
+            const uploadedUrl = uploadRes.data.secure_url;
+            setPickedImage(false);
+            handleUpdateRepShopInfo('profile', uploadedUrl, null, null);
 
         } catch (e) {
             console.error('Upload Error: ', e);
@@ -555,7 +555,7 @@ const editShop = () => {
                 const uploadRes = await axios.post(
                     `${process.env.EXPO_PUBLIC_CLOUDINARY_BASE_URL}/${cloudName}/image/upload`,
                     formData,
-                    { 
+                    {
                         headers: {
                             'Content-Type': 'multipart/form-data',
                         },
@@ -564,7 +564,7 @@ const editShop = () => {
                 uploadedUrls.push(uploadRes.data.secure_url);
             }
             handleUpdateRepShopInfo('shop-images', null, uploadedUrls, 'add');
-            
+
         } catch (e) {
             console.error('Upload Error: ', e);
             Alert.alert('Upload failed', 'An error occured during upload.');
@@ -578,7 +578,7 @@ const editShop = () => {
             const lastPart = parts?.slice(-1)[0];
             const folderName = parts?.slice(-2)[0];
             const fileName = lastPart?.split('.')[0];
-            
+
             await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/delete-image `, {
                 public_id: `${folderName}/${fileName}`,
             });
@@ -588,7 +588,7 @@ const editShop = () => {
             const lastPart = parts?.slice(-1)[0];
             const folderName = parts?.slice(-2)[0];
             const fileName = lastPart?.split('.')[0];
-            
+
             await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/delete-image `, {
                 public_id: `${folderName}/${fileName}`,
             });
@@ -608,7 +608,7 @@ const editShop = () => {
             >
                 <ScrollView
                     contentContainerStyle={{ flexGrow: 1 }}
-                    keyboardShouldPersistTaps='handled' 
+                    keyboardShouldPersistTaps='handled'
                 >
                     <Header headerTitle='Edit Shop' />
 
@@ -665,7 +665,7 @@ const editShop = () => {
                                     </TouchableOpacity>
                                 </View>
                             )}
-                            
+
                             <View style={styles.infoEdit1}>
                                 {edit === 'rep-shop-name' && (
                                     <>
@@ -686,7 +686,7 @@ const editShop = () => {
                                                 </TouchableOpacity>
                                             </>
                                         )}
-                                        
+
                                         {localRepShopName === '' && (
                                             <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')}>
                                                 <Entypo name='cross' size={26} color='#780606' />
@@ -713,7 +713,7 @@ const editShop = () => {
                                 <View style={styles.infoEdit2}>
                                     {edit === 'firstname' && (
                                         <>
-                                            <TextInput 
+                                            <TextInput
                                                 style={styles.input2}
                                                 value={localOwnerFirstname}
                                                 onChangeText={setLocalOwnerFirstname}
@@ -744,9 +744,9 @@ const editShop = () => {
                                             <Text style={styles.infoText}>{localOwnerFirstname}</Text>
                                             <TouchableOpacity onPress={() => setEdit('firstname')}>
                                                 <MaterialIcons name='edit' size={16} color='#555' />
-                                            </TouchableOpacity> 
+                                            </TouchableOpacity>
                                         </>
-                                    )}        
+                                    )}
                                 </View>
                             </View>
 
@@ -755,7 +755,7 @@ const editShop = () => {
                                 <View style={styles.infoEdit2}>
                                     {edit === 'lastname' && (
                                         <>
-                                            <TextInput 
+                                            <TextInput
                                                 style={styles.input2}
                                                 value={localOwnerLastname}
                                                 onChangeText={setLocalOwnerLastname}
@@ -777,7 +777,7 @@ const editShop = () => {
                                                 <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
                                                     <Entypo name='cross' size={20} color='#780606' />
                                                 </TouchableOpacity>
-                                            )}  
+                                            )}
                                         </>
                                     )}
 
@@ -786,7 +786,7 @@ const editShop = () => {
                                             <Text style={styles.infoText}>{localOwnerLastname}</Text>
                                             <TouchableOpacity onPress={() => setEdit('lastname')}>
                                                 <MaterialIcons name='edit' size={16} color='#555' />
-                                            </TouchableOpacity> 
+                                            </TouchableOpacity>
                                         </>
                                     )}
                                 </View>
@@ -803,10 +803,10 @@ const editShop = () => {
                                                 onSelect={(selectedItem) => setLocalGender(selectedItem)}
                                                 renderButton={(selectedItem, isOpen) => (
                                                     <View style={styles.dropdownButtonStyle}>
-                                                    <Text style={styles.dropdownButtonTxtStyle}>
-                                                        {selectedItem || 'Select gender'}
-                                                    </Text>
-                                                    <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                                                        <Text style={styles.dropdownButtonTxtStyle}>
+                                                            {selectedItem || 'Select gender'}
+                                                        </Text>
+                                                        <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
                                                     </View>
                                                 )}
                                                 renderItem={(item, _index, isSelected) => (
@@ -816,7 +816,7 @@ const editShop = () => {
                                                             ...(isSelected && { backgroundColor: '#D2D9DF' }),
                                                         }}
                                                     >
-                                                    <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+                                                        <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
                                                     </View>
                                                 )}
                                                 showsVerticalScrollIndicator={false}
@@ -838,7 +838,7 @@ const editShop = () => {
                                             <Text style={styles.infoText}>{localGender}</Text>
                                             <TouchableOpacity onPress={() => setEdit('gender')}>
                                                 <MaterialIcons name='edit' size={16} color='#555' />
-                                            </TouchableOpacity> 
+                                            </TouchableOpacity>
                                         </>
                                     )}
                                 </View>
@@ -849,7 +849,7 @@ const editShop = () => {
                                 <View style={styles.infoEdit2}>
                                     {edit === 'mobile-num' && (
                                         <>
-                                            <TextInput 
+                                            <TextInput
                                                 style={styles.input2}
                                                 value={localMobileNum}
                                                 onChangeText={setLocalMobileNum}
@@ -881,7 +881,7 @@ const editShop = () => {
                                             <Text style={styles.infoText}>{localMobileNum}</Text>
                                             <TouchableOpacity onPress={() => setEdit('mobile-num')}>
                                                 <MaterialIcons name='edit' size={16} color='#555' />
-                                            </TouchableOpacity> 
+                                            </TouchableOpacity>
                                         </>
                                     )}
                                 </View>
@@ -897,12 +897,12 @@ const editShop = () => {
                                         <Text style={styles.editButtonText}>Add Email</Text>
                                     </TouchableOpacity>
                                 )}
-                                
+
                                 {localEmail !== null && (
                                     <View style={styles.infoEdit2}>
                                         {edit === 'email' && (
                                             <>
-                                                <TextInput 
+                                                <TextInput
                                                     style={styles.input2}
                                                     value={localEmail}
                                                     onChangeText={setLocalEmail}
@@ -910,8 +910,8 @@ const editShop = () => {
 
                                                 <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
                                                     <Entypo name='cross' size={20} color='#780606' />
-                                                </TouchableOpacity>  
-                                             
+                                                </TouchableOpacity>
+
                                                 <TouchableOpacity onPress={() => handleUpdateRepShopInfo('email', null, null, null)}>
                                                     <FontAwesome5 name='check' size={16} color='#22bb33' />
                                                 </TouchableOpacity>
@@ -923,7 +923,7 @@ const editShop = () => {
                                                 <Text style={styles.infoText}>{localEmail}</Text>
                                                 <TouchableOpacity onPress={() => setEdit('email')}>
                                                     <MaterialIcons name='edit' size={16} color='#555' />
-                                                </TouchableOpacity> 
+                                                </TouchableOpacity>
                                             </>
                                         )}
                                     </View>
@@ -1052,7 +1052,7 @@ const editShop = () => {
                                 setConfirmPassword('');
                             }}>
                                 <View style={styles.centeredView}>
-                                    <Pressable style={styles.modalView} onPress={() => {}}>
+                                    <Pressable style={styles.modalView} onPress={() => { }}>
                                         <Text style={styles.modalHeader}>Change Password</Text>
                                         <View style={styles.modalInputContainer}>
                                             <Text style={styles.modalInputLabel}>Current Password</Text>
@@ -1063,7 +1063,7 @@ const editShop = () => {
                                                 secureTextEntry
                                             />
                                         </View>
-        
+
                                         <View style={styles.modalInputContainer}>
                                             <Text style={styles.modalInputLabel}>New Password</Text>
                                             <TextInput
@@ -1073,7 +1073,7 @@ const editShop = () => {
                                                 secureTextEntry
                                             />
                                         </View>
-        
+
                                         <View style={styles.modalInputContainer}>
                                             <Text style={styles.modalInputLabel}>Confirm New Password</Text>
                                             <TextInput
@@ -1089,12 +1089,12 @@ const editShop = () => {
                                                 <Text style={styles.errorMessage}>{passwordError}</Text>
                                             </View>
                                         )}
-        
+
                                         <View style={styles.cancelSaveContainer}>
                                             <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleCancelChangePass()}>
                                                 <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                                             </TouchableOpacity>
-        
+
                                             <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => handleUpdateRepShopInfo('change-password', null, null, null)}>
                                                 <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                                             </TouchableOpacity>
@@ -1141,7 +1141,7 @@ const editShop = () => {
                                         }}>
                                             <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                                         </TouchableOpacity>
-    
+
                                         <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#000B58' }]} onPress={() => {
                                             handleUpdateRepShopInfo('region', null, null, null);
                                             setMapModalVisible(false);
@@ -1167,14 +1167,14 @@ const editShop = () => {
                                 setImageSource('');
                             }}>
                                 <View style={styles.centeredView}>
-                                    <Pressable style={styles.imageView} onPress={() => {}}>
-                                        <Image 
+                                    <Pressable style={styles.imageView} onPress={() => { }}>
+                                        <Image
                                             width={500}
                                             height={300}
                                             style={styles.viewImage}
                                             source={{ uri: imageSource }}
                                         />
-                                        
+
                                         <View style={styles.cancelSaveContainer}>
                                             <TouchableOpacity style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => {
                                                 setImageModalVisible(false);
@@ -1182,7 +1182,7 @@ const editShop = () => {
                                             }}>
                                                 <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                                             </TouchableOpacity>
-        
+
                                             <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#780606' }]} onPress={() => {
                                                 deleteImage('shop-image', imageSource)
                                                 const updatedLinks = shopImages.filter(item => item !== imageSource);
@@ -1200,7 +1200,7 @@ const editShop = () => {
                 </ScrollView>
                 {updateLoading && (
                     <View style={styles.updateLoadingContainer}>
-                        <ActivityIndicator size='large' color='#000B58'  />
+                        <ActivityIndicator size='large' color='#000B58' />
                     </View>
                 )}
             </KeyboardAvoidingView>
@@ -1231,7 +1231,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         alignItems: 'center',
         justifyContent: 'center',
-    }, 
+    },
     profilePicWrapper: {
         width: 120,
         height: 120,
@@ -1243,7 +1243,7 @@ const styles = StyleSheet.create({
     },
     profilePic: {
         borderRadius: 120
-    },   
+    },
     editPicWrapper: {
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
         width: 120,
@@ -1299,7 +1299,7 @@ const styles = StyleSheet.create({
     },
     subHeader: {
         fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 18,
+        fontSize: 20,
         color: '#333',
         marginBottom: 10,
     },

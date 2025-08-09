@@ -1,7 +1,7 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
-import { setRequestIDState } from '@/redux/slices/requestIDSlice';
+import { setScanReferenceState } from '@/redux/slices/scanReferenceSlice';
 import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
@@ -19,7 +19,7 @@ const RequestStatus = () => {
     const dispatch = useDispatch();
     const router = useRouter();
     const backRoute = useBackRoute('/car-owner/(screens)/request-status/request-status');
-    const [requestStatus, setRequestStatus] = useState<{ requestID: number, vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[]>([]);
+    const [requestStatus, setRequestStatus] = useState<{ vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [activeButton, setActiveButton] = useState<string>('All');
 
@@ -32,7 +32,7 @@ const RequestStatus = () => {
                 const res1 = await getRequestsForCarOwner();
                 const res2 = await getRepairShops();
 
-                const statusData: { requestID: number, vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[] = [];
+                const statusData: { vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[] = [];
 
                 if (res1) {
                     res1.vehicles.forEach((vehicle: any) => {
@@ -47,7 +47,6 @@ const RequestStatus = () => {
                                                 const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
                                                 if (repairShop) {
                                                     statusData.push({
-                                                        requestID: request.mechanic_request_id,
                                                         vehicleName,
                                                         repairShop: repairShop.shop_name,
                                                         scanReference,
@@ -81,7 +80,6 @@ const RequestStatus = () => {
 
             if (!acc[ref]) {
                 acc[ref] = {
-                    requestID: item.requestID,
                     vehicleName: item.vehicleName,
                     repairShop: item.repairShop,
                     scanReference: ref,
@@ -93,7 +91,7 @@ const RequestStatus = () => {
 
             return acc;
 
-        }, {} as Record<string, { requestID: number; vehicleName: string; repairShop: string; scanReference: string; datetime: string; status: string; }>)
+        }, {} as Record<string, { vehicleName: string; repairShop: string; scanReference: string; datetime: string; status: string; }>)
     );
 
     const filterPending = grouped.filter((item) => item.status === 'Pending');
@@ -145,7 +143,7 @@ const RequestStatus = () => {
                                 <View key={index}>
                                     <TouchableOpacity style={styles.requestButton} onPress={() => {
                                         backRoute();
-                                        dispatch(setRequestIDState(item.requestID));
+                                        dispatch(setScanReferenceState(item.scanReference));
                                         router.replace('./request-details');
                                     }}>
                                         <View style={styles.vehicleShopContainer}>
@@ -216,7 +214,7 @@ const RequestStatus = () => {
                                 <View key={index}>
                                     <TouchableOpacity style={styles.requestButton} onPress={() => {
                                         backRoute();
-                                        dispatch(setRequestIDState(item.requestID));
+                                        dispatch(setScanReferenceState(item.scanReference));
                                         router.replace('./request-details');
                                     }}>
                                         <View style={styles.vehicleShopContainer}>
@@ -252,7 +250,7 @@ const RequestStatus = () => {
                                 <View key={index}>
                                     <TouchableOpacity style={styles.requestButton} onPress={() => {
                                         backRoute();
-                                        dispatch(setRequestIDState(item.requestID));
+                                        dispatch(setScanReferenceState(item.scanReference));
                                         router.replace('./request-details');
                                     }}>
                                         <View style={styles.vehicleShopContainer}>
@@ -288,7 +286,7 @@ const RequestStatus = () => {
                                 <View key={index}>
                                     <TouchableOpacity style={styles.requestButton} onPress={() => {
                                         backRoute();
-                                        dispatch(setRequestIDState(item.requestID));
+                                        dispatch(setScanReferenceState(item.scanReference));
                                         router.replace('./request-details');
                                     }}>
                                         <View style={styles.vehicleShopContainer}>
@@ -324,7 +322,7 @@ const RequestStatus = () => {
                                 <View key={index}>
                                     <TouchableOpacity style={styles.requestButton} onPress={() => {
                                         backRoute();
-                                        dispatch(setRequestIDState(item.requestID));
+                                        dispatch(setScanReferenceState(item.scanReference));
                                         router.replace('./request-details');
                                     }}>
                                         <View style={styles.vehicleShopContainer}>
@@ -355,7 +353,7 @@ const RequestStatus = () => {
                     )}
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </SafeAreaView >
     )
 };
 

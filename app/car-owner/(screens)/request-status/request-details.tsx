@@ -7,15 +7,17 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
 const RequestDetails = () => {
   dayjs.extend(utc);
-  const [requestDetails, setRequestDetails] = useState<{ requestID: number, repairShop: string, repairShopProfile: string | null, repairShopProfileBG: string, status: string, datetime: string, make: string, model: string, year: string, dtc: string | null, technicalDescription: string | null, meaning: string | null, possibleCauses: string | null, recommendedRepair: string | null, scanReference: string, vehicleIssue: string, repairProcedure: string | null }[]>([]);
+  const [requestDetails, setRequestDetails] = useState<{ repairShop: string, repairShopProfile: string | null, repairShopProfileBG: string, status: string, datetime: string, make: string, model: string, year: string, dtc: string | null, technicalDescription: string | null, meaning: string | null, possibleCauses: string | null, recommendedRepair: string | null, scanReference: string, vehicleIssue: string, repairProcedure: string | null }[]>([]);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const requestID: number | null = useSelector((state: RootState) => state.requestID.requestID);
+  const scanReference: string | null = useSelector((state: RootState) => state.scanReference.scanReference);
 
   useEffect(() => {
     (async () => {
@@ -24,7 +26,7 @@ const RequestDetails = () => {
         const res1 = await getRequestsForCarOwner();
         const res2 = await getRepairShops();
 
-        const requestDetailsData: { requestID: number, repairShop: string, repairShopProfile: string | null, repairShopProfileBG: string, status: string, datetime: string, make: string, model: string, year: string, dtc: string | null, technicalDescription: string | null, meaning: string | null, possibleCauses: string | null, recommendedRepair: string | null, scanReference: string, vehicleIssue: string, repairProcedure: string | null }[] = [];
+        const requestDetailsData: { repairShop: string, repairShopProfile: string | null, repairShopProfileBG: string, status: string, datetime: string, make: string, model: string, year: string, dtc: string | null, technicalDescription: string | null, meaning: string | null, possibleCauses: string | null, recommendedRepair: string | null, scanReference: string, vehicleIssue: string, repairProcedure: string | null }[] = [];
 
         if (res1) {
           res1.vehicles.forEach((vehicle: any) => {
@@ -47,7 +49,6 @@ const RequestDetails = () => {
                         const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
                         if (repairShop) {
                           requestDetailsData.push({
-                            requestID: request.mechanic_request_id,
                             repairShop: repairShop.shop_name,
                             repairShopProfile: repairShop.profile_pic,
                             repairShopProfileBG: repairShop.profile_bg,
@@ -86,15 +87,15 @@ const RequestDetails = () => {
     })();
   }, []);
 
-  const selectedRequest = requestDetails.filter((item: any) => item.requestID === requestID);
+  const selectedRequest = requestDetails.filter((item: any) => item.scanReference === scanReference);
 
   const grouped = Object.values(
     selectedRequest.reduce((acc, item) => {
       const ref = item.scanReference;
+      const repProc = item.repairProcedure;
 
       if (!acc[ref]) {
         acc[ref] = {
-          requestID: item.requestID,
           repairShop: item.repairShop,
           repairShopProfile: item.repairShopProfile,
           repairShopProfileBG: item.repairShopProfileBG,
@@ -110,7 +111,7 @@ const RequestDetails = () => {
           recommendedRepair: [item.recommendedRepair ?? ''],
           scanReference: ref,
           vehicleIssue: item.vehicleIssue,
-          repairProcedure: item.repairProcedure,
+          repairProcedure: repProc,
         }
       } else {
         acc[ref].dtc.push(item.dtc ?? '');
@@ -122,7 +123,7 @@ const RequestDetails = () => {
 
       return acc;
 
-    }, {} as Record<string, { requestID: number; repairShop: string; repairShopProfile: string | null; repairShopProfileBG: string; status: string; datetime: string; make: string; model: string; year: string; dtc: (string | null)[]; technicalDescription: (string | null)[]; meaning: (string | null)[]; possibleCauses: (string | null)[]; recommendedRepair: (string | null)[]; scanReference: string; vehicleIssue: string | null; repairProcedure: string | null }>)
+    }, {} as Record<string, { repairShop: string; repairShopProfile: string | null; repairShopProfileBG: string; status: string; datetime: string; make: string; model: string; year: string; dtc: (string | null)[]; technicalDescription: (string | null)[]; meaning: (string | null)[]; possibleCauses: (string | null)[]; recommendedRepair: (string | null)[]; scanReference: string; vehicleIssue: string | null; repairProcedure: string | null }>)
   );
 
   if (isLoading) {
@@ -208,39 +209,69 @@ const RequestDetails = () => {
                 )}
               </View>
 
-              <View style={styles.vehicleContainer}>
-                <Text style={styles.text}>{`Request Datetime: ${item.datetime}`}</Text>
-                <Text style={styles.text}>{`Make: ${item.make}`}</Text>
-                <Text style={styles.text}>{`Model: ${item.model}`}</Text>
-                <Text style={styles.text}>{`Year: ${item.year}`}</Text>
+              <View>
+                <Text style={styles.text}><Text style={styles.nestedText}>Requested: </Text>{item.datetime}</Text>
+                <Text style={styles.text}><Text style={styles.nestedText}>Make: </Text>{item.make}</Text>
+                <Text style={styles.text}><Text style={styles.nestedText}>Model: </Text>{item.model}</Text>
+                <Text style={styles.text}><Text style={styles.nestedText}>Year: </Text>{item.year}</Text>
               </View>
             </View>
 
-            <View style={styles.vehcileIssueContainer}>
-              <Text style={styles.label}>Vehicle Issue</Text>
+            <View style={styles.vehicleIssueContainer}>
+              <Text style={styles.subHeader}>Vehicle Issue</Text>
               {item.vehicleIssue === null && (
                 <>
                   {item.dtc.map((dtc, index) => (
-                    <View key={`${item.scanReference}-${index}`} style={styles.diagnosisButtonContainer}>
-                      <TouchableOpacity style={styles.diagnosisButton}>
+                    <View key={`${item.scanReference}-${index}`}>
+                      <TouchableOpacity style={styles.diagnosisButton} onPress={() => {
+                        setSelectedIndex(index);
+                        setModalVisible(true);
+                      }}>
                         <Text style={styles.diagnosisButtonText1}>{dtc}</Text>
                         <Text style={styles.diagnosisButtonText2}>{item.technicalDescription[index]}</Text>
                       </TouchableOpacity>
+
+                      <Modal
+                        animationType='fade'
+                        backdropColor={'rgba(0, 0, 0, 0.5)'}
+                        visible={modalVisible}
+                        onRequestClose={() => setModalVisible(false)}
+                      >
+                        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+                          <View style={styles.centeredView}>
+                            <Pressable style={styles.modalView} onPress={() => { }}>
+
+                            </Pressable>
+                          </View>
+                        </TouchableWithoutFeedback>
+                      </Modal>
                     </View>
                   ))}
                 </>
               )}
 
               {item.vehicleIssue !== null && (
-                <Text style={styles.text}>{item.vehicleIssue}</Text>
+                <View style={[styles.textContainer, { minHeight: 150, marginBottom: 10, }]}>
+                  <Text style={styles.text}>{item.vehicleIssue}</Text>
+                </View>
               )}
             </View>
 
             {item.status === 'Completed' && (
               <>
                 <View style={styles.repairProcedureContainer}>
-                  <Text style={styles.label}>Repair Procedure</Text>
-                  <Text style={styles.text}>{item.repairProcedure}</Text>
+                  <Text style={styles.subHeader}>Repair Procedure</Text>
+                  {item.repairProcedure !== null && (
+                    <View style={[styles.textContainer, { minHeight: 150, }]}>
+                      <Text style={styles.text}>{item.repairProcedure}</Text>
+                    </View>
+                  )}
+
+                  {item.repairProcedure === null && (
+                    <View style={styles.textContainer}>
+                      <Text style={[styles.text, { color: '#780606' }]}>Shop did not specify the repair procedure done.</Text>
+                    </View>
+                  )}
                 </View>
 
                 <TouchableOpacity style={styles.rateButton}>
@@ -290,32 +321,101 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
   statusVehicleContainer: {
+    width: '100%',
     marginTop: 10,
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+    marginBottom: 10,
   },
   status: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'LeagueSpartan_Bold',
     color: '#333',
     fontSize: 20,
+    lineHeight: 20,
+    textAlignVertical: 'center',
   },
-  vehicleContainer: {},
   text: {
     fontFamily: 'LeagueSpartan',
     color: '#333',
     fontSize: 16,
   },
-  vehcileIssueContainer: {},
-  label: {},
-  diagnosisButtonContainer: {},
-  diagnosisButton: {},
-  diagnosisButtonText1: {},
-  diagnosisButtonText2: {},
-  repairProcedureContainer: {},
-  rateButton: {},
-  rateButtonText: {},
+  nestedText: {
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#333',
+    fontSize: 16,
+  },
+  vehicleIssueContainer: {
+    width: '100%',
+    marginTop: 10,
+  },
+  subHeader: {
+    fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 20,
+    color: '#333',
+    marginBottom: 10,
+  },
+  diagnosisButton: {
+    backgroundColor: '#EAEAEA',
+    width: '100%',
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    borderRadius: 5,
+    padding: 10,
+  },
+  diagnosisButtonText1: {
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#780606',
+    fontSize: 16,
+  },
+  diagnosisButtonText2: {
+    fontFamily: 'LeagueSpartan',
+    color: '#555',
+    fontSize: 14,
+  },
+  repairProcedureContainer: {
+    width: '100%',
+  },
+  textContainer: {
+    backgroundColor: '#EAEAEA',
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  rateButton: {
+    backgroundColor: '#FDCC0D',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 130,
+    padding: 5,
+    borderRadius: 10,
+    alignSelf: 'center',
+    marginTop: 30,
+  },
+  rateButtonText: {
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#FFF',
+    fontSize: 16,
+  },
+  centeredView: {},
+  modalView: {},
 });
 
 export default RequestDetails
