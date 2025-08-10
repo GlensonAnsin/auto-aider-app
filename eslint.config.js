@@ -1,6 +1,5 @@
 // https://docs.expo.dev/guides/using-eslint/
-const { defineConfig } = require('eslint/config');
-const expoConfig = require('eslint-config-expo/flat');
+import { defineConfig } from 'eslint/config';
 
 module.exports = defineConfig([
   expoConfig,

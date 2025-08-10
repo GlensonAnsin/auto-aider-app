@@ -2,6 +2,7 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { RootState } from '@/redux/store';
 import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
+import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -16,6 +17,8 @@ const RequestDetails = () => {
   const [requestDetails, setRequestDetails] = useState<{ repairShop: string, repairShopProfile: string | null, repairShopProfileBG: string, status: string, datetime: string, make: string, model: string, year: string, dtc: string | null, technicalDescription: string | null, meaning: string | null, possibleCauses: string | null, recommendedRepair: string | null, scanReference: string, vehicleIssue: string, repairProcedure: string | null }[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [bulletPossibleCauses, setBulletPossibleCauses] = useState<string[][]>([]);
+  const [bulletRecommendedRepair, setBulletRecommendedRepair] = useState<string[][]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const scanReference: string | null = useSelector((state: RootState) => state.scanReference.scanReference);
 
@@ -126,6 +129,25 @@ const RequestDetails = () => {
     }, {} as Record<string, { repairShop: string; repairShopProfile: string | null; repairShopProfileBG: string; status: string; datetime: string; make: string; model: string; year: string; dtc: (string | null)[]; technicalDescription: (string | null)[]; meaning: (string | null)[]; possibleCauses: (string | null)[]; recommendedRepair: (string | null)[]; scanReference: string; vehicleIssue: string | null; repairProcedure: string | null }>)
   );
 
+  const handleTransformText = (index: number) => {
+    const bulletPossibleCauses = grouped.map((item) => {
+      return (item.possibleCauses?.[index] ?? '')
+        .split('\n')
+        .map(cause => cause.replace(/^\*\s+/, ''))
+        .filter(Boolean);
+    });
+
+    const bulletRecommendedRepair = grouped.map((item) => {
+      return (item.recommendedRepair?.[index] ?? '')
+        .split('\n')
+        .map(repair => repair.replace(/^\*\s+/, ''))
+        .filter(Boolean);
+    });
+
+    setBulletPossibleCauses(bulletPossibleCauses);
+    setBulletRecommendedRepair(bulletRecommendedRepair);
+  }
+
   if (isLoading) {
     return (
       <Loading />
@@ -137,7 +159,7 @@ const RequestDetails = () => {
       <ScrollView>
         <Header headerTitle='Request Details' />
 
-        {grouped.map((item) => (
+        {grouped.map((item, groupedIndex) => (
           <View key={item.scanReference} style={styles.lowerBox}>
             <View style={styles.shopProfileContainer}>
               {item.repairShopProfile === null && (
@@ -224,6 +246,7 @@ const RequestDetails = () => {
                   {item.dtc.map((dtc, index) => (
                     <View key={`${item.scanReference}-${index}`}>
                       <TouchableOpacity style={styles.diagnosisButton} onPress={() => {
+                        handleTransformText(index);
                         setSelectedIndex(index);
                         setModalVisible(true);
                       }}>
@@ -240,7 +263,42 @@ const RequestDetails = () => {
                         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
                           <View style={styles.centeredView}>
                             <Pressable style={styles.modalView} onPress={() => { }}>
+                              <TouchableOpacity style={styles.exitButton} onPress={() => setModalVisible(false)}>
+                                <Entypo name='cross' size={20} color='#333' />
+                              </TouchableOpacity>
+                              <ScrollView showsVerticalScrollIndicator={false}>
+                                <View onStartShouldSetResponder={() => true}>
+                                  <View style={[styles.textContainer2, { borderBottomWidth: 1, borderColor: '#EAEAEA', paddingBottom: 20, }]}>
+                                    <Text style={styles.troubleCode}>{item.dtc[selectedIndex]}</Text>
+                                    <Text style={styles.technicalDescription}>{item.technicalDescription[selectedIndex]}</Text>
+                                  </View>
 
+                                  <View style={styles.textContainer2}>
+                                    <Text style={styles.label}>Meaning</Text>
+                                    <Text style={styles.text}>{item.meaning[selectedIndex]}</Text>
+                                  </View>
+
+                                  <View style={styles.textContainer2}>
+                                    <Text style={styles.label}>Possible Causes</Text>
+                                    {bulletPossibleCauses[groupedIndex]?.map((cause, index) => (
+                                      <View key={index} style={styles.bulletView}>
+                                        <Text style={styles.bullet}>{`\u2022`}</Text>
+                                        <Text style={styles.bulletedText}>{cause}</Text>
+                                      </View>
+                                    ))}
+                                  </View>
+
+                                  <View style={styles.textContainer2}>
+                                    <Text style={styles.label}>Recommended Solutions or Repairs</Text>
+                                    {bulletRecommendedRepair[groupedIndex]?.map((repair, index) => (
+                                      <View key={index} style={styles.bulletView}>
+                                        <Text style={styles.bullet}>{`\u2022`}</Text>
+                                        <Text style={styles.bulletedText}>{repair}</Text>
+                                      </View>
+                                    ))}
+                                  </View>
+                                </View>
+                              </ScrollView>
                             </Pressable>
                           </View>
                         </TouchableWithoutFeedback>
@@ -414,8 +472,70 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
   },
-  centeredView: {},
-  modalView: {},
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalView: {
+    backgroundColor: '#FFF',
+    width: '90%',
+    maxHeight: 600,
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  exitButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+  },
+  troubleCode: {
+    fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 22,
+    color: '#333',
+    textAlign: 'center',
+  },
+  technicalDescription: {
+    fontFamily: 'LeagueSpartan',
+    fontSize: 20,
+    color: '#555',
+    textAlign: 'center',
+  },
+  label: {
+    fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 18,
+    marginBottom: 10,
+    color: '#333',
+  },
+  textContainer2: {
+    marginBottom: 10,
+  },
+  bulletView: {
+    width: '100%',
+    flexDirection: 'row',
+    gap: 10,
+    paddingLeft: 5,
+  },
+  bullet: {
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#333',
+    fontSize: 16,
+  },
+  bulletedText: {
+    fontFamily: 'LeagueSpartan',
+    color: '#333',
+    fontSize: 16,
+    maxWidth: '93%',
+  },
 });
 
 export default RequestDetails

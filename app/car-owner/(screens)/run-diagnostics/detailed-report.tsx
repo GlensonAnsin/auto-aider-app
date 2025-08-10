@@ -19,7 +19,7 @@ const DetailedReport = () => {
     const bulletPossibleCauses = possibleCauses
         .split('\n')
         .map(item => item.replace(/^\*\s+/, ''));
-    
+
     const bulletRecommendedRepair = recommendedRepair
         .split('\n')
         .map(item => item.replace(/^\*\s+/, ''));
@@ -72,8 +72,8 @@ const DetailedReport = () => {
                         <Text style={styles.label}>Possible Causes</Text>
                         {bulletPossibleCauses.map((item, index) => (
                             <View key={index} style={styles.bulletView}>
-                               <Text style={styles.bullet}>{`\u2022`}</Text>
-                                <Text style={styles.bulletedText}>{item}</Text> 
+                                <Text style={styles.bullet}>{`\u2022`}</Text>
+                                <Text style={styles.bulletedText}>{item}</Text>
                             </View>
                         ))}
                     </View>
@@ -83,7 +83,7 @@ const DetailedReport = () => {
                         {bulletRecommendedRepair.map((item, index) => (
                             <View key={index} style={styles.bulletView}>
                                 <Text style={styles.bullet}>{`\u2022`}</Text>
-                                <Text style={styles.bulletedText}>{item}</Text> 
+                                <Text style={styles.bulletedText}>{item}</Text>
                             </View>
                         ))}
                     </View>
@@ -142,21 +142,21 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     bulletView: {
-      width: '100%',
-      flexDirection: 'row',
-      gap: 10,
-      paddingLeft: 5,
+        width: '100%',
+        flexDirection: 'row',
+        gap: 10,
+        paddingLeft: 5,
     },
     bullet: {
-      fontFamily: 'LeagueSpartan_Bold',
-      color: '#333',
-      fontSize: 16,
+        fontFamily: 'LeagueSpartan_Bold',
+        color: '#333',
+        fontSize: 16,
     },
     bulletedText: {
-      fontFamily: 'LeagueSpartan',
-      color: '#333',
-      fontSize: 16,
-      maxWidth: '93%',
+        fontFamily: 'LeagueSpartan',
+        color: '#333',
+        fontSize: 16,
+        maxWidth: '93%',
     },
 })
 
