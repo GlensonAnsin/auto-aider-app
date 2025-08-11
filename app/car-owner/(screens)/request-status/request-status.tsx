@@ -31,7 +31,6 @@ const RequestStatus = () => {
                 setIsLoading(true);
                 const res1 = await getRequestsForCarOwner();
                 const res2 = await getRepairShops();
-
                 const statusData: { vehicleName: string, repairShop: string, scanReference: string, datetime: string, status: string }[] = [];
 
                 if (res1) {
@@ -85,8 +84,7 @@ const RequestStatus = () => {
                     scanReference: ref,
                     datetime: item.datetime,
                     status: item.status,
-                };
-
+                }
             }
 
             return acc;

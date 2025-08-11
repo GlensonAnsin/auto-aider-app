@@ -5,4 +5,6 @@ export interface AddRequest {
     request_datetime: string;
     status: string;
     is_deleted: boolean;
+    completed_on: string | null;
+    rejected_reason: string | null;
 };

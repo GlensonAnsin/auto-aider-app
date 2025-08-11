@@ -239,6 +239,8 @@ const repairShops = () => {
                             request_datetime: datetimeWithObd2,
                             status: 'Pending',
                             is_deleted: false,
+                            completed_on: null,
+                            rejected_reason: null,
                         };
 
                         await addRequest(requestData);
@@ -264,6 +266,8 @@ const repairShops = () => {
                         request_datetime: dayjs().format(),
                         status: 'Pending',
                         is_deleted: false,
+                        completed_on: null,
+                        rejected_reason: null,
                     };
 
                     await addRequest(requestData);

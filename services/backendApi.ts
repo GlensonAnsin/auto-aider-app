@@ -422,7 +422,25 @@ export const getRequestsForCarOwner = async () => {
     return res.data;
 
   } catch (e) {
-    console.error('Get Requests Error: ', e);
+    console.error('Get Requests For Car Owner Error: ', e);
+    return null;
+  }
+};
+
+export const getRequestsForRepairShop = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/mechanic_request/get-requests-rs`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Get Requests For Repair Shop Error: ', e);
     return null;
   }
 };
