@@ -14,9 +14,9 @@ import dayjs from 'dayjs';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import { GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MapView, { Circle, Marker, Region } from 'react-native-maps';
 import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -229,6 +229,7 @@ const repairShops = () => {
             switch (requestType) {
                 case 'with-obd2':
                     const datetimeWithObd2 = dayjs().format();
+
                     for (const item of codeInterpretation ?? []) {
                         const id = item.vehicleDiagnosticID;
 
@@ -241,6 +242,8 @@ const repairShops = () => {
                             is_deleted: false,
                             completed_on: null,
                             rejected_reason: null,
+                            longitude: currentLocation?.longitude.toString() ?? '',
+                            latitude: currentLocation?.latitude.toString() ?? '',
                         };
 
                         await addRequest(requestData);
@@ -268,9 +271,12 @@ const repairShops = () => {
                         is_deleted: false,
                         completed_on: null,
                         rejected_reason: null,
+                        longitude: currentLocation?.longitude.toString() ?? '',
+                        latitude: currentLocation?.latitude.toString() ?? '',
                     };
 
                     await addRequest(requestData);
+
                     showMessage({
                         message: 'Request submitted successfully!',
                         type: 'success',

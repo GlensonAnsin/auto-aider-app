@@ -46,7 +46,7 @@ const EditProfile = () => {
       try {
         setIsLoading(true);
         const res = await getUserInfo();
-        
+
         setUserID(res.user_id);
         setFirstname(res.firstname);
         setLastname(res.lastname);
@@ -102,8 +102,8 @@ const EditProfile = () => {
     });
 
     return () => {
-        newSocket.off('updatedUserInfo');
-        newSocket.disconnect();
+      newSocket.off('updatedUserInfo');
+      newSocket.disconnect();
     };
   }, []);
 
@@ -251,7 +251,7 @@ const EditProfile = () => {
       const uploadRes = await axios.post(
         `${process.env.EXPO_PUBLIC_CLOUDINARY_BASE_URL}/${cloudName}/image/upload`,
         formData,
-        { 
+        {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -302,7 +302,7 @@ const EditProfile = () => {
     const lastPart = parts?.slice(-1)[0];
     const folderName = parts?.slice(-2)[0];
     const fileName = lastPart?.split('.')[0];
-    
+
     await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/delete-image `, {
       public_id: `${folderName}/${fileName}`,
     });
@@ -321,7 +321,7 @@ const EditProfile = () => {
       >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps='handled' 
+          keyboardShouldPersistTaps='handled'
         >
           <Header headerTitle='Edit Profile' />
 
@@ -416,9 +416,9 @@ const EditProfile = () => {
                       <Text style={styles.infoText}>{localFirstname}</Text>
                       <TouchableOpacity onPress={() => setEdit('firstname')}>
                         <MaterialIcons name='edit' size={16} color='#555' />
-                      </TouchableOpacity> 
+                      </TouchableOpacity>
                     </>
-                  )}        
+                  )}
                 </View>
               </View>
 
@@ -458,7 +458,7 @@ const EditProfile = () => {
                       <Text style={styles.infoText}>{localLastname}</Text>
                       <TouchableOpacity onPress={() => setEdit('lastname')}>
                         <MaterialIcons name='edit' size={16} color='#555' />
-                      </TouchableOpacity> 
+                      </TouchableOpacity>
                     </>
                   )}
                 </View>
@@ -468,17 +468,17 @@ const EditProfile = () => {
                 <Text style={styles.infoLabel}>Gender:</Text>
                 <View style={styles.infoEdit}>
                   {edit === 'gender' && (
-                    <>  
+                    <>
                       <SelectDropdown
                         data={genders}
                         defaultValue={localGender}
                         onSelect={(selectedItem) => setLocalGender(selectedItem)}
                         renderButton={(selectedItem, isOpen) => (
                           <View style={styles.dropdownButtonStyle}>
-                          <Text style={styles.dropdownButtonTxtStyle}>
-                            {selectedItem || 'Select gender'}
-                          </Text>
-                          <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                            <Text style={styles.dropdownButtonTxtStyle}>
+                              {selectedItem || 'Select gender'}
+                            </Text>
+                            <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
                           </View>
                         )}
                         renderItem={(item, _index, isSelected) => (
@@ -488,19 +488,19 @@ const EditProfile = () => {
                               ...(isSelected && { backgroundColor: '#D2D9DF' }),
                             }}
                           >
-                          <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+                            <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
                           </View>
                         )}
                         showsVerticalScrollIndicator={false}
                         dropdownStyle={styles.dropdownMenuStyle}
                       />
-                        <TouchableOpacity onPress={() => handleRestoreInfo('gender')}>
-                          <Entypo name='cross' size={20} color='#780606' />
-                        </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleRestoreInfo('gender')}>
+                        <Entypo name='cross' size={20} color='#780606' />
+                      </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => handleUpdateUserInfo('gender', null)}>
-                          <FontAwesome5 name='check' size={16} color='#22bb33' />
-                        </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleUpdateUserInfo('gender', null)}>
+                        <FontAwesome5 name='check' size={16} color='#22bb33' />
+                      </TouchableOpacity>
                     </>
                   )}
 
@@ -509,7 +509,7 @@ const EditProfile = () => {
                       <Text style={styles.infoText}>{localGender}</Text>
                       <TouchableOpacity onPress={() => setEdit('gender')}>
                         <MaterialIcons name='edit' size={16} color='#555' />
-                      </TouchableOpacity> 
+                      </TouchableOpacity>
                     </>
                   )}
                 </View>
@@ -551,8 +551,8 @@ const EditProfile = () => {
                     <>
                       <Text style={styles.infoText}>{localMobileNum}</Text>
                       <TouchableOpacity onPress={() => setEdit('mobile-num')}>
-                          <MaterialIcons name='edit' size={16} color='#555' />
-                      </TouchableOpacity> 
+                        <MaterialIcons name='edit' size={16} color='#555' />
+                      </TouchableOpacity>
                     </>
                   )}
                 </View>
@@ -568,7 +568,7 @@ const EditProfile = () => {
                     <Text style={styles.editButtonText}>Add Email</Text>
                   </TouchableOpacity>
                 )}
-                  
+
                 {localEmail !== null && (
                   <View style={styles.infoEdit}>
                     {edit === 'email' && (
@@ -581,11 +581,11 @@ const EditProfile = () => {
 
                         <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
                           <Entypo name='cross' size={20} color='#780606' />
-                        </TouchableOpacity>   
+                        </TouchableOpacity>
 
                         <TouchableOpacity onPress={() => handleUpdateUserInfo('email', null)}>
                           <FontAwesome5 name='check' size={16} color='#22bb33' />
-                        </TouchableOpacity>                                                                         
+                        </TouchableOpacity>
                       </>
                     )}
 
@@ -594,7 +594,7 @@ const EditProfile = () => {
                         <Text style={styles.infoText}>{localEmail}</Text>
                         <TouchableOpacity onPress={() => setEdit('email')}>
                           <MaterialIcons name='edit' size={16} color='#555' />
-                        </TouchableOpacity> 
+                        </TouchableOpacity>
                       </>
                     )}
                   </View>
@@ -605,7 +605,7 @@ const EditProfile = () => {
         </ScrollView>
         {updateLoading && (
           <View style={styles.updateLoadingContainer}>
-            <ActivityIndicator size='large' color='#000B58'  />
+            <ActivityIndicator size='large' color='#000B58' />
           </View>
         )}
       </KeyboardAvoidingView>

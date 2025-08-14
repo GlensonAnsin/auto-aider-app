@@ -7,4 +7,6 @@ export interface AddRequest {
     is_deleted: boolean;
     completed_on: string | null;
     rejected_reason: string | null;
+    longitude: string;
+    latitude: string;
 };

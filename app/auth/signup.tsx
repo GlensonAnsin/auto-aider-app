@@ -130,7 +130,7 @@ const Signup = () => {
   };
 
   const toggleCheckbox = (id: string) => {
-    setSelectedServices(prev => 
+    setSelectedServices(prev =>
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
@@ -139,7 +139,7 @@ const Signup = () => {
     const letters = '0123456789ABCDEF';
     let color = '#';
     for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
+      color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
   }
@@ -251,7 +251,7 @@ const Signup = () => {
         });
         return;
       }
-      
+
       if (password !== confirmPassword) {
         showMessage({
           message: "Password don't match.",
@@ -298,7 +298,7 @@ const Signup = () => {
           icon: 'danger',
         });
       }
-      
+
       setPage('Location');
 
     } else if (page === 'Location') {
@@ -352,7 +352,7 @@ const Signup = () => {
         setSelectedServices([]);
         setRegion(undefined);
         isRepairShopModalVisible(true);
-        
+
       } catch (e) {
         showMessage({
           message: 'Something went wrong. Please try again.',
@@ -374,11 +374,11 @@ const Signup = () => {
       >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps='handled' 
+          keyboardShouldPersistTaps='handled'
         >
           <View style={styles.upperBox}>
             <Text style={styles.welcomeTxt}>Welcome to</Text>
-            <Image 
+            <Image
               source={require('../../assets/images/logo.png')}
             />
 
@@ -685,7 +685,7 @@ const Signup = () => {
                     />
                   )}
                 </MapView>
-                
+
                 <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
                   <Text style={styles.buttonTxt}>Next</Text>
                 </TouchableOpacity>
@@ -742,7 +742,7 @@ const Signup = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>   
+    </SafeAreaView>
   )
 }
 
