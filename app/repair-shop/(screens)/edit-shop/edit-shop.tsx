@@ -260,8 +260,8 @@ const editShop = () => {
     };
 
     const handleCancelChangePass = () => {
-        setCurrentPassword(''),
-            setNewPassword('');
+        setCurrentPassword('');
+        setNewPassword('');
         setConfirmPassword('');
         setPasswordError('');
         setModalVisible(!modalVisible);

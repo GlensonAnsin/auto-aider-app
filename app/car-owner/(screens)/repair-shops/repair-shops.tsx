@@ -31,13 +31,13 @@ const repairShops = () => {
     const bottomSheetRef = useRef<BottomSheet | null>(null);
     const { width: screenWidth } = Dimensions.get('window');
     const [regions, setRegions] = useState<{ repairShopID: number, latitude: number, longitude: number, shopName: string, ownerFirstname: string, ownerLastname: string, gender: string, mobileNum: string, email: string | null, profilePic: string, profileBG: string, shopImages: string[], servicesOffered: string[], ratingsNum: number, averageRating: number }[] | undefined>(undefined);
-    const [nearbyRepShop, setNearbyRepShop] = useState<{ repairShopID: number, latitude: number, longitude: number, shopName: string, ownerFirstname: string, ownerLastname: string, gender: string, mobileNum: string, email: string | null, profilePic: string, profileBG: string, shopImages: string[], servicesOffered: string[], ratingsNum: number, averageRating: number }[] | undefined>(undefined);
+    const [nearbyRepShop, setNearbyRepShop] = useState<{ repairShopID: number, latitude: number, longitude: number, shopName: string, ownerFirstname: string, ownerLastname: string, gender: string, mobileNum: string, email: string | null, profilePic: string, profileBG: string, shopImages: string[], servicesOffered: string[], ratingsNum: number, averageRating: number, distance: number }[] | undefined>(undefined);
     const [currentLocation, setCurrentLocation] = useState<Region | undefined>(undefined);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [selectedRepShop, setSelectedRepShop] = useState<number | null>(null);
     const [currentSnapPointIndex, setCurrentSnapPointIndex] = useState<number>(-1);
     const [refreshKey, setRefreshKey] = useState(0);
-    const maxDistanceKM: number = 5;
+    const maxDistanceKM: number = 10;
     const snapPoints = useMemo(() => ['37%', '99.9%'], []);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
     const [vehicles, setVehicles] = useState<{ id: number, make: string, model: string, year: string }[]>([])
@@ -154,15 +154,20 @@ const repairShops = () => {
 
                     setCurrentLocation(newLocation);
 
-                    const nearby = regions?.filter((loc) => {
-                        const distance = getDistance(
-                            newLocation.latitude,
-                            newLocation.longitude,
-                            loc.latitude,
-                            loc.longitude
-                        );
-                        return distance <= maxDistanceKM;
-                    });
+                    const nearby = regions
+                        ?.map((loc) => {
+                            const distance = getDistance(
+                                newLocation.latitude,
+                                newLocation.longitude,
+                                loc.latitude,
+                                loc.longitude
+                            );
+                            return {
+                                ...loc,
+                                distance: parseFloat(distance),
+                            };
+                        })
+                        .filter((loc) => loc.distance <= maxDistanceKM);
 
                     setNearbyRepShop(nearby);
 
@@ -201,7 +206,7 @@ const repairShops = () => {
             Math.sin(dLon / 2) ** 2;
 
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+        return (R * c).toFixed(2);
     };
 
     const handleSheetChanges = useCallback((index: number) => {
@@ -384,7 +389,7 @@ const repairShops = () => {
                                         latitude: currentLocation.latitude,
                                         longitude: currentLocation.longitude,
                                     }}
-                                    radius={5000}
+                                    radius={10000}
                                     strokeColor='rgba(0, 122, 255, 0.8)'
                                     fillColor='rgba(0, 122, 255, 0.3)'
                                 />
@@ -398,7 +403,7 @@ const repairShops = () => {
                                     latitude: loc.latitude,
                                     longitude: loc.longitude,
                                 }}
-                                title={loc.shopName}
+                                title={`${loc.distance}KM Away`}
                                 onPress={() => {
                                     bottomSheetRef.current?.snapToIndex(1);
                                     setSelectedRepShop(index);
@@ -642,7 +647,7 @@ const repairShops = () => {
                                                                     <Text style={styles.textInputLabel}>Vehicle Issue Description</Text>
                                                                     <TextInput
                                                                         style={styles.textArea}
-                                                                        placeholder='Message...'
+                                                                        placeholder='Describe vehicle issue'
                                                                         multiline={true}
                                                                         numberOfLines={5}
                                                                         value={vehicleIssue}
