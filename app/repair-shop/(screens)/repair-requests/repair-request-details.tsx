@@ -9,6 +9,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import Checkbox from "expo-checkbox";
 import LottieView from "lottie-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -18,6 +19,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
@@ -51,7 +53,7 @@ const RepairRequestDetails = () => {
       scanReference: string;
       vehicleIssue: string;
       repairProcedure: string | null;
-      reasonRejected: string | null;
+      otherReason: string | null;
     }[]
   >([]);
   const [customerRegion, setCustomerRegion] = useState<Region | undefined>(
@@ -67,9 +69,27 @@ const RepairRequestDetails = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [mapModalVisible, setMapModalVisible] = useState<boolean>(false);
+  const [rejectedModalVisible, setRejectedModalVisible] =
+    useState<boolean>(false);
+  const [completedModalVisible, setCompletedModalVisible] =
+    useState<boolean>(false);
+  const [otherReason, setOtherReason] = useState<string>("");
+  const [selectedReason, setSelectedReason] = useState<string>("");
+  const [repairProcedure, setRepairProcedure] = useState<string>("");
   const scanReference: string | null = useSelector(
     (state: RootState) => state.scanReference.scanReference
   );
+
+  const reasons = [
+    "Overbooked / No Available Slot",
+    "Lack of Parts / Supplies",
+    "Specialty Limitation",
+    "Vehicle Type Not Supported",
+    "Severe Damage Beyond Capability",
+    "Old / Rare Vehicle",
+    "Previous Payment Issues",
+    "Others"
+  ];
 
   useEffect(() => {
     (async () => {
@@ -98,7 +118,7 @@ const RepairRequestDetails = () => {
           scanReference: string;
           vehicleIssue: string;
           repairProcedure: string | null;
-          reasonRejected: string | null;
+          otherReason: string | null;
         }[] = [];
 
         if (res1) {
@@ -116,7 +136,7 @@ const RepairRequestDetails = () => {
               const latitude = parseFloat(request.latitude);
               const status = request.status;
               const repairProcedure = request.repair_procedure;
-              const reasonRejected = request.reason_rejected;
+              const otherReason = request.reason_rejected;
               if (request.vehicle_diagnostic) {
                 const diagnostics = Array.isArray(request.vehicle_diagnostic)
                   ? request.vehicle_diagnostic
@@ -166,7 +186,7 @@ const RepairRequestDetails = () => {
                                   scanReference: scanReference,
                                   vehicleIssue: vehicleIssue,
                                   repairProcedure: repairProcedure,
-                                  reasonRejected: reasonRejected,
+                                  otherReason: otherReason,
                                 });
 
                                 setCustomerRegion({
@@ -227,42 +247,69 @@ const RepairRequestDetails = () => {
   );
 
   const grouped = Object.values(
-    selectedRequest.reduce((acc, item) => {
-      const ref = item.scanReference;
+    selectedRequest.reduce(
+      (acc, item) => {
+        const ref = item.scanReference;
 
-      if (!acc[ref]) {
-        acc[ref] = {
-          customer: item.customer,
-          customerProfile: item.customerProfile,
-          customerProfileBG: item.customerProfileBG,
-          status: item.status,
-          datetime: item.datetime,
-          completedOn: item.completedOn,
-          make: item.make,
-          model: item.model,
-          year: item.year,
-          longitude: item.longitude,
-          latitude: item.latitude,
-          dtc: [item.dtc],
-          technicalDescription: [item.technicalDescription],
-          meaning: [item.meaning],
-          possibleCauses: [item.possibleCauses],
-          recommendedRepair: [item.recommendedRepair],
-          scanReference: ref,
-          vehicleIssue: item.vehicleIssue,
-          repairProcedure: item.repairProcedure,
-          reasonRejected: item.reasonRejected,
-        };
-      } else {
-        acc[ref].dtc.push(item.dtc);
-        acc[ref].technicalDescription.push(item.technicalDescription);
-        acc[ref].meaning.push(item.meaning);
-        acc[ref].possibleCauses.push(item.possibleCauses);
-        acc[ref].recommendedRepair.push(item.recommendedRepair);
-      }
+        if (!acc[ref]) {
+          acc[ref] = {
+            customer: item.customer,
+            customerProfile: item.customerProfile,
+            customerProfileBG: item.customerProfileBG,
+            status: item.status,
+            datetime: item.datetime,
+            completedOn: item.completedOn,
+            make: item.make,
+            model: item.model,
+            year: item.year,
+            longitude: item.longitude,
+            latitude: item.latitude,
+            dtc: [item.dtc],
+            technicalDescription: [item.technicalDescription],
+            meaning: [item.meaning],
+            possibleCauses: [item.possibleCauses],
+            recommendedRepair: [item.recommendedRepair],
+            scanReference: ref,
+            vehicleIssue: item.vehicleIssue,
+            repairProcedure: item.repairProcedure,
+            otherReason: item.otherReason,
+          };
+        } else {
+          acc[ref].dtc.push(item.dtc);
+          acc[ref].technicalDescription.push(item.technicalDescription);
+          acc[ref].meaning.push(item.meaning);
+          acc[ref].possibleCauses.push(item.possibleCauses);
+          acc[ref].recommendedRepair.push(item.recommendedRepair);
+        }
 
-      return acc;
-    }, {} as Record<string, { customer: string; customerProfile: string | null; customerProfileBG: string; status: string; datetime: string; completedOn: string | null; make: string; model: string; year: string; longitude: number; latitude: number; dtc: (string | null)[]; technicalDescription: (string | null)[]; meaning: (string | null)[]; possibleCauses: (string | null)[]; recommendedRepair: (string | null)[]; scanReference: string; vehicleIssue: string | null; repairProcedure: string | null; reasonRejected: string | null }>)
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          customer: string;
+          customerProfile: string | null;
+          customerProfileBG: string;
+          status: string;
+          datetime: string;
+          completedOn: string | null;
+          make: string;
+          model: string;
+          year: string;
+          longitude: number;
+          latitude: number;
+          dtc: (string | null)[];
+          technicalDescription: (string | null)[];
+          meaning: (string | null)[];
+          possibleCauses: (string | null)[];
+          recommendedRepair: (string | null)[];
+          scanReference: string;
+          vehicleIssue: string | null;
+          repairProcedure: string | null;
+          otherReason: string | null;
+        }
+      >
+    )
   );
 
   const handleTransformText = (index: number) => {
@@ -482,7 +529,9 @@ const RepairRequestDetails = () => {
                     >
                       <Entypo name="cross" size={20} color="#FFF" />
                     </TouchableOpacity>
-                    <Text style={styles.text}>{`${getDistance(shopRegion?.latitude ?? 0, shopRegion?.longitude ?? 0, customerRegion?.latitude ?? 0, customerRegion?.longitude ?? 0)}KM Away`}</Text>
+                    <Text
+                      style={styles.text}
+                    >{`${getDistance(shopRegion?.latitude ?? 0, shopRegion?.longitude ?? 0, customerRegion?.latitude ?? 0, customerRegion?.longitude ?? 0)}KM Away`}</Text>
                   </View>
                 </View>
               </Modal>
@@ -620,19 +669,99 @@ const RepairRequestDetails = () => {
             </View>
 
             {item.status === "Pending" && (
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={[styles.button, { backgroundColor: "#780606" }]}
-                >
-                  <Text style={styles.buttonText}>Reject</Text>
-                </TouchableOpacity>
+              <>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: "#780606" }]}
+                    onPress={() => setRejectedModalVisible(true)}
+                  >
+                    <Text style={styles.buttonText}>Reject</Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.button, { backgroundColor: "#000B58" }]}
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: "#000B58" }]}
+                  >
+                    <Text style={styles.buttonText}>Accept</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Modal
+                  animationType="fade"
+                  backdropColor={"rgba(0, 0, 0, 0.5)"}
+                  visible={rejectedModalVisible}
+                  onRequestClose={() => {
+                    setRejectedModalVisible(false);
+                    setSelectedReason("");
+                    setOtherReason("");
+                  }}
                 >
-                  <Text style={styles.buttonText}>Accept</Text>
-                </TouchableOpacity>
-              </View>
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      setRejectedModalVisible(false);
+                      setSelectedReason("");
+                      setOtherReason("");
+                    }}
+                  >
+                    <View style={styles.centeredView}>
+                      <Pressable
+                        style={styles.textInputView}
+                        onPress={() => {}}
+                      >
+                        <Text
+                          style={[styles.subHeader, { textAlign: "center" }]}
+                        >
+                          Reason Rejected
+                        </Text>
+                        {reasons.map((item) => (
+                          <View key={item} style={styles.checkboxContainer}>
+                            <Checkbox
+                              value={selectedReason === item}
+                              onValueChange={() => {
+                                setSelectedReason(
+                                  selectedReason === item ? "" : item
+                                );
+                              }}
+                              color={
+                                selectedReason === item ? "#000B58" : undefined
+                              }
+                            />
+                            <Text style={styles.text}>{item}</Text>
+                          </View>
+                        ))}
+
+                        {selectedReason === "Others" && (
+                          <TextInput
+                            style={styles.input1}
+                            value={otherReason}
+                            onChangeText={setOtherReason}
+                          />
+                        )}
+
+                        <View style={styles.buttonContainer}>
+                          <TouchableOpacity
+                            style={[
+                              styles.button,
+                              { borderWidth: 1, borderColor: "#555" },
+                            ]}
+                            onPress={() => setRejectedModalVisible(false)}
+                          >
+                            <Text style={[styles.buttonText, { color: "#555" }]}>Cancel</Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={[
+                              styles.button,
+                              { backgroundColor: "#000B58" },
+                            ]}
+                          >
+                            <Text style={styles.buttonText}>Proceed</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </Pressable>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </Modal>
+              </>
             )}
           </View>
         ))}
@@ -894,6 +1023,30 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     position: "absolute",
     padding: 10,
+  },
+  textInputView: {
+    backgroundColor: "#FFF",
+    width: "90%",
+    padding: 25,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20,
+    gap: 10,
+  },
+  input1: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#EAEAEA",
   },
 });
 
