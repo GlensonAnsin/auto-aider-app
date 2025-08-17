@@ -408,7 +408,7 @@ export const addRequest = async (requestData: AddRequest) => {
   }
 };
 
-// GET REQUESTS
+// GET REQUESTS FOR CAR OWNER
 export const getRequestsForCarOwner = async () => {
   try {
     const token = await getAccessToken();
@@ -427,6 +427,7 @@ export const getRequestsForCarOwner = async () => {
   }
 };
 
+// GET REQUESTS FOR REPAIR SHOP
 export const getRequestsForRepairShop = async () => {
   try {
     const token = await getAccessToken();
@@ -444,3 +445,21 @@ export const getRequestsForRepairShop = async () => {
     return null;
   }
 };
+
+// REJECT REQUEST
+export const rejectRequest = async (requestIDs: number[]) => {
+  try {
+    const token = await getAccessToken();
+    await axios.patch(`${apiURL}/mechanic_request/reject-request`,
+      requestIDs,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+  } catch (e) {
+    console.error('Reject Request Error: ', e);
+  }
+}

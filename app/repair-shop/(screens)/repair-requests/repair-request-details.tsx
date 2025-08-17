@@ -34,6 +34,7 @@ const RepairRequestDetails = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [requestDetails, setRequestDetails] = useState<
     {
+      requestID: number;
       customer: string;
       customerProfile: string | null;
       customerProfileBG: string;
@@ -99,6 +100,7 @@ const RepairRequestDetails = () => {
         const res2 = await getRepairShopInfo();
 
         const statusData: {
+          requestID: number;
           customer: string;
           customerProfile: string | null;
           customerProfileBG: string;
@@ -124,6 +126,7 @@ const RepairRequestDetails = () => {
         if (res1) {
           res1.mechanic_requests.forEach((request: any) => {
             if (request) {
+              const requestID = request.mechanic_request_id;
               const datetime = dayjs(request.request_datetime)
                 .utc(true)
                 .local()
@@ -167,6 +170,7 @@ const RepairRequestDetails = () => {
                             users.forEach((customer: any) => {
                               if (customer) {
                                 statusData.push({
+                                  requestID: requestID,
                                   customer: `${customer.firstname} ${customer.lastname}`,
                                   customerProfile: customer.profile_pic,
                                   customerProfileBG: customer.user_initials_bg,
@@ -253,6 +257,7 @@ const RepairRequestDetails = () => {
 
         if (!acc[ref]) {
           acc[ref] = {
+            requestID: [item.requestID],
             customer: item.customer,
             customerProfile: item.customerProfile,
             customerProfileBG: item.customerProfileBG,
@@ -275,6 +280,7 @@ const RepairRequestDetails = () => {
             otherReason: item.otherReason,
           };
         } else {
+          acc[ref].requestID.push(item.requestID);
           acc[ref].dtc.push(item.dtc);
           acc[ref].technicalDescription.push(item.technicalDescription);
           acc[ref].meaning.push(item.meaning);
@@ -287,6 +293,7 @@ const RepairRequestDetails = () => {
       {} as Record<
         string,
         {
+          requestID: number[];
           customer: string;
           customerProfile: string | null;
           customerProfileBG: string;
