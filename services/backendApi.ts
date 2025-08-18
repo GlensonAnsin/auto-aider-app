@@ -447,11 +447,11 @@ export const getRequestsForRepairShop = async () => {
 };
 
 // REJECT REQUEST
-export const rejectRequest = async (requestIDs: number[]) => {
+export const rejectRequest = async (requestIDs: number[], reason_rejected: string) => {
   try {
     const token = await getAccessToken();
     await axios.patch(`${apiURL}/mechanic_request/reject-request`,
-      requestIDs,
+      { requestIDs, reason_rejected },
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -462,4 +462,44 @@ export const rejectRequest = async (requestIDs: number[]) => {
   } catch (e) {
     console.error('Reject Request Error: ', e);
   }
+};
+
+// ACCEPT REQUEST
+export const acceptRequest = async (requestIDs: number[]) => {
+  try {
+    const token = await getAccessToken();
+    await axios.patch(`${apiURL}/mechanic_request/accept-request`,
+      { requestIDs },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+  } catch (e) {
+    console.error('Accept Request Error: ', e);
+  }
 }
+
+// REQUEST COMPLETED
+export const requestCompleted = async (requestIDs: number[], repair_procedure: string, completed_on: string) => {
+  try {
+    const token = await getAccessToken();
+    await axios.patch(`${apiURL}/mechanic_request/request-completed`,
+      {
+        requestIDs,
+        repair_procedure,
+        completed_on,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+  } catch (e) {
+    console.error('Request Completed Error: ', e);
+  }
+};

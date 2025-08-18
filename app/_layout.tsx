@@ -29,7 +29,7 @@ export default function RootLayout() {
     <Provider store={store}>
       <StatusBar style='dark' />
 
-      <FlashMessage position='top' style={{ marginTop: 30 }} />
+      <FlashMessage position='top' style={{ marginTop: 40 }} />
 
       <Stack initialRouteName='index' screenOptions={{ headerShown: false, animation: 'none' }}>
         <Stack.Screen name='index' />

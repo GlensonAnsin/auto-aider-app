@@ -2,8 +2,10 @@ import { Header } from "@/components/Header";
 import { Loading } from "@/components/Loading";
 import { RootState } from "@/redux/store";
 import {
+  acceptRequest,
   getRepairShopInfo,
   getRequestsForRepairShop,
+  rejectRequest
 } from "@/services/backendApi";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -24,13 +26,16 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { showMessage } from "react-native-flash-message";
 import MapView, { Marker, Region } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
+import { io, Socket } from "socket.io-client";
 
 const RepairRequestDetails = () => {
   dayjs.extend(utc);
   const mapRef = useRef<MapView | null>(null);
+  const [_socket, setSocket] = useState<Socket | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [requestDetails, setRequestDetails] = useState<
     {
@@ -54,7 +59,7 @@ const RepairRequestDetails = () => {
       scanReference: string;
       vehicleIssue: string;
       repairProcedure: string | null;
-      otherReason: string | null;
+      reasonRejected: string | null;
     }[]
   >([]);
   const [customerRegion, setCustomerRegion] = useState<Region | undefined>(
@@ -77,6 +82,7 @@ const RepairRequestDetails = () => {
   const [otherReason, setOtherReason] = useState<string>("");
   const [selectedReason, setSelectedReason] = useState<string>("");
   const [repairProcedure, setRepairProcedure] = useState<string>("");
+  const [selectedOptCompleted, setSelectedOptCompleted] = useState<string>("");
   const scanReference: string | null = useSelector(
     (state: RootState) => state.scanReference.scanReference
   );
@@ -91,6 +97,8 @@ const RepairRequestDetails = () => {
     "Previous Payment Issues",
     "Others"
   ];
+
+  const completed = ["Repair Unsuccessful", "Prefer not to say"];
 
   useEffect(() => {
     (async () => {
@@ -120,7 +128,7 @@ const RepairRequestDetails = () => {
           scanReference: string;
           vehicleIssue: string;
           repairProcedure: string | null;
-          otherReason: string | null;
+          reasonRejected: string | null;
         }[] = [];
 
         if (res1) {
@@ -139,7 +147,7 @@ const RepairRequestDetails = () => {
               const latitude = parseFloat(request.latitude);
               const status = request.status;
               const repairProcedure = request.repair_procedure;
-              const otherReason = request.reason_rejected;
+              const reasonRejected = request.reason_rejected;
               if (request.vehicle_diagnostic) {
                 const diagnostics = Array.isArray(request.vehicle_diagnostic)
                   ? request.vehicle_diagnostic
@@ -190,7 +198,7 @@ const RepairRequestDetails = () => {
                                   scanReference: scanReference,
                                   vehicleIssue: vehicleIssue,
                                   repairProcedure: repairProcedure,
-                                  otherReason: otherReason,
+                                  reasonRejected: reasonRejected,
                                 });
 
                                 setCustomerRegion({
@@ -246,6 +254,44 @@ const RepairRequestDetails = () => {
     });
   }, [shopRegion, customerRegion]);
 
+  useEffect(() => {
+    const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
+      transports: ["websocket"],
+    });
+
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("Connected to server: ", newSocket.id);
+    });
+
+    newSocket.on("requestRejected", ({ requestIDs, reason_rejected }) => {
+      for (const id of requestIDs) {
+        setRequestDetails((prev) =>
+          prev.map((r) => r.requestID === id ? { ...r, status: "Rejected", reasonRejected: reason_rejected } : r)
+        );
+      }
+    });
+
+    newSocket.on("requestAccepted", ({ requestIDs }) => {
+      for (const id of requestIDs) {
+        setRequestDetails((prev) =>
+          prev.map((r) =>
+            r.requestID === id
+              ? { ...r, status: "Ongoing" }
+              : r
+          )
+        );
+      }
+    })
+
+    return () => {
+      newSocket.off("requestRejected");
+      newSocket.off("requestAccepted");
+      newSocket.disconnect();
+    };
+  }, []);
+
   const selectedRequest = requestDetails.filter(
     (item: any) => item.scanReference === scanReference
   );
@@ -277,7 +323,7 @@ const RepairRequestDetails = () => {
             scanReference: ref,
             vehicleIssue: item.vehicleIssue,
             repairProcedure: item.repairProcedure,
-            otherReason: item.otherReason,
+            reasonRejected: item.reasonRejected,
           };
         } else {
           acc[ref].requestID.push(item.requestID);
@@ -313,7 +359,7 @@ const RepairRequestDetails = () => {
           scanReference: string;
           vehicleIssue: string | null;
           repairProcedure: string | null;
-          otherReason: string | null;
+          reasonRejected: string | null;
         }
       >
     )
@@ -356,6 +402,73 @@ const RepairRequestDetails = () => {
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return (R * c).toFixed(2);
+  };
+
+  const handleRejectRequest = async (IDs: number[]) => {
+    if (!selectedReason) {
+      showMessage({
+        message: 'Please select reason for rejection.',
+        type: 'warning',
+        floating: true,
+        color: '#FFF',
+        icon: 'warning',
+      });
+      return;
+    }
+
+    try {
+      if (selectedReason === "Others") {
+        await rejectRequest(IDs, otherReason);
+        showMessage({
+          message: "Request rejected",
+          type: "success",
+          floating: true,
+          color: "#FFF",
+          icon: "success",
+        });
+        return;
+      }
+
+      await rejectRequest(IDs, selectedReason);
+      showMessage({
+        message: "Request rejected",
+        type: "success",
+        floating: true,
+        color: "#FFF",
+        icon: "success",
+      });
+      
+    } catch (e) {
+      showMessage({
+        message: "Something went wrong. Please try again.",
+        type: "danger",
+        floating: true,
+        color: "#FFF",
+        icon: "danger",
+      });
+    }
+  };
+
+  const handleAcceptRequest = async (IDs: number[]) => {
+    try {
+      await acceptRequest(IDs);
+      showMessage({
+        message: "Request accepted",
+        type: "success",
+        floating: true,
+        color: "#FFF",
+        icon: "success",
+      });
+
+    } catch (e) {
+      showMessage({
+        message: "Something went wrong. Please try again.",
+        type: "danger",
+        floating: true,
+        color: "#FFF",
+        icon: "danger",
+      });
+    }
   };
 
   if (isLoading) {
@@ -687,6 +800,7 @@ const RepairRequestDetails = () => {
 
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: "#000B58" }]}
+                    onPress={() => handleAcceptRequest(item.requestID)}
                   >
                     <Text style={styles.buttonText}>Accept</Text>
                   </TouchableOpacity>
@@ -738,7 +852,7 @@ const RepairRequestDetails = () => {
 
                         {selectedReason === "Others" && (
                           <TextInput
-                            style={styles.input1}
+                            style={styles.input}
                             value={otherReason}
                             onChangeText={setOtherReason}
                           />
@@ -752,7 +866,11 @@ const RepairRequestDetails = () => {
                             ]}
                             onPress={() => setRejectedModalVisible(false)}
                           >
-                            <Text style={[styles.buttonText, { color: "#555" }]}>Cancel</Text>
+                            <Text
+                              style={[styles.buttonText, { color: "#555" }]}
+                            >
+                              Cancel
+                            </Text>
                           </TouchableOpacity>
 
                           <TouchableOpacity
@@ -760,6 +878,115 @@ const RepairRequestDetails = () => {
                               styles.button,
                               { backgroundColor: "#000B58" },
                             ]}
+                            onPress={() => handleRejectRequest(item.requestID)}
+                          >
+                            <Text style={styles.buttonText}>Proceed</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </Pressable>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </Modal>
+              </>
+            )}
+
+            {item.status === "Rejected" && (
+              <View style={styles.reasonRejectedContainer}>
+                <Text style={styles.subHeader}>Reason Rejected</Text>
+                <View style={styles.textContainer}>
+                  <Text style={[styles.text, { color: "#780606" }]}>
+                    {item.reasonRejected}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {item.status === "Ongoing" && (
+              <>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: "#000B58" }]}
+                    onPress={() => setCompletedModalVisible(true)}
+                  >
+                    <Text style={styles.buttonText}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Modal
+                  animationType="fade"
+                  backdropColor={"rgba(0, 0, 0, 0.5)"}
+                  visible={completedModalVisible}
+                  onRequestClose={() => {
+                    setCompletedModalVisible(false);
+                    setRepairProcedure("");
+                  }}
+                >
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      setCompletedModalVisible(false);
+                      setRepairProcedure("");
+                    }}
+                  >
+                    <View style={styles.centeredView}>
+                      <Pressable
+                        style={styles.textInputView}
+                        onPress={() => {}}
+                      >
+                        <Text
+                          style={[styles.subHeader, { textAlign: "center" }]}
+                        >
+                          Repair Procedure Done
+                        </Text>
+                        {completed.map((item) => (
+                          <View key={item} style={styles.checkboxContainer}>
+                            <Checkbox
+                              value={repairProcedure === item}
+                              onValueChange={() => {
+                                setRepairProcedure(
+                                  selectedReason === item ? "" : item
+                                );
+                              }}
+                              color={
+                                repairProcedure === "Repair unsuccessful"
+                                  ? "#000B58"
+                                  : undefined
+                              }
+                            />
+                            <Text style={styles.text}>Repair unsucessful</Text>
+                          </View>
+                        ))}
+
+                        <TextInput
+                          style={styles.textarea}
+                          placeholder="Describe what did you do to fix the vehicle."
+                          multiline={true}
+                          numberOfLines={5}
+                          value={repairProcedure}
+                          onChangeText={setRepairProcedure}
+                          textAlignVertical="top"
+                        />
+
+                        <View style={styles.buttonContainer}>
+                          <TouchableOpacity
+                            style={[
+                              styles.button,
+                              { borderWidth: 1, borderColor: "#555" },
+                            ]}
+                            onPress={() => setCompletedModalVisible(false)}
+                          >
+                            <Text
+                              style={[styles.buttonText, { color: "#555" }]}
+                            >
+                              Cancel
+                            </Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={[
+                              styles.button,
+                              { backgroundColor: "#000B58" },
+                            ]}
+                            onPress={() => handleRejectRequest(item.requestID)}
                           >
                             <Text style={styles.buttonText}>Proceed</Text>
                           </TouchableOpacity>
@@ -1051,9 +1278,24 @@ const styles = StyleSheet.create({
     marginTop: 20,
     gap: 10,
   },
-  input1: {
+  input: {
     borderBottomWidth: 1,
     borderBottomColor: "#EAEAEA",
+  },
+  reasonRejectedContainer: {
+    width: "100%",
+    marginTop: 10,
+  },
+  textarea: {
+    backgroundColor: "#EAEAEA",
+    marginTop: 10,
+    width: "100%",
+    minHeight: 100,
+    borderRadius: 5,
+    padding: 10,
+    fontSize: 16,
+    color: "#333",
+    fontFamily: "LeagueSpartan",
   },
 });
 
