@@ -483,7 +483,7 @@ export const acceptRequest = async (requestIDs: number[]) => {
 }
 
 // REQUEST COMPLETED
-export const requestCompleted = async (requestIDs: number[], repair_procedure: string, completed_on: string) => {
+export const requestCompleted = async (requestIDs: number[], repair_procedure: string | null, completed_on: string) => {
   try {
     const token = await getAccessToken();
     await axios.patch(`${apiURL}/mechanic_request/request-completed`,

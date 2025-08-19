@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   requestText: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'LeagueSpartan',
     color: '#555',
     fontSize: 14,
   },

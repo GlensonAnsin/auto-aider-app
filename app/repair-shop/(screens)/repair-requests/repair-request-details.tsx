@@ -5,7 +5,8 @@ import {
   acceptRequest,
   getRepairShopInfo,
   getRequestsForRepairShop,
-  rejectRequest
+  rejectRequest,
+  requestCompleted
 } from "@/services/backendApi";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -41,6 +42,8 @@ const RepairRequestDetails = () => {
     {
       requestID: number;
       customer: string;
+      customerNum: string;
+      customerEmail: string | null;
       customerProfile: string | null;
       customerProfileBG: string;
       status: string;
@@ -98,7 +101,7 @@ const RepairRequestDetails = () => {
     "Others"
   ];
 
-  const completed = ["Repair Unsuccessful", "Prefer not to say"];
+  const completed = ["Repair unsuccessful", "Prefer not to say"];
 
   useEffect(() => {
     (async () => {
@@ -110,6 +113,8 @@ const RepairRequestDetails = () => {
         const statusData: {
           requestID: number;
           customer: string;
+          customerNum: string;
+          customerEmail: string | null;
           customerProfile: string | null;
           customerProfileBG: string;
           status: string;
@@ -180,6 +185,8 @@ const RepairRequestDetails = () => {
                                 statusData.push({
                                   requestID: requestID,
                                   customer: `${customer.firstname} ${customer.lastname}`,
+                                  customerNum: customer.mobile_num,
+                                  customerEmail: customer.email,
                                   customerProfile: customer.profile_pic,
                                   customerProfileBG: customer.user_initials_bg,
                                   status: status,
@@ -283,11 +290,26 @@ const RepairRequestDetails = () => {
           )
         );
       }
-    })
+    });
+
+    newSocket.on("requestCompleted", ({
+      requestIDs,
+      repair_procedure,
+      completed_on,
+    }) => {
+      for (const id of requestIDs) {
+        setRequestDetails((prev) =>
+          prev.map((r) => r.requestID === id ? { ...r, status: "Completed", repairProcedure: repair_procedure, completedOn: dayjs(completed_on)
+            .utc(true)
+            .format("ddd MMM DD YYYY, h:mm A"), } : r)
+        );
+      }
+    });
 
     return () => {
       newSocket.off("requestRejected");
       newSocket.off("requestAccepted");
+      newSocket.off("requestCompleted");
       newSocket.disconnect();
     };
   }, []);
@@ -305,6 +327,8 @@ const RepairRequestDetails = () => {
           acc[ref] = {
             requestID: [item.requestID],
             customer: item.customer,
+            customerNum: item.customerNum,
+            customerEmail: item.customerEmail,
             customerProfile: item.customerProfile,
             customerProfileBG: item.customerProfileBG,
             status: item.status,
@@ -341,6 +365,8 @@ const RepairRequestDetails = () => {
         {
           requestID: number[];
           customer: string;
+          customerNum: string;
+          customerEmail: string | null;
           customerProfile: string | null;
           customerProfileBG: string;
           status: string;
@@ -471,6 +497,66 @@ const RepairRequestDetails = () => {
     }
   };
 
+  const handleRequestCompleted = async (IDs: number[]) => {
+    if (!selectedOptCompleted && !repairProcedure) {
+      showMessage({
+        message: "Please fill in required field.",
+        type: "warning",
+        floating: true,
+        color: "#FFF",
+        icon: "warning",
+      });
+      return;
+    }
+
+    try {
+      if (selectedOptCompleted === "Repair unsuccessful") {
+        await requestCompleted(IDs, "Repair unsuccessful", dayjs().format());
+        showMessage({
+          message: "Request completed",
+          type: "success",
+          floating: true,
+          color: "#FFF",
+          icon: "success",
+        });
+        return;
+      }
+
+      if (selectedOptCompleted === "Prefer not to say") {
+        await requestCompleted(IDs, null, dayjs().format());
+        showMessage({
+          message: "Request completed",
+          type: "success",
+          floating: true,
+          color: "#FFF",
+          icon: "success",
+        });
+        return;
+      }
+
+      if (!selectedOptCompleted) {
+        await requestCompleted(IDs, repairProcedure, dayjs().format());
+        showMessage({
+          message: "Request completed",
+          type: "success",
+          floating: true,
+          color: "#FFF",
+          icon: "success",
+        });
+        return;
+      }
+
+    } catch (e) {
+      showMessage({
+        message: "Something went wrong. Please try again.",
+        type: "danger",
+        floating: true,
+        color: "#FFF",
+        icon: "danger",
+      });
+    }
+  }
+
   if (isLoading) {
     return <Loading />;
   }
@@ -510,6 +596,17 @@ const RepairRequestDetails = () => {
               )}
 
               <Text style={styles.customerName}>{item.customer}</Text>
+              <Text style={[styles.text, { color: "#555" }]}>
+                {item.customerNum}
+              </Text>
+              {item.customerEmail !== null && (
+                <Text style={[styles.text, { color: "#555" }]}>
+                  {item.customerEmail}
+                </Text>
+              )}
+              <TouchableOpacity style={styles.chatButton}>
+                <Text style={[styles.buttonText, { fontSize: 14, fontFamily: "LeagueSpartan", }]}>Chat</Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.statusVehicleContainer}>
@@ -566,6 +663,12 @@ const RepairRequestDetails = () => {
                   <Text style={styles.nestedText}>Requested: </Text>
                   {item.datetime}
                 </Text>
+                {item.status === "Completed" && (
+                  <Text style={styles.text}>
+                    <Text style={styles.nestedText}>Completed: </Text>
+                    {item.completedOn}
+                  </Text>
+                )}
                 <Text style={styles.text}>
                   <Text style={styles.nestedText}>Make: </Text>
                   {item.make}
@@ -831,7 +934,7 @@ const RepairRequestDetails = () => {
                         <Text
                           style={[styles.subHeader, { textAlign: "center" }]}
                         >
-                          Reason Rejected
+                          Reason For Rejection
                         </Text>
                         {reasons.map((item) => (
                           <View key={item} style={styles.checkboxContainer}>
@@ -892,7 +995,7 @@ const RepairRequestDetails = () => {
 
             {item.status === "Rejected" && (
               <View style={styles.reasonRejectedContainer}>
-                <Text style={styles.subHeader}>Reason Rejected</Text>
+                <Text style={styles.subHeader}>Reason For Rejection</Text>
                 <View style={styles.textContainer}>
                   <Text style={[styles.text, { color: "#780606" }]}>
                     {item.reasonRejected}
@@ -918,12 +1021,14 @@ const RepairRequestDetails = () => {
                   visible={completedModalVisible}
                   onRequestClose={() => {
                     setCompletedModalVisible(false);
+                    setSelectedOptCompleted("");
                     setRepairProcedure("");
                   }}
                 >
                   <TouchableWithoutFeedback
                     onPress={() => {
                       setCompletedModalVisible(false);
+                      setSelectedOptCompleted("");
                       setRepairProcedure("");
                     }}
                   >
@@ -940,29 +1045,32 @@ const RepairRequestDetails = () => {
                         {completed.map((item) => (
                           <View key={item} style={styles.checkboxContainer}>
                             <Checkbox
-                              value={repairProcedure === item}
+                              value={selectedOptCompleted === item}
                               onValueChange={() => {
-                                setRepairProcedure(
-                                  selectedReason === item ? "" : item
+                                setSelectedOptCompleted(
+                                  selectedOptCompleted === item ? "" : item
                                 );
+                                setRepairProcedure("");
                               }}
                               color={
-                                repairProcedure === "Repair unsuccessful"
+                                selectedOptCompleted === item
                                   ? "#000B58"
                                   : undefined
                               }
                             />
-                            <Text style={styles.text}>Repair unsucessful</Text>
+                            <Text style={styles.text}>{item}</Text>
                           </View>
                         ))}
 
                         <TextInput
                           style={styles.textarea}
                           placeholder="Describe what did you do to fix the vehicle."
+                          id="textarea"
                           multiline={true}
                           numberOfLines={5}
                           value={repairProcedure}
                           onChangeText={setRepairProcedure}
+                          onFocus={() => setSelectedOptCompleted("")}
                           textAlignVertical="top"
                         />
 
@@ -972,7 +1080,11 @@ const RepairRequestDetails = () => {
                               styles.button,
                               { borderWidth: 1, borderColor: "#555" },
                             ]}
-                            onPress={() => setCompletedModalVisible(false)}
+                            onPress={() => {
+                              setCompletedModalVisible(false);
+                              setSelectedOptCompleted("");
+                              setRepairProcedure("");
+                            }}
                           >
                             <Text
                               style={[styles.buttonText, { color: "#555" }]}
@@ -986,7 +1098,9 @@ const RepairRequestDetails = () => {
                               styles.button,
                               { backgroundColor: "#000B58" },
                             ]}
-                            onPress={() => handleRejectRequest(item.requestID)}
+                            onPress={() =>
+                              handleRequestCompleted(item.requestID)
+                            }
                           >
                             <Text style={styles.buttonText}>Proceed</Text>
                           </TouchableOpacity>
@@ -996,6 +1110,37 @@ const RepairRequestDetails = () => {
                   </TouchableWithoutFeedback>
                 </Modal>
               </>
+            )}
+
+            {item.status === "Completed" && (
+              <View style={styles.repairProcedureContainer}>
+                <Text style={styles.subHeader}>Repair Procedure Done</Text>
+                {item.repairProcedure !== null && (
+                  <>
+                    {item.repairProcedure !== "Repair unsuccessful" && (
+                      <View style={[styles.textContainer, { minHeight: 150 }]}>
+                        <Text style={styles.text}>{item.repairProcedure}</Text>
+                      </View>
+                    )}
+
+                    {item.repairProcedure === "Repair unsuccessful" && (
+                      <View style={styles.textContainer}>
+                        <Text style={[styles.text, { color: "#780606" }]}>
+                          {item.repairProcedure}
+                        </Text>
+                      </View>
+                    )}
+                  </>
+                )}
+
+                {item.repairProcedure === null && (
+                  <View style={styles.textContainer}>
+                    <Text style={[styles.text, { color: "#780606" }]}>
+                      Shop did not specify the repair procedure done.
+                    </Text>
+                  </View>
+                )}
+              </View>
             )}
           </View>
         ))}
@@ -1133,6 +1278,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   repairProcedureContainer: {
+    marginTop: 10,
     width: "100%",
   },
   textContainer: {
@@ -1225,6 +1371,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 10,
+  },
+  chatButton: {
+    width: 70,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    borderRadius: 5,
+    backgroundColor: "#000B58",
+    padding: 5,
   },
   buttonText: {
     fontSize: 16,

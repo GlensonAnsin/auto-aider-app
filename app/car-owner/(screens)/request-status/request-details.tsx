@@ -30,6 +30,8 @@ const RequestDetails = () => {
     {
       requestID: number;
       repairShop: string;
+      repairShopNum: string;
+      repairShopEmail: string | null;
       repairShopProfile: string | null;
       repairShopProfileBG: string;
       status: string;
@@ -72,6 +74,8 @@ const RequestDetails = () => {
         const requestDetailsData: {
           requestID: number;
           repairShop: string;
+          repairShopNum: string;
+          repairShopEmail: string | null;
           repairShopProfile: string | null;
           repairShopProfileBG: string;
           status: string;
@@ -118,6 +122,8 @@ const RequestDetails = () => {
                           requestDetailsData.push({
                             requestID: request.mechanic_request_id,
                             repairShop: repairShop.shop_name,
+                            repairShopNum: repairShop.mobile_num,
+                            repairShopEmail: repairShop.email,
                             repairShopProfile: repairShop.profile_pic,
                             repairShopProfileBG: repairShop.profile_bg,
                             status: request.status,
@@ -136,7 +142,10 @@ const RequestDetails = () => {
                             scanReference: scanReference,
                             vehicleIssue: vehicleIssue,
                             repairProcedure: request.repair_procedure,
-                            completedOn: request.completed_on,
+                            completedOn: dayjs(request.completed_on)
+                              .utc(true)
+                              .local()
+                              .format("ddd MMM DD YYYY, h:mm A"),
                             reasonRejected: request.reason_rejected,
                           });
                         }
@@ -189,9 +198,32 @@ const RequestDetails = () => {
       }
     });
 
+    newSocket.on(
+      "requestCompleted",
+      ({ requestIDs, repair_procedure, completed_on }) => {
+        for (const id of requestIDs) {
+          setRequestDetails((prev) =>
+            prev.map((r) =>
+              r.requestID === id
+                ? {
+                    ...r,
+                    status: "Completed",
+                    repairProcedure: repair_procedure,
+                    completedOn: dayjs(completed_on)
+                      .utc(true)
+                      .format("ddd MMM DD YYYY, h:mm A"),
+                  }
+                : r
+            )
+          );
+        }
+      }
+    );
+
     return () => {
       newSocket.off("requestRejected");
       newSocket.off("requestAccepted");
+      newSocket.off("requestCompleted");
       newSocket.disconnect();
     };
   }, []);
@@ -208,6 +240,8 @@ const RequestDetails = () => {
         acc[ref] = {
           requestID: [item.requestID],
           repairShop: item.repairShop,
+          repairShopNum: item.repairShopNum,
+          repairShopEmail: item.repairShopEmail,
           repairShopProfile: item.repairShopProfile,
           repairShopProfileBG: item.repairShopProfileBG,
           status: item.status,
@@ -236,7 +270,7 @@ const RequestDetails = () => {
       }
 
       return acc;
-    }, {} as Record<string, { requestID: number[]; repairShop: string; repairShopProfile: string | null; repairShopProfileBG: string; status: string; datetime: string; make: string; model: string; year: string; dtc: (string | null)[]; technicalDescription: (string | null)[]; meaning: (string | null)[]; possibleCauses: (string | null)[]; recommendedRepair: (string | null)[]; scanReference: string; vehicleIssue: string | null; repairProcedure: string | null; completedOn: string | null; reasonRejected: string | null }>)
+    }, {} as Record<string, { requestID: number[]; repairShop: string; repairShopNum: string; repairShopEmail: string | null; repairShopProfile: string | null; repairShopProfileBG: string; status: string; datetime: string; make: string; model: string; year: string; dtc: (string | null)[]; technicalDescription: (string | null)[]; meaning: (string | null)[]; possibleCauses: (string | null)[]; recommendedRepair: (string | null)[]; scanReference: string; vehicleIssue: string | null; repairProcedure: string | null; completedOn: string | null; reasonRejected: string | null }>)
   );
 
   const handleTransformText = (index: number) => {
@@ -297,6 +331,17 @@ const RequestDetails = () => {
               )}
 
               <Text style={styles.shopName}>{item.repairShop}</Text>
+              <Text style={[styles.text, { color: "#555" }]}>
+                {item.repairShopNum}
+              </Text>
+              {item.repairShopEmail !== null && (
+                <Text style={[styles.text, { color: "#555" }]}>
+                  {item.repairShopEmail}
+                </Text>
+              )}
+              <TouchableOpacity style={styles.chatButton}>
+                <Text style={[styles.buttonText, { fontSize: 14, fontFamily: "LeagueSpartan", }]}>Chat</Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.statusVehicleContainer}>
@@ -350,12 +395,12 @@ const RequestDetails = () => {
 
               <View>
                 <Text style={styles.text}>
-                  <Text style={styles.nestedText}>Requested On: </Text>
+                  <Text style={styles.nestedText}>Requested: </Text>
                   {item.datetime}
                 </Text>
                 {item.status === "Completed" && (
                   <Text style={styles.text}>
-                    <Text style={styles.nestedText}>Completed On: </Text>
+                    <Text style={styles.nestedText}>Completed: </Text>
                     {item.completedOn}
                   </Text>
                 )}
@@ -507,7 +552,7 @@ const RequestDetails = () => {
 
             {item.status === "Rejected" && (
               <View style={styles.reasonRejectedContainer}>
-                <Text style={styles.subHeader}>Reason Rejected</Text>
+                <Text style={styles.subHeader}>Reason For Rejection</Text>
                 <View style={styles.textContainer}>
                   <Text style={[styles.text, { color: "#780606" }]}>
                     {item.reasonRejected}
@@ -521,9 +566,25 @@ const RequestDetails = () => {
                 <View style={styles.repairProcedureContainer}>
                   <Text style={styles.subHeader}>Repair Procedure</Text>
                   {item.repairProcedure !== null && (
-                    <View style={[styles.textContainer, { minHeight: 150 }]}>
-                      <Text style={styles.text}>{item.repairProcedure}</Text>
-                    </View>
+                    <>
+                      {item.repairProcedure !== "Repair unsuccessful" && (
+                        <View
+                          style={[styles.textContainer, { minHeight: 150 }]}
+                        >
+                          <Text style={styles.text}>
+                            {item.repairProcedure}
+                          </Text>
+                        </View>
+                      )}
+
+                      {item.repairProcedure === "Repair unsuccessful" && (
+                        <View style={styles.textContainer}>
+                          <Text style={[styles.text, { color: "#780606" }]}>
+                            {item.repairProcedure}
+                          </Text>
+                        </View>
+                      )}
+                    </>
                   )}
 
                   {item.repairProcedure === null && (
@@ -742,6 +803,20 @@ const styles = StyleSheet.create({
   reasonRejectedContainer: {
     width: "100%",
     marginTop: 10,
+  },
+  chatButton: {
+    width: 70,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    borderRadius: 5,
+    backgroundColor: "#000B58",
+    padding: 5,
+  },
+  buttonText: {
+    color: "#FFF",
+    fontSize: 14,
+    fontFamily: "LeagueSpartan",
   },
 });
 

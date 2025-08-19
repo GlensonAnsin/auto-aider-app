@@ -296,12 +296,12 @@ const styles = StyleSheet.create({
         fontSize: 18,
     },
     troubleCodes: {
-        fontFamily: 'LeagueSpartan_Bold',
+        fontFamily: 'LeagueSpartan',
         color: '#780606',
         fontSize: 14,
     },
     date: {
-        fontFamily: 'LeagueSpartan_Bold',
+        fontFamily: 'LeagueSpartan',
         color: '#555',
         fontSize: 14,
     },
