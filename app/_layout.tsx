@@ -27,16 +27,20 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
-      <StatusBar style='dark' />
+      <StatusBar style="dark" />
 
-      <FlashMessage position='top' style={{ marginTop: 40 }} />
+      <FlashMessage position="top" style={{ marginTop: 40 }} />
 
-      <Stack initialRouteName='index' screenOptions={{ headerShown: false, animation: 'none' }}>
-        <Stack.Screen name='index' />
-        <Stack.Screen name='auth/login' />
-        <Stack.Screen name='auth/signup' />
-        <Stack.Screen name='car-owner' />
-        <Stack.Screen name='repair-shop' />
+      <Stack
+        initialRouteName="index"
+        screenOptions={{ headerShown: false, animation: "none" }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="auth/login" />
+        <Stack.Screen name="auth/signup" />
+        <Stack.Screen name="car-owner" />
+        <Stack.Screen name="repair-shop" />
+        <Stack.Screen name="chat-room" />
       </Stack>
     </Provider>
   );
