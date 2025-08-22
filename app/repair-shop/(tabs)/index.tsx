@@ -9,7 +9,19 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  Dimensions,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -32,13 +44,13 @@ export default function Home() {
   const [ratingsNum, setRatingsNum] = useState<number>(0);
   const [averageRating, setAverageRating] = useState<number>(0);
   const [servicesOffered, setServicesOffered] = useState<string[]>([]);
-  const [profilePic, setProfilePic] = useState<string | null>(null)
+  const [profilePic, setProfilePic] = useState<string | null>(null);
   const [shopImages, setShopImages] = useState<string[]>([]);
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
   const [profileBG, setProfileBG] = useState<string>('');
   const [imageModalVisible, setImageModalVisible] = useState<boolean>(false);
 
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
   useEffect(() => {
     (async () => {
@@ -59,14 +71,12 @@ export default function Home() {
         setProfilePic(res.profile_pic);
         setShopImages(res.shop_images);
         setProfileBG(res.profile_bg);
-
       } catch (e) {
         console.log('Error: ', e);
-
       } finally {
         setIsLoading(false);
       }
-    })()
+    })();
   }, []);
 
   useEffect(() => {
@@ -104,21 +114,20 @@ export default function Home() {
     try {
       await clearTokens();
       router.replace('/auth/login');
-
     } catch (e: any) {
       showMessage({
-          message: 'Something went wrong. Please try again.',
-          type: 'danger',
-          floating: true,
-          color: '#FFF',
-          icon: 'danger',
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
       });
       console.log('Login error:', e.message);
     }
   };
 
   if (isLoading) {
-    return <Loading />
+    return <Loading />;
   }
 
   return (
@@ -127,8 +136,7 @@ export default function Home() {
         <View style={styles.upperBox}>
           <Text style={styles.header}>Auto Repair Shop</Text>
           <TouchableOpacity style={styles.iconWrapper} onPress={() => handleLogout()}>
-              <MaterialCommunityIcons name='logout' style={styles.icon}
-              />
+            <MaterialCommunityIcons name="logout" style={styles.icon} />
           </TouchableOpacity>
         </View>
 
@@ -136,12 +144,15 @@ export default function Home() {
           <View style={styles.repShopUpperContainer}>
             {profilePic === null && (
               <>
-                <TouchableOpacity style={[styles.profilePicWrapper, { backgroundColor: profileBG }]} onPress={() => setImageModalVisible(true)}>
-                  <MaterialCommunityIcons name='car-wrench' size={50} color='#FFF' />
+                <TouchableOpacity
+                  style={[styles.profilePicWrapper, { backgroundColor: profileBG }]}
+                  onPress={() => setImageModalVisible(true)}
+                >
+                  <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
                 </TouchableOpacity>
 
                 <Modal
-                  animationType='fade'
+                  animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={imageModalVisible}
                   onRequestClose={() => setImageModalVisible(false)}
@@ -150,7 +161,7 @@ export default function Home() {
                     <View style={styles.centeredView}>
                       <Pressable style={styles.imageView} onPress={() => {}}>
                         <View style={[styles.modalProfilePicWrapper, { backgroundColor: profileBG }]}>
-                          <MaterialCommunityIcons name='car-wrench' size={100} color='#FFF' />
+                          <MaterialCommunityIcons name="car-wrench" size={100} color="#FFF" />
                         </View>
                       </Pressable>
                     </View>
@@ -162,16 +173,11 @@ export default function Home() {
             {profilePic !== null && (
               <>
                 <TouchableOpacity style={styles.profilePicWrapper} onPress={() => setImageModalVisible(true)}>
-                  <Image
-                    style={styles.profilePic}
-                    source={{ uri: profilePic }}
-                    width={100}
-                    height={100}
-                  />
+                  <Image style={styles.profilePic} source={{ uri: profilePic }} width={100} height={100} />
                 </TouchableOpacity>
 
                 <Modal
-                  animationType='fade'
+                  animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={imageModalVisible}
                   onRequestClose={() => setImageModalVisible(false)}
@@ -179,12 +185,7 @@ export default function Home() {
                   <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
                     <View style={styles.centeredView}>
                       <Pressable style={styles.imageView}>
-                          <Image 
-                            width={500}
-                            height={300}
-                            style={styles.viewImage}
-                            source={{ uri: profilePic }}
-                          />
+                        <Image width={500} height={300} style={styles.viewImage} source={{ uri: profilePic }} />
                       </Pressable>
                     </View>
                   </TouchableWithoutFeedback>
@@ -195,36 +196,30 @@ export default function Home() {
             <View style={styles.repShopNameContainer}>
               <Text style={styles.repShopName}>{repShopName}</Text>
               <View style={styles.genderNameContainer}>
-                {gender === 'Male' && (
-                  <Fontisto name='male' size={16} color='#555' />
-                )}
+                {gender === 'Male' && <Fontisto name="male" size={16} color="#555" />}
 
-                {gender === 'Female' && (
-                  <Fontisto name='female' size={16} color='#555' />
-                )}
+                {gender === 'Female' && <Fontisto name="female" size={16} color="#555" />}
                 <Text style={styles.contactText}>{`${ownerFirstname} ${ownerLastname}`}</Text>
               </View>
 
               <Text style={styles.contactText}>{mobileNum}</Text>
-              
-              {email !== null && (
-                <Text style={styles.contactText}>{email}</Text>
-              )}
+
+              {email !== null && <Text style={styles.contactText}>{email}</Text>}
 
               <View style={styles.ratingSwitchContainer}>
                 <View style={styles.ratingContainer}>
-                  <Fontisto name='persons' size={16} color='#555' />
+                  <Fontisto name="persons" size={16} color="#555" />
                   <Text style={styles.rating}>{ratingsNum}</Text>
-                  <MaterialIcons name='star-rate' size={16} color='#FDCC0D' />
+                  <MaterialIcons name="star-rate" size={16} color="#FDCC0D" />
                   <Text style={styles.rating}>{averageRating}</Text>
                 </View>
 
                 <View style={styles.availabilityContainer}>
                   <Text style={styles.availabilityText}>Availability</Text>
                   <Switch
-                    trackColor={{false: '#767577', true: '#000B58'}}
+                    trackColor={{ false: '#767577', true: '#000B58' }}
                     thumbColor={isEnabled ? '#EEE' : '#DDD'}
-                    ios_backgroundColor='#3e3e3e'
+                    ios_backgroundColor="#3e3e3e"
                     onValueChange={toggleSwitch}
                     value={isEnabled}
                   />
@@ -234,41 +229,53 @@ export default function Home() {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={() => {
-              backRoute();
-              router.replace('./repair-history/repair-history');
-            }}>
-                <MaterialIcons name='manage-history' size={15} color='#FFF' />
-                <Text style={styles.buttonText}>History</Text>
-              </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                backRoute();
+                router.replace('./repair-history/repair-history');
+              }}
+            >
+              <MaterialIcons name="manage-history" size={15} color="#FFF" />
+              <Text style={styles.buttonText}>History</Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity style={styles.button} onPress={() => {
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
                 backRoute();
                 router.replace('./repair-requests/repair-requests');
-              }}>
-                <FontAwesome6 name='screwdriver-wrench' size={10} color='#FFF' />
-                <Text style={styles.buttonText}>Requests</Text>
-              </TouchableOpacity>
+              }}
+            >
+              <FontAwesome6 name="screwdriver-wrench" size={10} color="#FFF" />
+              <Text style={styles.buttonText}>Requests</Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity style={styles.button} onPress={() => {
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
                 backRoute();
                 router.replace('./edit-shop/edit-shop');
-              }}>
-                <FontAwesome6 name='edit' size={10} color='#FFF' />
-                <Text style={styles.buttonText}>Edit Shop</Text>
-              </TouchableOpacity>
+              }}
+            >
+              <FontAwesome6 name="edit" size={10} color="#FFF" />
+              <Text style={styles.buttonText}>Edit Shop</Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.shopImages}>
             <Text style={styles.subHeader}>Shop Images</Text>
             {shopImages.length === 0 && (
-                <TouchableOpacity style={styles.editButton2} onPress={() => {
+              <TouchableOpacity
+                style={styles.editButton2}
+                onPress={() => {
                   backRoute();
                   router.replace('./edit-shop/edit-shop');
-                }}>
-                    <MaterialCommunityIcons name='image-plus' size={16} color='#555' />
-                    <Text style={styles.editButtonText}>Upload Image</Text>
-                </TouchableOpacity>
+                }}
+              >
+                <MaterialCommunityIcons name="image-plus" size={16} color="#555" />
+                <Text style={styles.editButtonText}>Upload Image</Text>
+              </TouchableOpacity>
             )}
 
             {shopImages.length !== 0 && (
@@ -276,19 +283,12 @@ export default function Home() {
                 width={screenWidth * 0.9}
                 height={300}
                 data={shopImages}
-                mode='parallax'
+                mode="parallax"
                 autoPlay={true}
                 autoPlayInterval={3000}
                 scrollAnimationDuration={2000}
                 loop={true}
-                renderItem={({ item }) => (
-                  <Image
-                    key={item}
-                    height={300}
-                    style={styles.image}
-                    source={{ uri: item }}
-                  />
-                )}
+                renderItem={({ item }) => <Image key={item} height={300} style={styles.image} source={{ uri: item }} />}
               />
             )}
           </View>
@@ -305,198 +305,198 @@ export default function Home() {
         </View>
       </ScrollView>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFF',
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
+  upperBox: {
+    backgroundColor: '#000B58',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 63,
+  },
+  header: {
+    color: '#FFF',
+    fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 22,
+  },
+  iconWrapper: {
+    top: 23,
+    right: 320,
+    position: 'absolute',
+  },
+  icon: {
+    fontSize: 22,
+    color: '#FFF',
+  },
+  lowerBox: {
+    width: '90%',
+    alignSelf: 'center',
+    marginTop: 20,
+    marginBottom: 100,
+  },
+  repShopUpperContainer: {
+    flexDirection: 'row',
+    gap: 20,
+    width: '100%',
+  },
+  profilePicWrapper: {
+    width: 100,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 100,
+  },
+  profilePic: {
+    borderRadius: 100,
+  },
+  repShopNameContainer: {
+    width: '63%',
+  },
+  repShopName: {
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#333',
+    fontSize: 22,
+  },
+  genderNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  contactText: {
+    fontFamily: 'LeagueSpartan',
+    color: '#555',
+    fontSize: 16,
+  },
+  ratingSwitchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  rating: {
+    fontFamily: 'LeagueSpartan',
+    color: '#555',
+    fontSize: 16,
+  },
+  availabilityContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  availabilityText: {
+    fontFamily: 'LeagueSpartan',
+    fontSize: 16,
+    color: '#555',
+  },
+  buttonContainer: {
+    justifyContent: 'space-evenly',
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    borderBottomWidth: 1,
+    borderColor: '#EAEAEA',
+    paddingBottom: 20,
+  },
+  button: {
+    backgroundColor: '#000B58',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 3,
+    width: 90,
+    padding: 5,
+    borderRadius: 5,
+  },
+  buttonText: {
+    fontFamily: 'LeagueSpartan',
+    fontSize: 14,
+    color: '#FFF',
+  },
+  shopImages: {
+    width: '100%',
+    marginTop: 20,
+    paddingBottom: 20,
+  },
+  editButton2: {
+    backgroundColor: '#D9D9D9',
+    minHeight: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    flexDirection: 'row',
+    gap: 5,
+  },
+  editButtonText: {
+    fontFamily: 'LeagueSpartan',
+    fontSize: 16,
+    color: '#555',
+  },
+  subHeader: {
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#333',
+    fontSize: 20,
+    marginBottom: 10,
+  },
+  image: {
+    flex: 1,
+    borderRadius: 8,
+  },
+  servicesOffered: {
+    width: '100%',
+  },
+  services: {
+    width: '100%',
+    flexDirection: 'row',
+    gap: 10,
+    paddingLeft: 5,
+  },
+  bullet: {
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#333',
+    fontSize: 16,
+  },
+  servicesText: {
+    fontFamily: 'LeagueSpartan',
+    color: '#333',
+    fontSize: 16,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageView: {
+    backgroundColor: '#FFF',
+    width: '85%',
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
-    upperBox: {
-        backgroundColor: '#000B58',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 63,
-    },
-    header: {
-        color: '#FFF',
-        fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 22,
-    },
-    iconWrapper: {
-        top: 23,
-        right: 320,
-        position: 'absolute',
-    },
-    icon: {
-        fontSize: 22,
-        color: '#FFF',
-    },
-    lowerBox: {
-      width: '90%',
-      alignSelf: 'center',
-      marginTop: 20,
-      marginBottom: 100,
-    },
-    repShopUpperContainer: {
-      flexDirection: 'row',
-      gap: 20,
-      width: '100%',
-    },
-    profilePicWrapper: {
-      width: 100,
-      height: 100,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: 100,
-    },
-    profilePic: {
-      borderRadius: 100,
-    },
-    repShopNameContainer: {
-      width: '63%',
-    },
-    repShopName: {
-      fontFamily: 'LeagueSpartan_Bold',
-      color: '#333',
-      fontSize: 22,
-    },
-    genderNameContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 3,
-    },
-    contactText: {
-      fontFamily: 'LeagueSpartan',
-      color: '#555',
-      fontSize: 16,
-    },
-    ratingSwitchContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    ratingContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 3,
-    },
-    rating: {
-      fontFamily: 'LeagueSpartan',
-      color: '#555',
-      fontSize: 16,
-    },
-    availabilityContainer: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    availabilityText: {
-      fontFamily: 'LeagueSpartan',
-      fontSize: 16,
-      color: '#555',
-    },
-    buttonContainer: {
-      justifyContent: 'space-evenly',
-      width: '100%',
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      borderBottomWidth: 1,
-      borderColor: '#EAEAEA',
-      paddingBottom: 20,
-    },
-    button: {
-      backgroundColor: '#000B58',
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: 3,
-      width: 90,
-      padding: 5,
-      borderRadius: 5,
-    },
-    buttonText: {
-      fontFamily: 'LeagueSpartan',
-      fontSize: 14,
-      color: '#FFF',
-    },
-    shopImages: {
-      width: '100%',
-      marginTop: 20,
-      paddingBottom: 20,
-    },
-    editButton2: {
-      backgroundColor: '#D9D9D9',
-      minHeight: 100,
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: 10,
-      flexDirection: 'row',
-      gap: 5,
-    },
-    editButtonText: {
-      fontFamily: 'LeagueSpartan',
-      fontSize: 16,
-      color: '#555'
-    },
-    subHeader: {
-      fontFamily: 'LeagueSpartan_Bold',
-      color: '#333',
-      fontSize: 20,
-      marginBottom: 10,
-    },
-    image: {
-      flex: 1,
-      borderRadius: 8,
-    },
-    servicesOffered: {
-      width: '100%',
-    },
-    services: {
-      width: '100%',
-      flexDirection: 'row',
-      gap: 10,
-      paddingLeft: 5,
-    },
-    bullet: {
-      fontFamily: 'LeagueSpartan_Bold',
-      color: '#333',
-      fontSize: 16,
-    },
-    servicesText: {
-      fontFamily: 'LeagueSpartan',
-      color: '#333',
-      fontSize: 16,
-    },
-    centeredView: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    imageView: {
-      backgroundColor: '#FFF',
-      width: '85%',
-      borderRadius: 10,
-      alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      elevation: 5,
-      overflow: 'hidden',
-    },
-    viewImage: {
-      width: '100%',
-    },
-    modalProfilePicWrapper: {
-      width: '100%',
-      height: 300,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: 10,
-    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    overflow: 'hidden',
+  },
+  viewImage: {
+    width: '100%',
+  },
+  modalProfilePicWrapper: {
+    width: '100%',
+    height: 300,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+  },
 });

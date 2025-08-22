@@ -1,20 +1,20 @@
-import { Header } from "@/components/Header";
-import { Loading } from "@/components/Loading";
-import { RootState } from "@/redux/store";
+import { Header } from '@/components/Header';
+import { Loading } from '@/components/Loading';
+import { RootState } from '@/redux/store';
 import {
   acceptRequest,
   getRepairShopInfo,
   getRequestsForRepairShop,
   rejectRequest,
-  requestCompleted
-} from "@/services/backendApi";
-import Entypo from "@expo/vector-icons/Entypo";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import Checkbox from "expo-checkbox";
-import LottieView from "lottie-react-native";
-import React, { useEffect, useRef, useState } from "react";
+  requestCompleted,
+} from '@/services/backendApi';
+import Entypo from '@expo/vector-icons/Entypo';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import Checkbox from 'expo-checkbox';
+import LottieView from 'lottie-react-native';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Image,
   Modal,
@@ -26,12 +26,12 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-} from "react-native";
-import { showMessage } from "react-native-flash-message";
-import MapView, { Marker, Region } from "react-native-maps";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
-import { io, Socket } from "socket.io-client";
+} from 'react-native';
+import { showMessage } from 'react-native-flash-message';
+import MapView, { Marker, Region } from 'react-native-maps';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
+import { io, Socket } from 'socket.io-client';
 
 const RepairRequestDetails = () => {
   dayjs.extend(utc);
@@ -65,43 +65,33 @@ const RepairRequestDetails = () => {
       reasonRejected: string | null;
     }[]
   >([]);
-  const [customerRegion, setCustomerRegion] = useState<Region | undefined>(
-    undefined
-  );
+  const [customerRegion, setCustomerRegion] = useState<Region | undefined>(undefined);
   const [shopRegion, setShopRegion] = useState<Region | undefined>(undefined);
-  const [bulletPossibleCauses, setBulletPossibleCauses] = useState<string[][]>(
-    []
-  );
-  const [bulletRecommendedRepair, setBulletRecommendedRepair] = useState<
-    string[][]
-  >([]);
+  const [bulletPossibleCauses, setBulletPossibleCauses] = useState<string[][]>([]);
+  const [bulletRecommendedRepair, setBulletRecommendedRepair] = useState<string[][]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [mapModalVisible, setMapModalVisible] = useState<boolean>(false);
-  const [rejectedModalVisible, setRejectedModalVisible] =
-    useState<boolean>(false);
-  const [completedModalVisible, setCompletedModalVisible] =
-    useState<boolean>(false);
-  const [otherReason, setOtherReason] = useState<string>("");
-  const [selectedReason, setSelectedReason] = useState<string>("");
-  const [repairProcedure, setRepairProcedure] = useState<string>("");
-  const [selectedOptCompleted, setSelectedOptCompleted] = useState<string>("");
-  const scanReference: string | null = useSelector(
-    (state: RootState) => state.scanReference.scanReference
-  );
+  const [rejectedModalVisible, setRejectedModalVisible] = useState<boolean>(false);
+  const [completedModalVisible, setCompletedModalVisible] = useState<boolean>(false);
+  const [otherReason, setOtherReason] = useState<string>('');
+  const [selectedReason, setSelectedReason] = useState<string>('');
+  const [repairProcedure, setRepairProcedure] = useState<string>('');
+  const [selectedOptCompleted, setSelectedOptCompleted] = useState<string>('');
+  const scanReference: string | null = useSelector((state: RootState) => state.scanReference.scanReference);
 
   const reasons = [
-    "Overbooked / No Available Slot",
-    "Lack of Parts / Supplies",
-    "Specialty Limitation",
-    "Vehicle Type Not Supported",
-    "Severe Damage Beyond Capability",
-    "Old / Rare Vehicle",
-    "Previous Payment Issues",
-    "Others"
+    'Overbooked / No Available Slot',
+    'Lack of Parts / Supplies',
+    'Specialty Limitation',
+    'Vehicle Type Not Supported',
+    'Severe Damage Beyond Capability',
+    'Old / Rare Vehicle',
+    'Previous Payment Issues',
+    'Others',
   ];
 
-  const completed = ["Repair unsuccessful", "Prefer not to say"];
+  const completed = ['Repair unsuccessful', 'Prefer not to say'];
 
   useEffect(() => {
     (async () => {
@@ -140,14 +130,8 @@ const RepairRequestDetails = () => {
           res1.mechanic_requests.forEach((request: any) => {
             if (request) {
               const requestID = request.mechanic_request_id;
-              const datetime = dayjs(request.request_datetime)
-                .utc(true)
-                .local()
-                .format("ddd MMM DD YYYY, h:mm A");
-              const completedOn = dayjs(request.completed_on)
-                .utc(true)
-                .local()
-                .format("ddd MMM DD YYYY, h:mm A");
+              const datetime = dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
+              const completedOn = dayjs(request.completed_on).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
               const longitude = parseFloat(request.longitude);
               const latitude = parseFloat(request.latitude);
               const status = request.status;
@@ -161,25 +145,20 @@ const RepairRequestDetails = () => {
                   if (diagnostic) {
                     const scanReference = diagnostic.scan_reference;
                     const dtc = diagnostic.dtc;
-                    const technicalDescription =
-                      diagnostic.technical_description;
+                    const technicalDescription = diagnostic.technical_description;
                     const meaning = diagnostic.meaning;
                     const possibleCauses = diagnostic.possible_causes;
                     const recommendedRepair = diagnostic.recommended_repair;
                     const vehicleIssue = diagnostic.vehicle_issue_description;
                     if (diagnostic.vehicle) {
-                      const vehicles = Array.isArray(diagnostic.vehicle)
-                        ? diagnostic.vehicle
-                        : [diagnostic.vehicle];
+                      const vehicles = Array.isArray(diagnostic.vehicle) ? diagnostic.vehicle : [diagnostic.vehicle];
                       vehicles.forEach((vehicle: any) => {
                         if (vehicle) {
                           const make = vehicle.make;
                           const model = vehicle.model;
                           const year = vehicle.year;
                           if (vehicle.user) {
-                            const users = Array.isArray(vehicle.user)
-                              ? vehicle.user
-                              : [vehicle.user];
+                            const users = Array.isArray(vehicle.user) ? vehicle.user : [vehicle.user];
                             users.forEach((customer: any) => {
                               if (customer) {
                                 statusData.push({
@@ -235,7 +214,7 @@ const RepairRequestDetails = () => {
           longitudeDelta: 0.01,
         });
       } catch (e) {
-        console.error("Error: ", e);
+        console.error('Error: ', e);
       } finally {
         setIsLoading(false);
       }
@@ -246,9 +225,7 @@ const RepairRequestDetails = () => {
     const allCoords = [shopRegion, customerRegion]
       .filter(
         (coord): coord is Region =>
-          coord !== undefined &&
-          typeof coord.latitude === "number" &&
-          typeof coord.longitude === "number"
+          coord !== undefined && typeof coord.latitude === 'number' && typeof coord.longitude === 'number'
       )
       .map((coord) => ({
         latitude: coord.latitude,
@@ -263,60 +240,55 @@ const RepairRequestDetails = () => {
 
   useEffect(() => {
     const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
-      transports: ["websocket"],
+      transports: ['websocket'],
     });
 
     setSocket(newSocket);
 
-    newSocket.on("connect", () => {
-      console.log("Connected to server: ", newSocket.id);
+    newSocket.on('connect', () => {
+      console.log('Connected to server: ', newSocket.id);
     });
 
-    newSocket.on("requestRejected", ({ requestIDs, reason_rejected }) => {
+    newSocket.on('requestRejected', ({ requestIDs, reason_rejected }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) =>
-          prev.map((r) => r.requestID === id ? { ...r, status: "Rejected", reasonRejected: reason_rejected } : r)
+          prev.map((r) => (r.requestID === id ? { ...r, status: 'Rejected', reasonRejected: reason_rejected } : r))
         );
       }
     });
 
-    newSocket.on("requestAccepted", ({ requestIDs }) => {
+    newSocket.on('requestAccepted', ({ requestIDs }) => {
+      for (const id of requestIDs) {
+        setRequestDetails((prev) => prev.map((r) => (r.requestID === id ? { ...r, status: 'Ongoing' } : r)));
+      }
+    });
+
+    newSocket.on('requestCompleted', ({ requestIDs, repair_procedure, completed_on }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) =>
           prev.map((r) =>
             r.requestID === id
-              ? { ...r, status: "Ongoing" }
+              ? {
+                  ...r,
+                  status: 'Completed',
+                  repairProcedure: repair_procedure,
+                  completedOn: dayjs(completed_on).utc(true).format('ddd MMM DD YYYY, h:mm A'),
+                }
               : r
           )
         );
       }
     });
 
-    newSocket.on("requestCompleted", ({
-      requestIDs,
-      repair_procedure,
-      completed_on,
-    }) => {
-      for (const id of requestIDs) {
-        setRequestDetails((prev) =>
-          prev.map((r) => r.requestID === id ? { ...r, status: "Completed", repairProcedure: repair_procedure, completedOn: dayjs(completed_on)
-            .utc(true)
-            .format("ddd MMM DD YYYY, h:mm A"), } : r)
-        );
-      }
-    });
-
     return () => {
-      newSocket.off("requestRejected");
-      newSocket.off("requestAccepted");
-      newSocket.off("requestCompleted");
+      newSocket.off('requestRejected');
+      newSocket.off('requestAccepted');
+      newSocket.off('requestCompleted');
       newSocket.disconnect();
     };
   }, []);
 
-  const selectedRequest = requestDetails.filter(
-    (item: any) => item.scanReference === scanReference
-  );
+  const selectedRequest = requestDetails.filter((item: any) => item.scanReference === scanReference);
 
   const grouped = Object.values(
     selectedRequest.reduce(
@@ -393,16 +365,16 @@ const RepairRequestDetails = () => {
 
   const handleTransformText = (index: number) => {
     const bulletPossibleCauses = grouped.map((item) => {
-      return (item.possibleCauses?.[index] ?? "")
-        .split("\n")
-        .map((cause) => cause.replace(/^\*\s+/, ""))
+      return (item.possibleCauses?.[index] ?? '')
+        .split('\n')
+        .map((cause) => cause.replace(/^\*\s+/, ''))
         .filter(Boolean);
     });
 
     const bulletRecommendedRepair = grouped.map((item) => {
-      return (item.recommendedRepair?.[index] ?? "")
-        .split("\n")
-        .map((repair) => repair.replace(/^\*\s+/, ""))
+      return (item.recommendedRepair?.[index] ?? '')
+        .split('\n')
+        .map((repair) => repair.replace(/^\*\s+/, ''))
         .filter(Boolean);
     });
 
@@ -410,21 +382,14 @@ const RepairRequestDetails = () => {
     setBulletRecommendedRepair(bulletRecommendedRepair);
   };
 
-  const getDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ) => {
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const toRad = (deg: number) => (deg * Math.PI) / 180;
     const R = 6371;
 
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
 
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return (R * c).toFixed(2);
@@ -443,34 +408,33 @@ const RepairRequestDetails = () => {
     }
 
     try {
-      if (selectedReason === "Others") {
+      if (selectedReason === 'Others') {
         await rejectRequest(IDs, otherReason);
         showMessage({
-          message: "Request rejected",
-          type: "success",
+          message: 'Request rejected',
+          type: 'success',
           floating: true,
-          color: "#FFF",
-          icon: "success",
+          color: '#FFF',
+          icon: 'success',
         });
         return;
       }
 
       await rejectRequest(IDs, selectedReason);
       showMessage({
-        message: "Request rejected",
-        type: "success",
+        message: 'Request rejected',
+        type: 'success',
         floating: true,
-        color: "#FFF",
-        icon: "success",
+        color: '#FFF',
+        icon: 'success',
       });
-      
     } catch (e) {
       showMessage({
-        message: "Something went wrong. Please try again.",
-        type: "danger",
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
         floating: true,
-        color: "#FFF",
-        icon: "danger",
+        color: '#FFF',
+        icon: 'danger',
       });
     }
   };
@@ -479,20 +443,19 @@ const RepairRequestDetails = () => {
     try {
       await acceptRequest(IDs);
       showMessage({
-        message: "Request accepted",
-        type: "success",
+        message: 'Request accepted',
+        type: 'success',
         floating: true,
-        color: "#FFF",
-        icon: "success",
+        color: '#FFF',
+        icon: 'success',
       });
-
     } catch (e) {
       showMessage({
-        message: "Something went wrong. Please try again.",
-        type: "danger",
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
         floating: true,
-        color: "#FFF",
-        icon: "danger",
+        color: '#FFF',
+        icon: 'danger',
       });
     }
   };
@@ -500,36 +463,36 @@ const RepairRequestDetails = () => {
   const handleRequestCompleted = async (IDs: number[]) => {
     if (!selectedOptCompleted && !repairProcedure) {
       showMessage({
-        message: "Please fill in required field.",
-        type: "warning",
+        message: 'Please fill in required field.',
+        type: 'warning',
         floating: true,
-        color: "#FFF",
-        icon: "warning",
+        color: '#FFF',
+        icon: 'warning',
       });
       return;
     }
 
     try {
-      if (selectedOptCompleted === "Repair unsuccessful") {
-        await requestCompleted(IDs, "Repair unsuccessful", dayjs().format());
+      if (selectedOptCompleted === 'Repair unsuccessful') {
+        await requestCompleted(IDs, 'Repair unsuccessful', dayjs().format());
         showMessage({
-          message: "Request completed",
-          type: "success",
+          message: 'Request completed',
+          type: 'success',
           floating: true,
-          color: "#FFF",
-          icon: "success",
+          color: '#FFF',
+          icon: 'success',
         });
         return;
       }
 
-      if (selectedOptCompleted === "Prefer not to say") {
+      if (selectedOptCompleted === 'Prefer not to say') {
         await requestCompleted(IDs, null, dayjs().format());
         showMessage({
-          message: "Request completed",
-          type: "success",
+          message: 'Request completed',
+          type: 'success',
           floating: true,
-          color: "#FFF",
-          icon: "success",
+          color: '#FFF',
+          icon: 'success',
         });
         return;
       }
@@ -537,25 +500,24 @@ const RepairRequestDetails = () => {
       if (!selectedOptCompleted) {
         await requestCompleted(IDs, repairProcedure, dayjs().format());
         showMessage({
-          message: "Request completed",
-          type: "success",
+          message: 'Request completed',
+          type: 'success',
           floating: true,
-          color: "#FFF",
-          icon: "success",
+          color: '#FFF',
+          icon: 'success',
         });
         return;
       }
-
     } catch (e) {
       showMessage({
-        message: "Something went wrong. Please try again.",
-        type: "danger",
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
         floating: true,
-        color: "#FFF",
-        icon: "danger",
+        color: '#FFF',
+        icon: 'danger',
       });
     }
-  }
+  };
 
   if (isLoading) {
     return <Loading />;
@@ -570,51 +532,33 @@ const RepairRequestDetails = () => {
           <View key={item.scanReference} style={styles.lowerBox}>
             <View style={styles.customerProfileContainer}>
               {item.customerProfile === null && (
-                <View
-                  style={[
-                    styles.profilePicWrapper,
-                    { backgroundColor: item.customerProfileBG },
-                  ]}
-                >
-                  <MaterialCommunityIcons
-                    name="car-wrench"
-                    size={50}
-                    color="#FFF"
-                  />
+                <View style={[styles.profilePicWrapper, { backgroundColor: item.customerProfileBG }]}>
+                  <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
                 </View>
               )}
 
               {item.customerProfile !== null && (
                 <View style={styles.profilePicWrapper}>
-                  <Image
-                    style={styles.profilePic}
-                    source={{ uri: item.customerProfile }}
-                    width={100}
-                    height={100}
-                  />
+                  <Image style={styles.profilePic} source={{ uri: item.customerProfile }} width={100} height={100} />
                 </View>
               )}
 
               <Text style={styles.customerName}>{item.customer}</Text>
-              <Text style={[styles.text, { color: "#555" }]}>
-                {item.customerNum}
-              </Text>
+              <Text style={[styles.text, { color: '#555' }]}>{item.customerNum}</Text>
               {item.customerEmail !== null && (
-                <Text style={[styles.text, { color: "#555" }]}>
-                  {item.customerEmail}
-                </Text>
+                <Text style={[styles.text, { color: '#555' }]}>{item.customerEmail}</Text>
               )}
               <TouchableOpacity style={styles.chatButton}>
-                <Text style={[styles.buttonText, { fontSize: 14, fontFamily: "LeagueSpartan", }]}>Chat</Text>
+                <Text style={[styles.buttonText, { fontSize: 14, fontFamily: 'LeagueSpartan' }]}>Chat</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.statusVehicleContainer}>
               <View style={styles.statusContainer}>
                 <Text style={styles.status}>{item.status}</Text>
-                {item.status === "Pending" && (
+                {item.status === 'Pending' && (
                   <LottieView
-                    source={require("@/assets/images/pending.json")}
+                    source={require('@/assets/images/pending.json')}
                     autoPlay
                     loop
                     style={{
@@ -623,9 +567,9 @@ const RepairRequestDetails = () => {
                     }}
                   />
                 )}
-                {item.status === "Rejected" && (
+                {item.status === 'Rejected' && (
                   <LottieView
-                    source={require("@/assets/images/rejected.json")}
+                    source={require('@/assets/images/rejected.json')}
                     autoPlay
                     loop
                     style={{
@@ -634,9 +578,9 @@ const RepairRequestDetails = () => {
                     }}
                   />
                 )}
-                {item.status === "Ongoing" && (
+                {item.status === 'Ongoing' && (
                   <LottieView
-                    source={require("@/assets/images/ongoing.json")}
+                    source={require('@/assets/images/ongoing.json')}
                     autoPlay
                     loop
                     style={{
@@ -645,9 +589,9 @@ const RepairRequestDetails = () => {
                     }}
                   />
                 )}
-                {item.status === "Completed" && (
+                {item.status === 'Completed' && (
                   <LottieView
-                    source={require("@/assets/images/completed.json")}
+                    source={require('@/assets/images/completed.json')}
                     autoPlay
                     loop
                     style={{
@@ -663,7 +607,7 @@ const RepairRequestDetails = () => {
                   <Text style={styles.nestedText}>Requested: </Text>
                   {item.datetime}
                 </Text>
-                {item.status === "Completed" && (
+                {item.status === 'Completed' && (
                   <Text style={styles.text}>
                     <Text style={styles.nestedText}>Completed: </Text>
                     {item.completedOn}
@@ -688,11 +632,7 @@ const RepairRequestDetails = () => {
               <Text style={styles.subHeader}>Location</Text>
               <View style={styles.mapButtonContainer}>
                 <View style={styles.mapView}>
-                  <MapView
-                    style={styles.map}
-                    mapType="hybrid"
-                    region={customerRegion}
-                  >
+                  <MapView style={styles.map} mapType="hybrid" region={customerRegion}>
                     {customerRegion && (
                       <Marker
                         coordinate={{
@@ -704,33 +644,25 @@ const RepairRequestDetails = () => {
                   </MapView>
                 </View>
 
-                <TouchableOpacity
-                  style={styles.mapButton}
-                  onPress={() => setMapModalVisible(true)}
-                ></TouchableOpacity>
+                <TouchableOpacity style={styles.mapButton} onPress={() => setMapModalVisible(true)}></TouchableOpacity>
               </View>
 
               <Modal
                 animationType="fade"
-                backdropColor={"rgba(0, 0, 0, 0.5)"}
+                backdropColor={'rgba(0, 0, 0, 0.5)'}
                 visible={mapModalVisible}
                 onRequestClose={() => setMapModalVisible(false)}
               >
                 <View style={styles.centeredView}>
                   <View style={styles.mapView2}>
-                    <MapView
-                      style={styles.map2}
-                      ref={mapRef}
-                      mapType="hybrid"
-                      initialRegion={customerRegion}
-                    >
+                    <MapView style={styles.map2} ref={mapRef} mapType="hybrid" initialRegion={customerRegion}>
                       {shopRegion && (
                         <Marker
                           coordinate={{
                             latitude: shopRegion.latitude,
                             longitude: shopRegion.longitude,
                           }}
-                          image={require("../../../../assets/images/circle-marker.png")}
+                          image={require('../../../../assets/images/circle-marker.png')}
                           title="You"
                         />
                       )}
@@ -746,10 +678,7 @@ const RepairRequestDetails = () => {
                       )}
                     </MapView>
 
-                    <TouchableOpacity
-                      style={styles.exitButton2}
-                      onPress={() => setMapModalVisible(false)}
-                    >
+                    <TouchableOpacity style={styles.exitButton2} onPress={() => setMapModalVisible(false)}>
                       <Entypo name="cross" size={20} color="#FFF" />
                     </TouchableOpacity>
                     <Text
@@ -775,29 +704,19 @@ const RepairRequestDetails = () => {
                         }}
                       >
                         <Text style={styles.diagnosisButtonText1}>{dtc}</Text>
-                        <Text style={styles.diagnosisButtonText2}>
-                          {item.technicalDescription[index]}
-                        </Text>
+                        <Text style={styles.diagnosisButtonText2}>{item.technicalDescription[index]}</Text>
                       </TouchableOpacity>
 
                       <Modal
                         animationType="fade"
-                        backdropColor={"rgba(0, 0, 0, 0.5)"}
+                        backdropColor={'rgba(0, 0, 0, 0.5)'}
                         visible={modalVisible}
                         onRequestClose={() => setModalVisible(false)}
                       >
-                        <TouchableWithoutFeedback
-                          onPress={() => setModalVisible(false)}
-                        >
+                        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
                           <View style={styles.centeredView}>
-                            <Pressable
-                              style={styles.modalView}
-                              onPress={() => {}}
-                            >
-                              <TouchableOpacity
-                                style={styles.exitButton}
-                                onPress={() => setModalVisible(false)}
-                              >
+                            <Pressable style={styles.modalView} onPress={() => {}}>
+                              <TouchableOpacity style={styles.exitButton} onPress={() => setModalVisible(false)}>
                                 <Entypo name="cross" size={20} color="#333" />
                               </TouchableOpacity>
                               <ScrollView showsVerticalScrollIndicator={false}>
@@ -807,14 +726,12 @@ const RepairRequestDetails = () => {
                                       styles.textContainer2,
                                       {
                                         borderBottomWidth: 1,
-                                        borderColor: "#EAEAEA",
+                                        borderColor: '#EAEAEA',
                                         paddingBottom: 20,
                                       },
                                     ]}
                                   >
-                                    <Text style={styles.troubleCode}>
-                                      {item.dtc[selectedIndex]}
-                                    </Text>
+                                    <Text style={styles.troubleCode}>{item.dtc[selectedIndex]}</Text>
                                     <Text style={styles.technicalDescription}>
                                       {item.technicalDescription[selectedIndex]}
                                     </Text>
@@ -822,51 +739,27 @@ const RepairRequestDetails = () => {
 
                                   <View style={styles.textContainer2}>
                                     <Text style={styles.label}>Meaning</Text>
-                                    <Text style={styles.text}>
-                                      {item.meaning[selectedIndex]}
-                                    </Text>
+                                    <Text style={styles.text}>{item.meaning[selectedIndex]}</Text>
                                   </View>
 
                                   <View style={styles.textContainer2}>
-                                    <Text style={styles.label}>
-                                      Possible Causes
-                                    </Text>
-                                    {bulletPossibleCauses[groupedIndex]?.map(
-                                      (cause, index) => (
-                                        <View
-                                          key={index}
-                                          style={styles.bulletView}
-                                        >
-                                          <Text
-                                            style={styles.bullet}
-                                          >{`\u2022`}</Text>
-                                          <Text style={styles.bulletedText}>
-                                            {cause}
-                                          </Text>
-                                        </View>
-                                      )
-                                    )}
+                                    <Text style={styles.label}>Possible Causes</Text>
+                                    {bulletPossibleCauses[groupedIndex]?.map((cause, index) => (
+                                      <View key={index} style={styles.bulletView}>
+                                        <Text style={styles.bullet}>{`\u2022`}</Text>
+                                        <Text style={styles.bulletedText}>{cause}</Text>
+                                      </View>
+                                    ))}
                                   </View>
 
                                   <View style={styles.textContainer2}>
-                                    <Text style={styles.label}>
-                                      Recommended Solutions or Repairs
-                                    </Text>
-                                    {bulletRecommendedRepair[groupedIndex]?.map(
-                                      (repair, index) => (
-                                        <View
-                                          key={index}
-                                          style={styles.bulletView}
-                                        >
-                                          <Text
-                                            style={styles.bullet}
-                                          >{`\u2022`}</Text>
-                                          <Text style={styles.bulletedText}>
-                                            {repair}
-                                          </Text>
-                                        </View>
-                                      )
-                                    )}
+                                    <Text style={styles.label}>Recommended Solutions or Repairs</Text>
+                                    {bulletRecommendedRepair[groupedIndex]?.map((repair, index) => (
+                                      <View key={index} style={styles.bulletView}>
+                                        <Text style={styles.bullet}>{`\u2022`}</Text>
+                                        <Text style={styles.bulletedText}>{repair}</Text>
+                                      </View>
+                                    ))}
                                   </View>
                                 </View>
                               </ScrollView>
@@ -880,29 +773,24 @@ const RepairRequestDetails = () => {
               )}
 
               {item.vehicleIssue !== null && (
-                <View
-                  style={[
-                    styles.textContainer,
-                    { minHeight: 150, marginBottom: 10 },
-                  ]}
-                >
+                <View style={[styles.textContainer, { minHeight: 150, marginBottom: 10 }]}>
                   <Text style={styles.text}>{item.vehicleIssue}</Text>
                 </View>
               )}
             </View>
 
-            {item.status === "Pending" && (
+            {item.status === 'Pending' && (
               <>
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
-                    style={[styles.button, { backgroundColor: "#780606" }]}
+                    style={[styles.button, { backgroundColor: '#780606' }]}
                     onPress={() => setRejectedModalVisible(true)}
                   >
                     <Text style={styles.buttonText}>Reject</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={[styles.button, { backgroundColor: "#000B58" }]}
+                    style={[styles.button, { backgroundColor: '#000B58' }]}
                     onPress={() => handleAcceptRequest(item.requestID)}
                   >
                     <Text style={styles.buttonText}>Accept</Text>
@@ -911,76 +799,51 @@ const RepairRequestDetails = () => {
 
                 <Modal
                   animationType="fade"
-                  backdropColor={"rgba(0, 0, 0, 0.5)"}
+                  backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={rejectedModalVisible}
                   onRequestClose={() => {
                     setRejectedModalVisible(false);
-                    setSelectedReason("");
-                    setOtherReason("");
+                    setSelectedReason('');
+                    setOtherReason('');
                   }}
                 >
                   <TouchableWithoutFeedback
                     onPress={() => {
                       setRejectedModalVisible(false);
-                      setSelectedReason("");
-                      setOtherReason("");
+                      setSelectedReason('');
+                      setOtherReason('');
                     }}
                   >
                     <View style={styles.centeredView}>
-                      <Pressable
-                        style={styles.textInputView}
-                        onPress={() => {}}
-                      >
-                        <Text
-                          style={[styles.subHeader, { textAlign: "center" }]}
-                        >
-                          Reason For Rejection
-                        </Text>
+                      <Pressable style={styles.textInputView} onPress={() => {}}>
+                        <Text style={[styles.subHeader, { textAlign: 'center' }]}>Reason For Rejection</Text>
                         {reasons.map((item) => (
                           <View key={item} style={styles.checkboxContainer}>
                             <Checkbox
                               value={selectedReason === item}
                               onValueChange={() => {
-                                setSelectedReason(
-                                  selectedReason === item ? "" : item
-                                );
+                                setSelectedReason(selectedReason === item ? '' : item);
                               }}
-                              color={
-                                selectedReason === item ? "#000B58" : undefined
-                              }
+                              color={selectedReason === item ? '#000B58' : undefined}
                             />
                             <Text style={styles.text}>{item}</Text>
                           </View>
                         ))}
 
-                        {selectedReason === "Others" && (
-                          <TextInput
-                            style={styles.input}
-                            value={otherReason}
-                            onChangeText={setOtherReason}
-                          />
+                        {selectedReason === 'Others' && (
+                          <TextInput style={styles.input} value={otherReason} onChangeText={setOtherReason} />
                         )}
 
                         <View style={styles.buttonContainer}>
                           <TouchableOpacity
-                            style={[
-                              styles.button,
-                              { borderWidth: 1, borderColor: "#555" },
-                            ]}
+                            style={[styles.button, { borderWidth: 1, borderColor: '#555' }]}
                             onPress={() => setRejectedModalVisible(false)}
                           >
-                            <Text
-                              style={[styles.buttonText, { color: "#555" }]}
-                            >
-                              Cancel
-                            </Text>
+                            <Text style={[styles.buttonText, { color: '#555' }]}>Cancel</Text>
                           </TouchableOpacity>
 
                           <TouchableOpacity
-                            style={[
-                              styles.button,
-                              { backgroundColor: "#000B58" },
-                            ]}
+                            style={[styles.button, { backgroundColor: '#000B58' }]}
                             onPress={() => handleRejectRequest(item.requestID)}
                           >
                             <Text style={styles.buttonText}>Proceed</Text>
@@ -993,22 +856,20 @@ const RepairRequestDetails = () => {
               </>
             )}
 
-            {item.status === "Rejected" && (
+            {item.status === 'Rejected' && (
               <View style={styles.reasonRejectedContainer}>
                 <Text style={styles.subHeader}>Reason For Rejection</Text>
                 <View style={styles.textContainer}>
-                  <Text style={[styles.text, { color: "#780606" }]}>
-                    {item.reasonRejected}
-                  </Text>
+                  <Text style={[styles.text, { color: '#780606' }]}>{item.reasonRejected}</Text>
                 </View>
               </View>
             )}
 
-            {item.status === "Ongoing" && (
+            {item.status === 'Ongoing' && (
               <>
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
-                    style={[styles.button, { backgroundColor: "#000B58" }]}
+                    style={[styles.button, { backgroundColor: '#000B58' }]}
                     onPress={() => setCompletedModalVisible(true)}
                   >
                     <Text style={styles.buttonText}>Done</Text>
@@ -1017,46 +878,33 @@ const RepairRequestDetails = () => {
 
                 <Modal
                   animationType="fade"
-                  backdropColor={"rgba(0, 0, 0, 0.5)"}
+                  backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={completedModalVisible}
                   onRequestClose={() => {
                     setCompletedModalVisible(false);
-                    setSelectedOptCompleted("");
-                    setRepairProcedure("");
+                    setSelectedOptCompleted('');
+                    setRepairProcedure('');
                   }}
                 >
                   <TouchableWithoutFeedback
                     onPress={() => {
                       setCompletedModalVisible(false);
-                      setSelectedOptCompleted("");
-                      setRepairProcedure("");
+                      setSelectedOptCompleted('');
+                      setRepairProcedure('');
                     }}
                   >
                     <View style={styles.centeredView}>
-                      <Pressable
-                        style={styles.textInputView}
-                        onPress={() => {}}
-                      >
-                        <Text
-                          style={[styles.subHeader, { textAlign: "center" }]}
-                        >
-                          Repair Procedure Done
-                        </Text>
+                      <Pressable style={styles.textInputView} onPress={() => {}}>
+                        <Text style={[styles.subHeader, { textAlign: 'center' }]}>Repair Procedure Done</Text>
                         {completed.map((item) => (
                           <View key={item} style={styles.checkboxContainer}>
                             <Checkbox
                               value={selectedOptCompleted === item}
                               onValueChange={() => {
-                                setSelectedOptCompleted(
-                                  selectedOptCompleted === item ? "" : item
-                                );
-                                setRepairProcedure("");
+                                setSelectedOptCompleted(selectedOptCompleted === item ? '' : item);
+                                setRepairProcedure('');
                               }}
-                              color={
-                                selectedOptCompleted === item
-                                  ? "#000B58"
-                                  : undefined
-                              }
+                              color={selectedOptCompleted === item ? '#000B58' : undefined}
                             />
                             <Text style={styles.text}>{item}</Text>
                           </View>
@@ -1070,37 +918,25 @@ const RepairRequestDetails = () => {
                           numberOfLines={5}
                           value={repairProcedure}
                           onChangeText={setRepairProcedure}
-                          onFocus={() => setSelectedOptCompleted("")}
+                          onFocus={() => setSelectedOptCompleted('')}
                           textAlignVertical="top"
                         />
 
                         <View style={styles.buttonContainer}>
                           <TouchableOpacity
-                            style={[
-                              styles.button,
-                              { borderWidth: 1, borderColor: "#555" },
-                            ]}
+                            style={[styles.button, { borderWidth: 1, borderColor: '#555' }]}
                             onPress={() => {
                               setCompletedModalVisible(false);
-                              setSelectedOptCompleted("");
-                              setRepairProcedure("");
+                              setSelectedOptCompleted('');
+                              setRepairProcedure('');
                             }}
                           >
-                            <Text
-                              style={[styles.buttonText, { color: "#555" }]}
-                            >
-                              Cancel
-                            </Text>
+                            <Text style={[styles.buttonText, { color: '#555' }]}>Cancel</Text>
                           </TouchableOpacity>
 
                           <TouchableOpacity
-                            style={[
-                              styles.button,
-                              { backgroundColor: "#000B58" },
-                            ]}
-                            onPress={() =>
-                              handleRequestCompleted(item.requestID)
-                            }
+                            style={[styles.button, { backgroundColor: '#000B58' }]}
+                            onPress={() => handleRequestCompleted(item.requestID)}
                           >
                             <Text style={styles.buttonText}>Proceed</Text>
                           </TouchableOpacity>
@@ -1112,22 +948,20 @@ const RepairRequestDetails = () => {
               </>
             )}
 
-            {item.status === "Completed" && (
+            {item.status === 'Completed' && (
               <View style={styles.repairProcedureContainer}>
                 <Text style={styles.subHeader}>Repair Procedure Done</Text>
                 {item.repairProcedure !== null && (
                   <>
-                    {item.repairProcedure !== "Repair unsuccessful" && (
+                    {item.repairProcedure !== 'Repair unsuccessful' && (
                       <View style={[styles.textContainer, { minHeight: 150 }]}>
                         <Text style={styles.text}>{item.repairProcedure}</Text>
                       </View>
                     )}
 
-                    {item.repairProcedure === "Repair unsuccessful" && (
+                    {item.repairProcedure === 'Repair unsuccessful' && (
                       <View style={styles.textContainer}>
-                        <Text style={[styles.text, { color: "#780606" }]}>
-                          {item.repairProcedure}
-                        </Text>
+                        <Text style={[styles.text, { color: '#780606' }]}>{item.repairProcedure}</Text>
                       </View>
                     )}
                   </>
@@ -1135,7 +969,7 @@ const RepairRequestDetails = () => {
 
                 {item.repairProcedure === null && (
                   <View style={styles.textContainer}>
-                    <Text style={[styles.text, { color: "#780606" }]}>
+                    <Text style={[styles.text, { color: '#780606' }]}>
                       Shop did not specify the repair procedure done.
                     </Text>
                   </View>
@@ -1152,111 +986,111 @@ const RepairRequestDetails = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: '#FFF',
   },
   lowerBox: {
-    alignSelf: "center",
+    alignSelf: 'center',
     marginTop: 20,
     marginBottom: 100,
-    width: "90%",
+    width: '90%',
   },
   customerProfileContainer: {
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: "#EAEAEA",
+    borderColor: '#EAEAEA',
     paddingBottom: 20,
   },
   profilePicWrapper: {
     width: 100,
     height: 100,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 100,
   },
   profilePic: {
     borderRadius: 100,
   },
   customerName: {
-    fontFamily: "LeagueSpartan_Bold",
-    color: "#333",
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#333',
     fontSize: 22,
   },
   statusVehicleContainer: {
-    width: "100%",
+    width: '100%',
     marginTop: 10,
   },
   statusContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 3,
     marginBottom: 10,
   },
   status: {
-    fontFamily: "LeagueSpartan_Bold",
-    color: "#333",
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#333',
     fontSize: 20,
     lineHeight: 20,
-    textAlignVertical: "center",
+    textAlignVertical: 'center',
   },
   text: {
-    fontFamily: "LeagueSpartan",
-    color: "#333",
+    fontFamily: 'LeagueSpartan',
+    color: '#333',
     fontSize: 16,
   },
   nestedText: {
-    fontFamily: "LeagueSpartan_Bold",
-    color: "#333",
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#333',
     fontSize: 16,
   },
   locationContainer: {
-    width: "100%",
+    width: '100%',
     marginTop: 10,
   },
   subHeader: {
-    fontFamily: "LeagueSpartan_Bold",
+    fontFamily: 'LeagueSpartan_Bold',
     fontSize: 20,
-    color: "#333",
+    color: '#333',
     marginBottom: 10,
   },
   mapButtonContainer: {
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
   mapView: {
     minHeight: 100,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 10,
-    overflow: "hidden",
-    width: "100%",
-    position: "absolute",
+    overflow: 'hidden',
+    width: '100%',
+    position: 'absolute',
     zIndex: 1,
   },
   map: {
-    width: "100%",
+    width: '100%',
     height: 100,
   },
   mapButton: {
-    backgroundColor: "rgba(217, 217, 217, 0.2)",
+    backgroundColor: 'rgba(217, 217, 217, 0.2)',
     minHeight: 100,
     borderRadius: 10,
-    width: "100%",
+    width: '100%',
     zIndex: 2,
   },
   vehicleIssueContainer: {
-    width: "100%",
+    width: '100%',
     marginTop: 10,
   },
   diagnosisButton: {
-    backgroundColor: "#EAEAEA",
-    width: "100%",
+    backgroundColor: '#EAEAEA',
+    width: '100%',
     marginBottom: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -1268,24 +1102,24 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   diagnosisButtonText1: {
-    fontFamily: "LeagueSpartan_Bold",
-    color: "#780606",
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#780606',
     fontSize: 16,
   },
   diagnosisButtonText2: {
-    fontFamily: "LeagueSpartan",
-    color: "#555",
+    fontFamily: 'LeagueSpartan',
+    color: '#555',
     fontSize: 14,
   },
   repairProcedureContainer: {
     marginTop: 10,
-    width: "100%",
+    width: '100%',
   },
   textContainer: {
-    backgroundColor: "#EAEAEA",
+    backgroundColor: '#EAEAEA',
     borderRadius: 10,
     padding: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -1296,17 +1130,17 @@ const styles = StyleSheet.create({
   },
   centeredView: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalView: {
-    backgroundColor: "#FFF",
-    width: "90%",
+    backgroundColor: '#FFF',
+    width: '90%',
     maxHeight: 600,
     borderRadius: 10,
     padding: 20,
-    alignItems: "center",
-    shadowColor: "#000",
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -1316,82 +1150,82 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   exitButton: {
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "flex-end",
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
   },
   troubleCode: {
-    fontFamily: "LeagueSpartan_Bold",
+    fontFamily: 'LeagueSpartan_Bold',
     fontSize: 22,
-    color: "#333",
-    textAlign: "center",
+    color: '#333',
+    textAlign: 'center',
   },
   technicalDescription: {
-    fontFamily: "LeagueSpartan",
+    fontFamily: 'LeagueSpartan',
     fontSize: 20,
-    color: "#555",
-    textAlign: "center",
+    color: '#555',
+    textAlign: 'center',
   },
   label: {
-    fontFamily: "LeagueSpartan_Bold",
+    fontFamily: 'LeagueSpartan_Bold',
     fontSize: 18,
     marginBottom: 10,
-    color: "#333",
+    color: '#333',
   },
   textContainer2: {
     marginBottom: 10,
   },
   bulletView: {
-    width: "100%",
-    flexDirection: "row",
+    width: '100%',
+    flexDirection: 'row',
     gap: 10,
     paddingLeft: 5,
   },
   bullet: {
-    fontFamily: "LeagueSpartan_Bold",
-    color: "#333",
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#333',
     fontSize: 16,
   },
   bulletedText: {
-    fontFamily: "LeagueSpartan",
-    color: "#333",
+    fontFamily: 'LeagueSpartan',
+    color: '#333',
     fontSize: 16,
-    maxWidth: "93%",
+    maxWidth: '93%',
   },
   buttonContainer: {
     marginTop: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    width: "100%",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
     gap: 10,
   },
   button: {
     width: 100,
     height: 45,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 10,
   },
   chatButton: {
     width: 70,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 10,
     borderRadius: 5,
-    backgroundColor: "#000B58",
+    backgroundColor: '#000B58',
     padding: 5,
   },
   buttonText: {
     fontSize: 16,
-    fontFamily: "LeagueSpartan_Bold",
-    color: "#FFF",
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#FFF',
   },
   mapView2: {
-    backgroundColor: "#FFF",
-    width: "95%",
+    backgroundColor: '#FFF',
+    width: '95%',
     borderRadius: 10,
-    alignItems: "center",
-    shadowColor: "#000",
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -1399,26 +1233,26 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    overflow: "hidden",
-    position: "relative",
+    overflow: 'hidden',
+    position: 'relative',
   },
   map2: {
-    width: "100%",
+    width: '100%',
     height: 500,
   },
   exitButton2: {
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "flex-end",
-    position: "absolute",
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    position: 'absolute',
     padding: 10,
   },
   textInputView: {
-    backgroundColor: "#FFF",
-    width: "90%",
+    backgroundColor: '#FFF',
+    width: '90%',
     padding: 25,
     borderRadius: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -1428,29 +1262,29 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 20,
     gap: 10,
   },
   input: {
     borderBottomWidth: 1,
-    borderBottomColor: "#EAEAEA",
+    borderBottomColor: '#EAEAEA',
   },
   reasonRejectedContainer: {
-    width: "100%",
+    width: '100%',
     marginTop: 10,
   },
   textarea: {
-    backgroundColor: "#EAEAEA",
+    backgroundColor: '#EAEAEA',
     marginTop: 10,
-    width: "100%",
+    width: '100%',
     minHeight: 100,
     borderRadius: 5,
     padding: 10,
     fontSize: 16,
-    color: "#333",
-    fontFamily: "LeagueSpartan",
+    color: '#333',
+    fontFamily: 'LeagueSpartan',
   },
 });
 

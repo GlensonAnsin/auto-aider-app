@@ -9,7 +9,19 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -17,7 +29,6 @@ import { io, Socket } from 'socket.io-client';
 
 const EditProfile = () => {
   const [_socket, setSocket] = useState<Socket | null>(null);
-
   const [userID, setUserID] = useState<number>(0);
   const [firstname, setFirstname] = useState<string>('');
   const [lastname, setLastname] = useState<string>('');
@@ -63,12 +74,10 @@ const EditProfile = () => {
         setLocalMobileNum(res.mobile_num);
         setLocalEmail(res.email);
         setLocalProfilePic(res.profile_pic);
-
       } catch (e) {
         console.error('Error: ', e);
-
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     })();
   }, []);
@@ -141,7 +150,7 @@ const EditProfile = () => {
       };
 
       const fetchedUsers: UserWithID[] = await getUsers();
-      const userExcluded = fetchedUsers.filter(user => user.user_id !== userID);
+      const userExcluded = fetchedUsers.filter((user) => user.user_id !== userID);
 
       switch (field) {
         case 'firstname':
@@ -157,7 +166,7 @@ const EditProfile = () => {
           setGender(localGender);
           break;
         case 'mobile-num':
-          const mobileNumExists = userExcluded.some(user => user.mobile_num === localMobileNum.trim());
+          const mobileNumExists = userExcluded.some((user) => user.mobile_num === localMobileNum.trim());
 
           if (mobileNumExists) {
             showMessage({
@@ -168,13 +177,13 @@ const EditProfile = () => {
               icon: 'warning',
             });
             return;
-          };
+          }
 
           userInfo.mobile_num = localMobileNum.trim();
           setMobileNum(localMobileNum);
           break;
         case 'email':
-          const emailExists = userExcluded.some(user => user.email === localEmail?.trim());
+          const emailExists = userExcluded.some((user) => user.email === localEmail?.trim());
 
           if (emailExists) {
             showMessage({
@@ -185,19 +194,19 @@ const EditProfile = () => {
               icon: 'warning',
             });
             return;
-          };
+          }
 
           if (localEmail === '') {
             userInfo.email = null;
             setEmail(null);
             break;
-          };
+          }
 
           if (localEmail !== null) {
             userInfo.email = localEmail.trim();
             setEmail(localEmail);
             break;
-          };
+          }
         case 'profile':
           userInfo.profile_pic = link;
           setProfilePic(link);
@@ -206,7 +215,7 @@ const EditProfile = () => {
           throw new Error('Unsupported field');
       }
 
-      await updateUserInfo(userInfo)
+      await updateUserInfo(userInfo);
 
       setEdit('');
       showMessage({
@@ -216,7 +225,6 @@ const EditProfile = () => {
         color: '#FFF',
         icon: 'success',
       });
-
     } catch (e) {
       showMessage({
         message: 'Something went wrong. Please try again.',
@@ -225,7 +233,6 @@ const EditProfile = () => {
         color: '#FFF',
         icon: 'danger',
       });
-
     } finally {
       setUpdateLoading(false);
     }
@@ -261,12 +268,11 @@ const EditProfile = () => {
       const uploadedUrl = uploadRes.data.secure_url;
       setPickedImage(false);
       handleUpdateUserInfo('profile', uploadedUrl);
-
     } catch (e: any) {
       console.error('Upload Error: ', e);
       Alert.alert('Upload failed', 'An error occured during upload.');
     }
-  }
+  };
 
   const handleRestoreInfo = (field: string) => {
     switch (field) {
@@ -309,21 +315,18 @@ const EditProfile = () => {
   };
 
   if (isLoading) {
-    return <Loading />
+    return <Loading />;
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior='padding'
+        behavior="padding"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
         style={{ flex: 1 }}
       >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps='handled'
-        >
-          <Header headerTitle='Edit Profile' />
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+          <Header headerTitle="Edit Profile" />
 
           <View style={styles.lowerBox}>
             <View style={styles.editPicContainer}>
@@ -335,27 +338,34 @@ const EditProfile = () => {
 
               {localProfilePic !== null && (
                 <View style={styles.profilePicWrapper}>
-                  <Image
-                    style={styles.profilePic}
-                    source={{ uri: localProfilePic }}
-                    width={120}
-                    height={120}
-                  />
+                  <Image style={styles.profilePic} source={{ uri: localProfilePic }} width={120} height={120} />
                 </View>
               )}
 
               <TouchableOpacity style={styles.editPicWrapper} onPress={() => pickImage()}>
-                <MaterialCommunityIcons name='pencil' style={styles.editIcon} />
+                <MaterialCommunityIcons name="pencil" style={styles.editIcon} />
               </TouchableOpacity>
             </View>
 
             {localProfilePic !== null && !pickedImage && (
               <View style={styles.profileButtonContainer}>
-                <TouchableOpacity style={[styles.profileButton, { backgroundColor: '#780606', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, }]} onPress={() => {
-                  deleteImage();
-                  handleUpdateUserInfo('profile', null);
-                }}>
-                  <MaterialCommunityIcons name='image-remove' size={20} color='#FFF' />
+                <TouchableOpacity
+                  style={[
+                    styles.profileButton,
+                    {
+                      backgroundColor: '#780606',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      gap: 5,
+                    },
+                  ]}
+                  onPress={() => {
+                    deleteImage();
+                    handleUpdateUserInfo('profile', null);
+                  }}
+                >
+                  <MaterialCommunityIcons name="image-remove" size={20} color="#FFF" />
                   <Text style={styles.profileButtonText}>Remove</Text>
                 </TouchableOpacity>
               </View>
@@ -363,16 +373,22 @@ const EditProfile = () => {
 
             {localProfilePic !== null && pickedImage && (
               <View style={styles.profileButtonContainer}>
-                <TouchableOpacity style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]} onPress={() => handleRestoreInfo('profile')}>
+                <TouchableOpacity
+                  style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]}
+                  onPress={() => handleRestoreInfo('profile')}
+                >
                   <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={[styles.profileButton, { backgroundColor: '#000B58' }]} onPress={() => {
-                  if (profilePic !== null) {
-                    deleteImage();
-                  }
-                  uploadImage();
-                }}>
+                <TouchableOpacity
+                  style={[styles.profileButton, { backgroundColor: '#000B58' }]}
+                  onPress={() => {
+                    if (profilePic !== null) {
+                      deleteImage();
+                    }
+                    uploadImage();
+                  }}
+                >
                   <Text style={styles.profileButtonText}>Save</Text>
                 </TouchableOpacity>
               </View>
@@ -385,27 +401,23 @@ const EditProfile = () => {
                 <View style={styles.infoEdit}>
                   {edit === 'firstname' && (
                     <>
-                      <TextInput
-                        value={localFirstname}
-                        onChangeText={setLocalFirstname}
-                        style={styles.input}
-                      />
+                      <TextInput value={localFirstname} onChangeText={setLocalFirstname} style={styles.input} />
 
                       {localFirstname !== '' && (
                         <>
                           <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
-                            <Entypo name='cross' size={20} color='#780606' />
+                            <Entypo name="cross" size={20} color="#780606" />
                           </TouchableOpacity>
 
                           <TouchableOpacity onPress={() => handleUpdateUserInfo('firstname', null)}>
-                            <FontAwesome5 name='check' size={16} color='#22bb33' />
+                            <FontAwesome5 name="check" size={16} color="#22bb33" />
                           </TouchableOpacity>
                         </>
                       )}
 
                       {localFirstname === '' && (
                         <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
-                          <Entypo name='cross' size={20} color='#780606' />
+                          <Entypo name="cross" size={20} color="#780606" />
                         </TouchableOpacity>
                       )}
                     </>
@@ -415,7 +427,7 @@ const EditProfile = () => {
                     <>
                       <Text style={styles.infoText}>{localFirstname}</Text>
                       <TouchableOpacity onPress={() => setEdit('firstname')}>
-                        <MaterialIcons name='edit' size={16} color='#555' />
+                        <MaterialIcons name="edit" size={16} color="#555" />
                       </TouchableOpacity>
                     </>
                   )}
@@ -427,27 +439,23 @@ const EditProfile = () => {
                 <View style={styles.infoEdit}>
                   {edit === 'lastname' && (
                     <>
-                      <TextInput
-                        value={localLastname}
-                        onChangeText={setLocalLastname}
-                        style={styles.input}
-                      />
+                      <TextInput value={localLastname} onChangeText={setLocalLastname} style={styles.input} />
 
                       {localLastname !== '' && (
                         <>
                           <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
-                            <Entypo name='cross' size={20} color='#780606' />
+                            <Entypo name="cross" size={20} color="#780606" />
                           </TouchableOpacity>
 
                           <TouchableOpacity onPress={() => handleUpdateUserInfo('lastname', null)}>
-                            <FontAwesome5 name='check' size={16} color='#22bb33' />
+                            <FontAwesome5 name="check" size={16} color="#22bb33" />
                           </TouchableOpacity>
                         </>
                       )}
 
                       {localLastname === '' && (
                         <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
-                          <Entypo name='cross' size={20} color='#780606' />
+                          <Entypo name="cross" size={20} color="#780606" />
                         </TouchableOpacity>
                       )}
                     </>
@@ -457,7 +465,7 @@ const EditProfile = () => {
                     <>
                       <Text style={styles.infoText}>{localLastname}</Text>
                       <TouchableOpacity onPress={() => setEdit('lastname')}>
-                        <MaterialIcons name='edit' size={16} color='#555' />
+                        <MaterialIcons name="edit" size={16} color="#555" />
                       </TouchableOpacity>
                     </>
                   )}
@@ -475,10 +483,11 @@ const EditProfile = () => {
                         onSelect={(selectedItem) => setLocalGender(selectedItem)}
                         renderButton={(selectedItem, isOpen) => (
                           <View style={styles.dropdownButtonStyle}>
-                            <Text style={styles.dropdownButtonTxtStyle}>
-                              {selectedItem || 'Select gender'}
-                            </Text>
-                            <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                            <Text style={styles.dropdownButtonTxtStyle}>{selectedItem || 'Select gender'}</Text>
+                            <MaterialCommunityIcons
+                              name={isOpen ? 'chevron-up' : 'chevron-down'}
+                              style={styles.dropdownButtonArrowStyle}
+                            />
                           </View>
                         )}
                         renderItem={(item, _index, isSelected) => (
@@ -495,11 +504,11 @@ const EditProfile = () => {
                         dropdownStyle={styles.dropdownMenuStyle}
                       />
                       <TouchableOpacity onPress={() => handleRestoreInfo('gender')}>
-                        <Entypo name='cross' size={20} color='#780606' />
+                        <Entypo name="cross" size={20} color="#780606" />
                       </TouchableOpacity>
 
                       <TouchableOpacity onPress={() => handleUpdateUserInfo('gender', null)}>
-                        <FontAwesome5 name='check' size={16} color='#22bb33' />
+                        <FontAwesome5 name="check" size={16} color="#22bb33" />
                       </TouchableOpacity>
                     </>
                   )}
@@ -508,7 +517,7 @@ const EditProfile = () => {
                     <>
                       <Text style={styles.infoText}>{localGender}</Text>
                       <TouchableOpacity onPress={() => setEdit('gender')}>
-                        <MaterialIcons name='edit' size={16} color='#555' />
+                        <MaterialIcons name="edit" size={16} color="#555" />
                       </TouchableOpacity>
                     </>
                   )}
@@ -524,24 +533,24 @@ const EditProfile = () => {
                         value={localMobileNum}
                         onChangeText={setLocalMobileNum}
                         style={styles.input}
-                        keyboardType='number-pad'
+                        keyboardType="number-pad"
                       />
 
                       {localMobileNum !== '' && (
                         <>
                           <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
-                            <Entypo name='cross' size={20} color='#780606' />
+                            <Entypo name="cross" size={20} color="#780606" />
                           </TouchableOpacity>
 
                           <TouchableOpacity onPress={() => handleUpdateUserInfo('mobile-num', null)}>
-                            <FontAwesome5 name='check' size={16} color='#22bb33' />
+                            <FontAwesome5 name="check" size={16} color="#22bb33" />
                           </TouchableOpacity>
                         </>
                       )}
 
                       {localMobileNum === '' && (
                         <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
-                          <Entypo name='cross' size={20} color='#780606' />
+                          <Entypo name="cross" size={20} color="#780606" />
                         </TouchableOpacity>
                       )}
                     </>
@@ -551,7 +560,7 @@ const EditProfile = () => {
                     <>
                       <Text style={styles.infoText}>{localMobileNum}</Text>
                       <TouchableOpacity onPress={() => setEdit('mobile-num')}>
-                        <MaterialIcons name='edit' size={16} color='#555' />
+                        <MaterialIcons name="edit" size={16} color="#555" />
                       </TouchableOpacity>
                     </>
                   )}
@@ -561,10 +570,13 @@ const EditProfile = () => {
               <View style={styles.row}>
                 <Text style={styles.infoLabel}>Email:</Text>
                 {localEmail === null && (
-                  <TouchableOpacity style={styles.editButton} onPress={() => {
-                    setLocalEmail('');
-                    setEdit('email');
-                  }}>
+                  <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={() => {
+                      setLocalEmail('');
+                      setEdit('email');
+                    }}
+                  >
                     <Text style={styles.editButtonText}>Add Email</Text>
                   </TouchableOpacity>
                 )}
@@ -573,18 +585,14 @@ const EditProfile = () => {
                   <View style={styles.infoEdit}>
                     {edit === 'email' && (
                       <>
-                        <TextInput
-                          value={localEmail}
-                          onChangeText={setLocalEmail}
-                          style={styles.input}
-                        />
+                        <TextInput value={localEmail} onChangeText={setLocalEmail} style={styles.input} />
 
                         <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
-                          <Entypo name='cross' size={20} color='#780606' />
+                          <Entypo name="cross" size={20} color="#780606" />
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={() => handleUpdateUserInfo('email', null)}>
-                          <FontAwesome5 name='check' size={16} color='#22bb33' />
+                          <FontAwesome5 name="check" size={16} color="#22bb33" />
                         </TouchableOpacity>
                       </>
                     )}
@@ -593,7 +601,7 @@ const EditProfile = () => {
                       <>
                         <Text style={styles.infoText}>{localEmail}</Text>
                         <TouchableOpacity onPress={() => setEdit('email')}>
-                          <MaterialIcons name='edit' size={16} color='#555' />
+                          <MaterialIcons name="edit" size={16} color="#555" />
                         </TouchableOpacity>
                       </>
                     )}
@@ -605,13 +613,13 @@ const EditProfile = () => {
         </ScrollView>
         {updateLoading && (
           <View style={styles.updateLoadingContainer}>
-            <ActivityIndicator size='large' color='#000B58' />
+            <ActivityIndicator size="large" color="#000B58" />
           </View>
         )}
       </KeyboardAvoidingView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -721,7 +729,7 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontFamily: 'LeagueSpartan',
     fontSize: 16,
-    color: '#000B58'
+    color: '#000B58',
   },
   input: {
     fontFamily: 'LeagueSpartan',
@@ -795,6 +803,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 10,
   },
-})
+});
 
-export default EditProfile
+export default EditProfile;

@@ -12,7 +12,9 @@ import { io, Socket } from 'socket.io-client';
 const ManageVehicles = () => {
   dayjs.extend(utc);
   const [_socket, setSocket] = useState<Socket | null>(null);
-  const [vehicles, setVehicles] = useState<{ vehicleID: number, make: string, model: string, year: string, dateAdded: string }[]>([]);
+  const [vehicles, setVehicles] = useState<
+    { vehicleID: number; make: string; model: string; year: string; dateAdded: string }[]
+  >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -21,7 +23,7 @@ const ManageVehicles = () => {
         setIsLoading(true);
         const res = await getVehicle();
 
-        const vehicleData: { vehicleID: number, make: string, model: string, year: string, dateAdded: string }[] = []
+        const vehicleData: { vehicleID: number; make: string; model: string; year: string; dateAdded: string }[] = [];
 
         res?.forEach((item: any) => {
           vehicleData.push({
@@ -34,10 +36,8 @@ const ManageVehicles = () => {
         });
 
         setVehicles(vehicleData);
-
       } catch (e) {
         console.error('Error: ', e);
-
       } finally {
         setIsLoading(false);
       }
@@ -76,7 +76,6 @@ const ManageVehicles = () => {
         color: '#fff',
         icon: 'success',
       });
-
     } catch (e) {
       showMessage({
         message: 'Something went wrong. Please try again.',
@@ -103,18 +102,16 @@ const ManageVehicles = () => {
   };
 
   if (isLoading) {
-    return <Loading />
+    return <Loading />;
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <Header headerTitle='Vehicles' />
+        <Header headerTitle="Vehicles" />
 
         <View style={styles.lowerBox}>
-          {vehicles.length === 0 && (
-            <Text style={styles.noVehiclesTxt}>-- No vehicles added --</Text>
-          )}
+          {vehicles.length === 0 && <Text style={styles.noVehiclesTxt}>-- No vehicles added --</Text>}
 
           {vehicles.map((item) => (
             <View key={item.vehicleID} style={styles.vehicleContainer}>
@@ -128,7 +125,10 @@ const ManageVehicles = () => {
                   <Text style={styles.buttonTxt}>View</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={[styles.button, { backgroundColor: '#780606' }]} onPress={() => deleteVehicleAlert(item.vehicleID)}>
+                <TouchableOpacity
+                  style={[styles.button, { backgroundColor: '#780606' }]}
+                  onPress={() => deleteVehicleAlert(item.vehicleID)}
+                >
                   <Text style={styles.buttonTxt}>Delete</Text>
                 </TouchableOpacity>
               </View>
@@ -137,8 +137,8 @@ const ManageVehicles = () => {
         </View>
       </ScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -205,6 +205,6 @@ const styles = StyleSheet.create({
     fontFamily: 'LeagueSpartan',
     color: '#fff',
   },
-})
+});
 
-export default ManageVehicles
+export default ManageVehicles;

@@ -10,10 +10,10 @@ import { memo } from 'react';
 
 const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const icons = {
-    '(tabs)/index': (color: string) => <Entypo name='home' size={22} color={color} />,
-    '(tabs)/inbox': (color: string) => <Entypo name='chat' size={22} color={color} />,
-    '(tabs)/notifications': (color: string) => <Ionicons name='notifications' size={22} color={color} />,
-    '(tabs)/settings': (color: string) => <Ionicons name='settings' size={22} color={color} />,
+    '(tabs)/index': (color: string) => <Entypo name="home" size={22} color={color} />,
+    '(tabs)/inbox': (color: string) => <Entypo name="chat" size={22} color={color} />,
+    '(tabs)/notifications': (color: string) => <Ionicons name="notifications" size={22} color={color} />,
+    '(tabs)/settings': (color: string) => <Ionicons name="settings" size={22} color={color} />,
   };
 
   const tabVisible = useSelector((state: RootState) => state.tab.tabVisible);
@@ -24,10 +24,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
         <View style={styles.tabBar}>
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
-            const label =
-              options.tabBarLabel ??
-              options.title ??
-              route.name;
+            const label = options.tabBarLabel ?? options.title ?? route.name;
 
             if (['(screens)', '_sitemap', '+not-found'].includes(route.name)) return null;
 
@@ -59,11 +56,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
                 isFocused={isFocused}
                 onPress={onPress}
                 onLongPress={onLongPress}
-                icon={
-                  icons[route.name as keyof typeof icons](
-                    isFocused ? '#FFF' : '#FFF'
-                  )
-                }
+                icon={icons[route.name as keyof typeof icons](isFocused ? '#FFF' : '#FFF')}
               />
             );
           })}
@@ -71,29 +64,29 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
       )}
     </>
   );
-}
+};
 
 const styles = StyleSheet.create({
-    tabBar: {
-        position: 'absolute',
-        bottom: 50,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#000B58',
-        marginHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 25,
-        borderCurve: 'continuous',
-        shadowColor: '#000',
-        shadowOffset: {
-        width: 0,
-        height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
+  tabBar: {
+    position: 'absolute',
+    bottom: 50,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#000B58',
+    marginHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    borderCurve: 'continuous',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
 });
 
 export default memo(TabBar);

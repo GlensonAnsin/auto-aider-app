@@ -6,8 +6,19 @@ import Checkbox from 'expo-checkbox';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { showMessage } from "react-native-flash-message";
+import {
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -16,7 +27,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const Signup = () => {
   const router = useRouter();
   const mapRef = useRef<MapView>(null);
-
   const [firstname, setFirstname] = useState<string>('');
   const [lastname, setLastname] = useState<string>('');
   const [gender, setGender] = useState<string>('');
@@ -108,12 +118,15 @@ const Signup = () => {
         longitudeDelta: 0.01,
       });
 
-      mapRef.current?.animateToRegion({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }, 300);
+      mapRef.current?.animateToRegion(
+        {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        300
+      );
     })();
   }, []);
 
@@ -130,9 +143,7 @@ const Signup = () => {
   };
 
   const toggleCheckbox = (id: string) => {
-    setSelectedServices(prev =>
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
+    setSelectedServices((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   };
 
   const getRandomHexColor = () => {
@@ -142,7 +153,7 @@ const Signup = () => {
       color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
-  }
+  };
 
   const handleAddUser = async () => {
     if (!firstname || !lastname || !gender || !mobileNum || !password || !confirmPassword || !role) {
@@ -169,7 +180,7 @@ const Signup = () => {
 
     if (password.length < 8) {
       showMessage({
-        message: "Password must be at least 8 characters.",
+        message: 'Password must be at least 8 characters.',
         type: 'warning',
         floating: true,
         color: '#FFF',
@@ -180,7 +191,7 @@ const Signup = () => {
 
     try {
       const fetchedUsers: User[] = await getUsers();
-      const mobileNumExists = fetchedUsers.some(user => user.mobile_num === mobileNum.trim());
+      const mobileNumExists = fetchedUsers.some((user) => user.mobile_num === mobileNum.trim());
 
       if (mobileNumExists) {
         showMessage({
@@ -192,7 +203,6 @@ const Signup = () => {
         });
         return;
       }
-
     } catch (e) {
       showMessage({
         message: 'Something went wrong. Please try again.',
@@ -227,7 +237,6 @@ const Signup = () => {
       setPassword('');
       setConfirmPassword('');
       isCarOwnerModalVisible(true);
-
     } catch (e) {
       showMessage({
         message: 'Something went wrong. Please try again.',
@@ -265,7 +274,7 @@ const Signup = () => {
 
       if (password.length < 8) {
         showMessage({
-          message: "Password must be at least 8 characters.",
+          message: 'Password must be at least 8 characters.',
           type: 'warning',
           floating: true,
           color: '#FFF',
@@ -276,7 +285,7 @@ const Signup = () => {
 
       try {
         const fetchedAutoRepairShops: AutoRepairShop[] = await getRepairShops();
-        const mobileNumExists = fetchedAutoRepairShops.some(repairShop => repairShop.mobile_num === mobileNum.trim());
+        const mobileNumExists = fetchedAutoRepairShops.some((repairShop) => repairShop.mobile_num === mobileNum.trim());
 
         if (mobileNumExists) {
           showMessage({
@@ -288,7 +297,6 @@ const Signup = () => {
           });
           return;
         }
-
       } catch (e) {
         showMessage({
           message: 'Something went wrong. Please try again.',
@@ -300,10 +308,8 @@ const Signup = () => {
       }
 
       setPage('Location');
-
     } else if (page === 'Location') {
       setPage('Services Offered');
-
     } else {
       if (selectedServices.length === 0) {
         showMessage({
@@ -352,7 +358,6 @@ const Signup = () => {
         setSelectedServices([]);
         setRegion(undefined);
         isRepairShopModalVisible(true);
-
       } catch (e) {
         showMessage({
           message: 'Something went wrong. Please try again.',
@@ -363,24 +368,19 @@ const Signup = () => {
         });
       }
     }
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior='padding'
+        behavior="padding"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
         style={{ flex: 1 }}
       >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps='handled'
-        >
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View style={styles.upperBox}>
             <Text style={styles.welcomeTxt}>Welcome to</Text>
-            <Image
-              source={require('../../assets/images/logo.png')}
-            />
+            <Image source={require('../../assets/images/logo.png')} />
 
             <View style={styles.textInputContainer1}>
               <Text style={styles.upperTextInputLbl}>Register as</Text>
@@ -429,27 +429,19 @@ const Signup = () => {
             {page === 'Car Owner' && (
               <>
                 <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/auth/login')}>
-                  <Icon name='arrow-left' style={styles.arrowBack} />
+                  <Icon name="arrow-left" style={styles.arrowBack} />
                 </TouchableOpacity>
 
                 <Text style={styles.header}>Create Account</Text>
                 <View style={styles.row}>
                   <View style={styles.textInputContainer2}>
                     <Text style={styles.textInputLbl}>First Name</Text>
-                    <TextInput
-                      value={firstname}
-                      onChangeText={setFirstname}
-                      style={styles.input}
-                    />
+                    <TextInput value={firstname} onChangeText={setFirstname} style={styles.input} />
                   </View>
 
                   <View style={styles.textInputContainer2}>
                     <Text style={styles.textInputLbl}>Last Name</Text>
-                    <TextInput
-                      value={lastname}
-                      onChangeText={setLastname}
-                      style={styles.input}
-                    />
+                    <TextInput value={lastname} onChangeText={setLastname} style={styles.input} />
                   </View>
                 </View>
 
@@ -490,7 +482,7 @@ const Signup = () => {
                       value={mobileNum}
                       onChangeText={setMobileNum}
                       style={styles.input}
-                      keyboardType='number-pad'
+                      keyboardType="number-pad"
                     />
                   </View>
                 </View>
@@ -498,12 +490,7 @@ const Signup = () => {
                 <View style={styles.row}>
                   <View style={styles.textInputContainer2}>
                     <Text style={styles.textInputLbl}>Password</Text>
-                    <TextInput
-                      value={password}
-                      onChangeText={setPassword}
-                      style={styles.input}
-                      secureTextEntry
-                    />
+                    <TextInput value={password} onChangeText={setPassword} style={styles.input} secureTextEntry />
                   </View>
 
                   <View style={styles.textInputContainer2}>
@@ -529,7 +516,7 @@ const Signup = () => {
                 </TouchableOpacity>
 
                 <Modal
-                  animationType='fade'
+                  animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={carOwnerModalVisible}
                   onRequestClose={() => isCarOwnerModalVisible(!carOwnerModalVisible)}
@@ -540,10 +527,11 @@ const Signup = () => {
                       <TouchableOpacity
                         style={styles.modalButton}
                         onPress={() => {
-                          isCarOwnerModalVisible(!carOwnerModalVisible)
+                          isCarOwnerModalVisible(!carOwnerModalVisible);
                           router.navigate('/auth/login');
                           setPage('');
-                        }}>
+                        }}
+                      >
                         <Text style={styles.buttonTxt}>Ok</Text>
                       </TouchableOpacity>
                     </View>
@@ -555,27 +543,19 @@ const Signup = () => {
             {page === 'Repair Shop' && (
               <>
                 <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/auth/login')}>
-                  <Icon name='arrow-left' style={styles.arrowBack} />
+                  <Icon name="arrow-left" style={styles.arrowBack} />
                 </TouchableOpacity>
 
                 <Text style={styles.header}>Create Account</Text>
                 <View style={styles.row}>
                   <View style={styles.textInputContainer2}>
                     <Text style={styles.textInputLbl}>First Name</Text>
-                    <TextInput
-                      value={firstname}
-                      onChangeText={setFirstname}
-                      style={styles.input}
-                    />
+                    <TextInput value={firstname} onChangeText={setFirstname} style={styles.input} />
                   </View>
 
                   <View style={styles.textInputContainer2}>
                     <Text style={styles.textInputLbl}>Last Name</Text>
-                    <TextInput
-                      value={lastname}
-                      onChangeText={setLastname}
-                      style={styles.input}
-                    />
+                    <TextInput value={lastname} onChangeText={setLastname} style={styles.input} />
                   </View>
                 </View>
 
@@ -616,7 +596,7 @@ const Signup = () => {
                       value={mobileNum}
                       onChangeText={setMobileNum}
                       style={styles.input}
-                      keyboardType='number-pad'
+                      keyboardType="number-pad"
                     />
                   </View>
                 </View>
@@ -624,12 +604,7 @@ const Signup = () => {
                 <View style={styles.row}>
                   <View style={styles.textInputContainer2}>
                     <Text style={styles.textInputLbl}>Password</Text>
-                    <TextInput
-                      value={password}
-                      onChangeText={setPassword}
-                      style={styles.input}
-                      secureTextEntry
-                    />
+                    <TextInput value={password} onChangeText={setPassword} style={styles.input} secureTextEntry />
                   </View>
 
                   <View style={styles.textInputContainer2}>
@@ -645,11 +620,7 @@ const Signup = () => {
 
                 <View style={styles.textInputContainer3}>
                   <Text style={styles.textInputLbl}>Shop Name</Text>
-                  <TextInput
-                    value={shopName}
-                    onChangeText={setShopName}
-                    style={styles.shopNameInput}
-                  />
+                  <TextInput value={shopName} onChangeText={setShopName} style={styles.shopNameInput} />
                 </View>
 
                 <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
@@ -661,7 +632,7 @@ const Signup = () => {
             {page === 'Location' && (
               <>
                 <TouchableOpacity style={styles.arrowWrapper} onPress={() => setPage('Repair Shop')}>
-                  <Icon name='arrow-left' style={styles.arrowBack} />
+                  <Icon name="arrow-left" style={styles.arrowBack} />
                 </TouchableOpacity>
 
                 <Text style={styles.header}>Location</Text>
@@ -670,7 +641,7 @@ const Signup = () => {
                 <MapView
                   style={styles.map}
                   ref={mapRef}
-                  mapType='hybrid'
+                  mapType="hybrid"
                   initialRegion={region}
                   onRegionChange={(newRegion) => setRegion(newRegion)}
                 >
@@ -695,7 +666,7 @@ const Signup = () => {
             {page === 'Services Offered' && (
               <>
                 <TouchableOpacity style={styles.arrowWrapper} onPress={() => setPage('Location')}>
-                  <Icon name='arrow-left' style={styles.arrowBack} />
+                  <Icon name="arrow-left" style={styles.arrowBack} />
                 </TouchableOpacity>
 
                 <Text style={styles.header}>Services Offered</Text>
@@ -717,21 +688,24 @@ const Signup = () => {
                 </TouchableOpacity>
 
                 <Modal
-                  animationType='fade'
+                  animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={repairShopModalVisible}
                   onRequestClose={() => isRepairShopModalVisible(!repairShopModalVisible)}
                 >
                   <View style={styles.centeredView}>
                     <View style={styles.modalView}>
-                      <Text style={styles.modalTxt}>Thank you for registering! Please wait for admin approval. An update will be sent via SMS.</Text>
+                      <Text style={styles.modalTxt}>
+                        Thank you for registering! Please wait for admin approval. An update will be sent via SMS.
+                      </Text>
                       <TouchableOpacity
                         style={styles.modalButton}
                         onPress={() => {
-                          isRepairShopModalVisible(!repairShopModalVisible)
+                          isRepairShopModalVisible(!repairShopModalVisible);
                           router.navigate('/auth/login');
                           setPage('');
-                        }}>
+                        }}
+                      >
                         <Text style={styles.buttonTxt}>Ok</Text>
                       </TouchableOpacity>
                     </View>
@@ -743,8 +717,8 @@ const Signup = () => {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -981,6 +955,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginTop: 10,
   },
-})
+});
 
-export default Signup
+export default Signup;

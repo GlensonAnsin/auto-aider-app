@@ -14,13 +14,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import { useDispatch } from 'react-redux';
 
-const repairRequests = () => {
+const RepairRequests = () => {
   dayjs.extend(utc);
   const router = useRouter();
   const backRoute = useBackRoute('/repair-shop/(screens)/repair-requests/repair-requests');
   const dispatch = useDispatch();
   const [activeButton, setActiveButton] = useState<string>('All');
-  const [requestStatus, setRequestStatus] = useState<{ vehicleName: string, customer: string, scanReference: string, datetime: string, status: string }[]>([]);
+  const [requestStatus, setRequestStatus] = useState<
+    { vehicleName: string; customer: string; scanReference: string; datetime: string; status: string }[]
+  >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const buttons: string[] = ['All', 'Pending', 'Rejected', 'Ongoing', 'Completed'];
 
@@ -29,7 +31,13 @@ const repairRequests = () => {
       try {
         setIsLoading(true);
         const res = await getRequestsForRepairShop();
-        const statusData: { vehicleName: string, customer: string, scanReference: string, datetime: string, status: string }[] = [];
+        const statusData: {
+          vehicleName: string;
+          customer: string;
+          scanReference: string;
+          datetime: string;
+          status: string;
+        }[] = [];
 
         if (res) {
           res.mechanic_requests.forEach((request: any) => {
@@ -37,7 +45,9 @@ const repairRequests = () => {
               const datetime = dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
               const status = request.status;
               if (request.vehicle_diagnostic) {
-                const diagnostics = Array.isArray(request.vehicle_diagnostic) ? request.vehicle_diagnostic : [request.vehicle_diagnostic];
+                const diagnostics = Array.isArray(request.vehicle_diagnostic)
+                  ? request.vehicle_diagnostic
+                  : [request.vehicle_diagnostic];
                 diagnostics.forEach((diagnostic: any) => {
                   if (diagnostic) {
                     const scanReference = diagnostic.scan_reference;
@@ -71,10 +81,8 @@ const repairRequests = () => {
         }
 
         setRequestStatus(statusData);
-
       } catch (e) {
         console.error('Error: ', e);
-
       } finally {
         setIsLoading(false);
       }
@@ -82,22 +90,27 @@ const repairRequests = () => {
   }, []);
 
   const grouped = Object.values(
-    requestStatus.reduce((acc, item) => {
-      const ref = item.scanReference;
+    requestStatus.reduce(
+      (acc, item) => {
+        const ref = item.scanReference;
 
-      if (!acc[ref]) {
-        acc[ref] = {
-          vehicleName: item.vehicleName,
-          customer: item.customer,
-          scanReference: ref,
-          datetime: item.datetime,
-          status: item.status,
+        if (!acc[ref]) {
+          acc[ref] = {
+            vehicleName: item.vehicleName,
+            customer: item.customer,
+            scanReference: ref,
+            datetime: item.datetime,
+            status: item.status,
+          };
         }
-      }
 
-      return acc;
-
-    }, {} as Record<string, { vehicleName: string; customer: string; scanReference: string; datetime: string; status: string; }>)
+        return acc;
+      },
+      {} as Record<
+        string,
+        { vehicleName: string; customer: string; scanReference: string; datetime: string; status: string }
+      >
+    )
   );
 
   const filterPending = grouped.filter((item) => item.status === 'Pending');
@@ -106,15 +119,13 @@ const repairRequests = () => {
   const filterCompleted = grouped.filter((item) => item.status === 'Completed');
 
   if (isLoading) {
-    return (
-      <Loading />
-    )
+    return <Loading />;
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <Header headerTitle='Repair Requests' />
+        <Header headerTitle="Repair Requests" />
 
         <View style={styles.lowerBox}>
           <SelectDropdown
@@ -123,10 +134,11 @@ const repairRequests = () => {
             onSelect={(selectedItem) => setActiveButton(selectedItem)}
             renderButton={(selectedItem, isOpen) => (
               <View style={styles.dropdownButtonStyle}>
-                <Text style={styles.dropdownButtonTxtStyle}>
-                  {(selectedItem)}
-                </Text>
-                <MaterialCommunityIcons name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                <Text style={styles.dropdownButtonTxtStyle}>{selectedItem}</Text>
+                <MaterialCommunityIcons
+                  name={isOpen ? 'chevron-up' : 'chevron-down'}
+                  style={styles.dropdownButtonArrowStyle}
+                />
               </View>
             )}
             renderItem={(item, _index, isSelected) => (
@@ -147,11 +159,14 @@ const repairRequests = () => {
             <>
               {grouped.map((item, index) => (
                 <View key={index}>
-                  <TouchableOpacity style={styles.requestButton} onPress={() => {
-                    backRoute();
-                    dispatch(setScanReferenceState(item.scanReference));
-                    router.replace('./repair-request-details');
-                  }}>
+                  <TouchableOpacity
+                    style={styles.requestButton}
+                    onPress={() => {
+                      backRoute();
+                      dispatch(setScanReferenceState(item.scanReference));
+                      router.replace('./repair-request-details');
+                    }}
+                  >
                     <View style={styles.vehicleCustomerContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.customer}</Text>
@@ -208,9 +223,7 @@ const repairRequests = () => {
                 </View>
               ))}
 
-              {grouped.length === 0 && (
-                <Text style={styles.noRequestText}>-- No Requests --</Text>
-              )}
+              {grouped.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
           )}
 
@@ -218,11 +231,14 @@ const repairRequests = () => {
             <>
               {filterPending.map((item, index) => (
                 <View key={index}>
-                  <TouchableOpacity style={styles.requestButton} onPress={() => {
-                    backRoute();
-                    dispatch(setScanReferenceState(item.scanReference));
-                    router.replace('./repair-request-details');
-                  }}>
+                  <TouchableOpacity
+                    style={styles.requestButton}
+                    onPress={() => {
+                      backRoute();
+                      dispatch(setScanReferenceState(item.scanReference));
+                      router.replace('./repair-request-details');
+                    }}
+                  >
                     <View style={styles.vehicleCustomerContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.customer}</Text>
@@ -244,9 +260,7 @@ const repairRequests = () => {
                 </View>
               ))}
 
-              {filterPending.length === 0 && (
-                <Text style={styles.noRequestText}>-- No Requests --</Text>
-              )}
+              {filterPending.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
           )}
 
@@ -254,11 +268,14 @@ const repairRequests = () => {
             <>
               {filterRejected.map((item, index) => (
                 <View key={index}>
-                  <TouchableOpacity style={styles.requestButton} onPress={() => {
-                    backRoute();
-                    dispatch(setScanReferenceState(item.scanReference));
-                    router.replace('./repair-request-details');
-                  }}>
+                  <TouchableOpacity
+                    style={styles.requestButton}
+                    onPress={() => {
+                      backRoute();
+                      dispatch(setScanReferenceState(item.scanReference));
+                      router.replace('./repair-request-details');
+                    }}
+                  >
                     <View style={styles.vehicleCustomerContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.customer}</Text>
@@ -280,9 +297,7 @@ const repairRequests = () => {
                 </View>
               ))}
 
-              {filterRejected.length === 0 && (
-                <Text style={styles.noRequestText}>-- No Requests --</Text>
-              )}
+              {filterRejected.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
           )}
 
@@ -290,11 +305,14 @@ const repairRequests = () => {
             <>
               {filterOngoing.map((item, index) => (
                 <View key={index}>
-                  <TouchableOpacity style={styles.requestButton} onPress={() => {
-                    backRoute();
-                    dispatch(setScanReferenceState(item.scanReference));
-                    router.replace('./repair-request-details');
-                  }}>
+                  <TouchableOpacity
+                    style={styles.requestButton}
+                    onPress={() => {
+                      backRoute();
+                      dispatch(setScanReferenceState(item.scanReference));
+                      router.replace('./repair-request-details');
+                    }}
+                  >
                     <View style={styles.vehicleCustomerContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.customer}</Text>
@@ -316,9 +334,7 @@ const repairRequests = () => {
                 </View>
               ))}
 
-              {filterOngoing.length === 0 && (
-                <Text style={styles.noRequestText}>-- No Requests --</Text>
-              )}
+              {filterOngoing.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
           )}
 
@@ -326,11 +342,14 @@ const repairRequests = () => {
             <>
               {filterCompleted.map((item, index) => (
                 <View key={index}>
-                  <TouchableOpacity style={styles.requestButton} onPress={() => {
-                    backRoute();
-                    dispatch(setScanReferenceState(item.scanReference));
-                    router.replace('./repair-request-details');
-                  }}>
+                  <TouchableOpacity
+                    style={styles.requestButton}
+                    onPress={() => {
+                      backRoute();
+                      dispatch(setScanReferenceState(item.scanReference));
+                      router.replace('./repair-request-details');
+                    }}
+                  >
                     <View style={styles.vehicleCustomerContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.customer}</Text>
@@ -352,16 +371,14 @@ const repairRequests = () => {
                 </View>
               ))}
 
-              {filterCompleted.length === 0 && (
-                <Text style={styles.noRequestText}>-- No Requests --</Text>
-              )}
+              {filterCompleted.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
           )}
         </View>
       </ScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -432,9 +449,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     marginBottom: 10,
   },
-  vehicleCustomerContainer: {
-
-  },
+  vehicleCustomerContainer: {},
   vehicleName: {
     fontFamily: 'LeagueSpartan_Bold',
     color: '#333',
@@ -462,6 +477,6 @@ const styles = StyleSheet.create({
     color: '#555',
     textAlign: 'center',
   },
-})
+});
 
-export default repairRequests;
+export default RepairRequests;

@@ -10,199 +10,210 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
 const HistoryDetailedReport = () => {
-    const dispatch = useDispatch();
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [codes, setCodes] = useState<{ vehicleDiagID: number, dtc: string, technicalDescription: string, meaning: string, possibleCauses: string, recommendedRepair: string }[]>([]);
-    const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [codes, setCodes] = useState<
+    {
+      vehicleDiagID: number;
+      dtc: string;
+      technicalDescription: string;
+      meaning: string;
+      possibleCauses: string;
+      recommendedRepair: string;
+    }[]
+  >([]);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
-    const vehicleID: number | null = useSelector((state: RootState) => state.scan.vehicleID);
-    const scanReference: string | null = useSelector((state: RootState) => state.scan.scanReference);
+  const vehicleID: number | null = useSelector((state: RootState) => state.scan.vehicleID);
+  const scanReference: string | null = useSelector((state: RootState) => state.scan.scanReference);
 
-    const bulletPossibleCauses = codes[selectedIndex]?.possibleCauses
-        ?.split('\n')
-        .map(item => item.replace(/^\*\s+/, '')) || [];
+  const bulletPossibleCauses =
+    codes[selectedIndex]?.possibleCauses?.split('\n').map((item) => item.replace(/^\*\s+/, '')) || [];
 
-    const bulletRecommendedRepair = codes[selectedIndex]?.recommendedRepair
-        ?.split('\n')
-        .map(item => item.replace(/^\*\s+/, '')) || [];
+  const bulletRecommendedRepair =
+    codes[selectedIndex]?.recommendedRepair?.split('\n').map((item) => item.replace(/^\*\s+/, '')) || [];
 
-    useFocusEffect(
-        useCallback(() => {
-            let isActive = true;
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
 
-            const fetchData = async () => {
-                try {
-                    setIsLoading(true);
-                    const res = await getOnVehicleDiagnostic(vehicleID ?? 0, scanReference ?? '');
+      const fetchData = async () => {
+        try {
+          setIsLoading(true);
+          const res = await getOnVehicleDiagnostic(vehicleID ?? 0, scanReference ?? '');
 
-                    if (!isActive) return;
+          if (!isActive) return;
 
-                    if (res) {
-                        setCodes(res.map((item: any) => ({
-                            vehicleDiagID: item.vehicle_diagnostic_id,
-                            dtc: item.dtc,
-                            technicalDescription: item.technical_description,
-                            meaning: item.meaning,
-                            possibleCauses: item.possible_causes,
-                            recommendedRepair: item.recommended_repair,
-                        })));
-                    }
+          if (res) {
+            setCodes(
+              res.map((item: any) => ({
+                vehicleDiagID: item.vehicle_diagnostic_id,
+                dtc: item.dtc,
+                technicalDescription: item.technical_description,
+                meaning: item.meaning,
+                possibleCauses: item.possible_causes,
+                recommendedRepair: item.recommended_repair,
+              }))
+            );
+          }
+        } catch (e) {
+          console.error('Error: ', e);
+        } finally {
+          if (isActive) setIsLoading(false);
+        }
+      };
 
-                } catch (e) {
-                    console.error('Error: ', e);
+      fetchData();
 
-                } finally {
-                    if (isActive) setIsLoading(false);
-                }
-            };
+      return () => {
+        isActive = false;
+        dispatch(clearScanState());
+      };
+    }, [])
+  );
 
-            fetchData();
-            
-            return () => {
-                isActive = false;
-                dispatch(clearScanState());
-            };
-        }, [])
-    );
+  if (isLoading || codes.length === 0) {
+    return <Loading />;
+  }
 
-    if (isLoading || codes.length === 0) {
-        return <Loading />
-    }
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
+        <Header headerTitle="Report Details" />
 
-    return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView>
-                <Header headerTitle='Report Details' />
+        <View style={styles.lowerBox}>
+          <View style={styles.codeContainer}>
+            <>
+              {codes?.map((item, index) => (
+                <TouchableOpacity
+                  style={[styles.codeButton, selectedIndex === index && { backgroundColor: '#000B58' }]}
+                  key={index}
+                  onPress={() => setSelectedIndex(index)}
+                >
+                  <Text style={[styles.codeButtonText, selectedIndex === index && { color: '#FFF' }]}>{item.dtc}</Text>
+                </TouchableOpacity>
+              ))}
+            </>
+          </View>
 
-                <View style={styles.lowerBox}>
-                    <View style={styles.codeContainer}>
-                        <>
-                            {codes?.map((item, index) => (
-                                <TouchableOpacity style={[styles.codeButton, selectedIndex === index && { backgroundColor: '#000B58' }]} key={index} onPress={() => setSelectedIndex(index)}>
-                                    <Text style={[styles.codeButtonText, selectedIndex === index && { color: '#FFF' }]}>{item.dtc}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </>
-                    </View>
+          <View style={styles.textContainer}>
+            <Text style={styles.troubleCode}>{codes[selectedIndex].dtc}</Text>
+            <Text style={styles.technicalDescription}>{codes[selectedIndex].technicalDescription}</Text>
+          </View>
 
-                    <View style={styles.textContainer}>
-                        <Text style={styles.troubleCode}>{codes[selectedIndex].dtc}</Text>
-                        <Text style={styles.technicalDescription}>{codes[selectedIndex].technicalDescription}</Text>
-                    </View>
+          <View style={styles.textContainer}>
+            <Text style={styles.label}>Meaning</Text>
+            <Text style={styles.text}>{codes[selectedIndex].meaning}</Text>
+          </View>
 
-                    <View style={styles.textContainer}>
-                        <Text style={styles.label}>Meaning</Text>
-                        <Text style={styles.text}>{codes[selectedIndex].meaning}</Text>
-                    </View>
+          <View style={styles.textContainer}>
+            <Text style={styles.label}>Possible Causes</Text>
+            {bulletPossibleCauses.map((item, index) => (
+              <View key={index} style={styles.bulletView}>
+                <Text style={styles.bullet}>{`\u2022`}</Text>
+                <Text style={styles.bulletedText}>{item}</Text>
+              </View>
+            ))}
+          </View>
 
-                    <View style={styles.textContainer}>
-                        <Text style={styles.label}>Possible Causes</Text>
-                        {bulletPossibleCauses.map((item, index) => (
-                            <View key={index} style={styles.bulletView}>
-                               <Text style={styles.bullet}>{`\u2022`}</Text>
-                                <Text style={styles.bulletedText}>{item}</Text> 
-                            </View>
-                        ))}
-                    </View>
-
-                    <View style={styles.textContainer}>
-                        <Text style={styles.label}>Recommended Solutions or Repairs</Text>
-                        {bulletRecommendedRepair.map((item, index) => (
-                            <View key={index} style={styles.bulletView}>
-                                <Text style={styles.bullet}>{`\u2022`}</Text>
-                                <Text style={styles.bulletedText}>{item}</Text> 
-                            </View>
-                        ))}
-                    </View>
-                </View>
-            </ScrollView>
-        </SafeAreaView>
-    )
-}
+          <View style={styles.textContainer}>
+            <Text style={styles.label}>Recommended Solutions or Repairs</Text>
+            {bulletRecommendedRepair.map((item, index) => (
+              <View key={index} style={styles.bulletView}>
+                <Text style={styles.bullet}>{`\u2022`}</Text>
+                <Text style={styles.bulletedText}>{item}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  lowerBox: {
+    alignSelf: 'center',
+    marginTop: 20,
+    marginBottom: 100,
+    gap: 10,
+    width: '90%',
+  },
+  codeContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  codeButton: {
+    backgroundColor: '#EAEAEA',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 10,
+  },
+  codeButtonText: {
+    fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 18,
+    color: '#780606',
+  },
+  textContainer: {
+    backgroundColor: '#EAEAEA',
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
-    lowerBox: {
-        alignSelf: 'center',
-        marginTop: 20,
-        marginBottom: 100,
-        gap: 10,
-        width: '90%',
-    },
-    codeContainer: {
-        width: '100%',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 10,
-    },
-    codeButton: {
-        backgroundColor: '#EAEAEA',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 10,
-        borderRadius: 10,
-    },
-    codeButtonText: {
-        fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 18,
-        color: '#780606',
-    },
-    textContainer: {
-        backgroundColor: '#EAEAEA',
-        borderRadius: 10,
-        padding: 10,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    troubleCode: {
-        fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 22,
-        color: '#333',
-        textAlign: 'center',
-    },
-    technicalDescription: {
-        fontFamily: 'LeagueSpartan',
-        fontSize: 20,
-        color: '#555',
-        textAlign: 'center',
-    },
-    label: {
-        fontFamily: 'LeagueSpartan_Bold',
-        fontSize: 18,
-        marginBottom: 10,
-        color: '#333',
-    },
-    text: {
-        fontFamily: 'LeagueSpartan',
-        fontSize: 16,
-        color: '#333',
-    },
-    bulletView: {
-      width: '100%',
-      flexDirection: 'row',
-      gap: 10,
-      paddingLeft: 5,
-    },
-    bullet: {
-      fontFamily: 'LeagueSpartan_Bold',
-      color: '#333',
-      fontSize: 16,
-    },
-    bulletedText: {
-      fontFamily: 'LeagueSpartan',
-      color: '#333',
-      fontSize: 16,
-      maxWidth: '93%',
-    },
-})
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  troubleCode: {
+    fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 22,
+    color: '#333',
+    textAlign: 'center',
+  },
+  technicalDescription: {
+    fontFamily: 'LeagueSpartan',
+    fontSize: 20,
+    color: '#555',
+    textAlign: 'center',
+  },
+  label: {
+    fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 18,
+    marginBottom: 10,
+    color: '#333',
+  },
+  text: {
+    fontFamily: 'LeagueSpartan',
+    fontSize: 16,
+    color: '#333',
+  },
+  bulletView: {
+    width: '100%',
+    flexDirection: 'row',
+    gap: 10,
+    paddingLeft: 5,
+  },
+  bullet: {
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#333',
+    fontSize: 16,
+  },
+  bulletedText: {
+    fontFamily: 'LeagueSpartan',
+    color: '#333',
+    fontSize: 16,
+    maxWidth: '93%',
+  },
+});
 
 export default HistoryDetailedReport;

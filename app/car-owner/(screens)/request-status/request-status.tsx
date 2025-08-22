@@ -1,32 +1,24 @@
-import { Header } from "@/components/Header";
-import { Loading } from "@/components/Loading";
-import { useBackRoute } from "@/hooks/useBackRoute";
-import { setScanReferenceState } from "@/redux/slices/scanReferenceSlice";
-import { getRepairShops, getRequestsForCarOwner } from "@/services/backendApi";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useRouter } from "expo-router";
-import LottieView from "lottie-react-native";
-import { useEffect, useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import SelectDropdown from "react-native-select-dropdown";
-import { useDispatch } from "react-redux";
+import { Header } from '@/components/Header';
+import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
+import { setScanReferenceState } from '@/redux/slices/scanReferenceSlice';
+import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { useRouter } from 'expo-router';
+import LottieView from 'lottie-react-native';
+import { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import SelectDropdown from 'react-native-select-dropdown';
+import { useDispatch } from 'react-redux';
 
 const RequestStatus = () => {
   dayjs.extend(utc);
   const dispatch = useDispatch();
   const router = useRouter();
-  const backRoute = useBackRoute(
-    "/car-owner/(screens)/request-status/request-status"
-  );
+  const backRoute = useBackRoute('/car-owner/(screens)/request-status/request-status');
   const [requestStatus, setRequestStatus] = useState<
     {
       vehicleName: string;
@@ -37,15 +29,9 @@ const RequestStatus = () => {
     }[]
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [activeButton, setActiveButton] = useState<string>("All");
+  const [activeButton, setActiveButton] = useState<string>('All');
 
-  const buttons: string[] = [
-    "All",
-    "Pending",
-    "Rejected",
-    "Ongoing",
-    "Completed",
-  ];
+  const buttons: string[] = ['All', 'Pending', 'Rejected', 'Ongoing', 'Completed'];
 
   useEffect(() => {
     (async () => {
@@ -71,10 +57,7 @@ const RequestStatus = () => {
                     const scanReference = diagnostic.scan_reference;
                     if (diagnostic.mechanic_requests) {
                       diagnostic.mechanic_requests.forEach((request: any) => {
-                        const repairShop = res2.find(
-                          (shop: any) =>
-                            shop.repair_shop_id === request.repair_shop_id
-                        );
+                        const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
                         if (repairShop) {
                           statusData.push({
                             vehicleName,
@@ -83,7 +66,7 @@ const RequestStatus = () => {
                             datetime: dayjs(request.request_datetime)
                               .utc(true)
                               .local()
-                              .format("ddd MMM DD YYYY, h:mm A"),
+                              .format('ddd MMM DD YYYY, h:mm A'),
                             status: request.status,
                           });
                         }
@@ -98,7 +81,7 @@ const RequestStatus = () => {
 
         setRequestStatus(statusData);
       } catch (e) {
-        console.error("Error: ", e);
+        console.error('Error: ', e);
       } finally {
         setIsLoading(false);
       }
@@ -106,27 +89,33 @@ const RequestStatus = () => {
   }, []);
 
   const grouped = Object.values(
-    requestStatus.reduce((acc, item) => {
-      const ref = item.scanReference;
+    requestStatus.reduce(
+      (acc, item) => {
+        const ref = item.scanReference;
 
-      if (!acc[ref]) {
-        acc[ref] = {
-          vehicleName: item.vehicleName,
-          repairShop: item.repairShop,
-          scanReference: ref,
-          datetime: item.datetime,
-          status: item.status,
-        };
-      }
+        if (!acc[ref]) {
+          acc[ref] = {
+            vehicleName: item.vehicleName,
+            repairShop: item.repairShop,
+            scanReference: ref,
+            datetime: item.datetime,
+            status: item.status,
+          };
+        }
 
-      return acc;
-    }, {} as Record<string, { vehicleName: string; repairShop: string; scanReference: string; datetime: string; status: string }>)
+        return acc;
+      },
+      {} as Record<
+        string,
+        { vehicleName: string; repairShop: string; scanReference: string; datetime: string; status: string }
+      >
+    )
   );
 
-  const filterPending = grouped.filter((item) => item.status === "Pending");
-  const filterRejected = grouped.filter((item) => item.status === "Rejected");
-  const filterOngoing = grouped.filter((item) => item.status === "Ongoing");
-  const filterCompleted = grouped.filter((item) => item.status === "Completed");
+  const filterPending = grouped.filter((item) => item.status === 'Pending');
+  const filterRejected = grouped.filter((item) => item.status === 'Rejected');
+  const filterOngoing = grouped.filter((item) => item.status === 'Ongoing');
+  const filterCompleted = grouped.filter((item) => item.status === 'Completed');
 
   if (isLoading) {
     return <Loading />;
@@ -144,11 +133,9 @@ const RequestStatus = () => {
             onSelect={(selectedItem) => setActiveButton(selectedItem)}
             renderButton={(selectedItem, isOpen) => (
               <View style={styles.dropdownButtonStyle}>
-                <Text style={styles.dropdownButtonTxtStyle}>
-                  {selectedItem}
-                </Text>
+                <Text style={styles.dropdownButtonTxtStyle}>{selectedItem}</Text>
                 <MaterialCommunityIcons
-                  name={isOpen ? "chevron-up" : "chevron-down"}
+                  name={isOpen ? 'chevron-up' : 'chevron-down'}
                   style={styles.dropdownButtonArrowStyle}
                 />
               </View>
@@ -157,7 +144,7 @@ const RequestStatus = () => {
               <View
                 style={{
                   ...styles.dropdownItemStyle,
-                  ...(isSelected && { backgroundColor: "#D2D9DF" }),
+                  ...(isSelected && { backgroundColor: '#D2D9DF' }),
                 }}
               >
                 <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
@@ -167,7 +154,7 @@ const RequestStatus = () => {
             dropdownStyle={styles.dropdownMenuStyle}
           />
 
-          {activeButton === "All" && (
+          {activeButton === 'All' && (
             <>
               {grouped.map((item, index) => (
                 <View key={index}>
@@ -176,7 +163,7 @@ const RequestStatus = () => {
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
-                      router.replace("./request-details");
+                      router.replace('./request-details');
                     }}
                   >
                     <View style={styles.vehicleShopContainer}>
@@ -186,9 +173,9 @@ const RequestStatus = () => {
                     </View>
                     <View style={styles.statusContainer}>
                       <Text style={styles.statusText}>{item.status}</Text>
-                      {item.status === "Pending" && (
+                      {item.status === 'Pending' && (
                         <LottieView
-                          source={require("@/assets/images/pending.json")}
+                          source={require('@/assets/images/pending.json')}
                           autoPlay
                           loop
                           style={{
@@ -197,9 +184,9 @@ const RequestStatus = () => {
                           }}
                         />
                       )}
-                      {item.status === "Rejected" && (
+                      {item.status === 'Rejected' && (
                         <LottieView
-                          source={require("@/assets/images/rejected.json")}
+                          source={require('@/assets/images/rejected.json')}
                           autoPlay
                           loop
                           style={{
@@ -208,9 +195,9 @@ const RequestStatus = () => {
                           }}
                         />
                       )}
-                      {item.status === "Ongoing" && (
+                      {item.status === 'Ongoing' && (
                         <LottieView
-                          source={require("@/assets/images/ongoing.json")}
+                          source={require('@/assets/images/ongoing.json')}
                           autoPlay
                           loop
                           style={{
@@ -219,9 +206,9 @@ const RequestStatus = () => {
                           }}
                         />
                       )}
-                      {item.status === "Completed" && (
+                      {item.status === 'Completed' && (
                         <LottieView
-                          source={require("@/assets/images/completed.json")}
+                          source={require('@/assets/images/completed.json')}
                           autoPlay
                           loop
                           style={{
@@ -235,13 +222,11 @@ const RequestStatus = () => {
                 </View>
               ))}
 
-              {grouped.length === 0 && (
-                <Text style={styles.noRequestText}>-- No Requests --</Text>
-              )}
+              {grouped.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
           )}
 
-          {activeButton === "Pending" && (
+          {activeButton === 'Pending' && (
             <>
               {filterPending.map((item, index) => (
                 <View key={index}>
@@ -250,7 +235,7 @@ const RequestStatus = () => {
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
-                      router.replace("./request-details");
+                      router.replace('./request-details');
                     }}
                   >
                     <View style={styles.vehicleShopContainer}>
@@ -261,7 +246,7 @@ const RequestStatus = () => {
                     <View style={styles.statusContainer}>
                       <Text style={styles.statusText}>{item.status}</Text>
                       <LottieView
-                        source={require("@/assets/images/pending.json")}
+                        source={require('@/assets/images/pending.json')}
                         autoPlay
                         loop
                         style={{
@@ -274,13 +259,11 @@ const RequestStatus = () => {
                 </View>
               ))}
 
-              {filterPending.length === 0 && (
-                <Text style={styles.noRequestText}>-- No Requests --</Text>
-              )}
+              {filterPending.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
           )}
 
-          {activeButton === "Rejected" && (
+          {activeButton === 'Rejected' && (
             <>
               {filterRejected.map((item, index) => (
                 <View key={index}>
@@ -289,7 +272,7 @@ const RequestStatus = () => {
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
-                      router.replace("./request-details");
+                      router.replace('./request-details');
                     }}
                   >
                     <View style={styles.vehicleShopContainer}>
@@ -300,7 +283,7 @@ const RequestStatus = () => {
                     <View style={styles.statusContainer}>
                       <Text style={styles.statusText}>{item.status}</Text>
                       <LottieView
-                        source={require("@/assets/images/rejected.json")}
+                        source={require('@/assets/images/rejected.json')}
                         autoPlay
                         loop
                         style={{
@@ -313,13 +296,11 @@ const RequestStatus = () => {
                 </View>
               ))}
 
-              {filterRejected.length === 0 && (
-                <Text style={styles.noRequestText}>-- No Requests --</Text>
-              )}
+              {filterRejected.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
           )}
 
-          {activeButton === "Ongoing" && (
+          {activeButton === 'Ongoing' && (
             <>
               {filterOngoing.map((item, index) => (
                 <View key={index}>
@@ -328,7 +309,7 @@ const RequestStatus = () => {
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
-                      router.replace("./request-details");
+                      router.replace('./request-details');
                     }}
                   >
                     <View style={styles.vehicleShopContainer}>
@@ -339,7 +320,7 @@ const RequestStatus = () => {
                     <View style={styles.statusContainer}>
                       <Text style={styles.statusText}>{item.status}</Text>
                       <LottieView
-                        source={require("@/assets/images/ongoing.json")}
+                        source={require('@/assets/images/ongoing.json')}
                         autoPlay
                         loop
                         style={{
@@ -352,13 +333,11 @@ const RequestStatus = () => {
                 </View>
               ))}
 
-              {filterOngoing.length === 0 && (
-                <Text style={styles.noRequestText}>-- No Requests --</Text>
-              )}
+              {filterOngoing.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
           )}
 
-          {activeButton === "Completed" && (
+          {activeButton === 'Completed' && (
             <>
               {filterCompleted.map((item, index) => (
                 <View key={index}>
@@ -367,7 +346,7 @@ const RequestStatus = () => {
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
-                      router.replace("./request-details");
+                      router.replace('./request-details');
                     }}
                   >
                     <View style={styles.vehicleShopContainer}>
@@ -378,7 +357,7 @@ const RequestStatus = () => {
                     <View style={styles.statusContainer}>
                       <Text style={styles.statusText}>{item.status}</Text>
                       <LottieView
-                        source={require("@/assets/images/completed.json")}
+                        source={require('@/assets/images/completed.json')}
                         autoPlay
                         loop
                         style={{
@@ -391,9 +370,7 @@ const RequestStatus = () => {
                 </View>
               ))}
 
-              {filterCompleted.length === 0 && (
-                <Text style={styles.noRequestText}>-- No Requests --</Text>
-              )}
+              {filterCompleted.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
           )}
         </View>
@@ -405,63 +382,63 @@ const RequestStatus = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: '#FFF',
   },
   lowerBox: {
-    alignSelf: "center",
+    alignSelf: 'center',
     marginTop: 20,
     marginBottom: 100,
-    width: "90%",
+    width: '90%',
   },
   dropdownButtonStyle: {
     width: 120,
     height: 45,
     borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#EAEAEA",
+    borderColor: '#EAEAEA',
   },
   dropdownButtonTxtStyle: {
     flex: 1,
     fontSize: 16,
-    fontFamily: "LeagueSpartan",
-    color: "#333",
+    fontFamily: 'LeagueSpartan',
+    color: '#333',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
-    color: "#333",
+    color: '#333',
   },
   dropdownItemStyle: {
     width: 120,
-    flexDirection: "row",
+    flexDirection: 'row',
     paddingHorizontal: 10,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingVertical: 8,
   },
   dropdownItemTxtStyle: {
     flex: 1,
     fontSize: 16,
-    fontFamily: "LeagueSpartan",
-    color: "#333",
+    fontFamily: 'LeagueSpartan',
+    color: '#333',
   },
   dropdownMenuStyle: {
-    backgroundColor: "#EAEAEA",
+    backgroundColor: '#EAEAEA',
     borderRadius: 10,
     marginTop: -37,
   },
   requestButton: {
-    width: "100%",
-    backgroundColor: "#EAEAEA",
-    flexDirection: "row",
-    justifyContent: "space-between",
+    width: '100%',
+    backgroundColor: '#EAEAEA',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     padding: 10,
     borderRadius: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -473,31 +450,31 @@ const styles = StyleSheet.create({
   },
   vehicleShopContainer: {},
   vehicleName: {
-    fontFamily: "LeagueSpartan_Bold",
-    color: "#333",
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#333',
     fontSize: 18,
   },
   requestText: {
-    fontFamily: "LeagueSpartan",
-    color: "#555",
+    fontFamily: 'LeagueSpartan',
+    color: '#555',
     fontSize: 14,
   },
   statusContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 10,
   },
   statusText: {
-    fontFamily: "LeagueSpartan_Bold",
-    color: "#555",
+    fontFamily: 'LeagueSpartan_Bold',
+    color: '#555',
     fontSize: 14,
   },
   noRequestText: {
-    fontFamily: "LeagueSpartan",
+    fontFamily: 'LeagueSpartan',
     fontSize: 16,
-    color: "#555",
-    textAlign: "center",
+    color: '#555',
+    textAlign: 'center',
   },
 });
 

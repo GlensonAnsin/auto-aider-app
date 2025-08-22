@@ -7,14 +7,14 @@ import vehicleDiagIDArrReducer from './slices/vehicleDiagIDArrSlice';
 import vehicleDiagIDReducer from './slices/vehicleDiagIDSlice';
 
 export const store = configureStore({
-    reducer: {
-        scan: scanReducer,
-        tab: tabReducer,
-        vehicleDiagID: vehicleDiagIDReducer,
-        vehicleDiagIDArr: vehicleDiagIDArrReducer,
-        route: routeReducer,
-        scanReference: scanReferenceReducer,
-    },
+  reducer: {
+    scan: scanReducer,
+    tab: tabReducer,
+    vehicleDiagID: vehicleDiagIDReducer,
+    vehicleDiagIDArr: vehicleDiagIDArrReducer,
+    route: routeReducer,
+    scanReference: scanReferenceReducer,
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

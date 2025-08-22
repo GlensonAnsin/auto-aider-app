@@ -12,7 +12,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const [loaded] = useFonts({
     LeagueSpartan: require('../assets/fonts/LeagueSpartan-Regular.ttf'),
-    LeagueSpartan_Bold : require('../assets/fonts/LeagueSpartan-Bold.ttf'),
+    LeagueSpartan_Bold: require('../assets/fonts/LeagueSpartan-Bold.ttf'),
   });
 
   useEffect(() => {
@@ -31,16 +31,12 @@ export default function RootLayout() {
 
       <FlashMessage position="top" style={{ marginTop: 40 }} />
 
-      <Stack
-        initialRouteName="index"
-        screenOptions={{ headerShown: false, animation: "none" }}
-      >
+      <Stack initialRouteName="index" screenOptions={{ headerShown: false, animation: 'none' }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="auth/login" />
         <Stack.Screen name="auth/signup" />
         <Stack.Screen name="car-owner" />
         <Stack.Screen name="repair-shop" />
-        <Stack.Screen name="chat-room" />
       </Stack>
     </Provider>
   );

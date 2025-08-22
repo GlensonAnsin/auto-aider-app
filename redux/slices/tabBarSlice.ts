@@ -1,21 +1,21 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface TabState {
-    tabVisible: boolean;
+  tabVisible: boolean;
 }
 
 const initialState: TabState = {
-    tabVisible: true,
+  tabVisible: true,
 };
 
 const tabBarSlice = createSlice({
-    name: 'tab',
-    initialState,
-    reducers: {
-        setTabState: (state, action: PayloadAction<boolean>) => {
-            state.tabVisible = action.payload;
-        },
+  name: 'tab',
+  initialState,
+  reducers: {
+    setTabState: (state, action: PayloadAction<boolean>) => {
+      state.tabVisible = action.payload;
     },
+  },
 });
 
 export const { setTabState } = tabBarSlice.actions;
