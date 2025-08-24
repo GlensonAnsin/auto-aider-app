@@ -89,8 +89,7 @@ const Diagnosis = () => {
                     dispatch(setVehicleDiagIDState(item.vehicleDiagnosticID));
                     backRoute();
                     router.replace('./detailed-report');
-                  }}
-                >
+                  }}>
                   <Text style={styles.troubleCodeText}>{item.dtc}</Text>
                   <Text style={styles.troubleCodeText2}>{item.technicalDescription}</Text>
                 </TouchableOpacity>
@@ -102,8 +101,7 @@ const Diagnosis = () => {
             onPress={() => {
               backRoute();
               router.replace('/car-owner/(screens)/repair-shops/repair-shops');
-            }}
-          >
+            }}>
             <Text style={styles.findShopButtonText}>Find Repair Shop</Text>
           </TouchableOpacity>
         </View>

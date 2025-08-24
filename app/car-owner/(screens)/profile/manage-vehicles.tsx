@@ -13,7 +13,13 @@ const ManageVehicles = () => {
   dayjs.extend(utc);
   const [_socket, setSocket] = useState<Socket | null>(null);
   const [vehicles, setVehicles] = useState<
-    { vehicleID: number; make: string; model: string; year: string; dateAdded: string }[]
+    {
+      vehicleID: number;
+      make: string;
+      model: string;
+      year: string;
+      dateAdded: string;
+    }[]
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -23,7 +29,13 @@ const ManageVehicles = () => {
         setIsLoading(true);
         const res = await getVehicle();
 
-        const vehicleData: { vehicleID: number; make: string; model: string; year: string; dateAdded: string }[] = [];
+        const vehicleData: {
+          vehicleID: number;
+          make: string;
+          model: string;
+          year: string;
+          dateAdded: string;
+        }[] = [];
 
         res?.forEach((item: any) => {
           vehicleData.push({
@@ -76,7 +88,7 @@ const ManageVehicles = () => {
         color: '#fff',
         icon: 'success',
       });
-    } catch (e) {
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -127,8 +139,7 @@ const ManageVehicles = () => {
 
                 <TouchableOpacity
                   style={[styles.button, { backgroundColor: '#780606' }]}
-                  onPress={() => deleteVehicleAlert(item.vehicleID)}
-                >
+                  onPress={() => deleteVehicleAlert(item.vehicleID)}>
                   <Text style={styles.buttonTxt}>Delete</Text>
                 </TouchableOpacity>
               </View>

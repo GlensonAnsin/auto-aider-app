@@ -135,7 +135,7 @@ const Profile = () => {
       setNewPassword('');
       setConfirmPassword('');
       setModalVisible(!modalVisible);
-    } catch (e: any) {
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -147,7 +147,8 @@ const Profile = () => {
   };
 
   const handleCancelChangePass = () => {
-    (setCurrentPassword(''), setNewPassword(''));
+    setCurrentPassword('');
+    setNewPassword('');
     setConfirmPassword('');
     setModalVisible(!modalVisible);
   };
@@ -187,8 +188,7 @@ const Profile = () => {
             onPress={() => {
               backRoute();
               router.replace('./edit-profile');
-            }}
-          >
+            }}>
             <MaterialCommunityIcons name="account-edit-outline" style={styles.icon} />
             <Text style={styles.tabName}>Edit Profile</Text>
             <MaterialCommunityIcons name="arrow-right-thin" style={styles.forwardIcon} />
@@ -199,8 +199,7 @@ const Profile = () => {
             onPress={() => {
               backRoute();
               router.replace('./manage-vehicles');
-            }}
-          >
+            }}>
             <MaterialCommunityIcons name="car-outline" style={styles.icon} />
             <Text style={styles.tabName}>Manage Vehicles</Text>
             <MaterialCommunityIcons name="arrow-right-thin" style={styles.forwardIcon} />
@@ -227,16 +226,14 @@ const Profile = () => {
               setCurrentPassword('');
               setNewPassword('');
               setConfirmPassword('');
-            }}
-          >
+            }}>
             <TouchableWithoutFeedback
               onPress={() => {
                 setModalVisible(false);
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
-              }}
-            >
+              }}>
               <View style={styles.centeredView}>
                 <Pressable style={styles.modalView} onPress={() => {}}>
                   <Text style={styles.modalHeader}>Change Password</Text>
@@ -268,15 +265,13 @@ const Profile = () => {
                   <View style={styles.cancelSaveContainer}>
                     <TouchableOpacity
                       style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                      onPress={() => handleCancelChangePass()}
-                    >
+                      onPress={() => handleCancelChangePass()}>
                       <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       style={[styles.modalButton, { backgroundColor: '#000B58' }]}
-                      onPress={() => handleChangePass()}
-                    >
+                      onPress={() => handleChangePass()}>
                       <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                     </TouchableOpacity>
                   </View>

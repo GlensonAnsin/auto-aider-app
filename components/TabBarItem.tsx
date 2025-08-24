@@ -15,7 +15,7 @@ export default function TabBarItem({ label, isFocused, onPress, onLongPress, ico
 
   useEffect(() => {
     scale.value = withSpring(isFocused ? 1 : 0, { duration: 350 });
-  }, [isFocused]);
+  }, [isFocused, scale]);
 
   const animatedIconStyle = useAnimatedStyle(() => {
     const iconScaleValue = interpolate(scale.value, [0, 1], [1, 1.4]);

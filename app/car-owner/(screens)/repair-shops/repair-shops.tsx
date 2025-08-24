@@ -187,7 +187,7 @@ const RepairShops = () => {
         isActive = false;
         dispatch(clearScanState());
       };
-    }, [])
+    }, [dispatch, scanReference, vehicleID])
   );
 
   useEffect(() => {
@@ -465,9 +465,10 @@ const RepairShops = () => {
                         <View
                           style={[
                             styles.profilePicWrapper,
-                            { backgroundColor: nearbyRepShop[selectedRepShop].profileBG },
-                          ]}
-                        >
+                            {
+                              backgroundColor: nearbyRepShop[selectedRepShop].profileBG,
+                            },
+                          ]}>
                           <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
                         </View>
                       )}
@@ -476,7 +477,9 @@ const RepairShops = () => {
                         <View style={styles.profilePicWrapper}>
                           <Image
                             style={styles.profilePic}
-                            source={{ uri: nearbyRepShop[selectedRepShop].profilePic }}
+                            source={{
+                              uri: nearbyRepShop[selectedRepShop].profilePic,
+                            }}
                             width={100}
                             height={100}
                           />
@@ -498,8 +501,9 @@ const RepairShops = () => {
                             </>
                           )}
                           <Text
-                            style={styles.contactText}
-                          >{`${nearbyRepShop[selectedRepShop].ownerFirstname} ${nearbyRepShop[selectedRepShop].ownerLastname}`}</Text>
+                            style={
+                              styles.contactText
+                            }>{`${nearbyRepShop[selectedRepShop].ownerFirstname} ${nearbyRepShop[selectedRepShop].ownerLastname}`}</Text>
                         </View>
 
                         <Text style={styles.contactText}>{nearbyRepShop[selectedRepShop].mobileNum}</Text>
@@ -559,7 +563,7 @@ const RepairShops = () => {
                           <Text style={styles.subHeader}>Services Offered</Text>
                           {nearbyRepShop[selectedRepShop].servicesOffered.map((item) => (
                             <View key={item} style={styles.services}>
-                              <Text style={styles.bullet}>{`\u2022`}</Text>
+                              <Text style={styles.bullet}>{'\u2022'}</Text>
                               <Text style={styles.servicesText}>{item}</Text>
                             </View>
                           ))}
@@ -574,14 +578,12 @@ const RepairShops = () => {
                       onRequestClose={() => {
                         setModalVisible(false);
                         setError('');
-                      }}
-                    >
+                      }}>
                       <TouchableWithoutFeedback
                         onPress={() => {
                           setModalVisible(false);
                           setError('');
-                        }}
-                      >
+                        }}>
                         <View style={styles.centeredView}>
                           <Pressable style={styles.modalView} onPress={() => {}}>
                             <View style={styles.profileNameContainer}>
@@ -589,9 +591,10 @@ const RepairShops = () => {
                                 <View
                                   style={[
                                     styles.profilePicWrapper,
-                                    { backgroundColor: nearbyRepShop[selectedRepShop].profileBG },
-                                  ]}
-                                >
+                                    {
+                                      backgroundColor: nearbyRepShop[selectedRepShop].profileBG,
+                                    },
+                                  ]}>
                                   <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
                                 </View>
                               )}
@@ -600,7 +603,9 @@ const RepairShops = () => {
                                 <View style={styles.profilePicWrapper}>
                                   <Image
                                     style={styles.profilePic}
-                                    source={{ uri: nearbyRepShop[selectedRepShop].profilePic }}
+                                    source={{
+                                      uri: nearbyRepShop[selectedRepShop].profilePic,
+                                    }}
                                     width={100}
                                     height={100}
                                   />
@@ -647,8 +652,7 @@ const RepairShops = () => {
                                     onPress={() => {
                                       setModalVisible(false);
                                       setError('');
-                                    }}
-                                  >
+                                    }}>
                                     <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                                   </TouchableOpacity>
 
@@ -660,8 +664,7 @@ const RepairShops = () => {
                                         null,
                                         'with-obd2'
                                       )
-                                    }
-                                  >
+                                    }>
                                     <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
                                   </TouchableOpacity>
                                 </View>
@@ -692,12 +695,14 @@ const RepairShops = () => {
                                       <View
                                         style={{
                                           ...styles.dropdownItemStyle,
-                                          ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                                        }}
-                                      >
+                                          ...(isSelected && {
+                                            backgroundColor: '#D2D9DF',
+                                          }),
+                                        }}>
                                         <Text
-                                          style={styles.dropdownItemTxtStyle}
-                                        >{`${item.year} ${item.make} ${item.model}`}</Text>
+                                          style={
+                                            styles.dropdownItemTxtStyle
+                                          }>{`${item.year} ${item.make} ${item.model}`}</Text>
                                       </View>
                                     )}
                                     showsVerticalScrollIndicator={false}
@@ -734,8 +739,7 @@ const RepairShops = () => {
                                     onPress={() => {
                                       setModalVisible(false);
                                       setError('');
-                                    }}
-                                  >
+                                    }}>
                                     <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                                   </TouchableOpacity>
 
@@ -743,8 +747,7 @@ const RepairShops = () => {
                                     style={[styles.modalButton, { backgroundColor: '#000B58' }]}
                                     onPress={() =>
                                       handleSubmitRequestWithoutOBD2(nearbyRepShop[selectedRepShop].repairShopID)
-                                    }
-                                  >
+                                    }>
                                     <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
                                   </TouchableOpacity>
                                 </View>

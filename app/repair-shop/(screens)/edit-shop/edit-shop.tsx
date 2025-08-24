@@ -8,7 +8,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
-import Checkbox from 'expo-checkbox';
+import { Checkbox } from 'expo-checkbox';
 import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -77,8 +77,14 @@ const EditShop = () => {
   const services = [
     { id: '1', label: 'Engine diagnostics and repair' },
     { id: '2', label: 'Transmission repair and overhaul' },
-    { id: '3', label: 'Oil change and fluid replacement (engine oil, brake fluid, coolant, etc.)' },
-    { id: '4', label: 'Brake system service (pads, discs, drums, ABS systems)' },
+    {
+      id: '3',
+      label: 'Oil change and fluid replacement (engine oil, brake fluid, coolant, etc.)',
+    },
+    {
+      id: '4',
+      label: 'Brake system service (pads, discs, drums, ABS systems)',
+    },
     { id: '5', label: 'Clutch system service' },
     { id: '6', label: 'Battery check and replacement' },
     { id: '7', label: 'Timing belt/chain replacement' },
@@ -112,7 +118,10 @@ const EditShop = () => {
     { id: '35', label: 'Filters (air, fuel, oil, cabin)' },
     { id: '36', label: 'Belts and hoses' },
     { id: '37', label: 'Spark plugs and ignition coils' },
-    { id: '38', label: 'Accessories (car alarms, dashcams, LED lights, spoilers, etc.)' },
+    {
+      id: '38',
+      label: 'Accessories (car alarms, dashcams, LED lights, spoilers, etc.)',
+    },
     { id: '39', label: 'Preventive maintenance service (PMS)' },
     { id: '40', label: 'LTO vehicle inspection assistance' },
     { id: '41', label: 'Emission testing assistance' },
@@ -120,7 +129,10 @@ const EditShop = () => {
     { id: '43', label: 'Insurance claim estimates and repairs' },
     { id: '44', label: '24/7 towing service' },
     { id: '45', label: 'Roadside assistance' },
-    { id: '46', label: 'Fleet maintenance (for companies with multiple vehicles)' },
+    {
+      id: '46',
+      label: 'Fleet maintenance (for companies with multiple vehicles)',
+    },
     { id: '47', label: 'Car restoration (classic or vintage cars)' },
     { id: '48', label: 'Custom modifications and tuning' },
   ];
@@ -412,14 +424,14 @@ const EditShop = () => {
           setServicesOffered(localServicesOffered);
           break;
         case 'region':
-          ((repairShopData.longitude = localRegion?.longitude !== undefined ? localRegion.longitude.toString() : ''),
-            (repairShopData.latitude = localRegion?.latitude !== undefined ? localRegion.latitude.toString() : ''),
-            setRegion({
-              latitude: localRegion?.latitude !== undefined ? localRegion.latitude : 0,
-              longitude: localRegion?.longitude !== undefined ? localRegion.longitude : 0,
-              latitudeDelta: 0.001,
-              longitudeDelta: 0.001,
-            }));
+          repairShopData.longitude = localRegion?.longitude !== undefined ? localRegion.longitude.toString() : '';
+          repairShopData.latitude = localRegion?.latitude !== undefined ? localRegion.latitude.toString() : '';
+          setRegion({
+            latitude: localRegion?.latitude !== undefined ? localRegion.latitude : 0,
+            longitude: localRegion?.longitude !== undefined ? localRegion.longitude : 0,
+            latitudeDelta: 0.001,
+            longitudeDelta: 0.001,
+          });
           break;
         case 'profile':
           repairShopData.profile_pic = link;
@@ -616,8 +628,7 @@ const EditShop = () => {
       <KeyboardAvoidingView
         behavior="padding"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        style={{ flex: 1 }}
-      >
+        style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <Header headerTitle="Edit Shop" />
 
@@ -657,8 +668,7 @@ const EditShop = () => {
                     onPress={() => {
                       deleteImage('profile', null);
                       handleUpdateRepShopInfo('profile', null, null, null);
-                    }}
-                  >
+                    }}>
                     <MaterialCommunityIcons name="image-remove" size={20} color="#FFF" />
                     <Text style={styles.profileButtonText}>Remove</Text>
                   </TouchableOpacity>
@@ -669,8 +679,7 @@ const EditShop = () => {
                 <View style={styles.profileButtonContainer}>
                   <TouchableOpacity
                     style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]}
-                    onPress={() => handleRestoreInfo('profile')}
-                  >
+                    onPress={() => handleRestoreInfo('profile')}>
                     <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
                   </TouchableOpacity>
 
@@ -681,8 +690,7 @@ const EditShop = () => {
                         deleteImage('profile', null);
                       }
                       uploadProfileImage();
-                    }}
-                  >
+                    }}>
                     <Text style={styles.profileButtonText}>Save</Text>
                   </TouchableOpacity>
                 </View>
@@ -833,8 +841,7 @@ const EditShop = () => {
                             style={{
                               ...styles.dropdownItemStyle,
                               ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                            }}
-                          >
+                            }}>
                             <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
                           </View>
                         )}
@@ -914,8 +921,7 @@ const EditShop = () => {
                     onPress={() => {
                       setLocalEmail('');
                       setEdit('email');
-                    }}
-                  >
+                    }}>
                     <Text style={styles.editButtonText}>Add Email</Text>
                   </TouchableOpacity>
                 )}
@@ -978,8 +984,7 @@ const EditShop = () => {
                     onPress={() => {
                       handleRestoreInfo('services-offered');
                       setIsEditServices(false);
-                    }}
-                  >
+                    }}>
                     <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                   </TouchableOpacity>
 
@@ -988,8 +993,7 @@ const EditShop = () => {
                     onPress={() => {
                       handleUpdateRepShopInfo('services-offered', null, null, null);
                       setIsEditServices(false);
-                    }}
-                  >
+                    }}>
                     <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                   </TouchableOpacity>
                 </View>
@@ -1014,8 +1018,7 @@ const EditShop = () => {
                         onPress={() => {
                           setImageSource(item);
                           setImageModalVisible(true);
-                        }}
-                      >
+                        }}>
                         <Image key={item} style={styles.image} source={{ uri: item }} width={100} height={100} />
                       </TouchableOpacity>
                     ))}
@@ -1059,16 +1062,14 @@ const EditShop = () => {
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
-              }}
-            >
+              }}>
               <TouchableWithoutFeedback
                 onPress={() => {
                   setModalVisible(false);
                   setCurrentPassword('');
                   setNewPassword('');
                   setConfirmPassword('');
-                }}
-              >
+                }}>
                 <View style={styles.centeredView}>
                   <Pressable style={styles.modalView} onPress={() => {}}>
                     <Text style={styles.modalHeader}>Change Password</Text>
@@ -1111,15 +1112,13 @@ const EditShop = () => {
                     <View style={styles.cancelSaveContainer}>
                       <TouchableOpacity
                         style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                        onPress={() => handleCancelChangePass()}
-                      >
+                        onPress={() => handleCancelChangePass()}>
                         <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
                         style={[styles.modalButton, { backgroundColor: '#000B58' }]}
-                        onPress={() => handleUpdateRepShopInfo('change-password', null, null, null)}
-                      >
+                        onPress={() => handleUpdateRepShopInfo('change-password', null, null, null)}>
                         <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                       </TouchableOpacity>
                     </View>
@@ -1135,8 +1134,7 @@ const EditShop = () => {
               onRequestClose={() => {
                 setMapModalVisible(false);
                 handleRestoreInfo('region');
-              }}
-            >
+              }}>
               <View style={styles.centeredView}>
                 <View style={styles.mapView}>
                   <MapView
@@ -1144,8 +1142,7 @@ const EditShop = () => {
                     ref={mapRef}
                     mapType="hybrid"
                     initialRegion={localRegion}
-                    onRegionChangeComplete={(newRegion) => setLocalRegion(newRegion)}
-                  >
+                    onRegionChangeComplete={(newRegion) => setLocalRegion(newRegion)}>
                     {localRegion && (
                       <Marker
                         coordinate={{
@@ -1164,8 +1161,7 @@ const EditShop = () => {
                       onPress={() => {
                         setMapModalVisible(false);
                         handleRestoreInfo('region');
-                      }}
-                    >
+                      }}>
                       <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                     </TouchableOpacity>
 
@@ -1174,8 +1170,7 @@ const EditShop = () => {
                       onPress={() => {
                         handleUpdateRepShopInfo('region', null, null, null);
                         setMapModalVisible(false);
-                      }}
-                    >
+                      }}>
                       <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                     </TouchableOpacity>
                   </View>
@@ -1190,14 +1185,12 @@ const EditShop = () => {
               onRequestClose={() => {
                 setImageModalVisible(false);
                 setImageSource('');
-              }}
-            >
+              }}>
               <TouchableWithoutFeedback
                 onPress={() => {
                   setImageModalVisible(false);
                   setImageSource('');
-                }}
-              >
+                }}>
                 <View style={styles.centeredView}>
                   <Pressable style={styles.imageView} onPress={() => {}}>
                     <Image width={500} height={300} style={styles.viewImage} source={{ uri: imageSource }} />
@@ -1208,8 +1201,7 @@ const EditShop = () => {
                         onPress={() => {
                           setImageModalVisible(false);
                           setImageSource('');
-                        }}
-                      >
+                        }}>
                         <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                       </TouchableOpacity>
 
@@ -1220,8 +1212,7 @@ const EditShop = () => {
                           const updatedLinks = shopImages.filter((item) => item !== imageSource);
                           setImageModalVisible(false);
                           handleUpdateRepShopInfo('shop-images', null, updatedLinks, 'delete');
-                        }}
-                      >
+                        }}>
                         <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Delete</Text>
                       </TouchableOpacity>
                     </View>

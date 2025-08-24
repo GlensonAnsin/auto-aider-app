@@ -16,11 +16,11 @@ export interface AutoRepairShop {
   number_of_ratings: number;
   average_rating: number;
   approval_status: string;
-  total_score:  number;
+  total_score: number;
   profile_bg: string;
   availability: string;
   is_deleted: boolean;
-};
+}
 
 export interface UpdateRepairShopInfo {
   owner_firstname: string | null;
@@ -37,4 +37,4 @@ export interface UpdateRepairShopInfo {
   profile_pic: string | null;
   shop_images: string[] | null;
   field: string;
-};
+}

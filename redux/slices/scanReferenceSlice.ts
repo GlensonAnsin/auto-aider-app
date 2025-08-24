@@ -17,7 +17,7 @@ const scanReferenceSlice = createSlice({
     },
     clearScanReferenceState: (state) => {
       state.scanReference = null;
-    }
+    },
   },
 });
 

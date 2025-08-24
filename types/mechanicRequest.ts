@@ -9,4 +9,4 @@ export interface AddRequest {
   rejected_reason: string | null;
   longitude: string;
   latitude: string;
-};
+}

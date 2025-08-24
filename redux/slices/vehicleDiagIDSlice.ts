@@ -17,7 +17,7 @@ const vehicleDiagIDSlice = createSlice({
     },
     clearVehicleDiagIDState: (state) => {
       state.vehicleDiagID = null;
-    }
+    },
   },
 });
 

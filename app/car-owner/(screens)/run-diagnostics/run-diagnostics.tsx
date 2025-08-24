@@ -236,8 +236,7 @@ const RunDiagnostics = () => {
                   style={{
                     ...styles.dropdownItemStyle,
                     ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                  }}
-                >
+                  }}>
                   <Text style={styles.dropdownItemTxtStyle}>{`${item.year} ${item.make} ${item.model}`}</Text>
                 </View>
               )}

@@ -5,7 +5,7 @@ interface RouteState {
 }
 
 const initialState: RouteState = {
-  route: []
+  route: [],
 };
 
 const routeSlice = createSlice({
@@ -13,14 +13,14 @@ const routeSlice = createSlice({
   initialState,
   reducers: {
     setRouteState: (state, action: PayloadAction<string>) => {
-      state.route.push(action.payload)
+      state.route.push(action.payload);
     },
     popRouteState: (state) => {
       state.route.pop();
     },
     clearRouteState: (state) => {
       state.route = [];
-    }
+    },
   },
 });
 

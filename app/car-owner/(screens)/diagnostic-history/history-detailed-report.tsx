@@ -69,7 +69,7 @@ const HistoryDetailedReport = () => {
         isActive = false;
         dispatch(clearScanState());
       };
-    }, [])
+    }, [dispatch, scanReference, vehicleID])
   );
 
   if (isLoading || codes.length === 0) {
@@ -88,8 +88,7 @@ const HistoryDetailedReport = () => {
                 <TouchableOpacity
                   style={[styles.codeButton, selectedIndex === index && { backgroundColor: '#000B58' }]}
                   key={index}
-                  onPress={() => setSelectedIndex(index)}
-                >
+                  onPress={() => setSelectedIndex(index)}>
                   <Text style={[styles.codeButtonText, selectedIndex === index && { color: '#FFF' }]}>{item.dtc}</Text>
                 </TouchableOpacity>
               ))}
@@ -110,7 +109,7 @@ const HistoryDetailedReport = () => {
             <Text style={styles.label}>Possible Causes</Text>
             {bulletPossibleCauses.map((item, index) => (
               <View key={index} style={styles.bulletView}>
-                <Text style={styles.bullet}>{`\u2022`}</Text>
+                <Text style={styles.bullet}>{'\u2022'}</Text>
                 <Text style={styles.bulletedText}>{item}</Text>
               </View>
             ))}
@@ -120,7 +119,7 @@ const HistoryDetailedReport = () => {
             <Text style={styles.label}>Recommended Solutions or Repairs</Text>
             {bulletRecommendedRepair.map((item, index) => (
               <View key={index} style={styles.bulletView}>
-                <Text style={styles.bullet}>{`\u2022`}</Text>
+                <Text style={styles.bullet}>{'\u2022'}</Text>
                 <Text style={styles.bulletedText}>{item}</Text>
               </View>
             ))}

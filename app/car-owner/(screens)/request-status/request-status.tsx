@@ -107,7 +107,13 @@ const RequestStatus = () => {
       },
       {} as Record<
         string,
-        { vehicleName: string; repairShop: string; scanReference: string; datetime: string; status: string }
+        {
+          vehicleName: string;
+          repairShop: string;
+          scanReference: string;
+          datetime: string;
+          status: string;
+        }
       >
     )
   );
@@ -145,8 +151,7 @@ const RequestStatus = () => {
                 style={{
                   ...styles.dropdownItemStyle,
                   ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                }}
-              >
+                }}>
                 <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
               </View>
             )}
@@ -164,8 +169,7 @@ const RequestStatus = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./request-details');
-                    }}
-                  >
+                    }}>
                     <View style={styles.vehicleShopContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -236,8 +240,7 @@ const RequestStatus = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./request-details');
-                    }}
-                  >
+                    }}>
                     <View style={styles.vehicleShopContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -273,8 +276,7 @@ const RequestStatus = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./request-details');
-                    }}
-                  >
+                    }}>
                     <View style={styles.vehicleShopContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -310,8 +312,7 @@ const RequestStatus = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./request-details');
-                    }}
-                  >
+                    }}>
                     <View style={styles.vehicleShopContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -347,8 +348,7 @@ const RequestStatus = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./request-details');
-                    }}
-                  >
+                    }}>
                     <View style={styles.vehicleShopContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.repairShop}</Text>

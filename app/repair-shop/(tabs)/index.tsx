@@ -77,7 +77,7 @@ export default function Home() {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
@@ -146,8 +146,7 @@ export default function Home() {
               <>
                 <TouchableOpacity
                   style={[styles.profilePicWrapper, { backgroundColor: profileBG }]}
-                  onPress={() => setImageModalVisible(true)}
-                >
+                  onPress={() => setImageModalVisible(true)}>
                   <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
                 </TouchableOpacity>
 
@@ -155,8 +154,7 @@ export default function Home() {
                   animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={imageModalVisible}
-                  onRequestClose={() => setImageModalVisible(false)}
-                >
+                  onRequestClose={() => setImageModalVisible(false)}>
                   <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
                     <View style={styles.centeredView}>
                       <Pressable style={styles.imageView} onPress={() => {}}>
@@ -180,8 +178,7 @@ export default function Home() {
                   animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={imageModalVisible}
-                  onRequestClose={() => setImageModalVisible(false)}
-                >
+                  onRequestClose={() => setImageModalVisible(false)}>
                   <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
                     <View style={styles.centeredView}>
                       <Pressable style={styles.imageView}>
@@ -234,8 +231,7 @@ export default function Home() {
               onPress={() => {
                 backRoute();
                 router.replace('./repair-history/repair-history');
-              }}
-            >
+              }}>
               <MaterialIcons name="manage-history" size={15} color="#FFF" />
               <Text style={styles.buttonText}>History</Text>
             </TouchableOpacity>
@@ -245,8 +241,7 @@ export default function Home() {
               onPress={() => {
                 backRoute();
                 router.replace('./repair-requests/repair-requests');
-              }}
-            >
+              }}>
               <FontAwesome6 name="screwdriver-wrench" size={10} color="#FFF" />
               <Text style={styles.buttonText}>Requests</Text>
             </TouchableOpacity>
@@ -256,8 +251,7 @@ export default function Home() {
               onPress={() => {
                 backRoute();
                 router.replace('./edit-shop/edit-shop');
-              }}
-            >
+              }}>
               <FontAwesome6 name="edit" size={10} color="#FFF" />
               <Text style={styles.buttonText}>Edit Shop</Text>
             </TouchableOpacity>
@@ -271,8 +265,7 @@ export default function Home() {
                 onPress={() => {
                   backRoute();
                   router.replace('./edit-shop/edit-shop');
-                }}
-              >
+                }}>
                 <MaterialCommunityIcons name="image-plus" size={16} color="#555" />
                 <Text style={styles.editButtonText}>Upload Image</Text>
               </TouchableOpacity>
@@ -297,7 +290,7 @@ export default function Home() {
             <Text style={styles.subHeader}>Services Offered</Text>
             {servicesOffered.map((item) => (
               <View key={item} style={styles.services}>
-                <Text style={styles.bullet}>{`\u2022`}</Text>
+                <Text style={styles.bullet}>{'\u2022'}</Text>
                 <Text style={styles.servicesText}>{item}</Text>
               </View>
             ))}

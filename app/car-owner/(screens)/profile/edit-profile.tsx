@@ -225,7 +225,7 @@ const EditProfile = () => {
         color: '#FFF',
         icon: 'success',
       });
-    } catch (e) {
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -323,8 +323,7 @@ const EditProfile = () => {
       <KeyboardAvoidingView
         behavior="padding"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        style={{ flex: 1 }}
-      >
+        style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <Header headerTitle="Edit Profile" />
 
@@ -363,8 +362,7 @@ const EditProfile = () => {
                   onPress={() => {
                     deleteImage();
                     handleUpdateUserInfo('profile', null);
-                  }}
-                >
+                  }}>
                   <MaterialCommunityIcons name="image-remove" size={20} color="#FFF" />
                   <Text style={styles.profileButtonText}>Remove</Text>
                 </TouchableOpacity>
@@ -375,8 +373,7 @@ const EditProfile = () => {
               <View style={styles.profileButtonContainer}>
                 <TouchableOpacity
                   style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]}
-                  onPress={() => handleRestoreInfo('profile')}
-                >
+                  onPress={() => handleRestoreInfo('profile')}>
                   <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
                 </TouchableOpacity>
 
@@ -387,8 +384,7 @@ const EditProfile = () => {
                       deleteImage();
                     }
                     uploadImage();
-                  }}
-                >
+                  }}>
                   <Text style={styles.profileButtonText}>Save</Text>
                 </TouchableOpacity>
               </View>
@@ -495,8 +491,7 @@ const EditProfile = () => {
                             style={{
                               ...styles.dropdownItemStyle,
                               ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                            }}
-                          >
+                            }}>
                             <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
                           </View>
                         )}
@@ -575,8 +570,7 @@ const EditProfile = () => {
                     onPress={() => {
                       setLocalEmail('');
                       setEdit('email');
-                    }}
-                  >
+                    }}>
                     <Text style={styles.editButtonText}>Add Email</Text>
                   </TouchableOpacity>
                 )}

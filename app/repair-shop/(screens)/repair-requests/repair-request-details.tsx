@@ -12,7 +12,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import Checkbox from 'expo-checkbox';
+import { Checkbox } from 'expo-checkbox';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -428,7 +428,7 @@ const RepairRequestDetails = () => {
         color: '#FFF',
         icon: 'success',
       });
-    } catch (e) {
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -449,7 +449,7 @@ const RepairRequestDetails = () => {
         color: '#FFF',
         icon: 'success',
       });
-    } catch (e) {
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -508,7 +508,7 @@ const RepairRequestDetails = () => {
         });
         return;
       }
-    } catch (e) {
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -651,8 +651,7 @@ const RepairRequestDetails = () => {
                 animationType="fade"
                 backdropColor={'rgba(0, 0, 0, 0.5)'}
                 visible={mapModalVisible}
-                onRequestClose={() => setMapModalVisible(false)}
-              >
+                onRequestClose={() => setMapModalVisible(false)}>
                 <View style={styles.centeredView}>
                   <View style={styles.mapView2}>
                     <MapView style={styles.map2} ref={mapRef} mapType="hybrid" initialRegion={customerRegion}>
@@ -682,8 +681,9 @@ const RepairRequestDetails = () => {
                       <Entypo name="cross" size={20} color="#FFF" />
                     </TouchableOpacity>
                     <Text
-                      style={styles.text}
-                    >{`${getDistance(shopRegion?.latitude ?? 0, shopRegion?.longitude ?? 0, customerRegion?.latitude ?? 0, customerRegion?.longitude ?? 0)}KM Away`}</Text>
+                      style={
+                        styles.text
+                      }>{`${getDistance(shopRegion?.latitude ?? 0, shopRegion?.longitude ?? 0, customerRegion?.latitude ?? 0, customerRegion?.longitude ?? 0)}KM Away`}</Text>
                   </View>
                 </View>
               </Modal>
@@ -701,8 +701,7 @@ const RepairRequestDetails = () => {
                           handleTransformText(index);
                           setSelectedIndex(index);
                           setModalVisible(true);
-                        }}
-                      >
+                        }}>
                         <Text style={styles.diagnosisButtonText1}>{dtc}</Text>
                         <Text style={styles.diagnosisButtonText2}>{item.technicalDescription[index]}</Text>
                       </TouchableOpacity>
@@ -711,8 +710,7 @@ const RepairRequestDetails = () => {
                         animationType="fade"
                         backdropColor={'rgba(0, 0, 0, 0.5)'}
                         visible={modalVisible}
-                        onRequestClose={() => setModalVisible(false)}
-                      >
+                        onRequestClose={() => setModalVisible(false)}>
                         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
                           <View style={styles.centeredView}>
                             <Pressable style={styles.modalView} onPress={() => {}}>
@@ -729,8 +727,7 @@ const RepairRequestDetails = () => {
                                         borderColor: '#EAEAEA',
                                         paddingBottom: 20,
                                       },
-                                    ]}
-                                  >
+                                    ]}>
                                     <Text style={styles.troubleCode}>{item.dtc[selectedIndex]}</Text>
                                     <Text style={styles.technicalDescription}>
                                       {item.technicalDescription[selectedIndex]}
@@ -746,7 +743,7 @@ const RepairRequestDetails = () => {
                                     <Text style={styles.label}>Possible Causes</Text>
                                     {bulletPossibleCauses[groupedIndex]?.map((cause, index) => (
                                       <View key={index} style={styles.bulletView}>
-                                        <Text style={styles.bullet}>{`\u2022`}</Text>
+                                        <Text style={styles.bullet}>{'\u2022'}</Text>
                                         <Text style={styles.bulletedText}>{cause}</Text>
                                       </View>
                                     ))}
@@ -756,7 +753,7 @@ const RepairRequestDetails = () => {
                                     <Text style={styles.label}>Recommended Solutions or Repairs</Text>
                                     {bulletRecommendedRepair[groupedIndex]?.map((repair, index) => (
                                       <View key={index} style={styles.bulletView}>
-                                        <Text style={styles.bullet}>{`\u2022`}</Text>
+                                        <Text style={styles.bullet}>{'\u2022'}</Text>
                                         <Text style={styles.bulletedText}>{repair}</Text>
                                       </View>
                                     ))}
@@ -784,15 +781,13 @@ const RepairRequestDetails = () => {
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: '#780606' }]}
-                    onPress={() => setRejectedModalVisible(true)}
-                  >
+                    onPress={() => setRejectedModalVisible(true)}>
                     <Text style={styles.buttonText}>Reject</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: '#000B58' }]}
-                    onPress={() => handleAcceptRequest(item.requestID)}
-                  >
+                    onPress={() => handleAcceptRequest(item.requestID)}>
                     <Text style={styles.buttonText}>Accept</Text>
                   </TouchableOpacity>
                 </View>
@@ -805,15 +800,13 @@ const RepairRequestDetails = () => {
                     setRejectedModalVisible(false);
                     setSelectedReason('');
                     setOtherReason('');
-                  }}
-                >
+                  }}>
                   <TouchableWithoutFeedback
                     onPress={() => {
                       setRejectedModalVisible(false);
                       setSelectedReason('');
                       setOtherReason('');
-                    }}
-                  >
+                    }}>
                     <View style={styles.centeredView}>
                       <Pressable style={styles.textInputView} onPress={() => {}}>
                         <Text style={[styles.subHeader, { textAlign: 'center' }]}>Reason For Rejection</Text>
@@ -837,15 +830,13 @@ const RepairRequestDetails = () => {
                         <View style={styles.buttonContainer}>
                           <TouchableOpacity
                             style={[styles.button, { borderWidth: 1, borderColor: '#555' }]}
-                            onPress={() => setRejectedModalVisible(false)}
-                          >
+                            onPress={() => setRejectedModalVisible(false)}>
                             <Text style={[styles.buttonText, { color: '#555' }]}>Cancel</Text>
                           </TouchableOpacity>
 
                           <TouchableOpacity
                             style={[styles.button, { backgroundColor: '#000B58' }]}
-                            onPress={() => handleRejectRequest(item.requestID)}
-                          >
+                            onPress={() => handleRejectRequest(item.requestID)}>
                             <Text style={styles.buttonText}>Proceed</Text>
                           </TouchableOpacity>
                         </View>
@@ -870,8 +861,7 @@ const RepairRequestDetails = () => {
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: '#000B58' }]}
-                    onPress={() => setCompletedModalVisible(true)}
-                  >
+                    onPress={() => setCompletedModalVisible(true)}>
                     <Text style={styles.buttonText}>Done</Text>
                   </TouchableOpacity>
                 </View>
@@ -884,15 +874,13 @@ const RepairRequestDetails = () => {
                     setCompletedModalVisible(false);
                     setSelectedOptCompleted('');
                     setRepairProcedure('');
-                  }}
-                >
+                  }}>
                   <TouchableWithoutFeedback
                     onPress={() => {
                       setCompletedModalVisible(false);
                       setSelectedOptCompleted('');
                       setRepairProcedure('');
-                    }}
-                  >
+                    }}>
                     <View style={styles.centeredView}>
                       <Pressable style={styles.textInputView} onPress={() => {}}>
                         <Text style={[styles.subHeader, { textAlign: 'center' }]}>Repair Procedure Done</Text>
@@ -929,15 +917,13 @@ const RepairRequestDetails = () => {
                               setCompletedModalVisible(false);
                               setSelectedOptCompleted('');
                               setRepairProcedure('');
-                            }}
-                          >
+                            }}>
                             <Text style={[styles.buttonText, { color: '#555' }]}>Cancel</Text>
                           </TouchableOpacity>
 
                           <TouchableOpacity
                             style={[styles.button, { backgroundColor: '#000B58' }]}
-                            onPress={() => handleRequestCompleted(item.requestID)}
-                          >
+                            onPress={() => handleRequestCompleted(item.requestID)}>
                             <Text style={styles.buttonText}>Proceed</Text>
                           </TouchableOpacity>
                         </View>

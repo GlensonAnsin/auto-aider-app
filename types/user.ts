@@ -10,7 +10,7 @@ export interface User {
   role: string;
   user_initials_bg: string;
   is_deleted: boolean;
-};
+}
 
 export interface UserWithID {
   user_id: number;
@@ -23,7 +23,7 @@ export interface UserWithID {
   creation_date: Date;
   profile_pic: string | null;
   role: string;
-};
+}
 
 export interface UpdateUserInfo {
   firstname: string | null;
@@ -33,14 +33,14 @@ export interface UpdateUserInfo {
   mobile_num: string | null;
   profile_pic: string | null;
   field: string;
-};
+}
 
 export interface ChangePass {
   newPassword: string;
   currentPassword: string;
-};
+}
 
 export interface LoginUser {
   username: string;
   password: string;
-};
+}

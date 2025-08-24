@@ -4,4 +4,4 @@ export interface Vehicle {
   year: string;
   date_added: string;
   is_deleted: boolean;
-};
+}

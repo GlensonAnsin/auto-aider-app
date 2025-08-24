@@ -2,7 +2,7 @@ import { createRepairShop, createUser, getRepairShops, getUsers } from '@/servic
 import { AutoRepairShop } from '@/types/autoRepairShop';
 import { User } from '@/types/user';
 import dayjs from 'dayjs';
-import Checkbox from 'expo-checkbox';
+import { Checkbox } from 'expo-checkbox';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -52,8 +52,14 @@ const Signup = () => {
   const services = [
     { id: '1', label: 'Engine diagnostics and repair' },
     { id: '2', label: 'Transmission repair and overhaul' },
-    { id: '3', label: 'Oil change and fluid replacement (engine oil, brake fluid, coolant, etc.)' },
-    { id: '4', label: 'Brake system service (pads, discs, drums, ABS systems)' },
+    {
+      id: '3',
+      label: 'Oil change and fluid replacement (engine oil, brake fluid, coolant, etc.)',
+    },
+    {
+      id: '4',
+      label: 'Brake system service (pads, discs, drums, ABS systems)',
+    },
     { id: '5', label: 'Clutch system service' },
     { id: '6', label: 'Battery check and replacement' },
     { id: '7', label: 'Timing belt/chain replacement' },
@@ -87,7 +93,10 @@ const Signup = () => {
     { id: '35', label: 'Filters (air, fuel, oil, cabin)' },
     { id: '36', label: 'Belts and hoses' },
     { id: '37', label: 'Spark plugs and ignition coils' },
-    { id: '38', label: 'Accessories (car alarms, dashcams, LED lights, spoilers, etc.)' },
+    {
+      id: '38',
+      label: 'Accessories (car alarms, dashcams, LED lights, spoilers, etc.)',
+    },
     { id: '39', label: 'Preventive maintenance service (PMS)' },
     { id: '40', label: 'LTO vehicle inspection assistance' },
     { id: '41', label: 'Emission testing assistance' },
@@ -95,7 +104,10 @@ const Signup = () => {
     { id: '43', label: 'Insurance claim estimates and repairs' },
     { id: '44', label: '24/7 towing service' },
     { id: '45', label: 'Roadside assistance' },
-    { id: '46', label: 'Fleet maintenance (for companies with multiple vehicles)' },
+    {
+      id: '46',
+      label: 'Fleet maintenance (for companies with multiple vehicles)',
+    },
     { id: '47', label: 'Car restoration (classic or vintage cars)' },
     { id: '48', label: 'Custom modifications and tuning' },
   ];
@@ -203,7 +215,7 @@ const Signup = () => {
         });
         return;
       }
-    } catch (e) {
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -237,7 +249,7 @@ const Signup = () => {
       setPassword('');
       setConfirmPassword('');
       isCarOwnerModalVisible(true);
-    } catch (e) {
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -297,7 +309,7 @@ const Signup = () => {
           });
           return;
         }
-      } catch (e) {
+      } catch {
         showMessage({
           message: 'Something went wrong. Please try again.',
           type: 'danger',
@@ -358,7 +370,7 @@ const Signup = () => {
         setSelectedServices([]);
         setRegion(undefined);
         isRepairShopModalVisible(true);
-      } catch (e) {
+      } catch {
         showMessage({
           message: 'Something went wrong. Please try again.',
           type: 'danger',
@@ -375,8 +387,7 @@ const Signup = () => {
       <KeyboardAvoidingView
         behavior="padding"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        style={{ flex: 1 }}
-      >
+        style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View style={styles.upperBox}>
             <Text style={styles.welcomeTxt}>Welcome to</Text>
@@ -413,8 +424,7 @@ const Signup = () => {
                     style={{
                       ...styles.dropdownItemStyle,
                       ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                    }}
-                  >
+                    }}>
                     <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
                     <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
                   </View>
@@ -465,8 +475,7 @@ const Signup = () => {
                           style={{
                             ...styles.dropdownItemStyle,
                             ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                          }}
-                        >
+                          }}>
                           <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
                           <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
                         </View>
@@ -519,8 +528,7 @@ const Signup = () => {
                   animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={carOwnerModalVisible}
-                  onRequestClose={() => isCarOwnerModalVisible(!carOwnerModalVisible)}
-                >
+                  onRequestClose={() => isCarOwnerModalVisible(!carOwnerModalVisible)}>
                   <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                       <Text style={styles.modalTxt}>Account created successfully. Thank you for registering!</Text>
@@ -530,8 +538,7 @@ const Signup = () => {
                           isCarOwnerModalVisible(!carOwnerModalVisible);
                           router.navigate('/auth/login');
                           setPage('');
-                        }}
-                      >
+                        }}>
                         <Text style={styles.buttonTxt}>Ok</Text>
                       </TouchableOpacity>
                     </View>
@@ -579,8 +586,7 @@ const Signup = () => {
                           style={{
                             ...styles.dropdownItemStyle,
                             ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                          }}
-                        >
+                          }}>
                           <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
                           <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
                         </View>
@@ -643,8 +649,7 @@ const Signup = () => {
                   ref={mapRef}
                   mapType="hybrid"
                   initialRegion={region}
-                  onRegionChange={(newRegion) => setRegion(newRegion)}
-                >
+                  onRegionChange={(newRegion) => setRegion(newRegion)}>
                   {region && (
                     <Marker
                       coordinate={{
@@ -691,8 +696,7 @@ const Signup = () => {
                   animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={repairShopModalVisible}
-                  onRequestClose={() => isRepairShopModalVisible(!repairShopModalVisible)}
-                >
+                  onRequestClose={() => isRepairShopModalVisible(!repairShopModalVisible)}>
                   <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                       <Text style={styles.modalTxt}>
@@ -704,8 +708,7 @@ const Signup = () => {
                           isRepairShopModalVisible(!repairShopModalVisible);
                           router.navigate('/auth/login');
                           setPage('');
-                        }}
-                      >
+                        }}>
                         <Text style={styles.buttonTxt}>Ok</Text>
                       </TouchableOpacity>
                     </View>

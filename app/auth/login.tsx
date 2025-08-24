@@ -75,7 +75,7 @@ export default function Login() {
           setPassword('');
           setRole('');
         }, 1000);
-      } catch (e) {
+      } catch {
         showMessage({
           message: 'Something went wrong. Please try again.',
           type: 'danger',
@@ -119,7 +119,7 @@ export default function Login() {
           setPassword('');
           setRole('');
         }, 1000);
-      } catch (e) {
+      } catch {
         showMessage({
           message: 'Something went wrong. Please try again.',
           type: 'danger',
@@ -136,8 +136,7 @@ export default function Login() {
       <KeyboardAvoidingView
         behavior="padding"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        style={{ flex: 1, backgroundColor: '#000B58' }}
-      >
+        style={{ flex: 1, backgroundColor: '#000B58' }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <Image source={require('../../assets/images/screen-design-1.png')} style={styles.screenDesign} />
 
@@ -173,8 +172,7 @@ export default function Login() {
                     style={{
                       ...styles.dropdownItemStyle,
                       ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                    }}
-                  >
+                    }}>
                     <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
                     <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
                   </View>
@@ -189,7 +187,7 @@ export default function Login() {
             </View>
 
             <View style={styles.signupContainer}>
-              <Text style={styles.questionLbl}>Don't have an account?</Text>
+              <Text style={styles.questionLbl}>Don&apos;t have an account?</Text>
               <TouchableOpacity onPress={() => router.navigate('/auth/signup')}>
                 <Text style={styles.signupLbl}>Sign Up</Text>
               </TouchableOpacity>

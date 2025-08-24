@@ -63,7 +63,7 @@ const DetailedReport = () => {
             <Text style={styles.label}>Possible Causes</Text>
             {bulletPossibleCauses.map((item, index) => (
               <View key={index} style={styles.bulletView}>
-                <Text style={styles.bullet}>{`\u2022`}</Text>
+                <Text style={styles.bullet}>{'\u2022'}</Text>
                 <Text style={styles.bulletedText}>{item}</Text>
               </View>
             ))}
@@ -73,7 +73,7 @@ const DetailedReport = () => {
             <Text style={styles.label}>Recommended Solutions or Repairs</Text>
             {bulletRecommendedRepair.map((item, index) => (
               <View key={index} style={styles.bulletView}>
-                <Text style={styles.bullet}>{`\u2022`}</Text>
+                <Text style={styles.bullet}>{'\u2022'}</Text>
                 <Text style={styles.bulletedText}>{item}</Text>
               </View>
             ))}

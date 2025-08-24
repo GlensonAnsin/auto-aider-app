@@ -21,7 +21,13 @@ const DiagnosticHistory = () => {
   const backRoute = useBackRoute('/car-owner/(screens)/diagnostic-history/diagnostic-history');
   const [_socket, setSocket] = useState<Socket | null>(null);
   const [history, setHistory] = useState<
-    { vehicleID: number; vehicle: string; dtc: string; date: string; scanReference: string }[]
+    {
+      vehicleID: number;
+      vehicle: string;
+      dtc: string;
+      date: string;
+      scanReference: string;
+    }[]
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedScanReference, setSelectedScanReference] = useState<string>('');
@@ -32,8 +38,13 @@ const DiagnosticHistory = () => {
         setIsLoading(true);
         const res = await getVehicleDiagnostics();
 
-        const historyData: { vehicleID: number; vehicle: string; dtc: string; date: string; scanReference: string }[] =
-          [];
+        const historyData: {
+          vehicleID: number;
+          vehicle: string;
+          dtc: string;
+          date: string;
+          scanReference: string;
+        }[] = [];
 
         res?.forEach((item: any) => {
           historyData.push({
@@ -99,7 +110,16 @@ const DiagnosticHistory = () => {
 
         return acc;
       },
-      {} as Record<string, { vehicleID: number; vehicle: string; scanReference: string; date: string; dtc: string[] }>
+      {} as Record<
+        string,
+        {
+          vehicleID: number;
+          vehicle: string;
+          scanReference: string;
+          date: string;
+          dtc: string[];
+        }
+      >
     )
   );
 
@@ -141,7 +161,7 @@ const DiagnosticHistory = () => {
         color: '#fff',
         icon: 'success',
       });
-    } catch (e) {
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -162,7 +182,7 @@ const DiagnosticHistory = () => {
         color: '#fff',
         icon: 'success',
       });
-    } catch (e) {
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -209,8 +229,7 @@ const DiagnosticHistory = () => {
                 onLongPress={() => {
                   deleteVehicleDiagAlert();
                   setSelectedScanReference(item.scanReference);
-                }}
-              >
+                }}>
                 <Text style={styles.carDetails}>{item.vehicle}</Text>
                 <Text style={styles.date}>{item.date}</Text>
                 <View style={styles.codeButtonContainer}>
@@ -226,8 +245,7 @@ const DiagnosticHistory = () => {
                       );
                       backRoute();
                       router.replace('/car-owner/(screens)/repair-shops/repair-shops');
-                    }}
-                  >
+                    }}>
                     <Entypo name="location" size={16} color="#FFF" />
                   </TouchableOpacity>
                 </View>

@@ -14,14 +14,14 @@ const scanSlice = createSlice({
   name: 'scan',
   initialState,
   reducers: {
-    setScanState: (state, action: PayloadAction<{ vehicleID: number, scanReference: string }>) => {
+    setScanState: (state, action: PayloadAction<{ vehicleID: number; scanReference: string }>) => {
       state.vehicleID = action.payload.vehicleID;
       state.scanReference = action.payload.scanReference;
     },
     clearScanState: (state) => {
       state.vehicleID = null;
       state.scanReference = null;
-    }
+    },
   },
 });
 

@@ -1,5 +1,5 @@
-import axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from "axios";
-import { clearTokens, getAccessToken, getRefreshToken, storeTokens } from "./tokenStorage";
+import axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
+import { clearTokens, getAccessToken, getRefreshToken, storeTokens } from './tokenStorage';
 
 interface CustomAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
@@ -24,14 +24,11 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  response => response,
+  (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as CustomAxiosRequestConfig;
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry
-    ) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
@@ -56,7 +53,6 @@ api.interceptors.response.use(
         };
 
         return api(originalRequest);
-
       } catch (e) {
         await clearTokens();
         return Promise.reject(e);

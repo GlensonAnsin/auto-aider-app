@@ -418,8 +418,7 @@ const RequestDetails = () => {
                           handleTransformText(index);
                           setSelectedIndex(index);
                           setModalVisible(true);
-                        }}
-                      >
+                        }}>
                         <Text style={styles.diagnosisButtonText1}>{dtc}</Text>
                         <Text style={styles.diagnosisButtonText2}>{item.technicalDescription[index]}</Text>
                       </TouchableOpacity>
@@ -428,8 +427,7 @@ const RequestDetails = () => {
                         animationType="fade"
                         backdropColor={'rgba(0, 0, 0, 0.5)'}
                         visible={modalVisible}
-                        onRequestClose={() => setModalVisible(false)}
-                      >
+                        onRequestClose={() => setModalVisible(false)}>
                         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
                           <View style={styles.centeredView}>
                             <Pressable style={styles.modalView} onPress={() => {}}>
@@ -446,8 +444,7 @@ const RequestDetails = () => {
                                         borderColor: '#EAEAEA',
                                         paddingBottom: 20,
                                       },
-                                    ]}
-                                  >
+                                    ]}>
                                     <Text style={styles.troubleCode}>{item.dtc[selectedIndex]}</Text>
                                     <Text style={styles.technicalDescription}>
                                       {item.technicalDescription[selectedIndex]}
@@ -463,7 +460,7 @@ const RequestDetails = () => {
                                     <Text style={styles.label}>Possible Causes</Text>
                                     {bulletPossibleCauses[groupedIndex]?.map((cause, index) => (
                                       <View key={index} style={styles.bulletView}>
-                                        <Text style={styles.bullet}>{`\u2022`}</Text>
+                                        <Text style={styles.bullet}>{'\u2022'}</Text>
                                         <Text style={styles.bulletedText}>{cause}</Text>
                                       </View>
                                     ))}
@@ -473,7 +470,7 @@ const RequestDetails = () => {
                                     <Text style={styles.label}>Recommended Solutions or Repairs</Text>
                                     {bulletRecommendedRepair[groupedIndex]?.map((repair, index) => (
                                       <View key={index} style={styles.bulletView}>
-                                        <Text style={styles.bullet}>{`\u2022`}</Text>
+                                        <Text style={styles.bullet}>{'\u2022'}</Text>
                                         <Text style={styles.bulletedText}>{repair}</Text>
                                       </View>
                                     ))}
