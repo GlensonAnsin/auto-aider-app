@@ -22,7 +22,8 @@ export const Header = ({ headerTitle }: HeaderProps) => {
         onPress={() => {
           router.replace(routes[routes.length - 1]);
           dispatch(popRouteState());
-        }}>
+        }}
+      >
         <Icon name="arrow-left" style={styles.arrowBack} />
       </TouchableOpacity>
     </View>

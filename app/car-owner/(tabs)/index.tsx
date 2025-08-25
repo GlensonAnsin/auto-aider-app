@@ -220,7 +220,8 @@ export default function Home() {
           {profilePic === null && (
             <TouchableOpacity
               style={[styles.profileWrapper, { backgroundColor: userInitialsBG }]}
-              onPress={() => router.replace('./profile/profile')}>
+              onPress={() => router.replace('./profile/profile')}
+            >
               <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
             </TouchableOpacity>
           )}
@@ -244,7 +245,8 @@ export default function Home() {
               onPress={() => {
                 backRoute();
                 router.replace('./diagnostic-history/diagnostic-history');
-              }}>
+              }}
+            >
               <MaterialIcons name="history" size={35} color="#FFF" />
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Diagnostic History</Text>
@@ -267,7 +269,8 @@ export default function Home() {
                   backRoute();
                   router.replace('./run-diagnostics/run-diagnostics');
                 }
-              }}>
+              }}
+            >
               <Ionicons name="scan" size={35} color="#FFF" />
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Scan Car</Text>
@@ -280,7 +283,8 @@ export default function Home() {
               onPress={() => {
                 backRoute();
                 router.replace('./repair-shops/repair-shops');
-              }}>
+              }}
+            >
               <Entypo name="location" size={35} color="#FFF" />
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Repair Shops</Text>
@@ -303,7 +307,8 @@ export default function Home() {
               onPress={() => {
                 backRoute();
                 router.replace('./profile/profile');
-              }}>
+              }}
+            >
               <MaterialCommunityIcons name="account" size={35} color="#FFF" />
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>My Profile</Text>
@@ -316,7 +321,8 @@ export default function Home() {
               onPress={() => {
                 backRoute();
                 router.replace('./request-status/request-status');
-              }}>
+              }}
+            >
               <MaterialCommunityIcons name="clipboard-edit" size={35} color="#FFF" />
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Request Status</Text>
@@ -335,7 +341,8 @@ export default function Home() {
               setModel('');
               setYear('');
               setError('');
-            }}>
+            }}
+          >
             <TouchableWithoutFeedback
               onPress={() => {
                 isAddVehicleModalVisible(false);
@@ -343,7 +350,8 @@ export default function Home() {
                 setModel('');
                 setYear('');
                 setError('');
-              }}>
+              }}
+            >
               <View style={styles.centeredView}>
                 <Pressable style={styles.addCarModalView} onPress={() => {}}>
                   <Text style={styles.modalHeader}>Add Vehicle</Text>
@@ -366,7 +374,8 @@ export default function Home() {
                           style={{
                             ...styles.dropdownItemStyle,
                             ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                          }}>
+                          }}
+                        >
                           <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
                         </View>
                       )}
@@ -412,13 +421,15 @@ export default function Home() {
                   <View style={styles.cancelSaveContainer}>
                     <TouchableOpacity
                       style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                      onPress={() => handleCancelAddCar()}>
+                      onPress={() => handleCancelAddCar()}
+                    >
                       <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       style={[styles.modalButton, { backgroundColor: '#000B58' }]}
-                      onPress={() => handleCarVerification()}>
+                      onPress={() => handleCarVerification()}
+                    >
                       <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Add</Text>
                     </TouchableOpacity>
                   </View>

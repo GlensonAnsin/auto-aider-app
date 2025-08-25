@@ -1,11 +1,13 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { setSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
 import { RootState } from '@/redux/store';
 import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -20,15 +22,19 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { io, Socket } from 'socket.io-client';
 
 const RequestDetails = () => {
   dayjs.extend(utc);
+  const router = useRouter();
   const [_socket, setSocket] = useState<Socket | null>(null);
+  const dispatch = useDispatch();
   const [requestDetails, setRequestDetails] = useState<
     {
+      userID: number;
       requestID: number;
+      repairShopID: number;
       repairShop: string;
       repairShopNum: string;
       repairShopEmail: string | null;
@@ -66,7 +72,9 @@ const RequestDetails = () => {
         const res2 = await getRepairShops();
 
         const requestDetailsData: {
+          userID: number;
           requestID: number;
+          repairShopID: number;
           repairShop: string;
           repairShopNum: string;
           repairShopEmail: string | null;
@@ -90,62 +98,67 @@ const RequestDetails = () => {
         }[] = [];
 
         if (res1) {
-          res1.vehicles.forEach((vehicle: any) => {
-            if (vehicle) {
-              const make = vehicle.make;
-              const model = vehicle.model;
-              const year = vehicle.year;
-              if (vehicle.vehicle_diagnostics) {
-                vehicle.vehicle_diagnostics.forEach((diagnostic: any) => {
-                  if (diagnostic) {
-                    const dtc = diagnostic.dtc;
-                    const technicalDescription = diagnostic.technical_description;
-                    const meaning = diagnostic.meaning;
-                    const possibleCauses = diagnostic.possible_causes;
-                    const recommendedRepair = diagnostic.recommended_repair;
-                    const scanReference = diagnostic.scan_reference;
-                    const vehicleIssue = diagnostic.vehicle_issue_description;
-                    if (diagnostic.mechanic_requests) {
-                      diagnostic.mechanic_requests.forEach((request: any) => {
-                        const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
-                        if (repairShop) {
-                          requestDetailsData.push({
-                            requestID: request.mechanic_request_id,
-                            repairShop: repairShop.shop_name,
-                            repairShopNum: repairShop.mobile_num,
-                            repairShopEmail: repairShop.email,
-                            repairShopProfile: repairShop.profile_pic,
-                            repairShopProfileBG: repairShop.profile_bg,
-                            status: request.status,
-                            datetime: dayjs(request.request_datetime)
-                              .utc(true)
-                              .local()
-                              .format('ddd MMM DD YYYY, h:mm A'),
-                            make: make,
-                            model: model,
-                            year: year,
-                            dtc: dtc,
-                            technicalDescription: technicalDescription,
-                            meaning: meaning,
-                            possibleCauses: possibleCauses,
-                            recommendedRepair: recommendedRepair,
-                            scanReference: scanReference,
-                            vehicleIssue: vehicleIssue,
-                            repairProcedure: request.repair_procedure,
-                            completedOn: dayjs(request.completed_on)
-                              .utc(true)
-                              .local()
-                              .format('ddd MMM DD YYYY, h:mm A'),
-                            reasonRejected: request.reason_rejected,
-                          });
-                        }
-                      });
+          const userID = res1.user_id;
+          if (res1.vehicles) {
+            res1.vehicles.forEach((vehicle: any) => {
+              if (vehicle) {
+                const make = vehicle.make;
+                const model = vehicle.model;
+                const year = vehicle.year;
+                if (vehicle.vehicle_diagnostics) {
+                  vehicle.vehicle_diagnostics.forEach((diagnostic: any) => {
+                    if (diagnostic) {
+                      const dtc = diagnostic.dtc;
+                      const technicalDescription = diagnostic.technical_description;
+                      const meaning = diagnostic.meaning;
+                      const possibleCauses = diagnostic.possible_causes;
+                      const recommendedRepair = diagnostic.recommended_repair;
+                      const scanReference = diagnostic.scan_reference;
+                      const vehicleIssue = diagnostic.vehicle_issue_description;
+                      if (diagnostic.mechanic_requests) {
+                        diagnostic.mechanic_requests.forEach((request: any) => {
+                          const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
+                          if (repairShop) {
+                            requestDetailsData.push({
+                              userID: userID,
+                              requestID: request.mechanic_request_id,
+                              repairShopID: repairShop.repair_shop_id,
+                              repairShop: repairShop.shop_name,
+                              repairShopNum: repairShop.mobile_num,
+                              repairShopEmail: repairShop.email,
+                              repairShopProfile: repairShop.profile_pic,
+                              repairShopProfileBG: repairShop.profile_bg,
+                              status: request.status,
+                              datetime: dayjs(request.request_datetime)
+                                .utc(true)
+                                .local()
+                                .format('ddd MMM DD YYYY, h:mm A'),
+                              make: make,
+                              model: model,
+                              year: year,
+                              dtc: dtc,
+                              technicalDescription: technicalDescription,
+                              meaning: meaning,
+                              possibleCauses: possibleCauses,
+                              recommendedRepair: recommendedRepair,
+                              scanReference: scanReference,
+                              vehicleIssue: vehicleIssue,
+                              repairProcedure: request.repair_procedure,
+                              completedOn: dayjs(request.completed_on)
+                                .utc(true)
+                                .local()
+                                .format('ddd MMM DD YYYY, h:mm A'),
+                              reasonRejected: request.reason_rejected,
+                            });
+                          }
+                        });
+                      }
                     }
-                  }
-                });
+                  });
+                }
               }
-            }
-          });
+            });
+          }
         }
 
         setRequestDetails(requestDetailsData);
@@ -216,7 +229,9 @@ const RequestDetails = () => {
 
         if (!acc[ref]) {
           acc[ref] = {
+            userID: item.userID,
             requestID: [item.requestID],
+            repairShopID: item.repairShopID,
             repairShop: item.repairShop,
             repairShopNum: item.repairShopNum,
             repairShopEmail: item.repairShopEmail,
@@ -252,7 +267,9 @@ const RequestDetails = () => {
       {} as Record<
         string,
         {
+          userID: number;
           requestID: number[];
+          repairShopID: number;
           repairShop: string;
           repairShopNum: string;
           repairShopEmail: string | null;
@@ -326,7 +343,19 @@ const RequestDetails = () => {
               {item.repairShopEmail !== null && (
                 <Text style={[styles.text, { color: '#555' }]}>{item.repairShopEmail}</Text>
               )}
-              <TouchableOpacity style={styles.chatButton}>
+              <TouchableOpacity
+                style={styles.chatButton}
+                onPress={() => {
+                  dispatch(
+                    setSenderReceiverState({
+                      senderID: item.userID,
+                      receiverID: item.repairShopID,
+                      role: 'car-owner',
+                    })
+                  );
+                  router.replace('/chat-room/chat-room');
+                }}
+              >
                 <Text style={[styles.buttonText, { fontSize: 14, fontFamily: 'LeagueSpartan' }]}>Chat</Text>
               </TouchableOpacity>
             </View>
@@ -418,7 +447,8 @@ const RequestDetails = () => {
                           handleTransformText(index);
                           setSelectedIndex(index);
                           setModalVisible(true);
-                        }}>
+                        }}
+                      >
                         <Text style={styles.diagnosisButtonText1}>{dtc}</Text>
                         <Text style={styles.diagnosisButtonText2}>{item.technicalDescription[index]}</Text>
                       </TouchableOpacity>
@@ -427,7 +457,8 @@ const RequestDetails = () => {
                         animationType="fade"
                         backdropColor={'rgba(0, 0, 0, 0.5)'}
                         visible={modalVisible}
-                        onRequestClose={() => setModalVisible(false)}>
+                        onRequestClose={() => setModalVisible(false)}
+                      >
                         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
                           <View style={styles.centeredView}>
                             <Pressable style={styles.modalView} onPress={() => {}}>
@@ -444,7 +475,8 @@ const RequestDetails = () => {
                                         borderColor: '#EAEAEA',
                                         paddingBottom: 20,
                                       },
-                                    ]}>
+                                    ]}
+                                  >
                                     <Text style={styles.troubleCode}>{item.dtc[selectedIndex]}</Text>
                                     <Text style={styles.technicalDescription}>
                                       {item.technicalDescription[selectedIndex]}

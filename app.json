@@ -28,7 +28,12 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.glensonansin.autoaiderapp"
+      "package": "com.glensonansin.autoaiderapp",
+      "config": {
+        "googleMaps": {
+          "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
+        }
+      }
     },
     "web": {
       "bundler": "metro",

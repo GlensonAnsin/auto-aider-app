@@ -62,6 +62,25 @@ export const getUserInfo = async () => {
   }
 };
 
+// GET USER INFO FOR CHAT
+export const getUserInfoForChat = async (userID: number) => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/user/get-user-info-chat/${userID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Get User Info For Chat Error: ', e);
+    return null;
+  }
+};
+
 // UPDATE USER INFO
 export const updateUserInfo = async (userData: UpdateUserInfo) => {
   try {
@@ -146,6 +165,25 @@ export const getRepairShopInfo = async () => {
     return null;
   }
 };
+
+// GET REPAIR SHOP INFO FOR CHAT
+export const getShopInfoForChat = async (repairShopID: number) => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/auto_repair_shop/get-shop-info-chat/${repairShopID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Get Repair Shop Info Error: ', e);
+    return null;
+  }
+}
 
 // UPDATE REPAIR SHOP INFO
 export const updateRepairShopInfo = async (userData: UpdateRepairShopInfo) => {
@@ -431,5 +469,43 @@ export const requestCompleted = async (requestIDs: number[], repair_procedure: s
     );
   } catch (e) {
     console.error('Request Completed Error: ', e);
+  }
+};
+
+// GET CONVERSATION FOR CAR OWNER
+export const getConversationForCarOwner = async (repairShopID: number) => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/messages/get-conversation-co/${repairShopID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Get Convo For Car Owner Error: ', e);
+    return null;
+  }
+};
+
+// GER CONVERSATION FOR REPAIR SHOP
+export const getConversationForShop = async (userID: number) => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/messages/get-conversation-rs/${userID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Get Convo For Shop Error: ', e);
+    return null;
   }
 };
