@@ -6,18 +6,32 @@ import {
   getShopInfoForChat,
   getUserInfoForChat,
 } from '@/services/backendApi';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import { io } from 'socket.io-client';
+
+dayjs.extend(utc);
+const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
 
 const ChatRoom = () => {
-  dayjs.extend(utc);
-
+  const flatListRef = useRef<FlatList<any>>(null);
   const senderID: number | null = useSelector((state: RootState) => state.senderReceiver.sender);
   const receiverID: number | null = useSelector((state: RootState) => state.senderReceiver.receiver);
   const role: string | null = useSelector((state: RootState) => state.senderReceiver.role);
@@ -39,6 +53,7 @@ const ChatRoom = () => {
   const [receiverShopName, setReceiverShopName] = useState<string | null>(null);
   const [receiverProfile, setReceiverProfile] = useState<string | null>(null);
   const [receiverProfileBG, setReceiverProfileBG] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
 
   useEffect(() => {
     (async () => {
@@ -116,41 +131,138 @@ const ChatRoom = () => {
     })();
   }, [senderID, receiverID, role]);
 
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Connected to server: ', socket.id);
+    });
+
+    socket.on('receiveMessage', ({ conversation }) => {
+      setConversation((prev) => [...prev, conversation]);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  const sendMessage = () => {
+    if (message.trim() !== '') {
+      socket.emit('sendMessage', {
+        senderID: Number(senderID),
+        receiverID: Number(receiverID),
+        role: role,
+        message,
+        sentAt: dayjs().format(),
+      });
+
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+      setMessage('');
+    }
+  };
+
   if (isLoading) {
     return <Loading />;
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.arrowWrapper}>
-          <MaterialCommunityIcons name="arrow-left" style={styles.arrowBack} />
-        </TouchableOpacity>
-        <View style={styles.receiverInfo}>
-          {receiverProfile === null && (
-            <View style={[styles.profileWrapper, { backgroundColor: receiverProfileBG }]}>
-              {role === 'car-owner' && <MaterialCommunityIcons name="car-wrench" size={30} color="#FFF" />}
+      <KeyboardAvoidingView
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        style={{ flex: 1 }}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.arrowWrapper}>
+            <MaterialCommunityIcons name="arrow-left" style={styles.arrowBack} />
+          </TouchableOpacity>
+          <View style={styles.receiverInfo}>
+            {receiverProfile === null && (
+              <View style={[styles.profileWrapper, { backgroundColor: receiverProfileBG }]}>
+                {role === 'car-owner' && <MaterialCommunityIcons name="car-wrench" size={30} color="#FFF" />}
+
+                {role === 'repair-shop' && (
+                  <Text style={styles.userInitials}>{`${receiverFirstname?.[0]}${receiverLastname?.[0]}`}</Text>
+                )}
+              </View>
+            )}
+
+            {receiverProfile !== null && (
+              <View style={styles.profileWrapper}>
+                <Image style={styles.profilePic} source={{ uri: receiverProfile }} width={50} height={50} />
+              </View>
+            )}
+
+            {role === 'car-owner' && (
+              <Text numberOfLines={1} style={styles.name}>
+                {receiverShopName}
+              </Text>
+            )}
+            {role === 'repair-shop' && <Text style={styles.name}>{`${receiverFirstname} ${receiverLastname}`}</Text>}
+          </View>
+        </View>
+
+        <FlatList
+          data={conversation}
+          ref={flatListRef}
+          keyboardShouldPersistTaps="handled"
+          renderItem={({ item }) => (
+            <>
+              {role === 'car-owner' && (
+                <Text
+                  style={{
+                    alignSelf: item.senderUserID === Number(senderID) ? 'flex-start' : 'flex-end',
+                    backgroundColor: item.senderUserID === Number(senderID) ? '#EEE' : '#DCF8C6',
+                    padding: 10,
+                    marginHorizontal: 10,
+                    marginVertical: 5,
+                    borderRadius: 20,
+                    fontFamily: 'LeagueSpartan',
+                    fontSize: 18,
+                    color: '#333',
+                  }}
+                >
+                  {item.message}
+                </Text>
+              )}
 
               {role === 'repair-shop' && (
-                <Text style={styles.userInitials}>{`${receiverFirstname?.[0]}${receiverLastname?.[0]}`}</Text>
+                <Text
+                  style={{
+                    alignSelf: item.senderShopID === Number(senderID) ? 'flex-start' : 'flex-end',
+                    backgroundColor: item.senderShopID === Number(senderID) ? '#EEE' : '#DCF8C6',
+                    padding: 10,
+                    marginHorizontal: 10,
+                    marginVertical: 5,
+                    borderRadius: 20,
+                    fontFamily: 'LeagueSpartan',
+                    fontSize: 18,
+                    color: '#333',
+                  }}
+                >
+                  {item.message}
+                </Text>
               )}
-            </View>
+            </>
           )}
-
-          {receiverProfile !== null && (
-            <View style={styles.profileWrapper}>
-              <Image style={styles.profilePic} source={{ uri: receiverProfile }} width={50} height={50} />
-            </View>
-          )}
-
-          {role === 'car-owner' && (
-            <Text numberOfLines={1} style={styles.name}>
-              {receiverShopName}
-            </Text>
-          )}
-          {role === 'repair-shop' && <Text style={styles.name}>{`${receiverFirstname} ${receiverLastname}`}</Text>}
+          keyExtractor={(_, i) => i.toString()}
+        />
+        <View style={styles.messageInputContainer}>
+          <TextInput
+            value={message}
+            onChangeText={setMessage}
+            placeholder="Message"
+            placeholderTextColor="#555"
+            multiline={true}
+            numberOfLines={6}
+            style={styles.messageInput}
+          />
+          <TouchableOpacity style={styles.sendButton} disabled={message ? false : true} onPress={() => sendMessage()}>
+            <Ionicons name="send" size={24} color={message ? '#FFF' : '#828282'} />
+          </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -201,6 +313,28 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: '#FFF',
     width: 230,
+  },
+  messageInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    backgroundColor: '#000B58',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  messageInput: {
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: '#EAEAEA',
+    fontFamily: 'LeagueSpartan',
+    fontSize: 18,
+    color: '#333',
+    flex: 1,
+  },
+  sendButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 8,
   },
 });
 

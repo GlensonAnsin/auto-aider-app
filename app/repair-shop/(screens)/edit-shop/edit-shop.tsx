@@ -628,7 +628,8 @@ const EditShop = () => {
       <KeyboardAvoidingView
         behavior="padding"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        style={{ flex: 1 }}>
+        style={{ flex: 1 }}
+      >
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <Header headerTitle="Edit Shop" />
 
@@ -668,7 +669,8 @@ const EditShop = () => {
                     onPress={() => {
                       deleteImage('profile', null);
                       handleUpdateRepShopInfo('profile', null, null, null);
-                    }}>
+                    }}
+                  >
                     <MaterialCommunityIcons name="image-remove" size={20} color="#FFF" />
                     <Text style={styles.profileButtonText}>Remove</Text>
                   </TouchableOpacity>
@@ -679,7 +681,8 @@ const EditShop = () => {
                 <View style={styles.profileButtonContainer}>
                   <TouchableOpacity
                     style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]}
-                    onPress={() => handleRestoreInfo('profile')}>
+                    onPress={() => handleRestoreInfo('profile')}
+                  >
                     <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
                   </TouchableOpacity>
 
@@ -690,7 +693,8 @@ const EditShop = () => {
                         deleteImage('profile', null);
                       }
                       uploadProfileImage();
-                    }}>
+                    }}
+                  >
                     <Text style={styles.profileButtonText}>Save</Text>
                   </TouchableOpacity>
                 </View>
@@ -841,7 +845,8 @@ const EditShop = () => {
                             style={{
                               ...styles.dropdownItemStyle,
                               ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                            }}>
+                            }}
+                          >
                             <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
                           </View>
                         )}
@@ -921,7 +926,8 @@ const EditShop = () => {
                     onPress={() => {
                       setLocalEmail('');
                       setEdit('email');
-                    }}>
+                    }}
+                  >
                     <Text style={styles.editButtonText}>Add Email</Text>
                   </TouchableOpacity>
                 )}
@@ -984,7 +990,8 @@ const EditShop = () => {
                     onPress={() => {
                       handleRestoreInfo('services-offered');
                       setIsEditServices(false);
-                    }}>
+                    }}
+                  >
                     <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                   </TouchableOpacity>
 
@@ -993,7 +1000,8 @@ const EditShop = () => {
                     onPress={() => {
                       handleUpdateRepShopInfo('services-offered', null, null, null);
                       setIsEditServices(false);
-                    }}>
+                    }}
+                  >
                     <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                   </TouchableOpacity>
                 </View>
@@ -1018,7 +1026,8 @@ const EditShop = () => {
                         onPress={() => {
                           setImageSource(item);
                           setImageModalVisible(true);
-                        }}>
+                        }}
+                      >
                         <Image key={item} style={styles.image} source={{ uri: item }} width={100} height={100} />
                       </TouchableOpacity>
                     ))}
@@ -1062,14 +1071,16 @@ const EditShop = () => {
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
-              }}>
+              }}
+            >
               <TouchableWithoutFeedback
                 onPress={() => {
                   setModalVisible(false);
                   setCurrentPassword('');
                   setNewPassword('');
                   setConfirmPassword('');
-                }}>
+                }}
+              >
                 <View style={styles.centeredView}>
                   <Pressable style={styles.modalView} onPress={() => {}}>
                     <Text style={styles.modalHeader}>Change Password</Text>
@@ -1112,13 +1123,15 @@ const EditShop = () => {
                     <View style={styles.cancelSaveContainer}>
                       <TouchableOpacity
                         style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                        onPress={() => handleCancelChangePass()}>
+                        onPress={() => handleCancelChangePass()}
+                      >
                         <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
                         style={[styles.modalButton, { backgroundColor: '#000B58' }]}
-                        onPress={() => handleUpdateRepShopInfo('change-password', null, null, null)}>
+                        onPress={() => handleUpdateRepShopInfo('change-password', null, null, null)}
+                      >
                         <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                       </TouchableOpacity>
                     </View>
@@ -1134,7 +1147,8 @@ const EditShop = () => {
               onRequestClose={() => {
                 setMapModalVisible(false);
                 handleRestoreInfo('region');
-              }}>
+              }}
+            >
               <View style={styles.centeredView}>
                 <View style={styles.mapView}>
                   <MapView
@@ -1142,7 +1156,8 @@ const EditShop = () => {
                     ref={mapRef}
                     mapType="hybrid"
                     initialRegion={localRegion}
-                    onRegionChangeComplete={(newRegion) => setLocalRegion(newRegion)}>
+                    onRegionChangeComplete={(newRegion) => setLocalRegion(newRegion)}
+                  >
                     {localRegion && (
                       <Marker
                         coordinate={{
@@ -1161,7 +1176,8 @@ const EditShop = () => {
                       onPress={() => {
                         setMapModalVisible(false);
                         handleRestoreInfo('region');
-                      }}>
+                      }}
+                    >
                       <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                     </TouchableOpacity>
 
@@ -1170,7 +1186,8 @@ const EditShop = () => {
                       onPress={() => {
                         handleUpdateRepShopInfo('region', null, null, null);
                         setMapModalVisible(false);
-                      }}>
+                      }}
+                    >
                       <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                     </TouchableOpacity>
                   </View>
@@ -1185,12 +1202,14 @@ const EditShop = () => {
               onRequestClose={() => {
                 setImageModalVisible(false);
                 setImageSource('');
-              }}>
+              }}
+            >
               <TouchableWithoutFeedback
                 onPress={() => {
                   setImageModalVisible(false);
                   setImageSource('');
-                }}>
+                }}
+              >
                 <View style={styles.centeredView}>
                   <Pressable style={styles.imageView} onPress={() => {}}>
                     <Image width={500} height={300} style={styles.viewImage} source={{ uri: imageSource }} />
@@ -1201,7 +1220,8 @@ const EditShop = () => {
                         onPress={() => {
                           setImageModalVisible(false);
                           setImageSource('');
-                        }}>
+                        }}
+                      >
                         <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                       </TouchableOpacity>
 
@@ -1212,7 +1232,8 @@ const EditShop = () => {
                           const updatedLinks = shopImages.filter((item) => item !== imageSource);
                           setImageModalVisible(false);
                           handleUpdateRepShopInfo('shop-images', null, updatedLinks, 'delete');
-                        }}>
+                        }}
+                      >
                         <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Delete</Text>
                       </TouchableOpacity>
                     </View>

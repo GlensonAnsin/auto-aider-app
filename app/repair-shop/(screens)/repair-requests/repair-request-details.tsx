@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { setSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
 import { RootState } from '@/redux/store';
 import {
   acceptRequest,
@@ -13,6 +14,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Checkbox } from 'expo-checkbox';
+import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -30,17 +32,21 @@ import {
 import { showMessage } from 'react-native-flash-message';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { io, Socket } from 'socket.io-client';
 
 const RepairRequestDetails = () => {
   dayjs.extend(utc);
+  const router = useRouter();
+  const dispatch = useDispatch();
   const mapRef = useRef<MapView | null>(null);
   const [_socket, setSocket] = useState<Socket | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [requestDetails, setRequestDetails] = useState<
     {
+      userID: number;
       requestID: number;
+      repairShopID: number;
       customer: string;
       customerNum: string;
       customerEmail: string | null;
@@ -101,7 +107,9 @@ const RepairRequestDetails = () => {
         const res2 = await getRepairShopInfo();
 
         const statusData: {
+          userID: number;
           requestID: number;
+          repairShopID: number;
           customer: string;
           customerNum: string;
           customerEmail: string | null;
@@ -127,83 +135,87 @@ const RepairRequestDetails = () => {
         }[] = [];
 
         if (res1) {
-          res1.mechanic_requests.forEach((request: any) => {
-            if (request) {
-              const requestID = request.mechanic_request_id;
-              const datetime = dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
-              const completedOn = dayjs(request.completed_on).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
-              const longitude = parseFloat(request.longitude);
-              const latitude = parseFloat(request.latitude);
-              const status = request.status;
-              const repairProcedure = request.repair_procedure;
-              const reasonRejected = request.reason_rejected;
-              if (request.vehicle_diagnostic) {
-                const diagnostics = Array.isArray(request.vehicle_diagnostic)
-                  ? request.vehicle_diagnostic
-                  : [request.vehicle_diagnostic];
-                diagnostics.forEach((diagnostic: any) => {
-                  if (diagnostic) {
-                    const scanReference = diagnostic.scan_reference;
-                    const dtc = diagnostic.dtc;
-                    const technicalDescription = diagnostic.technical_description;
-                    const meaning = diagnostic.meaning;
-                    const possibleCauses = diagnostic.possible_causes;
-                    const recommendedRepair = diagnostic.recommended_repair;
-                    const vehicleIssue = diagnostic.vehicle_issue_description;
-                    if (diagnostic.vehicle) {
-                      const vehicles = Array.isArray(diagnostic.vehicle) ? diagnostic.vehicle : [diagnostic.vehicle];
-                      vehicles.forEach((vehicle: any) => {
-                        if (vehicle) {
-                          const make = vehicle.make;
-                          const model = vehicle.model;
-                          const year = vehicle.year;
-                          if (vehicle.user) {
-                            const users = Array.isArray(vehicle.user) ? vehicle.user : [vehicle.user];
-                            users.forEach((customer: any) => {
-                              if (customer) {
-                                statusData.push({
-                                  requestID: requestID,
-                                  customer: `${customer.firstname} ${customer.lastname}`,
-                                  customerNum: customer.mobile_num,
-                                  customerEmail: customer.email,
-                                  customerProfile: customer.profile_pic,
-                                  customerProfileBG: customer.user_initials_bg,
-                                  status: status,
-                                  datetime: datetime,
-                                  completedOn: completedOn,
-                                  make: make,
-                                  model: model,
-                                  year: year,
-                                  longitude: longitude,
-                                  latitude: latitude,
-                                  dtc: dtc,
-                                  technicalDescription: technicalDescription,
-                                  meaning: meaning,
-                                  possibleCauses: possibleCauses,
-                                  recommendedRepair: recommendedRepair,
-                                  scanReference: scanReference,
-                                  vehicleIssue: vehicleIssue,
-                                  repairProcedure: repairProcedure,
-                                  reasonRejected: reasonRejected,
-                                });
+          if (res1.mechanic_requests) {
+            res1.mechanic_requests.forEach((request: any) => {
+              if (request) {
+                const requestID = request.mechanic_request_id;
+                const datetime = dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
+                const completedOn = dayjs(request.completed_on).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
+                const longitude = parseFloat(request.longitude);
+                const latitude = parseFloat(request.latitude);
+                const status = request.status;
+                const repairProcedure = request.repair_procedure;
+                const reasonRejected = request.reason_rejected;
+                if (request.vehicle_diagnostic) {
+                  const diagnostics = Array.isArray(request.vehicle_diagnostic)
+                    ? request.vehicle_diagnostic
+                    : [request.vehicle_diagnostic];
+                  diagnostics.forEach((diagnostic: any) => {
+                    if (diagnostic) {
+                      const scanReference = diagnostic.scan_reference;
+                      const dtc = diagnostic.dtc;
+                      const technicalDescription = diagnostic.technical_description;
+                      const meaning = diagnostic.meaning;
+                      const possibleCauses = diagnostic.possible_causes;
+                      const recommendedRepair = diagnostic.recommended_repair;
+                      const vehicleIssue = diagnostic.vehicle_issue_description;
+                      if (diagnostic.vehicle) {
+                        const vehicles = Array.isArray(diagnostic.vehicle) ? diagnostic.vehicle : [diagnostic.vehicle];
+                        vehicles.forEach((vehicle: any) => {
+                          if (vehicle) {
+                            const make = vehicle.make;
+                            const model = vehicle.model;
+                            const year = vehicle.year;
+                            if (vehicle.user) {
+                              const users = Array.isArray(vehicle.user) ? vehicle.user : [vehicle.user];
+                              users.forEach((customer: any) => {
+                                if (customer) {
+                                  statusData.push({
+                                    userID: customer.user_id,
+                                    requestID: requestID,
+                                    repairShopID: res2.repair_shop_id,
+                                    customer: `${customer.firstname} ${customer.lastname}`,
+                                    customerNum: customer.mobile_num,
+                                    customerEmail: customer.email,
+                                    customerProfile: customer.profile_pic,
+                                    customerProfileBG: customer.user_initials_bg,
+                                    status: status,
+                                    datetime: datetime,
+                                    completedOn: completedOn,
+                                    make: make,
+                                    model: model,
+                                    year: year,
+                                    longitude: longitude,
+                                    latitude: latitude,
+                                    dtc: dtc,
+                                    technicalDescription: technicalDescription,
+                                    meaning: meaning,
+                                    possibleCauses: possibleCauses,
+                                    recommendedRepair: recommendedRepair,
+                                    scanReference: scanReference,
+                                    vehicleIssue: vehicleIssue,
+                                    repairProcedure: repairProcedure,
+                                    reasonRejected: reasonRejected,
+                                  });
 
-                                setCustomerRegion({
-                                  latitude: latitude,
-                                  longitude: longitude,
-                                  latitudeDelta: 0.001,
-                                  longitudeDelta: 0.001,
-                                });
-                              }
-                            });
+                                  setCustomerRegion({
+                                    latitude: latitude,
+                                    longitude: longitude,
+                                    latitudeDelta: 0.001,
+                                    longitudeDelta: 0.001,
+                                  });
+                                }
+                              });
+                            }
                           }
-                        }
-                      });
+                        });
+                      }
                     }
-                  }
-                });
+                  });
+                }
               }
-            }
-          });
+            });
+          }
         }
 
         setRequestDetails(statusData);
@@ -297,7 +309,9 @@ const RepairRequestDetails = () => {
 
         if (!acc[ref]) {
           acc[ref] = {
+            userID: item.userID,
             requestID: [item.requestID],
+            repairShopID: item.repairShopID,
             customer: item.customer,
             customerNum: item.customerNum,
             customerEmail: item.customerEmail,
@@ -335,7 +349,9 @@ const RepairRequestDetails = () => {
       {} as Record<
         string,
         {
+          userID: number;
           requestID: number[];
+          repairShopID: number;
           customer: string;
           customerNum: string;
           customerEmail: string | null;
@@ -548,7 +564,19 @@ const RepairRequestDetails = () => {
               {item.customerEmail !== null && (
                 <Text style={[styles.text, { color: '#555' }]}>{item.customerEmail}</Text>
               )}
-              <TouchableOpacity style={styles.chatButton}>
+              <TouchableOpacity
+                style={styles.chatButton}
+                onPress={() => {
+                  dispatch(
+                    setSenderReceiverState({
+                      senderID: item.repairShopID,
+                      receiverID: item.userID,
+                      role: 'repair-shop',
+                    })
+                  );
+                  router.replace('/chat-room/chat-room');
+                }}
+              >
                 <Text style={[styles.buttonText, { fontSize: 14, fontFamily: 'LeagueSpartan' }]}>Chat</Text>
               </TouchableOpacity>
             </View>
@@ -651,7 +679,8 @@ const RepairRequestDetails = () => {
                 animationType="fade"
                 backdropColor={'rgba(0, 0, 0, 0.5)'}
                 visible={mapModalVisible}
-                onRequestClose={() => setMapModalVisible(false)}>
+                onRequestClose={() => setMapModalVisible(false)}
+              >
                 <View style={styles.centeredView}>
                   <View style={styles.mapView2}>
                     <MapView style={styles.map2} ref={mapRef} mapType="hybrid" initialRegion={customerRegion}>
@@ -681,9 +710,8 @@ const RepairRequestDetails = () => {
                       <Entypo name="cross" size={20} color="#FFF" />
                     </TouchableOpacity>
                     <Text
-                      style={
-                        styles.text
-                      }>{`${getDistance(shopRegion?.latitude ?? 0, shopRegion?.longitude ?? 0, customerRegion?.latitude ?? 0, customerRegion?.longitude ?? 0)}KM Away`}</Text>
+                      style={styles.text}
+                    >{`${getDistance(shopRegion?.latitude ?? 0, shopRegion?.longitude ?? 0, customerRegion?.latitude ?? 0, customerRegion?.longitude ?? 0)}KM Away`}</Text>
                   </View>
                 </View>
               </Modal>
@@ -701,7 +729,8 @@ const RepairRequestDetails = () => {
                           handleTransformText(index);
                           setSelectedIndex(index);
                           setModalVisible(true);
-                        }}>
+                        }}
+                      >
                         <Text style={styles.diagnosisButtonText1}>{dtc}</Text>
                         <Text style={styles.diagnosisButtonText2}>{item.technicalDescription[index]}</Text>
                       </TouchableOpacity>
@@ -710,7 +739,8 @@ const RepairRequestDetails = () => {
                         animationType="fade"
                         backdropColor={'rgba(0, 0, 0, 0.5)'}
                         visible={modalVisible}
-                        onRequestClose={() => setModalVisible(false)}>
+                        onRequestClose={() => setModalVisible(false)}
+                      >
                         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
                           <View style={styles.centeredView}>
                             <Pressable style={styles.modalView} onPress={() => {}}>
@@ -727,7 +757,8 @@ const RepairRequestDetails = () => {
                                         borderColor: '#EAEAEA',
                                         paddingBottom: 20,
                                       },
-                                    ]}>
+                                    ]}
+                                  >
                                     <Text style={styles.troubleCode}>{item.dtc[selectedIndex]}</Text>
                                     <Text style={styles.technicalDescription}>
                                       {item.technicalDescription[selectedIndex]}
@@ -781,13 +812,15 @@ const RepairRequestDetails = () => {
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: '#780606' }]}
-                    onPress={() => setRejectedModalVisible(true)}>
+                    onPress={() => setRejectedModalVisible(true)}
+                  >
                     <Text style={styles.buttonText}>Reject</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: '#000B58' }]}
-                    onPress={() => handleAcceptRequest(item.requestID)}>
+                    onPress={() => handleAcceptRequest(item.requestID)}
+                  >
                     <Text style={styles.buttonText}>Accept</Text>
                   </TouchableOpacity>
                 </View>
@@ -800,13 +833,15 @@ const RepairRequestDetails = () => {
                     setRejectedModalVisible(false);
                     setSelectedReason('');
                     setOtherReason('');
-                  }}>
+                  }}
+                >
                   <TouchableWithoutFeedback
                     onPress={() => {
                       setRejectedModalVisible(false);
                       setSelectedReason('');
                       setOtherReason('');
-                    }}>
+                    }}
+                  >
                     <View style={styles.centeredView}>
                       <Pressable style={styles.textInputView} onPress={() => {}}>
                         <Text style={[styles.subHeader, { textAlign: 'center' }]}>Reason For Rejection</Text>
@@ -830,13 +865,15 @@ const RepairRequestDetails = () => {
                         <View style={styles.buttonContainer}>
                           <TouchableOpacity
                             style={[styles.button, { borderWidth: 1, borderColor: '#555' }]}
-                            onPress={() => setRejectedModalVisible(false)}>
+                            onPress={() => setRejectedModalVisible(false)}
+                          >
                             <Text style={[styles.buttonText, { color: '#555' }]}>Cancel</Text>
                           </TouchableOpacity>
 
                           <TouchableOpacity
                             style={[styles.button, { backgroundColor: '#000B58' }]}
-                            onPress={() => handleRejectRequest(item.requestID)}>
+                            onPress={() => handleRejectRequest(item.requestID)}
+                          >
                             <Text style={styles.buttonText}>Proceed</Text>
                           </TouchableOpacity>
                         </View>
@@ -861,7 +898,8 @@ const RepairRequestDetails = () => {
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: '#000B58' }]}
-                    onPress={() => setCompletedModalVisible(true)}>
+                    onPress={() => setCompletedModalVisible(true)}
+                  >
                     <Text style={styles.buttonText}>Done</Text>
                   </TouchableOpacity>
                 </View>
@@ -874,13 +912,15 @@ const RepairRequestDetails = () => {
                     setCompletedModalVisible(false);
                     setSelectedOptCompleted('');
                     setRepairProcedure('');
-                  }}>
+                  }}
+                >
                   <TouchableWithoutFeedback
                     onPress={() => {
                       setCompletedModalVisible(false);
                       setSelectedOptCompleted('');
                       setRepairProcedure('');
-                    }}>
+                    }}
+                  >
                     <View style={styles.centeredView}>
                       <Pressable style={styles.textInputView} onPress={() => {}}>
                         <Text style={[styles.subHeader, { textAlign: 'center' }]}>Repair Procedure Done</Text>
@@ -917,13 +957,15 @@ const RepairRequestDetails = () => {
                               setCompletedModalVisible(false);
                               setSelectedOptCompleted('');
                               setRepairProcedure('');
-                            }}>
+                            }}
+                          >
                             <Text style={[styles.buttonText, { color: '#555' }]}>Cancel</Text>
                           </TouchableOpacity>
 
                           <TouchableOpacity
                             style={[styles.button, { backgroundColor: '#000B58' }]}
-                            onPress={() => handleRequestCompleted(item.requestID)}>
+                            onPress={() => handleRequestCompleted(item.requestID)}
+                          >
                             <Text style={styles.buttonText}>Proceed</Text>
                           </TouchableOpacity>
                         </View>
