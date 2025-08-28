@@ -781,7 +781,7 @@ const RepairRequestDetails = () => {
                                   </View>
 
                                   <View style={styles.textContainer2}>
-                                    <Text style={styles.label}>Recommended Solutions or Repairs</Text>
+                                    <Text style={styles.label}>Recommended Solutions</Text>
                                     {bulletRecommendedRepair[groupedIndex]?.map((repair, index) => (
                                       <View key={index} style={styles.bulletView}>
                                         <Text style={styles.bullet}>{'\u2022'}</Text>
@@ -1041,9 +1041,9 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   customerName: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#333',
-    fontSize: 22,
+    fontSize: 20,
   },
   statusVehicleContainer: {
     width: '100%',
@@ -1057,29 +1057,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   status: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#333',
-    fontSize: 20,
-    lineHeight: 20,
-    textAlignVertical: 'center',
+    fontSize: 18,
   },
   text: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
-    fontSize: 16,
   },
   nestedText: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#333',
-    fontSize: 16,
   },
   locationContainer: {
     width: '100%',
     marginTop: 10,
   },
   subHeader: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 20,
+    fontFamily: 'BodyBold',
+    fontSize: 18,
     color: '#333',
     marginBottom: 10,
   },
@@ -1130,14 +1126,12 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   diagnosisButtonText1: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#780606',
-    fontSize: 16,
   },
   diagnosisButtonText2: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#555',
-    fontSize: 14,
   },
   repairProcedureContainer: {
     marginTop: 10,
@@ -1183,20 +1177,20 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   troubleCode: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 22,
+    fontFamily: 'BodyBold',
+    fontSize: 20,
     color: '#333',
     textAlign: 'center',
   },
   technicalDescription: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 20,
+    fontFamily: 'BodyRegular',
+    fontSize: 18,
     color: '#555',
     textAlign: 'center',
   },
   label: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 18,
+    fontFamily: 'BodyBold',
+    fontSize: 16,
     marginBottom: 10,
     color: '#333',
   },
@@ -1210,14 +1204,12 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
   },
   bullet: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyRegular',
     color: '#333',
-    fontSize: 16,
   },
   bulletedText: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
-    fontSize: 16,
     maxWidth: '93%',
   },
   buttonContainer: {
@@ -1244,8 +1236,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   buttonText: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyRegular',
     color: '#FFF',
   },
   mapView2: {
@@ -1310,9 +1301,8 @@ const styles = StyleSheet.create({
     minHeight: 100,
     borderRadius: 5,
     padding: 10,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
 });
 

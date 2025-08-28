@@ -1314,9 +1314,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   profileButtonText: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#FFF',
-    fontSize: 16,
   },
   infoEdit1: {
     flexDirection: 'row',
@@ -1331,8 +1330,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   repShopName: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 22,
+    fontFamily: 'BodyBold',
+    fontSize: 20,
     color: '#333',
     maxWidth: '90%',
   },
@@ -1343,8 +1342,8 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   subHeader: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 20,
+    fontFamily: 'BodyBold',
+    fontSize: 18,
     color: '#333',
     marginBottom: 10,
   },
@@ -1359,19 +1358,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   editButtonText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#000B58',
   },
   infoLabel: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 16,
+    fontFamily: 'BodyBold',
     width: '30%',
     color: '#555',
   },
   infoText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
     maxWidth: '85%',
   },
@@ -1389,8 +1385,7 @@ const styles = StyleSheet.create({
     width: '90%',
   },
   checkboxTxt: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#555',
   },
   shopImages: {
@@ -1444,12 +1439,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   endingButtonText: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 16,
+    fontFamily: 'BodyBold',
   },
   input1: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 22,
+    fontFamily: 'BodyBold',
+    fontSize: 20,
     color: '#333',
     padding: 0,
     borderBottomWidth: 1,
@@ -1458,8 +1452,7 @@ const styles = StyleSheet.create({
     maxWidth: '79%',
   },
   input2: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
     padding: 0,
     borderBottomWidth: 1,
@@ -1479,9 +1472,8 @@ const styles = StyleSheet.create({
   },
   dropdownButtonTxtStyle: {
     flex: 1,
-    fontSize: 16,
     color: '#555',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
@@ -1490,7 +1482,6 @@ const styles = StyleSheet.create({
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
     borderRadius: 5,
-    marginTop: -1,
   },
   dropdownItemStyle: {
     width: '100%',
@@ -1502,9 +1493,8 @@ const styles = StyleSheet.create({
   },
   dropdownItemTxtStyle: {
     flex: 1,
-    fontSize: 16,
     color: '#555',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   centeredView: {
     flex: 1,
@@ -1527,8 +1517,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalHeader: {
-    fontSize: 22,
-    fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 20,
+    fontFamily: 'HeaderBold',
     color: '#333',
   },
   modalInputContainer: {
@@ -1537,8 +1527,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   modalInputLabel: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
   },
   modalInput: {
@@ -1547,9 +1536,8 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 10,
     padding: 10,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   modalButton: {
     width: '30%',
@@ -1559,8 +1547,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   modalButtonText: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'HeaderBold',
   },
   errorContainer: {
     backgroundColor: '#EAEAEA',
@@ -1570,9 +1557,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   errorMessage: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: 'red',
     textAlign: 'center',
+    fontSize: 12,
   },
   mapView: {
     backgroundColor: '#FFF',

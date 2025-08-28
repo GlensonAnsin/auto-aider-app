@@ -151,7 +151,8 @@ const RequestStatus = () => {
                 style={{
                   ...styles.dropdownItemStyle,
                   ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                }}>
+                }}
+              >
                 <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
               </View>
             )}
@@ -169,7 +170,8 @@ const RequestStatus = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./request-details');
-                    }}>
+                    }}
+                  >
                     <View style={styles.vehicleShopContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -240,7 +242,8 @@ const RequestStatus = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./request-details');
-                    }}>
+                    }}
+                  >
                     <View style={styles.vehicleShopContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -276,7 +279,8 @@ const RequestStatus = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./request-details');
-                    }}>
+                    }}
+                  >
                     <View style={styles.vehicleShopContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -312,7 +316,8 @@ const RequestStatus = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./request-details');
-                    }}>
+                    }}
+                  >
                     <View style={styles.vehicleShopContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -348,7 +353,8 @@ const RequestStatus = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./request-details');
-                    }}>
+                    }}
+                  >
                     <View style={styles.vehicleShopContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.repairShop}</Text>
@@ -404,8 +410,7 @@ const styles = StyleSheet.create({
   },
   dropdownButtonTxtStyle: {
     flex: 1,
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
   },
   dropdownButtonArrowStyle: {
@@ -422,14 +427,12 @@ const styles = StyleSheet.create({
   },
   dropdownItemTxtStyle: {
     flex: 1,
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
   },
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
     borderRadius: 10,
-    marginTop: -37,
   },
   requestButton: {
     width: '100%',
@@ -450,12 +453,12 @@ const styles = StyleSheet.create({
   },
   vehicleShopContainer: {},
   vehicleName: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#333',
-    fontSize: 18,
+    fontSize: 16,
   },
   requestText: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#555',
     fontSize: 14,
   },
@@ -466,13 +469,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   statusText: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#555',
-    fontSize: 14,
+    fontSize: 12,
   },
   noRequestText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
     textAlign: 'center',
   },

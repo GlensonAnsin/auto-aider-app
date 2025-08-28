@@ -139,7 +139,8 @@ const ManageVehicles = () => {
 
                 <TouchableOpacity
                   style={[styles.button, { backgroundColor: '#780606' }]}
-                  onPress={() => deleteVehicleAlert(item.vehicleID)}>
+                  onPress={() => deleteVehicleAlert(item.vehicleID)}
+                >
                   <Text style={styles.buttonTxt}>Delete</Text>
                 </TouchableOpacity>
               </View>
@@ -164,8 +165,7 @@ const styles = StyleSheet.create({
     marginBottom: 100,
   },
   noVehiclesTxt: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
   },
   vehicleContainer: {
@@ -189,12 +189,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   carDetail: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 18,
+    fontFamily: 'BodyBold',
+    fontSize: 16,
     color: '#333',
   },
   dateAdded: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     fontSize: 14,
     color: '#555',
   },
@@ -212,8 +212,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonTxt: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'HeaderRegular',
     color: '#fff',
   },
 });

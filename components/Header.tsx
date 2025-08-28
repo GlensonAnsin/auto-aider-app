@@ -16,16 +16,18 @@ export const Header = ({ headerTitle }: HeaderProps) => {
 
   return (
     <View style={styles.upperBox}>
-      <Text style={styles.header}>{`|  ${headerTitle}`}</Text>
-      <TouchableOpacity
-        style={styles.arrowWrapper}
-        onPress={() => {
-          router.replace(routes[routes.length - 1]);
-          dispatch(popRouteState());
-        }}
-      >
-        <Icon name="arrow-left" style={styles.arrowBack} />
-      </TouchableOpacity>
+      <View style={styles.arrowHeaderContainer}>
+        <TouchableOpacity
+          style={styles.arrowWrapper}
+          onPress={() => {
+            router.replace(routes[routes.length - 1]);
+            dispatch(popRouteState());
+          }}
+        >
+          <Icon name="arrow-left" size={24} color="#FFF" />
+        </TouchableOpacity>
+        <Text style={styles.header}>{headerTitle}</Text>
+      </View>
     </View>
   );
 };
@@ -34,22 +36,22 @@ const styles = StyleSheet.create({
   upperBox: {
     backgroundColor: '#000B58',
     justifyContent: 'center',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     height: 63,
+  },
+  arrowHeaderContainer: {
+    flexDirection: 'row',
+    width: '90%',
+    alignItems: 'center',
+    gap: 10,
   },
   header: {
     color: '#FFF',
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 22,
-    marginLeft: 50,
+    fontFamily: 'HeaderBold',
+    fontSize: 18,
   },
   arrowWrapper: {
-    top: 23,
-    right: 320,
-    position: 'absolute',
-  },
-  arrowBack: {
-    fontSize: 22,
-    color: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

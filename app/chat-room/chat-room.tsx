@@ -10,6 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { useAudioPlayer } from 'expo-audio';
 import { useEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
@@ -17,11 +18,13 @@ import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
+import audioSource from '../../assets/sounds/bubble-pop.mp3';
 
 dayjs.extend(utc);
 const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
 
 const ChatRoom = () => {
+  const player = useAudioPlayer(audioSource);
   const flatListRef = useRef<any>(null);
   const senderID: number | null = useSelector((state: RootState) => state.senderReceiver.sender);
   const receiverID: number | null = useSelector((state: RootState) => state.senderReceiver.receiver);
@@ -165,6 +168,8 @@ const ChatRoom = () => {
         sentAt: dayjs().format(),
       });
 
+      player.play();
+
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
@@ -228,8 +233,7 @@ const ChatRoom = () => {
           >
             <Text
               style={{
-                fontFamily: 'LeagueSpartan',
-                fontSize: 16,
+                fontFamily: 'BodyRegular',
                 color: '#333',
               }}
             >
@@ -237,6 +241,7 @@ const ChatRoom = () => {
             </Text>
             <Text
               style={{
+                fontFamily: 'BodyRegular',
                 fontSize: 10,
                 color: '#555',
                 marginTop: 4,
@@ -259,7 +264,7 @@ const ChatRoom = () => {
           numberOfLines={6}
           style={styles.messageInput}
         />
-        <TouchableOpacity style={styles.sendButton} disabled={message ? false : true} onPress={() => sendMessage()}>
+        <TouchableOpacity style={styles.sendButton} disabled={message ? false : true} onPress={() => player.play()}>
           <Ionicons name="send" size={24} color={message ? '#FFF' : '#828282'} />
         </TouchableOpacity>
       </View>
@@ -301,16 +306,16 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   userInitials: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 22,
+    fontFamily: 'HeaderBold',
+    fontSize: 20,
     color: '#FFF',
   },
   profilePic: {
     borderRadius: 50,
   },
   name: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 22,
+    fontFamily: 'HeaderRegular',
+    fontSize: 18,
     color: '#FFF',
     width: 230,
   },
@@ -326,8 +331,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 10,
     backgroundColor: '#EAEAEA',
-    fontFamily: 'LeagueSpartan',
-    fontSize: 18,
+    fontFamily: 'BodyRegular',
     color: '#333',
     flex: 1,
   },

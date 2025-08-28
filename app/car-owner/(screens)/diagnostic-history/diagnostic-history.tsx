@@ -229,7 +229,8 @@ const DiagnosticHistory = () => {
                 onLongPress={() => {
                   deleteVehicleDiagAlert();
                   setSelectedScanReference(item.scanReference);
-                }}>
+                }}
+              >
                 <Text style={styles.carDetails}>{item.vehicle}</Text>
                 <Text style={styles.date}>{item.date}</Text>
                 <View style={styles.codeButtonContainer}>
@@ -245,7 +246,8 @@ const DiagnosticHistory = () => {
                       );
                       backRoute();
                       router.replace('/car-owner/(screens)/repair-shops/repair-shops');
-                    }}>
+                    }}
+                  >
                     <Entypo name="location" size={16} color="#FFF" />
                   </TouchableOpacity>
                 </View>
@@ -278,8 +280,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   header2: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 20,
+    fontFamily: 'HeaderBold',
+    fontSize: 18,
     color: '#333',
   },
   button: {
@@ -287,9 +289,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonTxt: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'HeaderRegular',
     color: '#000B58',
-    fontSize: 20,
+    fontSize: 16,
   },
   historyContainer: {
     width: '100%',
@@ -307,17 +309,17 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   carDetails: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#333',
-    fontSize: 18,
+    fontSize: 16,
   },
   troubleCodes: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#780606',
     fontSize: 14,
   },
   date: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#555',
     fontSize: 14,
   },
@@ -333,8 +335,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000B58',
   },
   noHistoriesText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
   },
 });

@@ -1,3 +1,5 @@
+import { popRouteState } from '@/redux/slices/routeSlice';
+import { RootState } from '@/redux/store';
 import { createRepairShop, createUser, getRepairShops, getUsers } from '@/services/backendApi';
 import { AutoRepairShop } from '@/types/autoRepairShop';
 import { User } from '@/types/user';
@@ -23,9 +25,12 @@ import MapView, { Marker, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Signup = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const routes: any[] = useSelector((state: RootState) => state.route.route);
   const mapRef = useRef<MapView>(null);
   const [firstname, setFirstname] = useState<string>('');
   const [lastname, setLastname] = useState<string>('');
@@ -387,7 +392,8 @@ const Signup = () => {
       <KeyboardAvoidingView
         behavior="padding"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        style={{ flex: 1 }}>
+        style={{ flex: 1 }}
+      >
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View style={styles.upperBox}>
             <Text style={styles.welcomeTxt}>Welcome to</Text>
@@ -410,6 +416,7 @@ const Signup = () => {
                   setRegion(undefined);
                   setShopName('');
                 }}
+                statusBarTranslucent={true}
                 renderButton={(selectedItem, isOpen) => (
                   <View style={styles.upperDropdownButtonStyle}>
                     {selectedItem && <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />}
@@ -424,7 +431,8 @@ const Signup = () => {
                     style={{
                       ...styles.dropdownItemStyle,
                       ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                    }}>
+                    }}
+                  >
                     <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
                     <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
                   </View>
@@ -438,11 +446,19 @@ const Signup = () => {
           <View style={styles.lowerBox}>
             {page === 'Car Owner' && (
               <>
-                <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/auth/login')}>
-                  <Icon name="arrow-left" style={styles.arrowBack} />
-                </TouchableOpacity>
+                <View style={styles.arrowHeaderContainer}>
+                  <TouchableOpacity
+                    style={styles.arrowWrapper}
+                    onPress={() => {
+                      router.replace(routes[routes.length - 1]);
+                      dispatch(popRouteState());
+                    }}
+                  >
+                    <Icon name="arrow-left" size={24} style={styles.arrowBack} />
+                  </TouchableOpacity>
+                  <Text style={styles.header}>Create Account</Text>
+                </View>
 
-                <Text style={styles.header}>Create Account</Text>
                 <View style={styles.row}>
                   <View style={styles.textInputContainer2}>
                     <Text style={styles.textInputLbl}>First Name</Text>
@@ -461,6 +477,7 @@ const Signup = () => {
                     <SelectDropdown
                       data={genders}
                       onSelect={(selectedItem) => setGender(selectedItem.title)}
+                      statusBarTranslucent={true}
                       renderButton={(selectedItem, isOpen) => (
                         <View style={styles.dropdownButtonStyle}>
                           {selectedItem && <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />}
@@ -475,7 +492,8 @@ const Signup = () => {
                           style={{
                             ...styles.dropdownItemStyle,
                             ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                          }}>
+                          }}
+                        >
                           <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
                           <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
                         </View>
@@ -528,7 +546,8 @@ const Signup = () => {
                   animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={carOwnerModalVisible}
-                  onRequestClose={() => isCarOwnerModalVisible(!carOwnerModalVisible)}>
+                  onRequestClose={() => isCarOwnerModalVisible(!carOwnerModalVisible)}
+                >
                   <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                       <Text style={styles.modalTxt}>Account created successfully. Thank you for registering!</Text>
@@ -538,7 +557,8 @@ const Signup = () => {
                           isCarOwnerModalVisible(!carOwnerModalVisible);
                           router.navigate('/auth/login');
                           setPage('');
-                        }}>
+                        }}
+                      >
                         <Text style={styles.buttonTxt}>Ok</Text>
                       </TouchableOpacity>
                     </View>
@@ -549,11 +569,19 @@ const Signup = () => {
 
             {page === 'Repair Shop' && (
               <>
-                <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.push('/auth/login')}>
-                  <Icon name="arrow-left" style={styles.arrowBack} />
-                </TouchableOpacity>
+                <View style={styles.arrowHeaderContainer}>
+                  <TouchableOpacity
+                    style={styles.arrowWrapper}
+                    onPress={() => {
+                      router.replace(routes[routes.length - 1]);
+                      dispatch(popRouteState());
+                    }}
+                  >
+                    <Icon name="arrow-left" size={24} style={styles.arrowBack} />
+                  </TouchableOpacity>
+                  <Text style={styles.header}>Create Account</Text>
+                </View>
 
-                <Text style={styles.header}>Create Account</Text>
                 <View style={styles.row}>
                   <View style={styles.textInputContainer2}>
                     <Text style={styles.textInputLbl}>First Name</Text>
@@ -572,6 +600,7 @@ const Signup = () => {
                     <SelectDropdown
                       data={genders}
                       onSelect={(selectedItem) => setGender(selectedItem.title)}
+                      statusBarTranslucent={true}
                       renderButton={(selectedItem, isOpen) => (
                         <View style={styles.dropdownButtonStyle}>
                           {selectedItem && <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />}
@@ -586,7 +615,8 @@ const Signup = () => {
                           style={{
                             ...styles.dropdownItemStyle,
                             ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                          }}>
+                          }}
+                        >
                           <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
                           <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
                         </View>
@@ -637,11 +667,13 @@ const Signup = () => {
 
             {page === 'Location' && (
               <>
-                <TouchableOpacity style={styles.arrowWrapper} onPress={() => setPage('Repair Shop')}>
-                  <Icon name="arrow-left" style={styles.arrowBack} />
-                </TouchableOpacity>
+                <View style={styles.arrowHeaderContainer}>
+                  <TouchableOpacity style={styles.arrowWrapper} onPress={() => setPage('Repair Shop')}>
+                    <Icon name="arrow-left" size={24} style={styles.arrowBack} />
+                  </TouchableOpacity>
+                  <Text style={styles.header}>Location</Text>
+                </View>
 
-                <Text style={styles.header}>Location</Text>
                 <Text style={styles.textInputLbl}>Please set up your shop location on the map.</Text>
 
                 <MapView
@@ -649,7 +681,8 @@ const Signup = () => {
                   ref={mapRef}
                   mapType="hybrid"
                   initialRegion={region}
-                  onRegionChange={(newRegion) => setRegion(newRegion)}>
+                  onRegionChange={(newRegion) => setRegion(newRegion)}
+                >
                   {region && (
                     <Marker
                       coordinate={{
@@ -670,11 +703,13 @@ const Signup = () => {
 
             {page === 'Services Offered' && (
               <>
-                <TouchableOpacity style={styles.arrowWrapper} onPress={() => setPage('Location')}>
-                  <Icon name="arrow-left" style={styles.arrowBack} />
-                </TouchableOpacity>
+                <View style={styles.arrowHeaderContainer}>
+                  <TouchableOpacity style={styles.arrowWrapper} onPress={() => setPage('Location')}>
+                    <Icon name="arrow-left" size={24} style={styles.arrowBack} />
+                  </TouchableOpacity>
+                  <Text style={styles.header}>Services Offered</Text>
+                </View>
 
-                <Text style={styles.header}>Services Offered</Text>
                 <View style={styles.servicesList}>
                   {services.map((item) => (
                     <View key={item.id} style={styles.checkboxContainer}>
@@ -696,7 +731,8 @@ const Signup = () => {
                   animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={repairShopModalVisible}
-                  onRequestClose={() => isRepairShopModalVisible(!repairShopModalVisible)}>
+                  onRequestClose={() => isRepairShopModalVisible(!repairShopModalVisible)}
+                >
                   <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                       <Text style={styles.modalTxt}>
@@ -708,7 +744,8 @@ const Signup = () => {
                           isRepairShopModalVisible(!repairShopModalVisible);
                           router.navigate('/auth/login');
                           setPage('');
-                        }}>
+                        }}
+                      >
                         <Text style={styles.buttonTxt}>Ok</Text>
                       </TouchableOpacity>
                     </View>
@@ -737,14 +774,12 @@ const styles = StyleSheet.create({
   },
   welcomeTxt: {
     color: '#FFF',
-    fontSize: 30,
-    fontFamily: 'LeagueSpartan_Bold',
-    marginBottom: 10,
+    fontSize: 28,
+    fontFamily: 'HeaderBold',
   },
   upperTextInputLbl: {
     color: '#FFF',
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   upperDropdownButtonStyle: {
     width: '100%',
@@ -763,8 +798,11 @@ const styles = StyleSheet.create({
   header: {
     color: '#000B58',
     fontSize: 22,
-    fontFamily: 'LeagueSpartan_Bold',
-    marginTop: 10,
+    fontFamily: 'HeaderBold',
+    position: 'absolute',
+    textAlign: 'center',
+    width: '100%',
+    zIndex: 1,
   },
   textInputContainer1: {
     flexDirection: 'row',
@@ -790,9 +828,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
   },
   textInputLbl: {
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   input: {
     backgroundColor: '#EAEAEA',
@@ -800,9 +837,8 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 10,
     padding: 10,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   dropdownButtonStyle: {
     width: '100%',
@@ -816,9 +852,8 @@ const styles = StyleSheet.create({
   },
   dropdownButtonTxtStyle: {
     flex: 1,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
@@ -832,7 +867,6 @@ const styles = StyleSheet.create({
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
     borderRadius: 10,
-    marginTop: -37,
   },
   dropdownItemStyle: {
     width: '100%',
@@ -844,9 +878,8 @@ const styles = StyleSheet.create({
   },
   dropdownItemTxtStyle: {
     flex: 1,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   dropdownItemIconStyle: {
     fontSize: 24,
@@ -854,14 +887,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   questionLbl: {
-    fontSize: 14,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   loginLbl: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#333',
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     textDecorationLine: 'underline',
   },
   loginContainer: {
@@ -871,8 +903,8 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   button: {
-    width: '40%',
-    height: 45,
+    width: 120,
+    padding: 10,
     backgroundColor: '#000B58',
     justifyContent: 'center',
     alignItems: 'center',
@@ -882,8 +914,7 @@ const styles = StyleSheet.create({
   },
   buttonTxt: {
     color: '#FFF',
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'HeaderBold',
   },
   shopNameInput: {
     backgroundColor: '#EAEAEA',
@@ -891,27 +922,30 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 10,
     padding: 10,
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   map: {
     width: '100%',
     height: 350,
     borderRadius: 10,
   },
+  arrowHeaderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+    paddingVertical: 10,
+    width: '95%',
+  },
   arrowWrapper: {
-    top: 15,
-    right: 320,
-    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
   },
   arrowBack: {
-    fontSize: 24,
     color: '#000B58',
   },
   servicesList: {
-    width: '100%',
-    paddingHorizontal: 20,
-    marginTop: 20,
+    width: '95%',
   },
   checkboxContainer: {
     flexDirection: 'row',
@@ -920,8 +954,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   checkboxTxt: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
+    width: '90%',
   },
   centeredView: {
     flex: 1,
@@ -945,9 +979,8 @@ const styles = StyleSheet.create({
   },
   modalTxt: {
     textAlign: 'center',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
-    fontSize: 16,
   },
   modalButton: {
     width: '50%',

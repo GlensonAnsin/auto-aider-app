@@ -89,7 +89,8 @@ const Diagnosis = () => {
                     dispatch(setVehicleDiagIDState(item.vehicleDiagnosticID));
                     backRoute();
                     router.replace('./detailed-report');
-                  }}>
+                  }}
+                >
                   <Text style={styles.troubleCodeText}>{item.dtc}</Text>
                   <Text style={styles.troubleCodeText2}>{item.technicalDescription}</Text>
                 </TouchableOpacity>
@@ -101,7 +102,8 @@ const Diagnosis = () => {
             onPress={() => {
               backRoute();
               router.replace('/car-owner/(screens)/repair-shops/repair-shops');
-            }}>
+            }}
+          >
             <Text style={styles.findShopButtonText}>Find Repair Shop</Text>
           </TouchableOpacity>
         </View>
@@ -126,8 +128,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   car: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 22,
+    fontFamily: 'BodyBold',
+    fontSize: 20,
     color: '#333',
     textAlign: 'center',
   },
@@ -145,8 +147,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFF',
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 20,
+    fontFamily: 'BodyBold',
+    fontSize: 16,
   },
   troubleCodesContainer: {
     width: '90%',
@@ -159,8 +161,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   troubleCodesLbl: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 18,
+    fontFamily: 'BodyBold',
+    fontSize: 16,
     color: '#333',
   },
   clearButton: {
@@ -168,9 +170,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   clearButtonText: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#000B58',
-    fontSize: 18,
+    fontSize: 16,
   },
   troubleCodeButton: {
     backgroundColor: '#EAEAEA',
@@ -188,18 +190,16 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   troubleCodeText: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#780606',
-    fontSize: 16,
   },
   troubleCodeText2: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#555',
-    fontSize: 14,
   },
   findShopButton: {
-    width: '45%',
-    height: 45,
+    width: 150,
+    padding: 10,
     backgroundColor: '#000B58',
     justifyContent: 'center',
     alignItems: 'center',
@@ -208,8 +208,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   findShopButtonText: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'HeaderBold',
     color: '#FFF',
   },
 });

@@ -143,6 +143,7 @@ const RepairRequests = () => {
           <SelectDropdown
             data={buttons}
             defaultValue={activeButton}
+            statusBarTranslucent={true}
             onSelect={(selectedItem) => setActiveButton(selectedItem)}
             renderButton={(selectedItem, isOpen) => (
               <View style={styles.dropdownButtonStyle}>
@@ -158,7 +159,8 @@ const RepairRequests = () => {
                 style={{
                   ...styles.dropdownItemStyle,
                   ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                }}>
+                }}
+              >
                 <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
               </View>
             )}
@@ -176,7 +178,8 @@ const RepairRequests = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./repair-request-details');
-                    }}>
+                    }}
+                  >
                     <View style={styles.vehicleCustomerContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.customer}</Text>
@@ -247,7 +250,8 @@ const RepairRequests = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./repair-request-details');
-                    }}>
+                    }}
+                  >
                     <View style={styles.vehicleCustomerContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.customer}</Text>
@@ -283,7 +287,8 @@ const RepairRequests = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./repair-request-details');
-                    }}>
+                    }}
+                  >
                     <View style={styles.vehicleCustomerContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.customer}</Text>
@@ -319,7 +324,8 @@ const RepairRequests = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./repair-request-details');
-                    }}>
+                    }}
+                  >
                     <View style={styles.vehicleCustomerContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.customer}</Text>
@@ -355,7 +361,8 @@ const RepairRequests = () => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
                       router.replace('./repair-request-details');
-                    }}>
+                    }}
+                  >
                     <View style={styles.vehicleCustomerContainer}>
                       <Text style={styles.vehicleName}>{item.vehicleName}</Text>
                       <Text style={styles.requestText}>{item.customer}</Text>
@@ -411,8 +418,7 @@ const styles = StyleSheet.create({
   },
   dropdownButtonTxtStyle: {
     flex: 1,
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
   },
   dropdownButtonArrowStyle: {
@@ -429,14 +435,12 @@ const styles = StyleSheet.create({
   },
   dropdownItemTxtStyle: {
     flex: 1,
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
   },
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
     borderRadius: 10,
-    marginTop: -37,
   },
   requestButton: {
     width: '100%',
@@ -457,14 +461,13 @@ const styles = StyleSheet.create({
   },
   vehicleCustomerContainer: {},
   vehicleName: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#333',
-    fontSize: 18,
+    fontSize: 16,
   },
   requestText: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#555',
-    fontSize: 14,
   },
   statusContainer: {
     flexDirection: 'row',
@@ -473,13 +476,11 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   statusText: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#555',
-    fontSize: 14,
   },
   noRequestText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
     textAlign: 'center',
   },

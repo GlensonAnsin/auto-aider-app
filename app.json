@@ -58,7 +58,8 @@
           "photosPermission": "The app accesses your photos."
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true

@@ -70,7 +70,7 @@ const DetailedReport = () => {
           </View>
 
           <View style={styles.textContainer}>
-            <Text style={styles.label}>Recommended Solutions or Repairs</Text>
+            <Text style={styles.label}>Recommended Solutions</Text>
             {bulletRecommendedRepair.map((item, index) => (
               <View key={index} style={styles.bulletView}>
                 <Text style={styles.bullet}>{'\u2022'}</Text>
@@ -110,26 +110,25 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   troubleCode: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 22,
+    fontFamily: 'BodyBold',
+    fontSize: 20,
     color: '#333',
     textAlign: 'center',
   },
   technicalDescription: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 20,
+    fontFamily: 'BodyRegular',
+    fontSize: 18,
     color: '#555',
     textAlign: 'center',
   },
   label: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 18,
+    fontFamily: 'BodyBold',
+    fontSize: 16,
     marginBottom: 10,
     color: '#333',
   },
   text: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#333',
   },
   bulletView: {
@@ -139,14 +138,12 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
   },
   bullet: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyRegular',
     color: '#333',
-    fontSize: 16,
   },
   bulletedText: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
-    fontSize: 16,
     maxWidth: '93%',
   },
 });

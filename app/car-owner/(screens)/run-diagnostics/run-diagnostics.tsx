@@ -215,6 +215,7 @@ const RunDiagnostics = () => {
             <Text style={styles.dropdownLbl}>Vehicle</Text>
             <SelectDropdown
               data={vehicles}
+              statusBarTranslucent={true}
               onSelect={(selectedItem) => {
                 setSelectedCar(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`);
                 setSelectedCarID(selectedItem.id);
@@ -236,7 +237,8 @@ const RunDiagnostics = () => {
                   style={{
                     ...styles.dropdownItemStyle,
                     ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                  }}>
+                  }}
+                >
                   <Text style={styles.dropdownItemTxtStyle}>{`${item.year} ${item.make} ${item.model}`}</Text>
                 </View>
               )}
@@ -303,8 +305,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
   },
   dropdownLbl: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 20,
+    fontFamily: 'BodyRegular',
+    fontSize: 18,
     color: '#FFF',
     marginBottom: 10,
   },
@@ -320,8 +322,7 @@ const styles = StyleSheet.create({
   },
   dropdownButtonTxtStyle: {
     flex: 1,
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
@@ -336,13 +337,11 @@ const styles = StyleSheet.create({
   },
   dropdownItemTxtStyle: {
     flex: 1,
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
     borderRadius: 10,
-    marginTop: -37,
   },
   buttonContainer: {
     width: '100%',
@@ -372,9 +371,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonTxt: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#FFF',
-    fontSize: 24,
+    fontSize: 22,
   },
   updateLoadingContainer: {
     flex: 1,
@@ -389,8 +388,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   loadingText: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 30,
+    fontFamily: 'BodyBold',
+    fontSize: 28,
     color: '#000B58',
   },
 });

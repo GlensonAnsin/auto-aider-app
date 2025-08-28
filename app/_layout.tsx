@@ -11,8 +11,14 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded] = useFonts({
-    LeagueSpartan: require('../assets/fonts/LeagueSpartan-Regular.ttf'),
-    LeagueSpartan_Bold: require('../assets/fonts/LeagueSpartan-Bold.ttf'),
+    HeaderRegular: require('../assets/fonts/Montserrat-Regular.ttf'),
+    HeaderItalic: require('../assets/fonts/Montserrat-Italic.ttf'),
+    HeaderBold: require('../assets/fonts/Montserrat-Bold.ttf'),
+    HeaderBoldItalic: require('../assets/fonts/Inter_18pt-BoldItalic.ttf'),
+    BodyRegular: require('../assets/fonts/Inter_18pt-Regular.ttf'),
+    BodyItalic: require('../assets/fonts/Inter_18pt-Italic.ttf'),
+    BodyBold: require('../assets/fonts/Inter_18pt-Bold.ttf'),
+    BodyBoldItalic: require('../assets/fonts/Inter_18pt-BoldItalic.ttf'),
   });
 
   useEffect(() => {

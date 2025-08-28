@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   tabLabel: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     fontSize: 11,
   },
 });

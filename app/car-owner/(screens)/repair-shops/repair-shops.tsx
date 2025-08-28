@@ -820,9 +820,9 @@ const styles = StyleSheet.create({
     width: '63%',
   },
   repShopName: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#333',
-    fontSize: 22,
+    fontSize: 20,
   },
   genderNameContainer: {
     flexDirection: 'row',
@@ -830,9 +830,8 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   contactText: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#555',
-    fontSize: 16,
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -840,9 +839,8 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   rating: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#555',
-    fontSize: 16,
   },
   buttonContainer: {
     justifyContent: 'space-evenly',
@@ -863,8 +861,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   buttonText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 14,
+    fontFamily: 'BodyRegular',
+    fontSize: 12,
     color: '#FFF',
   },
   shopImages: {
@@ -873,9 +871,9 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   subHeader: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#333',
-    fontSize: 20,
+    fontSize: 18,
     marginBottom: 10,
   },
   image: {
@@ -890,8 +888,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   noImagesText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
   },
   servicesOffered: {
@@ -904,14 +901,12 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
   },
   bullet: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyRegular',
     color: '#333',
-    fontSize: 16,
   },
   servicesText: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
-    fontSize: 16,
   },
   centeredView: {
     flex: 1,
@@ -943,8 +938,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   textInputLabel: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
   },
   dropdownButtonStyle: {
@@ -959,9 +953,8 @@ const styles = StyleSheet.create({
   },
   dropdownButtonTxtStyle: {
     flex: 1,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
@@ -970,7 +963,6 @@ const styles = StyleSheet.create({
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
     borderRadius: 10,
-    marginTop: -1,
   },
   dropdownItemStyle: {
     width: '100%',
@@ -983,9 +975,8 @@ const styles = StyleSheet.create({
   },
   dropdownItemTxtStyle: {
     flex: 1,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   textArea: {
     backgroundColor: '#EAEAEA',
@@ -993,9 +984,8 @@ const styles = StyleSheet.create({
     minHeight: 100,
     borderRadius: 5,
     padding: 10,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   input: {
     backgroundColor: '#EAEAEA',
@@ -1003,9 +993,8 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 5,
     padding: 10,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   cancelSaveContainer: {
     flexDirection: 'row',
@@ -1023,8 +1012,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   modalButtonText: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'HeaderBold',
   },
   troubleCodeContainer: {
     backgroundColor: '#EAEAEA',
@@ -1034,14 +1022,13 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   troubleCodeText: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#780606',
-    fontSize: 16,
   },
   troubleCodeText2: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#555',
-    fontSize: 14,
+    fontSize: 12,
   },
   errorContainer: {
     backgroundColor: '#EAEAEA',
@@ -1051,9 +1038,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   errorMessage: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: 'red',
     textAlign: 'center',
+    fontSize: 12,
   },
 });
 

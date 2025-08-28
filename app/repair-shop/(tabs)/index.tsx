@@ -134,10 +134,12 @@ export default function Home() {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.upperBox}>
-          <Text style={styles.header}>Auto Repair Shop</Text>
-          <TouchableOpacity style={styles.iconWrapper} onPress={() => handleLogout()}>
-            <MaterialCommunityIcons name="logout" style={styles.icon} />
-          </TouchableOpacity>
+          <View style={styles.iconHeaderContainer}>
+            <TouchableOpacity style={styles.iconWrapper} onPress={() => handleLogout()}>
+              <MaterialCommunityIcons name="logout" style={styles.icon} />
+            </TouchableOpacity>
+            <Text style={styles.header}>Auto Repair Shop</Text>
+          </View>
         </View>
 
         <View style={styles.lowerBox}>
@@ -146,7 +148,8 @@ export default function Home() {
               <>
                 <TouchableOpacity
                   style={[styles.profilePicWrapper, { backgroundColor: profileBG }]}
-                  onPress={() => setImageModalVisible(true)}>
+                  onPress={() => setImageModalVisible(true)}
+                >
                   <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
                 </TouchableOpacity>
 
@@ -154,7 +157,8 @@ export default function Home() {
                   animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={imageModalVisible}
-                  onRequestClose={() => setImageModalVisible(false)}>
+                  onRequestClose={() => setImageModalVisible(false)}
+                >
                   <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
                     <View style={styles.centeredView}>
                       <Pressable style={styles.imageView} onPress={() => {}}>
@@ -178,7 +182,8 @@ export default function Home() {
                   animationType="fade"
                   backdropColor={'rgba(0, 0, 0, 0.5)'}
                   visible={imageModalVisible}
-                  onRequestClose={() => setImageModalVisible(false)}>
+                  onRequestClose={() => setImageModalVisible(false)}
+                >
                   <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
                     <View style={styles.centeredView}>
                       <Pressable style={styles.imageView}>
@@ -231,7 +236,8 @@ export default function Home() {
               onPress={() => {
                 backRoute();
                 router.replace('./repair-history/repair-history');
-              }}>
+              }}
+            >
               <MaterialIcons name="manage-history" size={15} color="#FFF" />
               <Text style={styles.buttonText}>History</Text>
             </TouchableOpacity>
@@ -241,7 +247,8 @@ export default function Home() {
               onPress={() => {
                 backRoute();
                 router.replace('./repair-requests/repair-requests');
-              }}>
+              }}
+            >
               <FontAwesome6 name="screwdriver-wrench" size={10} color="#FFF" />
               <Text style={styles.buttonText}>Requests</Text>
             </TouchableOpacity>
@@ -251,7 +258,8 @@ export default function Home() {
               onPress={() => {
                 backRoute();
                 router.replace('./edit-shop/edit-shop');
-              }}>
+              }}
+            >
               <FontAwesome6 name="edit" size={10} color="#FFF" />
               <Text style={styles.buttonText}>Edit Shop</Text>
             </TouchableOpacity>
@@ -265,7 +273,8 @@ export default function Home() {
                 onPress={() => {
                   backRoute();
                   router.replace('./edit-shop/edit-shop');
-                }}>
+                }}
+              >
                 <MaterialCommunityIcons name="image-plus" size={16} color="#555" />
                 <Text style={styles.editButtonText}>Upload Image</Text>
               </TouchableOpacity>
@@ -314,13 +323,23 @@ const styles = StyleSheet.create({
   },
   header: {
     color: '#FFF',
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 22,
+    fontFamily: 'HeaderBold',
+    fontSize: 18,
+    position: 'absolute',
+    textAlign: 'center',
+    width: '100%',
+    zIndex: 1,
+  },
+  iconHeaderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+    width: '95%',
   },
   iconWrapper: {
-    top: 23,
-    right: 320,
-    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
   },
   icon: {
     fontSize: 22,
@@ -351,9 +370,9 @@ const styles = StyleSheet.create({
     width: '63%',
   },
   repShopName: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#333',
-    fontSize: 22,
+    fontSize: 20,
   },
   genderNameContainer: {
     flexDirection: 'row',
@@ -361,9 +380,8 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   contactText: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#555',
-    fontSize: 16,
   },
   ratingSwitchContainer: {
     flexDirection: 'row',
@@ -376,9 +394,8 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   rating: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#555',
-    fontSize: 16,
   },
   availabilityContainer: {
     flexDirection: 'row',
@@ -386,8 +403,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   availabilityText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
   },
   buttonContainer: {
@@ -397,6 +413,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     borderBottomWidth: 1,
     borderColor: '#EAEAEA',
+    marginTop: 10,
     paddingBottom: 20,
   },
   button: {
@@ -410,8 +427,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   buttonText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 14,
+    fontFamily: 'BodyRegular',
+    fontSize: 12,
     color: '#FFF',
   },
   shopImages: {
@@ -429,14 +446,13 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   editButtonText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
   },
   subHeader: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyBold',
     color: '#333',
-    fontSize: 20,
+    fontSize: 18,
     marginBottom: 10,
   },
   image: {
@@ -453,14 +469,12 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
   },
   bullet: {
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'BodyRegular',
     color: '#333',
-    fontSize: 16,
   },
   servicesText: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
-    fontSize: 16,
   },
   centeredView: {
     flex: 1,

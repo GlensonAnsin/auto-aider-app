@@ -362,7 +362,9 @@ export default function Home() {
                       onSelect={(selectedItem) => setSelectedMake(selectedItem)}
                       renderButton={(selectedItem, isOpen) => (
                         <View style={styles.dropdownButtonStyle}>
-                          <Text style={styles.dropdownButtonTxtStyle}>{selectedItem || 'Select manufacturer'}</Text>
+                          <Text style={[styles.dropdownButtonTxtStyle, { color: selectedItem ? '#333' : '#555' }]}>
+                            {selectedItem || 'Select manufacturer'}
+                          </Text>
                           <MaterialCommunityIcons
                             name={isOpen ? 'chevron-up' : 'chevron-down'}
                             style={styles.dropdownButtonArrowStyle}
@@ -391,6 +393,7 @@ export default function Home() {
                       onChangeText={setModel}
                       style={styles.input}
                       placeholder="Model"
+                      placeholderTextColor="#555"
                       editable={!selectedMake ? false : true}
                     />
                   </View>
@@ -403,6 +406,7 @@ export default function Home() {
                       style={styles.input}
                       keyboardType="numeric"
                       placeholder="Year"
+                      placeholderTextColor="#555"
                       maxLength={4}
                       editable={!model ? false : true}
                     />
@@ -469,13 +473,13 @@ const styles = StyleSheet.create({
     width: '70%',
   },
   header: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 30,
+    fontFamily: 'BodyBold',
+    fontSize: 28,
     color: '#333',
   },
   userName: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 24,
+    fontFamily: 'BodyRegular',
+    fontSize: 22,
     color: '#333',
   },
   profileWrapper: {
@@ -486,8 +490,8 @@ const styles = StyleSheet.create({
     borderRadius: 80,
   },
   userInitials: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 30,
+    fontFamily: 'HeaderBold',
+    fontSize: 28,
     color: '#FFF',
   },
   profilePic: {
@@ -503,13 +507,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   introHeader: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 18,
+    fontFamily: 'BodyRegular',
+    fontSize: 16,
     textAlign: 'center',
   },
   introBody: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     textAlign: 'center',
   },
   featuresContainer: {
@@ -561,13 +564,12 @@ const styles = StyleSheet.create({
   },
   featureHeader: {
     color: '#FFF',
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 16,
+    fontFamily: 'BodyBold',
   },
   featureDescription: {
     color: '#FFF',
-    fontFamily: 'LeagueSpartan',
-    fontSize: 12,
+    fontFamily: 'BodyRegular',
+    fontSize: 10,
   },
   centeredView: {
     flex: 1,
@@ -590,8 +592,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalHeader: {
-    fontSize: 22,
-    fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 20,
+    fontFamily: 'HeaderBold',
     color: '#333',
   },
   textInputContainer: {
@@ -600,8 +602,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   textInputLbl: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
   },
   dropdownButtonStyle: {
@@ -616,9 +617,8 @@ const styles = StyleSheet.create({
   },
   dropdownButtonTxtStyle: {
     flex: 1,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
@@ -627,7 +627,6 @@ const styles = StyleSheet.create({
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
     borderRadius: 10,
-    marginTop: -1,
   },
   dropdownItemStyle: {
     width: '100%',
@@ -640,9 +639,8 @@ const styles = StyleSheet.create({
   },
   dropdownItemTxtStyle: {
     flex: 1,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   input: {
     backgroundColor: '#EAEAEA',
@@ -650,9 +648,8 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 5,
     padding: 10,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   cancelSaveContainer: {
     flexDirection: 'row',
@@ -670,8 +667,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   modalButtonText: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'HeaderBold',
   },
   errorContainer: {
     backgroundColor: '#EAEAEA',
@@ -681,8 +677,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   errorMessage: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: 'red',
     textAlign: 'center',
+    fontSize: 12,
   },
 });

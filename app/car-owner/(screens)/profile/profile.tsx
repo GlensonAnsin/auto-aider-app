@@ -188,7 +188,8 @@ const Profile = () => {
             onPress={() => {
               backRoute();
               router.replace('./edit-profile');
-            }}>
+            }}
+          >
             <MaterialCommunityIcons name="account-edit-outline" style={styles.icon} />
             <Text style={styles.tabName}>Edit Profile</Text>
             <MaterialCommunityIcons name="arrow-right-thin" style={styles.forwardIcon} />
@@ -199,7 +200,8 @@ const Profile = () => {
             onPress={() => {
               backRoute();
               router.replace('./manage-vehicles');
-            }}>
+            }}
+          >
             <MaterialCommunityIcons name="car-outline" style={styles.icon} />
             <Text style={styles.tabName}>Manage Vehicles</Text>
             <MaterialCommunityIcons name="arrow-right-thin" style={styles.forwardIcon} />
@@ -226,14 +228,16 @@ const Profile = () => {
               setCurrentPassword('');
               setNewPassword('');
               setConfirmPassword('');
-            }}>
+            }}
+          >
             <TouchableWithoutFeedback
               onPress={() => {
                 setModalVisible(false);
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
-              }}>
+              }}
+            >
               <View style={styles.centeredView}>
                 <Pressable style={styles.modalView} onPress={() => {}}>
                   <Text style={styles.modalHeader}>Change Password</Text>
@@ -265,13 +269,15 @@ const Profile = () => {
                   <View style={styles.cancelSaveContainer}>
                     <TouchableOpacity
                       style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                      onPress={() => handleCancelChangePass()}>
+                      onPress={() => handleCancelChangePass()}
+                    >
                       <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       style={[styles.modalButton, { backgroundColor: '#000B58' }]}
-                      onPress={() => handleChangePass()}>
+                      onPress={() => handleChangePass()}
+                    >
                       <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                     </TouchableOpacity>
                   </View>
@@ -306,13 +312,12 @@ const styles = StyleSheet.create({
     width: '65%',
   },
   userName: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 22,
+    fontFamily: 'BodyBold',
+    fontSize: 20,
     color: '#333',
   },
   userContact: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
   },
   profilePicWrapper: {
@@ -323,8 +328,8 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   userInitials: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 35,
+    fontFamily: 'HeaderBold',
+    fontSize: 33,
     color: '#FFF',
   },
   profilePic: {
@@ -340,7 +345,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#EAEAEA',
     padding: 10,
-    gap: 35,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -356,9 +360,9 @@ const styles = StyleSheet.create({
   },
   tabName: {
     color: '#000B58',
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
-    width: 200,
+    fontFamily: 'BodyRegular',
+    marginLeft: 10,
+    width: '78%',
   },
   forwardIcon: {
     fontSize: 35,
@@ -385,8 +389,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalHeader: {
-    fontSize: 22,
-    fontFamily: 'LeagueSpartan_Bold',
+    fontSize: 20,
+    fontFamily: 'HeaderBold',
     color: '#333',
   },
   textInputContainer: {
@@ -395,8 +399,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   textInputLbl: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#333',
   },
   input: {
@@ -405,9 +408,8 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 10,
     padding: 10,
-    fontSize: 16,
     color: '#333',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   cancelSaveContainer: {
     flexDirection: 'row',
@@ -425,8 +427,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   modalButtonText: {
-    fontSize: 16,
-    fontFamily: 'LeagueSpartan_Bold',
+    fontFamily: 'HeaderBold',
   },
 });
 

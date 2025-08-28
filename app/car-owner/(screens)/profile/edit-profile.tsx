@@ -323,7 +323,8 @@ const EditProfile = () => {
       <KeyboardAvoidingView
         behavior="padding"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        style={{ flex: 1 }}>
+        style={{ flex: 1 }}
+      >
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <Header headerTitle="Edit Profile" />
 
@@ -362,7 +363,8 @@ const EditProfile = () => {
                   onPress={() => {
                     deleteImage();
                     handleUpdateUserInfo('profile', null);
-                  }}>
+                  }}
+                >
                   <MaterialCommunityIcons name="image-remove" size={20} color="#FFF" />
                   <Text style={styles.profileButtonText}>Remove</Text>
                 </TouchableOpacity>
@@ -373,7 +375,8 @@ const EditProfile = () => {
               <View style={styles.profileButtonContainer}>
                 <TouchableOpacity
                   style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]}
-                  onPress={() => handleRestoreInfo('profile')}>
+                  onPress={() => handleRestoreInfo('profile')}
+                >
                   <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
                 </TouchableOpacity>
 
@@ -384,7 +387,8 @@ const EditProfile = () => {
                       deleteImage();
                     }
                     uploadImage();
-                  }}>
+                  }}
+                >
                   <Text style={styles.profileButtonText}>Save</Text>
                 </TouchableOpacity>
               </View>
@@ -476,6 +480,7 @@ const EditProfile = () => {
                       <SelectDropdown
                         data={genders}
                         defaultValue={localGender}
+                        statusBarTranslucent={true}
                         onSelect={(selectedItem) => setLocalGender(selectedItem)}
                         renderButton={(selectedItem, isOpen) => (
                           <View style={styles.dropdownButtonStyle}>
@@ -491,7 +496,8 @@ const EditProfile = () => {
                             style={{
                               ...styles.dropdownItemStyle,
                               ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                            }}>
+                            }}
+                          >
                             <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
                           </View>
                         )}
@@ -570,7 +576,8 @@ const EditProfile = () => {
                     onPress={() => {
                       setLocalEmail('');
                       setEdit('email');
-                    }}>
+                    }}
+                  >
                     <Text style={styles.editButtonText}>Add Email</Text>
                   </TouchableOpacity>
                 )}
@@ -650,8 +657,8 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   userInitials: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 40,
+    fontFamily: 'HeaderBold',
+    fontSize: 38,
     color: '#FFF',
   },
   profilePic: {
@@ -681,13 +688,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   profileButtonText: {
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
     color: '#FFF',
-    fontSize: 16,
   },
   subHeader: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 20,
+    fontFamily: 'BodyBold',
+    fontSize: 18,
     color: '#333',
     marginBottom: 10,
     textAlign: 'center',
@@ -699,8 +705,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   infoLabel: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 16,
+    fontFamily: 'HeaderBold',
     width: '30%',
     color: '#555',
   },
@@ -711,8 +716,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   infoText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
     maxWidth: '85%',
   },
@@ -721,13 +725,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   editButtonText: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#000B58',
   },
   input: {
-    fontFamily: 'LeagueSpartan',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
     color: '#555',
     padding: 0,
     borderBottomWidth: 1,
@@ -747,9 +749,8 @@ const styles = StyleSheet.create({
   },
   dropdownButtonTxtStyle: {
     flex: 1,
-    fontSize: 16,
     color: '#555',
-    fontFamily: 'LeagueSpartan',
+    fontFamily: 'BodyRegular',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
@@ -758,7 +759,6 @@ const styles = StyleSheet.create({
   dropdownMenuStyle: {
     backgroundColor: '#EAEAEA',
     borderRadius: 5,
-    marginTop: -1,
   },
   dropdownItemStyle: {
     width: '100%',
@@ -770,20 +770,8 @@ const styles = StyleSheet.create({
   },
   dropdownItemTxtStyle: {
     flex: 1,
-    fontSize: 16,
     color: '#555',
-    fontFamily: 'LeagueSpartan',
-  },
-  button: {
-    width: '30%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-    borderRadius: 5,
-  },
-  buttonText: {
-    fontFamily: 'LeagueSpartan_Bold',
-    fontSize: 16,
+    fontFamily: 'BodyRegular',
   },
   updateLoadingContainer: {
     flex: 1,
