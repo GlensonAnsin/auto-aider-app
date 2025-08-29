@@ -30,7 +30,7 @@ import {
   View,
 } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import MapView, { Marker, Region } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { io, Socket } from 'socket.io-client';
@@ -660,7 +660,7 @@ const RepairRequestDetails = () => {
               <Text style={styles.subHeader}>Location</Text>
               <View style={styles.mapButtonContainer}>
                 <View style={styles.mapView}>
-                  <MapView style={styles.map} mapType="hybrid" region={customerRegion}>
+                  <MapView style={styles.map} mapType="hybrid" region={customerRegion} provider={PROVIDER_GOOGLE}>
                     {customerRegion && (
                       <Marker
                         coordinate={{
@@ -683,7 +683,13 @@ const RepairRequestDetails = () => {
               >
                 <View style={styles.centeredView}>
                   <View style={styles.mapView2}>
-                    <MapView style={styles.map2} ref={mapRef} mapType="hybrid" initialRegion={customerRegion}>
+                    <MapView
+                      style={styles.map2}
+                      ref={mapRef}
+                      mapType="hybrid"
+                      initialRegion={customerRegion}
+                      provider={PROVIDER_GOOGLE}
+                    >
                       {shopRegion && (
                         <Marker
                           coordinate={{

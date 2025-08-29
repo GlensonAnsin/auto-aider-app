@@ -28,7 +28,7 @@ import {
   View,
 } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import MapView, { Marker, Region } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import { io, Socket } from 'socket.io-client';
@@ -1043,7 +1043,13 @@ const EditShop = () => {
               <Text style={styles.subHeader}>Shop Location</Text>
               <View style={styles.mapButtonContainer}>
                 <View style={styles.mapView2}>
-                  <MapView style={styles.map2} ref={mapRef} mapType="hybrid" region={localRegion}>
+                  <MapView
+                    style={styles.map2}
+                    ref={mapRef}
+                    mapType="hybrid"
+                    region={localRegion}
+                    provider={PROVIDER_GOOGLE}
+                  >
                     {localRegion && (
                       <Marker
                         coordinate={{
@@ -1155,6 +1161,7 @@ const EditShop = () => {
                     style={styles.map}
                     ref={mapRef}
                     mapType="hybrid"
+                    provider={PROVIDER_GOOGLE}
                     initialRegion={localRegion}
                     onRegionChangeComplete={(newRegion) => setLocalRegion(newRegion)}
                   >

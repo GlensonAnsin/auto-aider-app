@@ -10,7 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { useAudioPlayer } from 'expo-audio';
+import { Audio } from 'expo-av';
 import { useEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
@@ -18,19 +18,18 @@ import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
-import audioSource from '../../assets/sounds/bubble-pop.mp3';
 
 dayjs.extend(utc);
 const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
 
 const ChatRoom = () => {
-  const player = useAudioPlayer(audioSource);
   const flatListRef = useRef<any>(null);
   const senderID: number | null = useSelector((state: RootState) => state.senderReceiver.sender);
   const receiverID: number | null = useSelector((state: RootState) => state.senderReceiver.receiver);
   const role: string | null = useSelector((state: RootState) => state.senderReceiver.role);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [conversation, setConversation] = useState<
     {
       chatID: number;
@@ -158,7 +157,15 @@ const ChatRoom = () => {
     };
   }, [role, senderID]);
 
-  const sendMessage = () => {
+  useEffect(() => {
+    return sound
+      ? () => {
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
+
+  const sendMessage = async () => {
     if (message.trim() !== '') {
       socket.emit('sendMessage', {
         senderID: Number(senderID),
@@ -168,7 +175,9 @@ const ChatRoom = () => {
         sentAt: dayjs().format(),
       });
 
-      player.play();
+      const { sound } = await Audio.Sound.createAsync(require('../../assets/sounds/bubble-pop.mp3'));
+      setSound(sound);
+      await sound.playAsync();
 
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
@@ -216,6 +225,7 @@ const ChatRoom = () => {
       <KeyboardAwareFlatList
         data={conversation}
         ref={flatListRef}
+        style={{ flex: 1, backgroundColor: '#F9FAFB' }}
         keyboardShouldPersistTaps="handled"
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
@@ -223,7 +233,7 @@ const ChatRoom = () => {
           <View
             style={{
               alignSelf: item.fromYou ? 'flex-end' : 'flex-start',
-              backgroundColor: item.fromYou ? '#DCF8C6' : '#EEE',
+              backgroundColor: item.fromYou ? '#1E3A8A' : '#E5E7EB',
               padding: 10,
               marginHorizontal: 10,
               marginVertical: 5,
@@ -234,7 +244,7 @@ const ChatRoom = () => {
             <Text
               style={{
                 fontFamily: 'BodyRegular',
-                color: '#333',
+                color: item.fromYou ? '#FFF' : '#333',
               }}
             >
               {item.message}
@@ -243,7 +253,7 @@ const ChatRoom = () => {
               style={{
                 fontFamily: 'BodyRegular',
                 fontSize: 10,
-                color: '#555',
+                color: item.fromYou ? '#FFF' : '#333',
                 marginTop: 4,
                 alignSelf: 'flex-end',
               }}
@@ -254,6 +264,7 @@ const ChatRoom = () => {
         )}
         keyExtractor={(_, index) => index.toString()}
       />
+
       <View style={styles.messageInputContainer}>
         <TextInput
           value={message}
@@ -264,8 +275,8 @@ const ChatRoom = () => {
           numberOfLines={6}
           style={styles.messageInput}
         />
-        <TouchableOpacity style={styles.sendButton} disabled={message ? false : true} onPress={() => player.play()}>
-          <Ionicons name="send" size={24} color={message ? '#FFF' : '#828282'} />
+        <TouchableOpacity style={styles.sendButton} disabled={message ? false : true} onPress={() => sendMessage()}>
+          <Ionicons name="send" size={24} color={message ? '#FFF' : '#E1E1E1'} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>

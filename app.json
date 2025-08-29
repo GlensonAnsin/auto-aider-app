@@ -15,6 +15,11 @@
       }
     },
     "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBDEjaNBFe39WD1wv_CNzLFkXeK_ChahbM"
+        }
+      },
       "permissions": [
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
@@ -29,11 +34,6 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.glensonansin.autoaiderapp",
-      "config": {
-        "googleMaps": {
-          "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
-        }
-      },
       "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
@@ -47,7 +47,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash.png",
-          "imageWidth": 200,
+          "imageWidth": 180,
           "resizeMode": "contain",
           "backgroundColor": "#000B58"
         }
@@ -58,8 +58,7 @@
           "photosPermission": "The app accesses your photos."
         }
       ],
-      "expo-web-browser",
-      "expo-audio"
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
