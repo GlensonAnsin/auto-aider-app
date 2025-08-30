@@ -16,14 +16,21 @@ import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'reac
 import { showMessage } from 'react-native-flash-message';
 import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
+
+import { popRouteState } from '@/redux/slices/routeSlice';
+import { useRouter } from 'expo-router';
 
 dayjs.extend(utc);
 const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
 
 const ChatRoom = () => {
   const flatListRef = useRef<any>(null);
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const routes: any[] = useSelector((state: RootState) => state.route.route);
   const senderID: number | null = useSelector((state: RootState) => state.senderReceiver.sender);
   const receiverID: number | null = useSelector((state: RootState) => state.senderReceiver.receiver);
   const role: string | null = useSelector((state: RootState) => state.senderReceiver.role);
@@ -113,8 +120,7 @@ const ChatRoom = () => {
           setReceiverProfile(res2.profile_pic);
           setReceiverProfileBG(res2.profile_bg);
         }
-      } catch (e) {
-        console.error(e);
+      } catch {
         showMessage({
           message: 'Something went wrong. Please try again.',
           type: 'danger',
@@ -193,7 +199,13 @@ const ChatRoom = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.arrowWrapper}>
+        <TouchableOpacity
+          style={styles.arrowWrapper}
+          onPress={() => {
+            router.replace(routes[routes.length - 1]);
+            dispatch(popRouteState());
+          }}
+        >
           <MaterialCommunityIcons name="arrow-left" style={styles.arrowBack} />
         </TouchableOpacity>
         <View style={styles.receiverInfo}>
@@ -218,7 +230,9 @@ const ChatRoom = () => {
               {receiverShopName}
             </Text>
           )}
-          {role === 'repair-shop' && <Text style={styles.name}>{`${receiverFirstname} ${receiverLastname}`}</Text>}
+          {role === 'repair-shop' && (
+            <Text numberOfLines={1} style={styles.name}>{`${receiverFirstname} ${receiverLastname}`}</Text>
+          )}
         </View>
       </View>
 

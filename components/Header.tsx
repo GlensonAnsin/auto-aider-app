@@ -1,8 +1,8 @@
 import { popRouteState } from '@/redux/slices/routeSlice';
 import { RootState } from '@/redux/store';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
 
 interface HeaderProps {
@@ -24,7 +24,7 @@ export const Header = ({ headerTitle }: HeaderProps) => {
             dispatch(popRouteState());
           }}
         >
-          <Icon name="arrow-left" size={24} color="#FFF" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
         </TouchableOpacity>
         <Text style={styles.header}>{headerTitle}</Text>
       </View>

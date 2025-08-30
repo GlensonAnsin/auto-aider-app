@@ -1,11 +1,19 @@
-import { StyleSheet, Text, View } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useRouter } from 'expo-router';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NotificationsTab() {
+  const router = useRouter();
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Car Owner Notifications</Text>
+        <View style={styles.arrowHeaderContainer}>
+          <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.replace('/car-owner')}>
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Notifications</Text>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -17,13 +25,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    padding: 20,
-    paddingTop: 60,
+    backgroundColor: '#000B58',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 63,
+  },
+  arrowHeaderContainer: {
+    flexDirection: 'row',
+    width: '90%',
+    alignItems: 'center',
+    gap: 10,
+  },
+  arrowWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerText: {
-    fontSize: 24,
-    fontFamily: 'LeagueSpartan',
-    fontWeight: 'bold',
-    color: '#000B58',
+    color: '#FFF',
+    fontFamily: 'HeaderBold',
+    fontSize: 18,
   },
 });

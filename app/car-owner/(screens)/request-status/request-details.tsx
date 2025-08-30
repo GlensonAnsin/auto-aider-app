@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
 import { setSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
 import { RootState } from '@/redux/store';
 import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
@@ -27,6 +28,7 @@ import { io, Socket } from 'socket.io-client';
 
 const RequestDetails = () => {
   dayjs.extend(utc);
+  const backRoute = useBackRoute('/car-owner/(screens)/request-status/request-details');
   const router = useRouter();
   const [_socket, setSocket] = useState<Socket | null>(null);
   const dispatch = useDispatch();
@@ -346,6 +348,7 @@ const RequestDetails = () => {
               <TouchableOpacity
                 style={styles.chatButton}
                 onPress={() => {
+                  backRoute();
                   dispatch(
                     setSenderReceiverState({
                       senderID: item.userID,

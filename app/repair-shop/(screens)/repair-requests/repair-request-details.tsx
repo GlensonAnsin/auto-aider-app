@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
 import { setSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
 import { RootState } from '@/redux/store';
 import {
@@ -37,6 +38,7 @@ import { io, Socket } from 'socket.io-client';
 
 const RepairRequestDetails = () => {
   dayjs.extend(utc);
+  const backRoute = useBackRoute('/repair-shop/repair-requests/repair-request-details');
   const router = useRouter();
   const dispatch = useDispatch();
   const mapRef = useRef<MapView | null>(null);
@@ -567,6 +569,7 @@ const RepairRequestDetails = () => {
               <TouchableOpacity
                 style={styles.chatButton}
                 onPress={() => {
+                  backRoute();
                   dispatch(
                     setSenderReceiverState({
                       senderID: item.repairShopID,

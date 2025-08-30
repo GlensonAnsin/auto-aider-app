@@ -509,3 +509,42 @@ export const getConversationForShop = async (userID: number) => {
     return null;
   }
 };
+
+
+// GET ALL CONVERSATIONS FOR CAR OWNER
+export const getAllConversationsCO = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/messages/get-all-chats-co`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+
+  } catch (e) {
+    console.error('Get All Chats For Car Owner Error: ', e);
+    return null;
+  }
+};
+
+// GET ALL CONVERSATIONS FOR REPAIR SHOP
+export const getAllConversationsRS = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/messages/get-all-chats-rs`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+    
+  } catch (e) {
+    console.error('Get All Chats For Shop Error: ', e);
+    return null;
+  }
+};
