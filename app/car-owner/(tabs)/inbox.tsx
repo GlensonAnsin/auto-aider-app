@@ -1,14 +1,17 @@
 import { Loading } from '@/components/Loading';
-import { getAllConversationsCO, getShopInfoForChat } from '@/services/backendApi';
+import { useBackRoute } from '@/hooks/useBackRoute';
+import { setSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
+import { getAllConversationsCO } from '@/services/backendApi';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import dayOfYear from 'dayjs/plugin/dayOfYear';
 import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch } from 'react-redux';
 
 export default function ChatsTab() {
   dayjs.extend(utc);
@@ -19,17 +22,22 @@ export default function ChatsTab() {
   const currentMonth = currentDate.month() + 1;
   const currentYear = currentDate.year();
   const router = useRouter();
+  const backRoute = useBackRoute('/car-owner/(tabs)/inbox');
+  const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [chatInfo, setChatInfo] = useState<
     {
+      userID: number;
       chatID: number;
-      name: string;
+      shopID: number;
+      shopName: string;
       profilePic: string | null;
       profileBG: string;
       message: string;
       messageDate: string;
-      group: number;
+      status: string;
+      fromYou: boolean;
     }[]
   >([]);
 
@@ -38,29 +46,32 @@ export default function ChatsTab() {
       try {
         setIsLoading(true);
         const chatInfoData: {
+          userID: number;
           chatID: number;
-          name: string;
+          shopID: number;
+          shopName: string;
           profilePic: string | null;
           profileBG: string;
           message: string;
           messageDate: string;
-          group: number;
+          status: string;
+          fromYou: boolean;
         }[] = [];
 
-        const res1 = await getAllConversationsCO();
+        const res = await getAllConversationsCO();
 
-        res1.forEach(async (item: any) => {
-          const res2 = await getShopInfoForChat(
-            item.sender_repair_shop_id ? item.sender_repair_shop_id : item.receiver_repair_shop_id
-          );
+        res.forEach(async (item: any) => {
           chatInfoData.push({
-            chatID: item.chat_id,
-            name: res2.shop_name,
-            profilePic: res2.profile_pic,
-            profileBG: res2.profile_bg,
+            userID: item.userID,
+            chatID: item.chatID,
+            shopID: item.shopID,
+            shopName: item.shopName,
+            profilePic: item.profilePic,
+            profileBG: item.profileBG,
             message: item.message,
-            messageDate: item.sent_at,
-            group: res2.repair_shop_id,
+            messageDate: item.messageDate,
+            status: item.status,
+            fromYou: item.senderID ? true : false,
           });
         });
 
@@ -79,67 +90,32 @@ export default function ChatsTab() {
     })();
   }, []);
 
-  const grouped = Object.values(
-    chatInfo.reduce(
-      (acc, item) => {
-        const id = item.group;
-
-        if (!acc[id]) {
-          acc[id] = {
-            chatID: item.chatID,
-            name: item.name,
-            profilePic: item.profilePic,
-            profileBG: item.profileBG,
-            message: [item.message],
-            messageDate: [item.messageDate],
-            group: item.group,
-          };
-        } else {
-          acc[id].message.push(item.message);
-          acc[id].messageDate.push(item.messageDate);
-        }
-
-        return acc;
-      },
-      {} as Record<
-        string,
-        {
-          chatID: number;
-          name: string;
-          profilePic: string | null;
-          profileBG: string;
-          message: string[];
-          messageDate: string[];
-          group: number;
-        }
-      >
-    )
-  );
-
   const transformDate = (date: string) => {
-    const messageDate = dayjs(date);
+    const messageDate = dayjs(date).utc(true).local();
     const messageTime = messageDate.format('HH:mm');
     const messageDay = messageDate.date();
     const messageWeek = Math.ceil(messageDate.dayOfYear() / 7);
     const messageMonth = messageDate.month() + 1;
     const messageYear = messageDate.year();
 
-    console.log(currentWeek);
-    console.log(messageWeek);
-
-    if (messageDay === currentDay) {
+    if (
+      messageDay === currentDay &&
+      messageWeek === currentWeek &&
+      messageMonth === currentMonth &&
+      messageYear === currentYear
+    ) {
       return messageTime;
     }
 
-    if (messageWeek === currentWeek) {
+    if (messageWeek === currentWeek && messageMonth === currentMonth && messageYear === currentYear) {
       return messageDate.format('ddd');
     }
 
-    if (messageMonth === currentMonth) {
+    if (messageMonth !== currentMonth && messageYear === currentYear) {
       return messageDate.format('DD/MM');
     }
 
-    if (messageYear === currentYear) {
+    if (messageYear !== currentYear) {
       return messageDate.format('DD/MM/YY');
     }
   };
@@ -159,35 +135,91 @@ export default function ChatsTab() {
         </View>
       </View>
 
-      {grouped.map((item) => (
-        <View key={item.chatID} style={styles.lowerBox}>
-          <TouchableOpacity style={styles.conversationButton}>
-            {item.profilePic === null && (
-              <View style={[styles.profilePicWrapper, { backgroundColor: item.profileBG }]}>
-                <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
-              </View>
-            )}
+      <View style={styles.lowerBox}>
+        {chatInfo.map((item) => (
+          <View key={item.chatID}>
+            <ScrollView>
+              <TouchableOpacity
+                style={styles.conversationButton}
+                onPress={() => {
+                  backRoute();
+                  dispatch(
+                    setSenderReceiverState({
+                      senderID: item.userID,
+                      receiverID: item.shopID,
+                      role: 'car-owner',
+                    })
+                  );
+                  router.replace('/chat-room/chat-room');
+                }}
+              >
+                {item.profilePic === null && (
+                  <View style={[styles.profilePicWrapper, { backgroundColor: item.profileBG }]}>
+                    <MaterialCommunityIcons name="car-wrench" size={45} color="#FFF" />
+                  </View>
+                )}
 
-            {item.profilePic !== null && (
-              <View style={styles.profilePicWrapper}>
-                <Image style={styles.profilePic} source={{ uri: item.profilePic }} width={70} height={70} />
-              </View>
-            )}
+                {item.profilePic !== null && (
+                  <View style={styles.profilePicWrapper}>
+                    <Image style={styles.profilePic} source={{ uri: item.profilePic }} width={65} height={65} />
+                  </View>
+                )}
 
-            <View style={styles.nameMessageContainer}>
-              <Text numberOfLines={1} style={styles.nameText}>
-                {item.name}
-              </Text>
-              <View style={styles.messageDateContainer}>
-                <Text numberOfLines={1} style={styles.messageText}>
-                  {item.message[item.message.length - 1]}
-                </Text>
-                <Text style={styles.dateText}>{transformDate(item.messageDate[item.messageDate.length - 1])}</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
-      ))}
+                <View style={styles.nameMessageContainer}>
+                  {item.fromYou && (
+                    <>
+                      <Text
+                        numberOfLines={1}
+                        style={[styles.nameText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
+                      >
+                        {item.shopName}
+                      </Text>
+                      <View style={styles.messageDateContainer}>
+                        <Text
+                          numberOfLines={1}
+                          style={[styles.messageText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
+                        >
+                          {item.message}
+                        </Text>
+                        <Text style={[styles.dateText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}>
+                          {transformDate(item.messageDate)}
+                        </Text>
+                      </View>
+                    </>
+                  )}
+
+                  {!item.fromYou && (
+                    <>
+                      <Text
+                        numberOfLines={1}
+                        style={[styles.nameText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
+                      >
+                        {item.shopName}
+                      </Text>
+                      <View style={styles.messageDateContainer}>
+                        <Text
+                          numberOfLines={1}
+                          style={[
+                            styles.messageText,
+                            { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' },
+                          ]}
+                        >
+                          {item.message}
+                        </Text>
+                        <Text
+                          style={[styles.dateText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
+                        >
+                          {transformDate(item.messageDate)}
+                        </Text>
+                      </View>
+                    </>
+                  )}
+                </View>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        ))}
+      </View>
     </SafeAreaView>
   );
 }
@@ -224,27 +256,41 @@ const styles = StyleSheet.create({
   conversationButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 20,
+    gap: 10,
+    paddingHorizontal: 10,
   },
   profilePicWrapper: {
-    width: 70,
-    height: 70,
+    width: 65,
+    height: 65,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 70,
+    borderRadius: 65,
   },
   profilePic: {
-    borderRadius: 70,
+    borderRadius: 65,
   },
   nameMessageContainer: {
-    backgroundColor: 'yellow',
     width: '74%',
+    borderBottomWidth: 1,
+    borderColor: '#EAEAEA',
+    paddingVertical: 20,
   },
   nameText: {
-    backgroundColor: 'red',
     width: '100%',
+    color: '#333',
+    fontSize: 16,
   },
-  messageDateContainer: {},
-  messageText: {},
-  dateText: {},
+  messageDateContainer: {
+    flexDirection: 'row',
+  },
+  messageText: {
+    width: '75%',
+    color: '#555',
+    fontSize: 15,
+  },
+  dateText: {
+    width: '25%',
+    textAlign: 'right',
+    color: '#555',
+  },
 });

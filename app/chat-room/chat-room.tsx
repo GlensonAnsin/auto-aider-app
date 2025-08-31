@@ -1,4 +1,5 @@
 import { Loading } from '@/components/Loading';
+import { popRouteState } from '@/redux/slices/routeSlice';
 import { RootState } from '@/redux/store';
 import {
   getConversationForCarOwner,
@@ -11,19 +12,15 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Audio } from 'expo-av';
+import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
 
-import { popRouteState } from '@/redux/slices/routeSlice';
-import { useRouter } from 'expo-router';
-
 dayjs.extend(utc);
-const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
 
 const ChatRoom = () => {
   const flatListRef = useRef<any>(null);
@@ -46,6 +43,7 @@ const ChatRoom = () => {
       receiverShopID: number | null;
       message: string;
       sentAt: string;
+      status: string;
       fromYou: boolean;
     }[]
   >([]);
@@ -55,6 +53,7 @@ const ChatRoom = () => {
   const [receiverProfile, setReceiverProfile] = useState<string | null>(null);
   const [receiverProfileBG, setReceiverProfileBG] = useState<string>('');
   const [message, setMessage] = useState<string>('');
+  const reversedConversation = conversation.slice().reverse();
 
   useEffect(() => {
     (async () => {
@@ -68,6 +67,7 @@ const ChatRoom = () => {
           receiverShopID: number | null;
           message: string;
           sentAt: string;
+          status: string;
           fromYou: boolean;
         }[] = [];
 
@@ -84,6 +84,7 @@ const ChatRoom = () => {
               receiverShopID: item.receiver_repair_shop_id,
               message: item.message,
               sentAt: dayjs(item.sent_at).utc(true).local().format('HH:mm'),
+              status: item.status,
               fromYou: item.sender_user_id === senderID ? true : false,
             });
           });
@@ -108,6 +109,7 @@ const ChatRoom = () => {
               receiverShopID: item.receiver_repair_shop_id,
               message: item.message,
               sentAt: dayjs(item.sent_at).utc(true).local().format('HH:mm'),
+              status: item.status,
               fromYou: item.sender_repair_shop_id === senderID ? true : false,
             });
           });
@@ -120,7 +122,8 @@ const ChatRoom = () => {
           setReceiverProfile(res2.profile_pic);
           setReceiverProfileBG(res2.profile_bg);
         }
-      } catch {
+      } catch (e) {
+        console.error(e);
         showMessage({
           message: 'Something went wrong. Please try again.',
           type: 'danger',
@@ -135,6 +138,16 @@ const ChatRoom = () => {
   }, [senderID, receiverID, role]);
 
   useEffect(() => {
+    const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
+    const filteredConversation = conversation.filter((item) => item.fromYou !== true);
+    socket.emit('updateStatus', {
+      chatIDs: filteredConversation.map((item) => item.chatID),
+      status: 'seen',
+    });
+  }, [conversation, role]);
+
+  useEffect(() => {
+    const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
     socket.on('connect', () => {
       console.log('Connected to server: ', socket.id);
     });
@@ -157,8 +170,25 @@ const ChatRoom = () => {
       }
     });
 
+    socket.on('updatedMessage', ({ updatedMessage }) => {
+      for (const message of updatedMessage) {
+        setConversation((prevConversation) =>
+          prevConversation.map((item) => {
+            const matchedMessage = updatedMessage.find((msg: any) => msg.chatID === message.chatID);
+
+            if (matchedMessage) {
+              return { ...item, status: matchedMessage.status };
+            }
+
+            return item;
+          })
+        );
+      }
+    });
+
     return () => {
       socket.off('receiveMessage');
+      socket.off('updatedMessage');
       socket.disconnect();
     };
   }, [role, senderID]);
@@ -172,24 +202,21 @@ const ChatRoom = () => {
   }, [sound]);
 
   const sendMessage = async () => {
-    if (message.trim() !== '') {
-      socket.emit('sendMessage', {
-        senderID: Number(senderID),
-        receiverID: Number(receiverID),
-        role: role,
-        message,
-        sentAt: dayjs().format(),
-      });
+    const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
+    socket.emit('sendMessage', {
+      senderID: Number(senderID),
+      receiverID: Number(receiverID),
+      role: role,
+      message,
+      sentAt: dayjs().format(),
+    });
 
-      const { sound } = await Audio.Sound.createAsync(require('../../assets/sounds/bubble-pop.mp3'));
-      setSound(sound);
-      await sound.playAsync();
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
 
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-      setMessage('');
-    }
+    const { sound } = await Audio.Sound.createAsync(require('../../assets/sounds/bubble-pop.mp3'));
+    setSound(sound);
+    await sound.playAsync();
+    setMessage('');
   };
 
   if (isLoading) {
@@ -236,44 +263,54 @@ const ChatRoom = () => {
         </View>
       </View>
 
-      <KeyboardAwareFlatList
-        data={conversation}
+      <FlatList
+        data={reversedConversation}
         ref={flatListRef}
         style={{ flex: 1, backgroundColor: '#F9FAFB' }}
         keyboardShouldPersistTaps="handled"
-        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-        onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        inverted
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
         renderItem={({ item }) => (
           <View
-            style={{
-              alignSelf: item.fromYou ? 'flex-end' : 'flex-start',
-              backgroundColor: item.fromYou ? '#1E3A8A' : '#E5E7EB',
-              padding: 10,
-              marginHorizontal: 10,
-              marginVertical: 5,
-              borderRadius: 20,
-              maxWidth: '75%',
-            }}
+            style={[
+              styles.messageContainer,
+              {
+                alignSelf: item.fromYou ? 'flex-end' : 'flex-start',
+                backgroundColor: item.fromYou ? '#1E3A8A' : '#E5E7EB',
+              },
+            ]}
           >
             <Text
-              style={{
-                fontFamily: 'BodyRegular',
-                color: item.fromYou ? '#FFF' : '#333',
-              }}
+              style={[
+                styles.messageText,
+                {
+                  color: item.fromYou ? '#FFF' : '#333',
+                },
+              ]}
             >
               {item.message}
             </Text>
-            <Text
-              style={{
-                fontFamily: 'BodyRegular',
-                fontSize: 10,
-                color: item.fromYou ? '#FFF' : '#333',
-                marginTop: 4,
-                alignSelf: 'flex-end',
-              }}
-            >
-              {item.sentAt}
-            </Text>
+            <View style={styles.dateCheckContainer}>
+              <Text
+                style={[
+                  styles.dateText,
+                  {
+                    color: item.fromYou ? '#FFF' : '#333',
+                  },
+                ]}
+              >
+                {item.sentAt}
+              </Text>
+              {item.fromYou && (
+                <>
+                  {item.status === 'seen' && <Ionicons name="checkmark-done-sharp" size={12} color="#FFF" />}
+                  {item.status === 'unread' && <Ionicons name="checkmark-sharp" size={12} color="#FFF" />}
+                </>
+              )}
+            </View>
           </View>
         )}
         keyExtractor={(_, index) => index.toString()}
@@ -343,6 +380,28 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FFF',
     width: 230,
+  },
+  messageContainer: {
+    padding: 10,
+    marginHorizontal: 10,
+    marginVertical: 5,
+    borderRadius: 20,
+    maxWidth: '75%',
+  },
+  messageText: {
+    fontFamily: 'BodyRegular',
+  },
+  dateText: {
+    fontFamily: 'BodyRegular',
+    fontSize: 10,
+    marginTop: 4,
+    alignSelf: 'flex-end',
+  },
+  dateCheckContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 2,
   },
   messageInputContainer: {
     flexDirection: 'row',
