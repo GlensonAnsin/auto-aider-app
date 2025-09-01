@@ -18,12 +18,14 @@ import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } 
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 dayjs.extend(utc);
 
 const ChatRoom = () => {
   const flatListRef = useRef<any>(null);
+  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
+  const socketRef = useRef<Socket>(undefined);
   const dispatch = useDispatch();
   const router = useRouter();
 
@@ -139,51 +141,55 @@ const ChatRoom = () => {
 
   useEffect(() => {
     const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
-    const filteredConversation = conversation.filter((item) => item.fromYou !== true);
-    socket.emit('updateStatus', {
-      chatIDs: filteredConversation.map((item) => item.chatID),
-      status: 'seen',
-    });
-  }, [conversation, role]);
+    socketRef.current = socket;
 
-  useEffect(() => {
-    const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
     socket.on('connect', () => {
       console.log('Connected to server: ', socket.id);
     });
 
-    socket.on('receiveMessage', ({ conversation }) => {
+    socket.on('receiveMessage', ({ newChat }) => {
       if (role === 'car-owner') {
         const formattedConversation = {
-          ...conversation,
-          sentAt: dayjs(conversation.sent_at).utc(true).local().format('HH:mm'),
-          fromYou: conversation.sender_user_id === senderID ? true : false,
+          ...newChat,
+          chatID: Number(newChat.chatID),
+          sentAt: dayjs(newChat.sentAt).utc(true).local().format('HH:mm'),
+          fromYou: Number(newChat.fromYou) === Number(senderID) ? true : false,
         };
+
         setConversation((prev) => [...prev, formattedConversation]);
+
+        if (!formattedConversation.fromYou) {
+          socket.emit('updateStatus', {
+            chatIDs: [Number(formattedConversation.chatID)],
+            status: 'seen',
+          });
+        }
       } else {
         const formattedConversation = {
-          ...conversation,
-          sentAt: dayjs(conversation.sent_at).utc(true).local().format('HH:mm'),
-          fromYou: conversation.sender_repair_shop_id === senderID ? true : false,
+          ...newChat,
+          chatID: Number(newChat.chatID),
+          sentAt: dayjs(newChat.sentAt).utc(true).local().format('HH:mm'),
+          fromYou: Number(newChat.fromYou) === Number(senderID) ? true : false,
         };
+
         setConversation((prev) => [...prev, formattedConversation]);
+
+        if (!formattedConversation.fromYou) {
+          socket.emit('updateStatus', {
+            chatIDs: [Number(formattedConversation.chatID)],
+            status: 'seen',
+          });
+        }
       }
     });
 
-    socket.on('updatedMessage', ({ updatedMessage }) => {
-      for (const message of updatedMessage) {
-        setConversation((prevConversation) =>
-          prevConversation.map((item) => {
-            const matchedMessage = updatedMessage.find((msg: any) => msg.chatID === message.chatID);
-
-            if (matchedMessage) {
-              return { ...item, status: matchedMessage.status };
-            }
-
-            return item;
-          })
-        );
-      }
+    socket.on('updatedMessage', ({ updatedChat }) => {
+      setConversation((prevConversation) =>
+        prevConversation.map((item) => {
+          const matched = updatedChat.find((msg: any) => msg.chatID === item.chatID);
+          return matched ? { ...item, status: matched.status } : item;
+        })
+      );
     });
 
     return () => {
@@ -202,7 +208,9 @@ const ChatRoom = () => {
   }, [sound]);
 
   const sendMessage = async () => {
-    const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
+    const socket = socketRef.current;
+    if (!socket) return;
+
     socket.emit('sendMessage', {
       senderID: Number(senderID),
       receiverID: Number(receiverID),
@@ -218,6 +226,26 @@ const ChatRoom = () => {
     await sound.playAsync();
     setMessage('');
   };
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    const socket = socketRef.current;
+    if (!socket) return;
+    const newSeenIDs: number[] = [];
+
+    const unreadMessages = viewableItems.filter(({ item }: any) => item.fromYou === false && item.status === 'unread');
+
+    unreadMessages.forEach(({ item }: any) => {
+      newSeenIDs.push(Number(item.chatID));
+    });
+
+    if (newSeenIDs.length > 0) {
+      socket.emit('updateStatus', {
+        chatIDs: newSeenIDs,
+        status: 'seen',
+      });
+      newSeenIDs.length = 0;
+    }
+  });
 
   if (isLoading) {
     return <Loading />;
@@ -273,6 +301,8 @@ const ChatRoom = () => {
         maxToRenderPerBatch={10}
         windowSize={5}
         removeClippedSubviews={true}
+        onViewableItemsChanged={onViewableItemsChanged.current}
+        viewabilityConfig={viewConfigRef.current}
         renderItem={({ item }) => (
           <View
             style={[

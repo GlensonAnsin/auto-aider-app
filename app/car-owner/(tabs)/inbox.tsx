@@ -12,6 +12,7 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
+import { io } from 'socket.io-client';
 
 export default function ChatsTab() {
   dayjs.extend(utc);
@@ -60,7 +61,7 @@ export default function ChatsTab() {
 
         const res = await getAllConversationsCO();
 
-        res.forEach(async (item: any) => {
+        res.forEach((item: any) => {
           chatInfoData.push({
             userID: item.userID,
             chatID: item.chatID,
@@ -88,6 +89,36 @@ export default function ChatsTab() {
         setIsLoading(false);
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
+
+    socket.on('connect', () => {
+      console.log('Connected to server: ', socket.id);
+    });
+
+    socket.on('updateCOInbox', ({ groupedChatInfoDataCO }) => {
+      setChatInfo(
+        groupedChatInfoDataCO.map((item: any) => ({
+          userID: item.userID,
+          chatID: item.chatID,
+          shopID: item.shopID,
+          shopName: item.shopName,
+          profilePic: item.profilePic,
+          profileBG: item.profileBG,
+          message: item.message,
+          messageDate: item.messageDate,
+          status: item.status,
+          fromYou: item.fromYou,
+        }))
+      );
+    });
+
+    return () => {
+      socket.off('updateCOInbox');
+      socket.disconnect();
+    };
   }, []);
 
   const transformDate = (date: string) => {
