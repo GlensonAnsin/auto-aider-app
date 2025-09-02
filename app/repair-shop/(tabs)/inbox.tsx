@@ -102,21 +102,7 @@ export default function ChatsTab() {
     });
 
     socket.on('updateRSInbox', ({ groupedChatInfoDataRS }) => {
-      setChatInfo(
-        groupedChatInfoDataRS.map((item: any) => ({
-          shopID: item.shopID,
-          chatID: item.chatID,
-          customerID: item.customerID,
-          customerFirstname: item.customerFirstname,
-          customerLastname: item.customerLastname,
-          profilePic: item.profilePic,
-          profileBG: item.profileBG,
-          message: item.message,
-          messageDate: item.messageDate,
-          status: item.status,
-          fromYou: item.fromYou,
-        }))
-      );
+      setChatInfo(groupedChatInfoDataRS);
     });
 
     return () => {

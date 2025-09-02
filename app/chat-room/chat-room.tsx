@@ -147,13 +147,11 @@ const ChatRoom = () => {
       console.log('Connected to server: ', socket.id);
     });
 
-    socket.on('receiveMessage', ({ newChat }) => {
-      if (role === 'car-owner') {
+    if (role === 'car-owner') {
+      socket.on('receiveMessageCO', ({ newChatCO }) => {
         const formattedConversation = {
-          ...newChat,
-          chatID: Number(newChat.chatID),
-          sentAt: dayjs(newChat.sentAt).utc(true).local().format('HH:mm'),
-          fromYou: Number(newChat.fromYou) === Number(senderID) ? true : false,
+          ...newChatCO,
+          sentAt: dayjs(newChatCO.sentAt).utc(true).local().format('HH:mm'),
         };
 
         setConversation((prev) => [...prev, formattedConversation]);
@@ -164,12 +162,12 @@ const ChatRoom = () => {
             status: 'seen',
           });
         }
-      } else {
+      });
+    } else {
+      socket.on('receiveMessageRS', ({ newChatRS }) => {
         const formattedConversation = {
-          ...newChat,
-          chatID: Number(newChat.chatID),
-          sentAt: dayjs(newChat.sentAt).utc(true).local().format('HH:mm'),
-          fromYou: Number(newChat.fromYou) === Number(senderID) ? true : false,
+          ...newChatRS,
+          sentAt: dayjs(newChatRS.sentAt).utc(true).local().format('HH:mm'),
         };
 
         setConversation((prev) => [...prev, formattedConversation]);
@@ -180,20 +178,21 @@ const ChatRoom = () => {
             status: 'seen',
           });
         }
-      }
-    });
+      });
+    }
 
     socket.on('updatedMessage', ({ updatedChat }) => {
       setConversation((prevConversation) =>
         prevConversation.map((item) => {
-          const matched = updatedChat.find((msg: any) => msg.chatID === item.chatID);
+          const matched = updatedChat.find((msg: any) => Number(msg.chatID) === Number(item.chatID));
           return matched ? { ...item, status: matched.status } : item;
         })
       );
     });
 
     return () => {
-      socket.off('receiveMessage');
+      socket.off('receiveMessageCO');
+      socket.off('receiveMessageRS');
       socket.off('updatedMessage');
       socket.disconnect();
     };

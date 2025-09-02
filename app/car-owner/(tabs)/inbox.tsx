@@ -99,20 +99,7 @@ export default function ChatsTab() {
     });
 
     socket.on('updateCOInbox', ({ groupedChatInfoDataCO }) => {
-      setChatInfo(
-        groupedChatInfoDataCO.map((item: any) => ({
-          userID: item.userID,
-          chatID: item.chatID,
-          shopID: item.shopID,
-          shopName: item.shopName,
-          profilePic: item.profilePic,
-          profileBG: item.profileBG,
-          message: item.message,
-          messageDate: item.messageDate,
-          status: item.status,
-          fromYou: item.fromYou,
-        }))
-      );
+      setChatInfo(groupedChatInfoDataCO);
     });
 
     return () => {
