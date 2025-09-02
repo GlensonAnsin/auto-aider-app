@@ -74,8 +74,8 @@ const ChatRoom = () => {
         }[] = [];
 
         if (role === 'car-owner') {
-          const res1 = await getConversationForCarOwner(Number(receiverID ?? 0));
-          const res2 = await getShopInfoForChat(Number(receiverID ?? 0));
+          const res1 = await getConversationForCarOwner(receiverID ?? 0);
+          const res2 = await getShopInfoForChat(receiverID ?? 0);
 
           res1.forEach((item: any) => {
             conversationData.push({
@@ -87,7 +87,7 @@ const ChatRoom = () => {
               message: item.message,
               sentAt: dayjs(item.sent_at).utc(true).local().format('HH:mm'),
               status: item.status,
-              fromYou: item.sender_user_id === senderID ? true : false,
+              fromYou: Number(item.sender_user_id) === senderID ? true : false,
             });
           });
 
@@ -99,8 +99,8 @@ const ChatRoom = () => {
           setReceiverProfile(res2.profile_pic);
           setReceiverProfileBG(res2.profile_bg);
         } else {
-          const res1 = await getConversationForShop(Number(receiverID ?? 0));
-          const res2 = await getUserInfoForChat(Number(receiverID ?? 0));
+          const res1 = await getConversationForShop(receiverID ?? 0);
+          const res2 = await getUserInfoForChat(receiverID ?? 0);
 
           res1.forEach((item: any) => {
             conversationData.push({
@@ -112,7 +112,7 @@ const ChatRoom = () => {
               message: item.message,
               sentAt: dayjs(item.sent_at).utc(true).local().format('HH:mm'),
               status: item.status,
-              fromYou: item.sender_repair_shop_id === senderID ? true : false,
+              fromYou: Number(item.sender_repair_shop_id) === senderID ? true : false,
             });
           });
 
@@ -149,34 +149,38 @@ const ChatRoom = () => {
 
     if (role === 'car-owner') {
       socket.on('receiveMessageCO', ({ newChatCO }) => {
-        const formattedConversation = {
-          ...newChatCO,
-          sentAt: dayjs(newChatCO.sentAt).utc(true).local().format('HH:mm'),
-        };
+        if (Number(newChatCO.receiverUserID) === senderID || Number(newChatCO.senderUserID) === senderID) {
+          const formattedConversation = {
+            ...newChatCO,
+            sentAt: dayjs(newChatCO.sentAt).utc(true).local().format('HH:mm'),
+          };
 
-        setConversation((prev) => [...prev, formattedConversation]);
+          setConversation((prev) => [...prev, formattedConversation]);
 
-        if (!formattedConversation.fromYou) {
-          socket.emit('updateStatus', {
-            chatIDs: [Number(formattedConversation.chatID)],
-            status: 'seen',
-          });
+          if (!formattedConversation.fromYou) {
+            socket.emit('updateStatus', {
+              chatIDs: [Number(formattedConversation.chatID)],
+              status: 'seen',
+            });
+          }
         }
       });
     } else {
       socket.on('receiveMessageRS', ({ newChatRS }) => {
-        const formattedConversation = {
-          ...newChatRS,
-          sentAt: dayjs(newChatRS.sentAt).utc(true).local().format('HH:mm'),
-        };
+        if (Number(newChatRS.receiverShopID) === senderID || Number(newChatRS.senderShopID) === senderID) {
+          const formattedConversation = {
+            ...newChatRS,
+            sentAt: dayjs(newChatRS.sentAt).utc(true).local().format('HH:mm'),
+          };
 
-        setConversation((prev) => [...prev, formattedConversation]);
+          setConversation((prev) => [...prev, formattedConversation]);
 
-        if (!formattedConversation.fromYou) {
-          socket.emit('updateStatus', {
-            chatIDs: [Number(formattedConversation.chatID)],
-            status: 'seen',
-          });
+          if (!formattedConversation.fromYou) {
+            socket.emit('updateStatus', {
+              chatIDs: [Number(formattedConversation.chatID)],
+              status: 'seen',
+            });
+          }
         }
       });
     }

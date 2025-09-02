@@ -75,7 +75,7 @@ export default function ChatsTab() {
             message: item.message,
             messageDate: item.messageDate,
             status: item.status,
-            fromYou: item.senderID ? true : false,
+            fromYou: item.fromYou,
           });
         });
 
@@ -157,89 +157,96 @@ export default function ChatsTab() {
       </View>
 
       <View style={styles.lowerBox}>
-        {chatInfo.map((item) => (
-          <View key={item.chatID}>
-            <ScrollView>
-              <TouchableOpacity
-                style={styles.conversationButton}
-                onPress={() => {
-                  backRoute();
-                  dispatch(
-                    setSenderReceiverState({
-                      senderID: item.shopID,
-                      receiverID: item.customerID,
-                      role: 'repair-shop',
-                    })
-                  );
-                  router.replace('/chat-room/chat-room');
-                }}
-              >
-                {item.profilePic === null && (
-                  <View style={[styles.profilePicWrapper, { backgroundColor: item.profileBG }]}>
-                    <Text style={styles.userInitials}>{`${item.customerFirstname[0]}${item.customerLastname[0]}`}</Text>
-                  </View>
-                )}
-
-                {item.profilePic !== null && (
-                  <View style={styles.profilePicWrapper}>
-                    <Image style={styles.profilePic} source={{ uri: item.profilePic }} width={65} height={65} />
-                  </View>
-                )}
-
-                <View style={styles.nameMessageContainer}>
-                  {item.fromYou && (
-                    <>
+        {chatInfo
+          .sort((a, b) => b.chatID - a.chatID)
+          .map((item) => (
+            <View key={item.chatID}>
+              <ScrollView>
+                <TouchableOpacity
+                  style={styles.conversationButton}
+                  onPress={() => {
+                    backRoute();
+                    dispatch(
+                      setSenderReceiverState({
+                        senderID: Number(item.shopID),
+                        receiverID: Number(item.customerID),
+                        role: 'repair-shop',
+                      })
+                    );
+                    router.replace('/chat-room/chat-room');
+                  }}
+                >
+                  {item.profilePic === null && (
+                    <View style={[styles.profilePicWrapper, { backgroundColor: item.profileBG }]}>
                       <Text
-                        numberOfLines={1}
-                        style={[styles.nameText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
-                      >
-                        {`${item.customerFirstname} ${item.customerLastname}`}
-                      </Text>
-                      <View style={styles.messageDateContainer}>
-                        <Text
-                          numberOfLines={1}
-                          style={[styles.messageText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
-                        >
-                          {item.message}
-                        </Text>
-                        <Text style={[styles.dateText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}>
-                          {transformDate(item.messageDate)}
-                        </Text>
-                      </View>
-                    </>
+                        style={styles.userInitials}
+                      >{`${item.customerFirstname[0]}${item.customerLastname[0]}`}</Text>
+                    </View>
                   )}
 
-                  {!item.fromYou && (
-                    <>
-                      <Text
-                        numberOfLines={1}
-                        style={[styles.nameText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
-                      >
-                        {`${item.customerFirstname} ${item.customerLastname}`}
-                      </Text>
-                      <View style={styles.messageDateContainer}>
+                  {item.profilePic !== null && (
+                    <View style={styles.profilePicWrapper}>
+                      <Image style={styles.profilePic} source={{ uri: item.profilePic }} width={65} height={65} />
+                    </View>
+                  )}
+
+                  <View style={styles.nameMessageContainer}>
+                    {item.fromYou && (
+                      <>
                         <Text
                           numberOfLines={1}
-                          style={[
-                            styles.messageText,
-                            { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' },
-                          ]}
+                          style={[styles.nameText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
                         >
-                          {item.message}
+                          {`${item.customerFirstname} ${item.customerLastname}`}
                         </Text>
+                        <View style={styles.messageDateContainer}>
+                          <Text
+                            numberOfLines={1}
+                            style={[styles.messageText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
+                          >
+                            {item.message}
+                          </Text>
+                          <Text style={[styles.dateText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}>
+                            {transformDate(item.messageDate)}
+                          </Text>
+                        </View>
+                      </>
+                    )}
+
+                    {!item.fromYou && (
+                      <>
                         <Text
-                          style={[styles.dateText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
+                          numberOfLines={1}
+                          style={[styles.nameText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
                         >
-                          {transformDate(item.messageDate)}
+                          {`${item.customerFirstname} ${item.customerLastname}`}
                         </Text>
-                      </View>
-                    </>
-                  )}
-                </View>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        ))}
+                        <View style={styles.messageDateContainer}>
+                          <Text
+                            numberOfLines={1}
+                            style={[
+                              styles.messageText,
+                              { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' },
+                            ]}
+                          >
+                            {item.message}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.dateText,
+                              { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' },
+                            ]}
+                          >
+                            {transformDate(item.messageDate)}
+                          </Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          ))}
       </View>
     </SafeAreaView>
   );

@@ -72,7 +72,7 @@ export default function ChatsTab() {
             message: item.message,
             messageDate: item.messageDate,
             status: item.status,
-            fromYou: item.senderID ? true : false,
+            fromYou: item.fromYou,
           });
         });
 
@@ -154,89 +154,94 @@ export default function ChatsTab() {
       </View>
 
       <View style={styles.lowerBox}>
-        {chatInfo.map((item) => (
-          <View key={item.chatID}>
-            <ScrollView>
-              <TouchableOpacity
-                style={styles.conversationButton}
-                onPress={() => {
-                  backRoute();
-                  dispatch(
-                    setSenderReceiverState({
-                      senderID: item.userID,
-                      receiverID: item.shopID,
-                      role: 'car-owner',
-                    })
-                  );
-                  router.replace('/chat-room/chat-room');
-                }}
-              >
-                {item.profilePic === null && (
-                  <View style={[styles.profilePicWrapper, { backgroundColor: item.profileBG }]}>
-                    <MaterialCommunityIcons name="car-wrench" size={45} color="#FFF" />
-                  </View>
-                )}
-
-                {item.profilePic !== null && (
-                  <View style={styles.profilePicWrapper}>
-                    <Image style={styles.profilePic} source={{ uri: item.profilePic }} width={65} height={65} />
-                  </View>
-                )}
-
-                <View style={styles.nameMessageContainer}>
-                  {item.fromYou && (
-                    <>
-                      <Text
-                        numberOfLines={1}
-                        style={[styles.nameText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
-                      >
-                        {item.shopName}
-                      </Text>
-                      <View style={styles.messageDateContainer}>
-                        <Text
-                          numberOfLines={1}
-                          style={[styles.messageText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
-                        >
-                          {item.message}
-                        </Text>
-                        <Text style={[styles.dateText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}>
-                          {transformDate(item.messageDate)}
-                        </Text>
-                      </View>
-                    </>
+        {chatInfo
+          .sort((a, b) => b.chatID - a.chatID)
+          .map((item) => (
+            <View key={item.chatID}>
+              <ScrollView>
+                <TouchableOpacity
+                  style={styles.conversationButton}
+                  onPress={() => {
+                    backRoute();
+                    dispatch(
+                      setSenderReceiverState({
+                        senderID: Number(item.userID),
+                        receiverID: Number(item.shopID),
+                        role: 'car-owner',
+                      })
+                    );
+                    router.replace('/chat-room/chat-room');
+                  }}
+                >
+                  {item.profilePic === null && (
+                    <View style={[styles.profilePicWrapper, { backgroundColor: item.profileBG }]}>
+                      <MaterialCommunityIcons name="car-wrench" size={45} color="#FFF" />
+                    </View>
                   )}
 
-                  {!item.fromYou && (
-                    <>
-                      <Text
-                        numberOfLines={1}
-                        style={[styles.nameText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
-                      >
-                        {item.shopName}
-                      </Text>
-                      <View style={styles.messageDateContainer}>
+                  {item.profilePic !== null && (
+                    <View style={styles.profilePicWrapper}>
+                      <Image style={styles.profilePic} source={{ uri: item.profilePic }} width={65} height={65} />
+                    </View>
+                  )}
+
+                  <View style={styles.nameMessageContainer}>
+                    {item.fromYou && (
+                      <>
                         <Text
                           numberOfLines={1}
-                          style={[
-                            styles.messageText,
-                            { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' },
-                          ]}
+                          style={[styles.nameText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
                         >
-                          {item.message}
+                          {item.shopName}
                         </Text>
+                        <View style={styles.messageDateContainer}>
+                          <Text
+                            numberOfLines={1}
+                            style={[styles.messageText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
+                          >
+                            {item.message}
+                          </Text>
+                          <Text style={[styles.dateText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}>
+                            {transformDate(item.messageDate)}
+                          </Text>
+                        </View>
+                      </>
+                    )}
+
+                    {!item.fromYou && (
+                      <>
                         <Text
-                          style={[styles.dateText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
+                          numberOfLines={1}
+                          style={[styles.nameText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
                         >
-                          {transformDate(item.messageDate)}
+                          {item.shopName}
                         </Text>
-                      </View>
-                    </>
-                  )}
-                </View>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        ))}
+                        <View style={styles.messageDateContainer}>
+                          <Text
+                            numberOfLines={1}
+                            style={[
+                              styles.messageText,
+                              { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' },
+                            ]}
+                          >
+                            {item.message}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.dateText,
+                              { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' },
+                            ]}
+                          >
+                            {transformDate(item.messageDate)}
+                          </Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          ))}
       </View>
     </SafeAreaView>
   );
