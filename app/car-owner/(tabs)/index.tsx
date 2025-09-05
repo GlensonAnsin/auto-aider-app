@@ -43,7 +43,6 @@ export default function Home() {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isAddCarLoading, setIsAddCarLoading] = useState<boolean>(false);
-  const [userID, setUserID] = useState<number>(0);
   const [firstname, setFirstname] = useState<string>('');
   const [lastname, setLastname] = useState<string>('');
   const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -89,7 +88,6 @@ export default function Home() {
         const res1 = await getUserInfo();
         const res2 = await getVehicle();
 
-        setUserID(res1.user_id);
         setFirstname(res1.firstname);
         setLastname(res1.lastname);
         setProfilePic(res1.profile_pic);
@@ -148,10 +146,11 @@ export default function Home() {
       const token = await registerForPushNotificationsAsync();
       if (token) {
         try {
-          await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/notifications/save-token`, {
-            userID: userID,
+          await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/notifications/save-push-token`, {
             token,
             platform: 'android',
+            role: 'car-owner',
+            updatedAt: dayjs().format(),
           });
           console.log('Push token saved!');
         } catch (e) {
@@ -174,7 +173,7 @@ export default function Home() {
     return () => {
       if (removeListeners) removeListeners();
     };
-  }, [userID]);
+  }, []);
 
   const handleCarVerification = async () => {
     if (!selectedMake || !model || !year) {
