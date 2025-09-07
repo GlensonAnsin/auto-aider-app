@@ -3,13 +3,14 @@ import { useBackRoute } from '@/hooks/useBackRoute';
 import { clearRouteState } from '@/redux/slices/routeSlice';
 import { addVehicle, getUserInfo, getVehicle } from '@/services/backendApi';
 import { verifyCar } from '@/services/geminiApi';
-import { addNotificationListeners, registerForPushNotificationsAsync } from '@/services/notifications';
+import { registerForPushNotificationsAsync } from '@/services/notifications';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -43,6 +44,7 @@ export default function Home() {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isAddCarLoading, setIsAddCarLoading] = useState<boolean>(false);
+  const [userID, setUserID] = useState<number>(0);
   const [firstname, setFirstname] = useState<string>('');
   const [lastname, setLastname] = useState<string>('');
   const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -88,6 +90,7 @@ export default function Home() {
         const res1 = await getUserInfo();
         const res2 = await getVehicle();
 
+        setUserID(res1.user_id);
         setFirstname(res1.firstname);
         setLastname(res1.lastname);
         setProfilePic(res1.profile_pic);
@@ -118,6 +121,7 @@ export default function Home() {
     });
 
     newSocket.on('updatedUserInfo', ({ updatedUserInfo }) => {
+      setUserID(updatedUserInfo.user_id);
       setFirstname(updatedUserInfo.firstname);
       setLastname(updatedUserInfo.lastname);
       setProfilePic(updatedUserInfo.profile_pic);
@@ -140,39 +144,40 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let removeListeners: (() => void) | null = null;
-
-    const setupPush = async () => {
-      const token = await registerForPushNotificationsAsync();
-      if (token) {
-        try {
-          await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/notifications/save-push-token`, {
-            token,
-            platform: 'android',
-            role: 'car-owner',
-            updatedAt: dayjs().format(),
-          });
-          console.log('Push token saved!');
-        } catch (e) {
-          console.error('Error saving token:', e);
+    (async () => {
+      try {
+        const notificationToken = await registerForPushNotificationsAsync();
+        if (notificationToken) {
+          try {
+            await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/notifications/save-push-token`, {
+              userID: userID,
+              token: notificationToken,
+              platform: 'android',
+              role: 'car-owner',
+              updatedAt: dayjs().format(),
+            });
+            console.log('Push token saved!');
+          } catch (e) {
+            console.error('Error saving token:', e);
+          }
         }
+
+        const notificationListener = Notifications.addNotificationReceivedListener((notif) => {
+          console.log(notif);
+        });
+
+        const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
+          console.log(response);
+        });
+
+        return () => {
+          notificationListener.remove();
+          responseListener.remove();
+        };
+      } catch (e) {
+        console.error('Notification error:', e);
       }
-
-      removeListeners = addNotificationListeners({
-        onReceive: (n) => {
-          console.log('Notification received in foreground:', n);
-        },
-        onRespond: (r) => {
-          const data = r.notification.request.content.data as any;
-          console.log(data);
-        },
-      });
-    };
-
-    setupPush();
-    return () => {
-      if (removeListeners) removeListeners();
-    };
+    })();
   }, []);
 
   const handleCarVerification = async () => {

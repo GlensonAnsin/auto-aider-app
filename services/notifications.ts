@@ -3,59 +3,42 @@ import * as Notifications from 'expo-notifications';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
     shouldShowBanner: true,
     shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
   }),
 });
 
 export const registerForPushNotificationsAsync = async () => {
+  let token;
+
+  await Notifications.setNotificationChannelAsync('default', {
+    name: 'Default',
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: '#FF231F7C',
+  });
+
+
   if (Device.isDevice) {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'Default',
-      importance: Notifications.AndroidImportance.MAX,
-    });
+    const { granted: existingGranted } = await Notifications.getPermissionsAsync();
+    let finalGranted = existingGranted;
 
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
+    if (!existingGranted) {
+      const { granted } = await Notifications.requestPermissionsAsync();
+      finalGranted = granted;
     }
 
-    if (finalStatus !== 'granted') {
+    if (!finalGranted) {
       alert('Failed to get push token');
       return;
     }
 
-    const token = (await Notifications.getExpoPushTokenAsync()).data;
+    token = (await Notifications.getExpoPushTokenAsync({ projectId: '2c075eed-3e20-4711-ae77-6a85f27bc5f8' })).data;
     console.log('Expo Push Token:', token);
     return token;
   } else {
     alert('Must use physical device for Push Notifications');
-  }
-}
-
-export const addNotificationListeners = ({
-  onReceive,
-  onRespond,
-}: {
-    onReceive?: (n: Notifications.Notification) => void;
-    onRespond?: (n: Notifications.NotificationResponse) => void;
-  }) => {
-  const receiveSub = Notifications.addNotificationReceivedListener((n) => {
-    onReceive?.(n);
-  });
-
-  const respondSub = Notifications.addNotificationResponseReceivedListener((r) => {
-    onRespond?.(r);
-  });
-
-  return () => {
-    receiveSub.remove();
-    respondSub.remove();
   }
 }
