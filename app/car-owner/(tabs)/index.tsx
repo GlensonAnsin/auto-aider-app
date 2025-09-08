@@ -178,7 +178,7 @@ export default function Home() {
         console.error('Notification error:', e);
       }
     })();
-  }, []);
+  }, [userID]);
 
   const handleCarVerification = async () => {
     if (!selectedMake || !model || !year) {

@@ -2,11 +2,15 @@ import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { clearRouteState } from '@/redux/slices/routeSlice';
 import { getRepairShopInfo } from '@/services/backendApi';
+import { registerForPushNotificationsAsync } from '@/services/notifications';
 import { clearTokens } from '@/services/tokenStorage';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -35,6 +39,7 @@ export default function Home() {
   const [_socket, setSocket] = useState<Socket | null>(null);
   const { width: screenWidth } = Dimensions.get('window');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [shopID, setShopID] = useState<number>(0);
   const [repShopName, setRepShopName] = useState<string>('');
   const [ownerFirstname, setOwnerFirstname] = useState<string>('');
   const [ownerLastname, setOwnerLastname] = useState<string>('');
@@ -59,6 +64,7 @@ export default function Home() {
         dispatch(clearRouteState());
         const res = await getRepairShopInfo();
 
+        setShopID(res.repair_shop_id);
         setRepShopName(res.shop_name);
         setOwnerFirstname(res.owner_firstname);
         setOwnerLastname(res.owner_lastname);
@@ -91,6 +97,7 @@ export default function Home() {
     });
 
     newSocket.on('updatedRepairShopInfo', ({ updatedRepairShopInfo }) => {
+      setShopID(updatedRepairShopInfo.repair_shop_id);
       setRepShopName(updatedRepairShopInfo.shop_name);
       setOwnerFirstname(updatedRepairShopInfo.owner_firstname);
       setOwnerLastname(updatedRepairShopInfo.owner_lastname);
@@ -109,6 +116,43 @@ export default function Home() {
       newSocket.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const notificationToken = await registerForPushNotificationsAsync();
+        if (notificationToken) {
+          try {
+            await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/notifications/save-push-token`, {
+              userID: shopID,
+              token: notificationToken,
+              platform: 'android',
+              role: 'repair-shop',
+              updatedAt: dayjs().format(),
+            });
+            console.log('Push token saved!');
+          } catch (e) {
+            console.error('Error saving token:', e);
+          }
+        }
+
+        const notificationListener = Notifications.addNotificationReceivedListener((notif) => {
+          console.log(notif);
+        });
+
+        const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
+          console.log(response);
+        });
+
+        return () => {
+          notificationListener.remove();
+          responseListener.remove();
+        };
+      } catch (e) {
+        console.error('Notification error:', e);
+      }
+    })();
+  }, [shopID]);
 
   const handleLogout = async () => {
     try {
