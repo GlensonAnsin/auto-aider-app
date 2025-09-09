@@ -1,17 +1,16 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { deleteVehicle, getVehicle } from '@/services/backendApi';
+import socket from '@/services/socket';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { io, Socket } from 'socket.io-client';
 
 const ManageVehicles = () => {
   dayjs.extend(utc);
-  const [_socket, setSocket] = useState<Socket | null>(null);
   const [vehicles, setVehicles] = useState<
     {
       vehicleID: number;
@@ -57,23 +56,14 @@ const ManageVehicles = () => {
   }, []);
 
   useEffect(() => {
-    const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
-      transports: ['websocket'],
-    });
+    if (!socket) return;
 
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
-      console.log('Connected to server: ', newSocket.id);
-    });
-
-    newSocket.on('vehicleDeleted', ({ vehicleID }) => {
+    socket.on('vehicleDeleted', ({ vehicleID }) => {
       setVehicles((prev) => prev.filter((v) => v.vehicleID !== vehicleID));
     });
 
     return () => {
-      newSocket.off('vehicleDeleted');
-      newSocket.disconnect();
+      socket.off('vehicleDeleted');
     };
   }, []);
 

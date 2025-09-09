@@ -2,6 +2,7 @@ import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
 import { getAllConversationsCO } from '@/services/backendApi';
+import socket from '@/services/socket';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import dayOfYear from 'dayjs/plugin/dayOfYear';
@@ -12,7 +13,6 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
-import { io } from 'socket.io-client';
 
 export default function ChatsTab() {
   dayjs.extend(utc);
@@ -92,11 +92,7 @@ export default function ChatsTab() {
   }, []);
 
   useEffect(() => {
-    const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
-
-    socket.on('connect', () => {
-      console.log('Connected to server: ', socket.id);
-    });
+    if (!socket) return;
 
     socket.on('updateCOInbox', ({ groupedChatInfoDataCO }) => {
       setChatInfo(groupedChatInfoDataCO);
@@ -104,7 +100,6 @@ export default function ChatsTab() {
 
     return () => {
       socket.off('updateCOInbox');
-      socket.disconnect();
     };
   }, []);
 

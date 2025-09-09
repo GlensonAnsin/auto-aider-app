@@ -3,6 +3,7 @@ import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setScanState } from '@/redux/slices/scanSlice';
 import { deleteAllVehicleDiagnostics, deleteVehicleDiagnostic, getVehicleDiagnostics } from '@/services/backendApi';
+import socket from '@/services/socket';
 import Entypo from '@expo/vector-icons/Entypo';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -12,14 +13,12 @@ import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
-import { io, Socket } from 'socket.io-client';
 
 const DiagnosticHistory = () => {
   dayjs.extend(utc);
   const router = useRouter();
   const dispatch = useDispatch();
   const backRoute = useBackRoute('/car-owner/(screens)/diagnostic-history/diagnostic-history');
-  const [_socket, setSocket] = useState<Socket | null>(null);
   const [history, setHistory] = useState<
     {
       vehicleID: number;
@@ -66,28 +65,19 @@ const DiagnosticHistory = () => {
   }, []);
 
   useEffect(() => {
-    const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
-      transports: ['websocket'],
-    });
+    if (!socket) return;
 
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
-      console.log('Connected to server: ', newSocket.id);
-    });
-
-    newSocket.on('vehicleDiagnosticDeleted', ({ deletedVehicleDiag }) => {
+    socket.on('vehicleDiagnosticDeleted', ({ deletedVehicleDiag }) => {
       setHistory((prev) => prev.filter((v) => !deletedVehicleDiag.includes(v.scanReference)));
     });
 
-    newSocket.on('allVehicleDiagnosticDeleted', ({ allDeletedVehicleDiag }) => {
+    socket.on('allVehicleDiagnosticDeleted', ({ allDeletedVehicleDiag }) => {
       setHistory((prev) => prev.filter((v) => !allDeletedVehicleDiag.includes(v.scanReference)));
     });
 
     return () => {
-      newSocket.off('vehicleDiagnosticDeleted');
-      newSocket.off('allVehicleDiagnosticDeleted');
-      newSocket.disconnect();
+      socket.off('vehicleDiagnosticDeleted');
+      socket.off('allVehicleDiagnosticDeleted');
     };
   }, []);
 

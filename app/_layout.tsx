@@ -1,3 +1,4 @@
+import { BackHandlerManager } from '@/components/BackHandlerManager';
 import { store } from '@/redux/store';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -36,6 +37,8 @@ export default function RootLayout() {
       <StatusBar style="dark" />
 
       <FlashMessage position="top" style={{ marginTop: 40 }} />
+
+      <BackHandlerManager />
 
       <Stack initialRouteName="index" screenOptions={{ headerShown: false, animation: 'none' }}>
         <Stack.Screen name="index" />

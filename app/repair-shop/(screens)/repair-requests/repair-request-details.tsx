@@ -10,6 +10,7 @@ import {
   rejectRequest,
   requestCompleted,
 } from '@/services/backendApi';
+import socket from '@/services/socket';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
@@ -34,7 +35,6 @@ import { showMessage } from 'react-native-flash-message';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { io, Socket } from 'socket.io-client';
 
 const RepairRequestDetails = () => {
   dayjs.extend(utc);
@@ -42,7 +42,6 @@ const RepairRequestDetails = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const mapRef = useRef<MapView | null>(null);
-  const [_socket, setSocket] = useState<Socket | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [requestDetails, setRequestDetails] = useState<
     {
@@ -253,17 +252,9 @@ const RepairRequestDetails = () => {
   }, [shopRegion, customerRegion]);
 
   useEffect(() => {
-    const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
-      transports: ['websocket'],
-    });
+    if (!socket) return;
 
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
-      console.log('Connected to server: ', newSocket.id);
-    });
-
-    newSocket.on('requestRejected', ({ requestIDs, reason_rejected }) => {
+    socket.on('requestRejected', ({ requestIDs, reason_rejected }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) =>
           prev.map((r) => (r.requestID === id ? { ...r, status: 'Rejected', reasonRejected: reason_rejected } : r))
@@ -271,13 +262,13 @@ const RepairRequestDetails = () => {
       }
     });
 
-    newSocket.on('requestAccepted', ({ requestIDs }) => {
+    socket.on('requestAccepted', ({ requestIDs }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) => prev.map((r) => (r.requestID === id ? { ...r, status: 'Ongoing' } : r)));
       }
     });
 
-    newSocket.on('requestCompleted', ({ requestIDs, repair_procedure, completed_on }) => {
+    socket.on('requestCompleted', ({ requestIDs, repair_procedure, completed_on }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) =>
           prev.map((r) =>
@@ -295,10 +286,9 @@ const RepairRequestDetails = () => {
     });
 
     return () => {
-      newSocket.off('requestRejected');
-      newSocket.off('requestAccepted');
-      newSocket.off('requestCompleted');
-      newSocket.disconnect();
+      socket.off('requestRejected');
+      socket.off('requestAccepted');
+      socket.off('requestCompleted');
     };
   }, []);
 

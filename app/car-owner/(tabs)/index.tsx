@@ -4,6 +4,7 @@ import { clearRouteState } from '@/redux/slices/routeSlice';
 import { addVehicle, getUserInfo, getVehicle } from '@/services/backendApi';
 import { verifyCar } from '@/services/geminiApi';
 import { registerForPushNotificationsAsync } from '@/services/notifications';
+import socket from '@/services/socket';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -30,13 +31,11 @@ import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import { useDispatch } from 'react-redux';
-import { io, Socket } from 'socket.io-client';
 
 export default function Home() {
   const dispatch = useDispatch();
   const backRoute = useBackRoute('/car-owner');
   const router = useRouter();
-  const [_socket, setSocket] = useState<Socket | null>(null);
   const [addVehicleModalVisible, isAddVehicleModalVisible] = useState(false);
   const [selectedMake, setSelectedMake] = useState<string>('');
   const [model, setModel] = useState<string>('');
@@ -90,6 +89,8 @@ export default function Home() {
         const res1 = await getUserInfo();
         const res2 = await getVehicle();
 
+        socket.emit('registerUser', { userID: Number(res1.user_id), role: 'car-owner' });
+
         setUserID(res1.user_id);
         setFirstname(res1.firstname);
         setLastname(res1.lastname);
@@ -110,38 +111,29 @@ export default function Home() {
   }, [dispatch]);
 
   useEffect(() => {
-    const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
-      transports: ['websocket'],
-    });
+    if (!socket) return;
 
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
-      console.log('Connected to server: ', newSocket.id);
-    });
-
-    newSocket.on('updatedUserInfo', ({ updatedUserInfo }) => {
+    socket.on('updatedUserInfo', ({ updatedUserInfo }) => {
       setUserID(updatedUserInfo.user_id);
       setFirstname(updatedUserInfo.firstname);
       setLastname(updatedUserInfo.lastname);
       setProfilePic(updatedUserInfo.profile_pic);
     });
 
-    newSocket.on('vehicleAdded', ({ vehicleAdded }) => {
+    socket.on('vehicleAdded', ({ vehicleAdded }) => {
       setIsVehicles(vehicleAdded);
     });
 
-    newSocket.on('noVehicles', ({ noVehicles }) => {
+    socket.on('noVehicles', ({ noVehicles }) => {
       setIsVehicles(noVehicles);
     });
 
     return () => {
-      newSocket.off('updatedUserInfo');
-      newSocket.off('vehicleAdded');
-      newSocket.off('noVehicles');
-      newSocket.disconnect();
+      socket.off('updatedUserInfo');
+      socket.off('vehicleAdded');
+      socket.off('noVehicles');
     };
-  }, []);
+  }, [userID]);
 
   useEffect(() => {
     (async () => {

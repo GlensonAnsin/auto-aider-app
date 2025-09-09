@@ -7,6 +7,7 @@ import {
   getShopInfoForChat,
   getUserInfoForChat,
 } from '@/services/backendApi';
+import socket from '@/services/socket';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
@@ -18,14 +19,12 @@ import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } 
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { io, Socket } from 'socket.io-client';
 
 dayjs.extend(utc);
 
 const ChatRoom = () => {
   const flatListRef = useRef<any>(null);
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
-  const socketRef = useRef<Socket>(undefined);
   const dispatch = useDispatch();
   const router = useRouter();
 
@@ -55,6 +54,7 @@ const ChatRoom = () => {
   const [receiverProfile, setReceiverProfile] = useState<string | null>(null);
   const [receiverProfileBG, setReceiverProfileBG] = useState<string>('');
   const [message, setMessage] = useState<string>('');
+  const [isReceiverOnline, setIsReceiverOnline] = useState<boolean>(false);
   const reversedConversation = conversation.slice().reverse();
 
   useEffect(() => {
@@ -140,16 +140,30 @@ const ChatRoom = () => {
   }, [senderID, receiverID, role]);
 
   useEffect(() => {
-    const socket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL);
-    socketRef.current = socket;
-
-    socket.on('connect', () => {
-      console.log('Connected to server: ', socket.id);
-    });
+    if (!socket) return;
 
     if (role === 'car-owner') {
+      socket.emit('checkOnlineStatus', { ID: receiverID, role: 'car-owner' }, (res: { online: boolean }) => {
+        setIsReceiverOnline(res.online);
+      });
+
+      socket.on('shopOnline', ({ ID, isOnline }) => {
+        if (ID === receiverID) {
+          setIsReceiverOnline(isOnline);
+        }
+      });
+
+      socket.on('shopOffline', ({ ID, isOnline }) => {
+        if (ID === receiverID) {
+          setIsReceiverOnline(isOnline);
+        }
+      });
+
       socket.on('receiveMessageCO', ({ newChatCO }) => {
-        if (Number(newChatCO.receiverUserID) === senderID || Number(newChatCO.senderUserID) === senderID) {
+        if (
+          (Number(newChatCO.receiverShopID) === receiverID && Number(newChatCO.senderUserID) === senderID) ||
+          (Number(newChatCO.senderShopID) === receiverID && Number(newChatCO.receiverUserID) === senderID)
+        ) {
           const formattedConversation = {
             ...newChatCO,
             sentAt: dayjs(newChatCO.sentAt).utc(true).local().format('HH:mm'),
@@ -166,8 +180,27 @@ const ChatRoom = () => {
         }
       });
     } else {
+      socket.emit('checkOnlineStatus', { ID: receiverID, role: 'repair-shop' }, (res: { online: boolean }) => {
+        setIsReceiverOnline(res.online);
+      });
+
+      socket.on('userOnline', ({ ID, isOnline }) => {
+        if (ID === receiverID) {
+          setIsReceiverOnline(isOnline);
+        }
+      });
+
+      socket.on('userOffline', ({ ID, isOnline }) => {
+        if (ID === receiverID) {
+          setIsReceiverOnline(isOnline);
+        }
+      });
+
       socket.on('receiveMessageRS', ({ newChatRS }) => {
-        if (Number(newChatRS.receiverShopID) === senderID || Number(newChatRS.senderShopID) === senderID) {
+        if (
+          (Number(newChatRS.receiverUserID) === receiverID && Number(newChatRS.senderShopID) === senderID) ||
+          (Number(newChatRS.senderUserID) === receiverID && Number(newChatRS.receiverShopID) === senderID)
+        ) {
           const formattedConversation = {
             ...newChatRS,
             sentAt: dayjs(newChatRS.sentAt).utc(true).local().format('HH:mm'),
@@ -195,12 +228,15 @@ const ChatRoom = () => {
     });
 
     return () => {
+      socket.off('userOnline');
+      socket.off('shopOnline');
+      socket.off('userOffline');
+      socket.off('shopOffline');
       socket.off('receiveMessageCO');
       socket.off('receiveMessageRS');
       socket.off('updatedMessage');
-      socket.disconnect();
     };
-  }, [role, senderID]);
+  }, [receiverID, role, senderID]);
 
   useEffect(() => {
     return sound
@@ -211,7 +247,6 @@ const ChatRoom = () => {
   }, [sound]);
 
   const sendMessage = async () => {
-    const socket = socketRef.current;
     if (!socket) return;
 
     socket.emit('sendMessage', {
@@ -231,7 +266,6 @@ const ChatRoom = () => {
   };
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
-    const socket = socketRef.current;
     if (!socket) return;
     const newSeenIDs: number[] = [];
 
@@ -283,14 +317,25 @@ const ChatRoom = () => {
             </View>
           )}
 
-          {role === 'car-owner' && (
-            <Text numberOfLines={1} style={styles.name}>
-              {receiverShopName}
-            </Text>
-          )}
-          {role === 'repair-shop' && (
-            <Text numberOfLines={1} style={styles.name}>{`${receiverFirstname} ${receiverLastname}`}</Text>
-          )}
+          <View>
+            {role === 'car-owner' && (
+              <>
+                <Text numberOfLines={1} style={styles.name}>
+                  {receiverShopName}
+                </Text>
+                {isReceiverOnline && <Text style={styles.onlineStatus}>Online</Text>}
+                {!isReceiverOnline && <Text style={styles.onlineStatus}>Away</Text>}
+              </>
+            )}
+
+            {role === 'repair-shop' && (
+              <>
+                <Text numberOfLines={1} style={styles.name}>{`${receiverFirstname} ${receiverLastname}`}</Text>
+                {isReceiverOnline && <Text style={styles.onlineStatus}>Online</Text>}
+                {!isReceiverOnline && <Text style={styles.onlineStatus}>Away</Text>}
+              </>
+            )}
+          </View>
         </View>
       </View>
 
@@ -413,6 +458,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FFF',
     width: 230,
+  },
+  onlineStatus: {
+    fontFamily: 'HeaderRegular',
+    color: '#FFF',
+    fontSize: 12,
   },
   messageContainer: {
     padding: 10,

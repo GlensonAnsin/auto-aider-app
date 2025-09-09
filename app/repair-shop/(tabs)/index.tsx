@@ -3,6 +3,7 @@ import { useBackRoute } from '@/hooks/useBackRoute';
 import { clearRouteState } from '@/redux/slices/routeSlice';
 import { getRepairShopInfo } from '@/services/backendApi';
 import { registerForPushNotificationsAsync } from '@/services/notifications';
+import socket from '@/services/socket';
 import { clearTokens } from '@/services/tokenStorage';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Fontisto from '@expo/vector-icons/Fontisto';
@@ -30,13 +31,11 @@ import { showMessage } from 'react-native-flash-message';
 import Carousel from 'react-native-reanimated-carousel';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
-import { io, Socket } from 'socket.io-client';
 
 export default function Home() {
   const router = useRouter();
   const dispatch = useDispatch();
   const backRoute = useBackRoute('/repair-shop');
-  const [_socket, setSocket] = useState<Socket | null>(null);
   const { width: screenWidth } = Dimensions.get('window');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [shopID, setShopID] = useState<number>(0);
@@ -64,6 +63,8 @@ export default function Home() {
         dispatch(clearRouteState());
         const res = await getRepairShopInfo();
 
+        socket.emit('registerUser', { userID: Number(res.repair_shop_id), role: 'repair-shop' });
+
         setShopID(res.repair_shop_id);
         setRepShopName(res.shop_name);
         setOwnerFirstname(res.owner_firstname);
@@ -86,17 +87,9 @@ export default function Home() {
   }, [dispatch]);
 
   useEffect(() => {
-    const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
-      transports: ['websocket'],
-    });
+    if (!socket) return;
 
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
-      console.log('Connected to server: ', newSocket.id);
-    });
-
-    newSocket.on('updatedRepairShopInfo', ({ updatedRepairShopInfo }) => {
+    socket.on('updatedRepairShopInfo', ({ updatedRepairShopInfo }) => {
       setShopID(updatedRepairShopInfo.repair_shop_id);
       setRepShopName(updatedRepairShopInfo.shop_name);
       setOwnerFirstname(updatedRepairShopInfo.owner_firstname);
@@ -112,10 +105,9 @@ export default function Home() {
     });
 
     return () => {
-      newSocket.off('updatedRepairShopInfo');
-      newSocket.disconnect();
+      socket.off('updatedRepairShopInfo');
     };
-  }, []);
+  }, [shopID]);
 
   useEffect(() => {
     (async () => {

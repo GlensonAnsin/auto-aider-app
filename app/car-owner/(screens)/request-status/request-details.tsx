@@ -4,6 +4,7 @@ import { useBackRoute } from '@/hooks/useBackRoute';
 import { setSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
 import { RootState } from '@/redux/store';
 import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
+import socket from '@/services/socket';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
@@ -24,13 +25,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { io, Socket } from 'socket.io-client';
 
 const RequestDetails = () => {
   dayjs.extend(utc);
   const backRoute = useBackRoute('/car-owner/(screens)/request-status/request-details');
   const router = useRouter();
-  const [_socket, setSocket] = useState<Socket | null>(null);
   const dispatch = useDispatch();
   const [requestDetails, setRequestDetails] = useState<
     {
@@ -173,17 +172,9 @@ const RequestDetails = () => {
   }, []);
 
   useEffect(() => {
-    const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
-      transports: ['websocket'],
-    });
+    if (!socket) return;
 
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
-      console.log('Connected to server: ', newSocket.id);
-    });
-
-    newSocket.on('requestRejected', ({ requestIDs, reason_rejected }) => {
+    socket.on('requestRejected', ({ requestIDs, reason_rejected }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) =>
           prev.map((r) => (r.requestID === id ? { ...r, status: 'Rejected', reasonRejected: reason_rejected } : r))
@@ -191,13 +182,13 @@ const RequestDetails = () => {
       }
     });
 
-    newSocket.on('requestAccepted', ({ requestIDs }) => {
+    socket.on('requestAccepted', ({ requestIDs }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) => prev.map((r) => (r.requestID === id ? { ...r, status: 'Ongoing' } : r)));
       }
     });
 
-    newSocket.on('requestCompleted', ({ requestIDs, repair_procedure, completed_on }) => {
+    socket.on('requestCompleted', ({ requestIDs, repair_procedure, completed_on }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) =>
           prev.map((r) =>
@@ -215,10 +206,9 @@ const RequestDetails = () => {
     });
 
     return () => {
-      newSocket.off('requestRejected');
-      newSocket.off('requestAccepted');
-      newSocket.off('requestCompleted');
-      newSocket.disconnect();
+      socket.off('requestRejected');
+      socket.off('requestAccepted');
+      socket.off('requestCompleted');
     };
   }, []);
 

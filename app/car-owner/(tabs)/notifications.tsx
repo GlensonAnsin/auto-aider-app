@@ -9,7 +9,7 @@ export default function NotificationsTab() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.arrowHeaderContainer}>
-          <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.replace('/car-owner')}>
+          <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.navigate('/car-owner')}>
             <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
           </TouchableOpacity>
           <Text style={styles.headerText}>Notifications</Text>

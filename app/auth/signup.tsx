@@ -8,19 +8,9 @@ import { Checkbox } from 'expo-checkbox';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import {
-  Image,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -389,373 +379,367 @@ const Signup = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior="padding"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        style={{ flex: 1 }}
-      >
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-          <View style={styles.upperBox}>
-            <Text style={styles.welcomeTxt}>Welcome to</Text>
-            <Image source={require('../../assets/images/logo.png')} />
+      <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <View style={styles.upperBox}>
+          <Text style={styles.welcomeTxt}>Welcome to</Text>
+          <Image source={require('../../assets/images/logo.png')} />
 
-            <View style={styles.textInputContainer1}>
-              <Text style={styles.upperTextInputLbl}>Register as</Text>
-              <SelectDropdown
-                data={roles}
-                onSelect={(selectedItem) => {
-                  setRole(selectedItem.title);
-                  setPage(selectedItem.title);
-                  setFirstname('');
-                  setLastname('');
-                  setGender('');
-                  setMobileNum('');
-                  setPassword('');
-                  setConfirmPassword('');
-                  setSelectedServices([]);
-                  setRegion(undefined);
-                  setShopName('');
-                }}
-                statusBarTranslucent={true}
-                renderButton={(selectedItem, isOpen) => (
-                  <View style={styles.upperDropdownButtonStyle}>
-                    {selectedItem && <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />}
-                    <Text style={styles.dropdownButtonTxtStyle}>
-                      {(selectedItem && selectedItem.title) || 'Select role'}
-                    </Text>
-                    <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                  </View>
-                )}
-                renderItem={(item, _index, isSelected) => (
-                  <View
-                    style={{
-                      ...styles.dropdownItemStyle,
-                      ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                    }}
-                  >
-                    <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
-                    <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
-                  </View>
-                )}
-                showsVerticalScrollIndicator={false}
-                dropdownStyle={styles.dropdownMenuStyle}
-              />
-            </View>
-          </View>
-
-          <View style={styles.lowerBox}>
-            {page === 'Car Owner' && (
-              <>
-                <View style={styles.arrowHeaderContainer}>
-                  <TouchableOpacity
-                    style={styles.arrowWrapper}
-                    onPress={() => {
-                      router.replace(routes[routes.length - 1]);
-                      dispatch(popRouteState());
-                    }}
-                  >
-                    <Icon name="arrow-left" size={24} style={styles.arrowBack} />
-                  </TouchableOpacity>
-                  <Text style={styles.header}>Create Account</Text>
+          <View style={styles.textInputContainer1}>
+            <Text style={styles.upperTextInputLbl}>Register as</Text>
+            <SelectDropdown
+              data={roles}
+              onSelect={(selectedItem) => {
+                setRole(selectedItem.title);
+                setPage(selectedItem.title);
+                setFirstname('');
+                setLastname('');
+                setGender('');
+                setMobileNum('');
+                setPassword('');
+                setConfirmPassword('');
+                setSelectedServices([]);
+                setRegion(undefined);
+                setShopName('');
+              }}
+              statusBarTranslucent={true}
+              renderButton={(selectedItem, isOpen) => (
+                <View style={styles.upperDropdownButtonStyle}>
+                  {selectedItem && <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />}
+                  <Text style={styles.dropdownButtonTxtStyle}>
+                    {(selectedItem && selectedItem.title) || 'Select role'}
+                  </Text>
+                  <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
                 </View>
-
-                <View style={styles.row}>
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>First Name</Text>
-                    <TextInput value={firstname} onChangeText={setFirstname} style={styles.input} />
-                  </View>
-
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>Last Name</Text>
-                    <TextInput value={lastname} onChangeText={setLastname} style={styles.input} />
-                  </View>
-                </View>
-
-                <View style={styles.row}>
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>Gender</Text>
-                    <SelectDropdown
-                      data={genders}
-                      onSelect={(selectedItem) => setGender(selectedItem.title)}
-                      statusBarTranslucent={true}
-                      renderButton={(selectedItem, isOpen) => (
-                        <View style={styles.dropdownButtonStyle}>
-                          {selectedItem && <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />}
-                          <Text style={styles.dropdownButtonTxtStyle}>
-                            {(selectedItem && selectedItem.title) || 'Select gender'}
-                          </Text>
-                          <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                        </View>
-                      )}
-                      renderItem={(item, _index, isSelected) => (
-                        <View
-                          style={{
-                            ...styles.dropdownItemStyle,
-                            ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                          }}
-                        >
-                          <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
-                          <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
-                        </View>
-                      )}
-                      showsVerticalScrollIndicator={false}
-                      dropdownStyle={styles.dropdownMenuStyle}
-                    />
-                  </View>
-
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>Mobile Number</Text>
-                    <TextInput
-                      value={mobileNum}
-                      onChangeText={setMobileNum}
-                      style={styles.input}
-                      keyboardType="number-pad"
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.row}>
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>Password</Text>
-                    <TextInput value={password} onChangeText={setPassword} style={styles.input} secureTextEntry />
-                  </View>
-
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>Confirm Password</Text>
-                    <TextInput
-                      value={confirmPassword}
-                      onChangeText={setConfirmPassword}
-                      style={styles.input}
-                      secureTextEntry
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.loginContainer}>
-                  <Text style={styles.questionLbl}>Have an account?</Text>
-                  <TouchableOpacity onPress={() => router.navigate('/auth/login')}>
-                    <Text style={styles.loginLbl}>Log In</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <TouchableOpacity style={styles.button} onPress={() => handleAddUser()}>
-                  <Text style={styles.buttonTxt}>Sign Up</Text>
-                </TouchableOpacity>
-
-                <Modal
-                  animationType="fade"
-                  backdropColor={'rgba(0, 0, 0, 0.5)'}
-                  visible={carOwnerModalVisible}
-                  onRequestClose={() => isCarOwnerModalVisible(!carOwnerModalVisible)}
+              )}
+              renderItem={(item, _index, isSelected) => (
+                <View
+                  style={{
+                    ...styles.dropdownItemStyle,
+                    ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                  }}
                 >
-                  <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                      <Text style={styles.modalTxt}>Account created successfully. Thank you for registering!</Text>
-                      <TouchableOpacity
-                        style={styles.modalButton}
-                        onPress={() => {
-                          isCarOwnerModalVisible(!carOwnerModalVisible);
-                          router.navigate('/auth/login');
-                          setPage('');
+                  <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
+                  <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
+                </View>
+              )}
+              showsVerticalScrollIndicator={false}
+              dropdownStyle={styles.dropdownMenuStyle}
+            />
+          </View>
+        </View>
+
+        <View style={styles.lowerBox}>
+          {page === 'Car Owner' && (
+            <>
+              <View style={styles.arrowHeaderContainer}>
+                <TouchableOpacity
+                  style={styles.arrowWrapper}
+                  onPress={() => {
+                    router.replace(routes[routes.length - 1]);
+                    dispatch(popRouteState());
+                  }}
+                >
+                  <Icon name="arrow-left" size={24} style={styles.arrowBack} />
+                </TouchableOpacity>
+                <Text style={styles.header}>Create Account</Text>
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>First Name</Text>
+                  <TextInput value={firstname} onChangeText={setFirstname} style={styles.input} />
+                </View>
+
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>Last Name</Text>
+                  <TextInput value={lastname} onChangeText={setLastname} style={styles.input} />
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>Gender</Text>
+                  <SelectDropdown
+                    data={genders}
+                    onSelect={(selectedItem) => setGender(selectedItem.title)}
+                    statusBarTranslucent={true}
+                    renderButton={(selectedItem, isOpen) => (
+                      <View style={styles.dropdownButtonStyle}>
+                        {selectedItem && <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />}
+                        <Text style={styles.dropdownButtonTxtStyle}>
+                          {(selectedItem && selectedItem.title) || 'Select gender'}
+                        </Text>
+                        <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                      </View>
+                    )}
+                    renderItem={(item, _index, isSelected) => (
+                      <View
+                        style={{
+                          ...styles.dropdownItemStyle,
+                          ...(isSelected && { backgroundColor: '#D2D9DF' }),
                         }}
                       >
-                        <Text style={styles.buttonTxt}>Ok</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </Modal>
-              </>
-            )}
-
-            {page === 'Repair Shop' && (
-              <>
-                <View style={styles.arrowHeaderContainer}>
-                  <TouchableOpacity
-                    style={styles.arrowWrapper}
-                    onPress={() => {
-                      router.replace(routes[routes.length - 1]);
-                      dispatch(popRouteState());
-                    }}
-                  >
-                    <Icon name="arrow-left" size={24} style={styles.arrowBack} />
-                  </TouchableOpacity>
-                  <Text style={styles.header}>Create Account</Text>
+                        <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
+                        <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
+                      </View>
+                    )}
+                    showsVerticalScrollIndicator={false}
+                    dropdownStyle={styles.dropdownMenuStyle}
+                  />
                 </View>
 
-                <View style={styles.row}>
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>First Name</Text>
-                    <TextInput value={firstname} onChangeText={setFirstname} style={styles.input} />
-                  </View>
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>Mobile Number</Text>
+                  <TextInput
+                    value={mobileNum}
+                    onChangeText={setMobileNum}
+                    style={styles.input}
+                    keyboardType="number-pad"
+                  />
+                </View>
+              </View>
 
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>Last Name</Text>
-                    <TextInput value={lastname} onChangeText={setLastname} style={styles.input} />
-                  </View>
+              <View style={styles.row}>
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>Password</Text>
+                  <TextInput value={password} onChangeText={setPassword} style={styles.input} secureTextEntry />
                 </View>
 
-                <View style={styles.row}>
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>Gender</Text>
-                    <SelectDropdown
-                      data={genders}
-                      onSelect={(selectedItem) => setGender(selectedItem.title)}
-                      statusBarTranslucent={true}
-                      renderButton={(selectedItem, isOpen) => (
-                        <View style={styles.dropdownButtonStyle}>
-                          {selectedItem && <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />}
-                          <Text style={styles.dropdownButtonTxtStyle}>
-                            {(selectedItem && selectedItem.title) || 'Select gender'}
-                          </Text>
-                          <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
-                        </View>
-                      )}
-                      renderItem={(item, _index, isSelected) => (
-                        <View
-                          style={{
-                            ...styles.dropdownItemStyle,
-                            ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                          }}
-                        >
-                          <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
-                          <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
-                        </View>
-                      )}
-                      showsVerticalScrollIndicator={false}
-                      dropdownStyle={styles.dropdownMenuStyle}
-                    />
-                  </View>
-
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>Mobile Number</Text>
-                    <TextInput
-                      value={mobileNum}
-                      onChangeText={setMobileNum}
-                      style={styles.input}
-                      keyboardType="number-pad"
-                    />
-                  </View>
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>Confirm Password</Text>
+                  <TextInput
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    style={styles.input}
+                    secureTextEntry
+                  />
                 </View>
+              </View>
 
-                <View style={styles.row}>
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>Password</Text>
-                    <TextInput value={password} onChangeText={setPassword} style={styles.input} secureTextEntry />
-                  </View>
-
-                  <View style={styles.textInputContainer2}>
-                    <Text style={styles.textInputLbl}>Confirm Password</Text>
-                    <TextInput
-                      value={confirmPassword}
-                      onChangeText={setConfirmPassword}
-                      style={styles.input}
-                      secureTextEntry
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.textInputContainer3}>
-                  <Text style={styles.textInputLbl}>Shop Name</Text>
-                  <TextInput value={shopName} onChangeText={setShopName} style={styles.shopNameInput} />
-                </View>
-
-                <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
-                  <Text style={styles.buttonTxt}>Next</Text>
+              <View style={styles.loginContainer}>
+                <Text style={styles.questionLbl}>Have an account?</Text>
+                <TouchableOpacity onPress={() => router.replace('/auth/login')}>
+                  <Text style={styles.loginLbl}>Log In</Text>
                 </TouchableOpacity>
-              </>
-            )}
+              </View>
 
-            {page === 'Location' && (
-              <>
-                <View style={styles.arrowHeaderContainer}>
-                  <TouchableOpacity style={styles.arrowWrapper} onPress={() => setPage('Repair Shop')}>
-                    <Icon name="arrow-left" size={24} style={styles.arrowBack} />
-                  </TouchableOpacity>
-                  <Text style={styles.header}>Location</Text>
-                </View>
+              <TouchableOpacity style={styles.button} onPress={() => handleAddUser()}>
+                <Text style={styles.buttonTxt}>Sign Up</Text>
+              </TouchableOpacity>
 
-                <Text style={styles.textInputLbl}>Please set up your shop location on the map.</Text>
-
-                <MapView
-                  style={styles.map}
-                  ref={mapRef}
-                  mapType="hybrid"
-                  initialRegion={region}
-                  onRegionChange={(newRegion) => setRegion(newRegion)}
-                >
-                  {region && (
-                    <Marker
-                      coordinate={{
-                        latitude: region.latitude,
-                        longitude: region.longitude,
+              <Modal
+                animationType="fade"
+                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                visible={carOwnerModalVisible}
+                onRequestClose={() => isCarOwnerModalVisible(!carOwnerModalVisible)}
+              >
+                <View style={styles.centeredView}>
+                  <View style={styles.modalView}>
+                    <Text style={styles.modalTxt}>Account created successfully. Thank you for registering!</Text>
+                    <TouchableOpacity
+                      style={styles.modalButton}
+                      onPress={() => {
+                        isCarOwnerModalVisible(!carOwnerModalVisible);
+                        router.replace('/auth/login');
+                        setPage('');
                       }}
-                      draggable
-                      onDragEnd={handleDrag}
-                    />
-                  )}
-                </MapView>
-
-                <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
-                  <Text style={styles.buttonTxt}>Next</Text>
-                </TouchableOpacity>
-              </>
-            )}
-
-            {page === 'Services Offered' && (
-              <>
-                <View style={styles.arrowHeaderContainer}>
-                  <TouchableOpacity style={styles.arrowWrapper} onPress={() => setPage('Location')}>
-                    <Icon name="arrow-left" size={24} style={styles.arrowBack} />
-                  </TouchableOpacity>
-                  <Text style={styles.header}>Services Offered</Text>
+                    >
+                      <Text style={styles.buttonTxt}>Ok</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
+              </Modal>
+            </>
+          )}
 
-                <View style={styles.servicesList}>
-                  {services.map((item) => (
-                    <View key={item.id} style={styles.checkboxContainer}>
-                      <Checkbox
-                        value={selectedServices.includes(item.label)}
-                        onValueChange={() => toggleCheckbox(item.label)}
-                        color={selectedServices.includes(item.label) ? '#000B58' : undefined}
-                      />
-                      <Text style={styles.checkboxTxt}>{item.label}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
-                  <Text style={styles.buttonTxt}>Submit</Text>
-                </TouchableOpacity>
-
-                <Modal
-                  animationType="fade"
-                  backdropColor={'rgba(0, 0, 0, 0.5)'}
-                  visible={repairShopModalVisible}
-                  onRequestClose={() => isRepairShopModalVisible(!repairShopModalVisible)}
+          {page === 'Repair Shop' && (
+            <>
+              <View style={styles.arrowHeaderContainer}>
+                <TouchableOpacity
+                  style={styles.arrowWrapper}
+                  onPress={() => {
+                    router.replace(routes[routes.length - 1]);
+                    dispatch(popRouteState());
+                  }}
                 >
-                  <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                      <Text style={styles.modalTxt}>
-                        Thank you for registering! Please wait for admin approval. An update will be sent via SMS.
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.modalButton}
-                        onPress={() => {
-                          isRepairShopModalVisible(!repairShopModalVisible);
-                          router.navigate('/auth/login');
-                          setPage('');
+                  <Icon name="arrow-left" size={24} style={styles.arrowBack} />
+                </TouchableOpacity>
+                <Text style={styles.header}>Create Account</Text>
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>First Name</Text>
+                  <TextInput value={firstname} onChangeText={setFirstname} style={styles.input} />
+                </View>
+
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>Last Name</Text>
+                  <TextInput value={lastname} onChangeText={setLastname} style={styles.input} />
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>Gender</Text>
+                  <SelectDropdown
+                    data={genders}
+                    onSelect={(selectedItem) => setGender(selectedItem.title)}
+                    statusBarTranslucent={true}
+                    renderButton={(selectedItem, isOpen) => (
+                      <View style={styles.dropdownButtonStyle}>
+                        {selectedItem && <Icon name={selectedItem.icon} style={styles.dropdownButtonIconStyle} />}
+                        <Text style={styles.dropdownButtonTxtStyle}>
+                          {(selectedItem && selectedItem.title) || 'Select gender'}
+                        </Text>
+                        <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} style={styles.dropdownButtonArrowStyle} />
+                      </View>
+                    )}
+                    renderItem={(item, _index, isSelected) => (
+                      <View
+                        style={{
+                          ...styles.dropdownItemStyle,
+                          ...(isSelected && { backgroundColor: '#D2D9DF' }),
                         }}
                       >
-                        <Text style={styles.buttonTxt}>Ok</Text>
-                      </TouchableOpacity>
-                    </View>
+                        <Icon name={item.icon} style={styles.dropdownItemIconStyle} />
+                        <Text style={styles.dropdownItemTxtStyle}>{item.title}</Text>
+                      </View>
+                    )}
+                    showsVerticalScrollIndicator={false}
+                    dropdownStyle={styles.dropdownMenuStyle}
+                  />
+                </View>
+
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>Mobile Number</Text>
+                  <TextInput
+                    value={mobileNum}
+                    onChangeText={setMobileNum}
+                    style={styles.input}
+                    keyboardType="number-pad"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>Password</Text>
+                  <TextInput value={password} onChangeText={setPassword} style={styles.input} secureTextEntry />
+                </View>
+
+                <View style={styles.textInputContainer2}>
+                  <Text style={styles.textInputLbl}>Confirm Password</Text>
+                  <TextInput
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    style={styles.input}
+                    secureTextEntry
+                  />
+                </View>
+              </View>
+
+              <View style={styles.textInputContainer3}>
+                <Text style={styles.textInputLbl}>Shop Name</Text>
+                <TextInput value={shopName} onChangeText={setShopName} style={styles.shopNameInput} />
+              </View>
+
+              <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
+                <Text style={styles.buttonTxt}>Next</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {page === 'Location' && (
+            <>
+              <View style={styles.arrowHeaderContainer}>
+                <TouchableOpacity style={styles.arrowWrapper} onPress={() => setPage('Repair Shop')}>
+                  <Icon name="arrow-left" size={24} style={styles.arrowBack} />
+                </TouchableOpacity>
+                <Text style={styles.header}>Location</Text>
+              </View>
+
+              <Text style={styles.textInputLbl}>Please set up your shop location on the map.</Text>
+
+              <MapView
+                style={styles.map}
+                ref={mapRef}
+                mapType="hybrid"
+                initialRegion={region}
+                onRegionChange={(newRegion) => setRegion(newRegion)}
+              >
+                {region && (
+                  <Marker
+                    coordinate={{
+                      latitude: region.latitude,
+                      longitude: region.longitude,
+                    }}
+                    draggable
+                    onDragEnd={handleDrag}
+                  />
+                )}
+              </MapView>
+
+              <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
+                <Text style={styles.buttonTxt}>Next</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {page === 'Services Offered' && (
+            <>
+              <View style={styles.arrowHeaderContainer}>
+                <TouchableOpacity style={styles.arrowWrapper} onPress={() => setPage('Location')}>
+                  <Icon name="arrow-left" size={24} style={styles.arrowBack} />
+                </TouchableOpacity>
+                <Text style={styles.header}>Services Offered</Text>
+              </View>
+
+              <View style={styles.servicesList}>
+                {services.map((item) => (
+                  <View key={item.id} style={styles.checkboxContainer}>
+                    <Checkbox
+                      value={selectedServices.includes(item.label)}
+                      onValueChange={() => toggleCheckbox(item.label)}
+                      color={selectedServices.includes(item.label) ? '#000B58' : undefined}
+                    />
+                    <Text style={styles.checkboxTxt}>{item.label}</Text>
                   </View>
-                </Modal>
-              </>
-            )}
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+                ))}
+              </View>
+
+              <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
+                <Text style={styles.buttonTxt}>Submit</Text>
+              </TouchableOpacity>
+
+              <Modal
+                animationType="fade"
+                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                visible={repairShopModalVisible}
+                onRequestClose={() => isRepairShopModalVisible(!repairShopModalVisible)}
+              >
+                <View style={styles.centeredView}>
+                  <View style={styles.modalView}>
+                    <Text style={styles.modalTxt}>
+                      Thank you for registering! Please wait for admin approval. An update will be sent via SMS.
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.modalButton}
+                      onPress={() => {
+                        isRepairShopModalVisible(!repairShopModalVisible);
+                        router.replace('/auth/login');
+                        setPage('');
+                      }}
+                    >
+                      <Text style={styles.buttonTxt}>Ok</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Modal>
+            </>
+          )}
+        </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };

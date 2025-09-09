@@ -6,6 +6,7 @@ import { setTabState } from '@/redux/slices/tabBarSlice';
 import { addVehicleDiagnostic, getVehicle } from '@/services/backendApi';
 import { codeMeaning, codePossibleCauses, codeRecommendedRepair, codeTechnicalDescription } from '@/services/geminiApi';
 import { generateReference } from '@/services/generateReference';
+import socket from '@/services/socket';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
@@ -16,13 +17,11 @@ import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import { useDispatch } from 'react-redux';
-import { io, Socket } from 'socket.io-client';
 
 const RunDiagnostics = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const backRoute = useBackRoute('/car-owner/(screens)/run-diagnostics/run-diagnostics');
-  const [_socket, setSocket] = useState<Socket | null>(null);
   const [selectedCar, setSelectedCar] = useState<string>('');
   const [selectedCarID, setSelectedCarID] = useState<number | undefined>(undefined);
   const [vehicles, setVehicles] = useState<{ id: number; make: string; model: string; year: string }[]>([]);
@@ -51,17 +50,9 @@ const RunDiagnostics = () => {
   }, []);
 
   useEffect(() => {
-    const newSocket = io(process.env.EXPO_PUBLIC_BACKEND_BASE_URL, {
-      transports: ['websocket'],
-    });
+    if (!socket) return;
 
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
-      console.log('Connected to server: ', newSocket.id);
-    });
-
-    newSocket.on('updatedVehicleList', ({ updatedVehicleList }) => {
+    socket.on('updatedVehicleList', ({ updatedVehicleList }) => {
       const vehicleInfo = updatedVehicleList.map(
         (v: { vehicle_id: number; make: string; model: string; year: string }) => ({
           id: v.vehicle_id,
@@ -74,8 +65,7 @@ const RunDiagnostics = () => {
     });
 
     return () => {
-      newSocket.off('updatedVehicleList');
-      newSocket.disconnect();
+      socket.off('updatedVehicleList');
     };
   }, []);
 
