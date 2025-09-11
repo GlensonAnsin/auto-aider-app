@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableHighlight, View } from 'react-native';
+import RNBluetoothClassic, { BluetoothDevice } from 'react-native-bluetooth-classic';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -25,9 +26,12 @@ const RunDiagnostics = () => {
   const [selectedCar, setSelectedCar] = useState<string>('');
   const [selectedCarID, setSelectedCarID] = useState<number | undefined>(undefined);
   const [vehicles, setVehicles] = useState<{ id: number; make: string; model: string; year: string }[]>([]);
-  const [DTC, setDTC] = useState<string[]>(['P1604', 'P0101']);
+  const [DTC, setDTC] = useState<string[]>([]);
   const [scanLoading, setScanLoading] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [devices, setDevices] = useState<BluetoothDevice[]>([]);
+  const [connectedDevice, setConnectedDevice] = useState<BluetoothDevice | null>(null);
+  const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -172,6 +176,89 @@ const RunDiagnostics = () => {
       setScanLoading(false);
       dispatch(setTabState(true));
     }
+  };
+
+  const discoverDevices = async () => {
+    try {
+      const bonded = await RNBluetoothClassic.getBondedDevices();
+      setDevices(bonded);
+    } catch (e) {
+      console.error('Discovery failed:', e);
+    }
+  };
+
+  const connectToDevice = async (device: BluetoothDevice) => {
+    try {
+      await device.connect();
+      setConnectedDevice(device);
+
+      device.onDataReceived((event: any) => {
+        setLog((prev) => [...prev, `RX: ${event.data.trim()}`]);
+      });
+
+      await sendCommand('ATZ');
+      await sendCommand('ATE0');
+      await sendCommand('ATS0');
+      await sendCommand('ATH0');
+    } catch (e) {
+      console.error('Connection failed', e);
+    }
+  };
+
+  const sendCommand = async (cmd: string) => {
+    if (!connectedDevice) return;
+    await connectedDevice?.write(`${cmd}\r`);
+    setLog((prev) => [...prev, `TX: ${cmd}`]);
+  };
+
+  const readCodes = async () => {
+    if (!connectedDevice) return;
+    await sendCommand('03');
+
+    setTimeout(async () => {
+      const res = await connectedDevice.read();
+      if (res) {
+        const parsed = parseDTCResponse(res.toString());
+        setDTC(parsed);
+      }
+    }, 1000);
+  };
+
+  const clearCodes = async () => {
+    if (!connectedDevice) return;
+    await sendCommand('04');
+    setDTC([]);
+  };
+
+  const parseDTCResponse = (raw: string): string[] => {
+    const clean = raw.replace(/\s|\r|\n|>/g, '');
+    if (!clean.startsWith('43')) return [];
+
+    const dtcBytes = clean.slice(2);
+
+    const dtcs: string[] = [];
+    for (let i = 0; i < dtcBytes.length; i += 4) {
+      const chunk = dtcBytes.slice(i, i + 4);
+      if (chunk.length < 4 || chunk === '0000') continue;
+      dtcs.push(decodeDTC(chunk));
+    }
+    return dtcs;
+  };
+
+  const decodeDTC = (hex: string): string => {
+    const b1 = parseInt(hex.slice(0, 2), 16);
+    const b2 = parseInt(hex.slice(2, 4), 16);
+
+    const firstCharIndex = (b1 & 0xc0) >> 6;
+    const chars = ['P', 'C', 'B', 'U'];
+    const firstChar = chars[firstCharIndex];
+
+    const firstDigit = (b1 & 0x30) >> 4;
+    const secondDigit = b1 & 0x0f;
+    const thirdDigit = (b2 & 0xf0) >> 4;
+    const fourthDigit = b2 & 0x0f;
+
+    return `${firstChar}${firstDigit}${secondDigit}${thirdDigit}${fourthDigit}`;
   };
 
   if (isLoading) {
