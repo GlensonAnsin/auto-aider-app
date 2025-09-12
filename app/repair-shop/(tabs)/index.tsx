@@ -1,6 +1,12 @@
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
+import { clearRoleState, setRoleState } from '@/redux/slices/roleSlice';
 import { clearRouteState } from '@/redux/slices/routeSlice';
+import { clearScanReferenceState } from '@/redux/slices/scanReferenceSlice';
+import { clearScanState } from '@/redux/slices/scanSlice';
+import { clearSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
+import { clearVehicleDiagIDArrState } from '@/redux/slices/vehicleDiagIDArrSlice';
+import { clearVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { getRepairShopInfo } from '@/services/backendApi';
 import { registerForPushNotificationsAsync } from '@/services/notifications';
 import socket from '@/services/socket';
@@ -60,6 +66,7 @@ export default function Home() {
     (async () => {
       try {
         setIsLoading(true);
+        dispatch(setRoleState('repair-shop'));
         dispatch(clearRouteState());
         const res = await getRepairShopInfo();
 
@@ -149,6 +156,13 @@ export default function Home() {
   const handleLogout = async () => {
     try {
       await clearTokens();
+      dispatch(clearRoleState());
+      dispatch(clearRouteState());
+      dispatch(clearScanState());
+      dispatch(clearScanReferenceState());
+      dispatch(clearSenderReceiverState());
+      dispatch(clearVehicleDiagIDArrState());
+      dispatch(clearVehicleDiagIDState());
       router.replace('/auth/login');
     } catch (e: any) {
       showMessage({

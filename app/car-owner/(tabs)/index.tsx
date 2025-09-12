@@ -1,5 +1,6 @@
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
+import { setRoleState } from '@/redux/slices/roleSlice';
 import { clearRouteState } from '@/redux/slices/routeSlice';
 import { addVehicle, getUserInfo, getVehicle } from '@/services/backendApi';
 import { verifyCar } from '@/services/geminiApi';
@@ -85,6 +86,7 @@ export default function Home() {
     (async () => {
       try {
         setIsLoading(true);
+        dispatch(setRoleState('car-owner'));
         dispatch(clearRouteState());
         const res1 = await getUserInfo();
         const res2 = await getVehicle();

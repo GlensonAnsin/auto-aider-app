@@ -1,6 +1,13 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
+import { clearRoleState } from '@/redux/slices/roleSlice';
+import { clearRouteState } from '@/redux/slices/routeSlice';
+import { clearScanReferenceState } from '@/redux/slices/scanReferenceSlice';
+import { clearScanState } from '@/redux/slices/scanSlice';
+import { clearSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
+import { clearVehicleDiagIDArrState } from '@/redux/slices/vehicleDiagIDArrSlice';
+import { clearVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { changePass, getUserInfo } from '@/services/backendApi';
 import { clearTokens } from '@/services/tokenStorage';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -19,9 +26,11 @@ import {
 } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch } from 'react-redux';
 
 const Profile = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const backRoute = useBackRoute('/car-owner/(screens)/profile/profile');
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
@@ -58,6 +67,13 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       await clearTokens();
+      dispatch(clearRoleState());
+      dispatch(clearRouteState());
+      dispatch(clearScanState());
+      dispatch(clearScanReferenceState());
+      dispatch(clearSenderReceiverState());
+      dispatch(clearVehicleDiagIDArrState());
+      dispatch(clearVehicleDiagIDState());
       router.replace('/auth/login');
     } catch (e: any) {
       showMessage({

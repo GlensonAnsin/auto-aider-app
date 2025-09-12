@@ -1,12 +1,12 @@
+import { useBackRoute } from '@/hooks/useBackRoute';
 import { RootState } from '@/redux/store';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import TabBarItem from './TabBarItem';
-
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { memo } from 'react';
 
 const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const icons = {
@@ -17,6 +17,9 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   };
 
   const tabVisible = useSelector((state: RootState) => state.tab.tabVisible);
+  const role = useSelector((state: RootState) => state.role.role);
+
+  const backRoute = useBackRoute(`/${role}`);
 
   return (
     <>
@@ -39,6 +42,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
 
               if (!isFocused && !event.defaultPrevented) {
                 navigation.navigate(route.name, route.params);
+                backRoute();
               }
             };
 

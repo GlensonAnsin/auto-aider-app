@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import roleReducer from './slices/roleSlice';
 import routeReducer from './slices/routeSlice';
 import scanReferenceReducer from './slices/scanReferenceSlice';
 import scanReducer from './slices/scanSlice';
@@ -16,6 +17,7 @@ export const store = configureStore({
     route: routeReducer,
     scanReference: scanReferenceReducer,
     senderReceiver: senderReceiverReducer,
+    role: roleReducer,
   },
 });
 
