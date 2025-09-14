@@ -12,12 +12,25 @@ import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableHighlight, View } from 'react-native';
+import {
+  FlatList,
+  LogBox,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableHighlight,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import RNBluetoothClassic, { BluetoothDevice } from 'react-native-bluetooth-classic';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import { useDispatch } from 'react-redux';
+
+LogBox.ignoreLogs([
+  'VirtualizedLists should never be nested inside plain ScrollViews with the same orientation because it can break windowing and other functionality - use another VirtualizedList-backed container instead.',
+]);
 
 const RunDiagnostics = () => {
   const router = useRouter();
@@ -32,6 +45,8 @@ const RunDiagnostics = () => {
   const [devices, setDevices] = useState<BluetoothDevice[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<BluetoothDevice | null>(null);
   const [log, setLog] = useState<string[]>([]);
+
+  RNBluetoothClassic.onBluetoothDisabled(() => setDevices([]));
 
   useEffect(() => {
     (async () => {
@@ -125,6 +140,17 @@ const RunDiagnostics = () => {
       return;
     }
 
+    if (!connectedDevice) {
+      showMessage({
+        message: 'OBD2 connection is required.',
+        type: 'warning',
+        floating: true,
+        color: '#FFF',
+        icon: 'warning',
+      });
+      return;
+    }
+
     try {
       dispatch(setTabState(false));
       setScanLoading(true);
@@ -179,8 +205,21 @@ const RunDiagnostics = () => {
   };
 
   const discoverDevices = async () => {
+    const bluetoothStatus = await RNBluetoothClassic.isBluetoothEnabled();
+    if (!bluetoothStatus) {
+      showMessage({
+        message: 'Bluetooth is off.',
+        type: 'warning',
+        floating: true,
+        color: '#FFF',
+        icon: 'warning',
+      });
+      return;
+    }
+
     try {
       const bonded = await RNBluetoothClassic.getBondedDevices();
+      console.log(bonded);
       setDevices(bonded);
     } catch (e) {
       console.error('Discovery failed:', e);
@@ -196,6 +235,7 @@ const RunDiagnostics = () => {
         setLog((prev) => [...prev, `RX: ${event.data.trim()}`]);
       });
 
+      console.log('Connected!');
       await sendCommand('ATZ');
       await sendCommand('ATE0');
       await sendCommand('ATS0');
@@ -284,66 +324,89 @@ const RunDiagnostics = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header headerTitle="Diagnostic" />
+      <ScrollView>
+        <Header headerTitle="Diagnostic" />
 
-      <View style={styles.lowerBox}>
-        <View style={styles.selectCarButtonContainer}>
-          <View style={styles.selectCarContainer}>
-            <Text style={styles.dropdownLbl}>Vehicle</Text>
-            <SelectDropdown
-              data={vehicles}
-              statusBarTranslucent={true}
-              onSelect={(selectedItem) => {
-                setSelectedCar(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`);
-                setSelectedCarID(selectedItem.id);
-              }}
-              renderButton={(selectedItem, isOpen) => (
-                <View style={styles.dropdownButtonStyle}>
-                  <Text style={styles.dropdownButtonTxtStyle}>
-                    {(selectedItem && `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) ||
-                      'Select vehicle'}
-                  </Text>
-                  <MaterialCommunityIcons
-                    name={isOpen ? 'chevron-up' : 'chevron-down'}
-                    style={styles.dropdownButtonArrowStyle}
-                  />
+        <View style={styles.lowerBox}>
+          <View style={styles.obd2Container}>
+            <TouchableOpacity style={styles.scanDevButton} onPress={() => discoverDevices()}>
+              <Text style={styles.scanDevButtonText}>Scan Paired Devices</Text>
+            </TouchableOpacity>
+            <FlatList
+              data={devices}
+              style={styles.devicesContainer}
+              nestedScrollEnabled={true}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.selectDeviceButton} onPress={() => connectToDevice(item)}>
+                  <Text style={styles.selectDeviceButtonText}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={() => (
+                <View style={styles.noDevicesContainer}>
+                  <Text style={styles.noDevicesText}>Paired devices empty</Text>
                 </View>
               )}
-              renderItem={(item, _index, isSelected) => (
-                <View
-                  style={{
-                    ...styles.dropdownItemStyle,
-                    ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                  }}
-                >
-                  <Text style={styles.dropdownItemTxtStyle}>{`${item.year} ${item.make} ${item.model}`}</Text>
-                </View>
-              )}
-              showsVerticalScrollIndicator={false}
-              dropdownStyle={styles.dropdownMenuStyle}
+              keyExtractor={(item) => item.address}
             />
           </View>
+          <View style={styles.selectCarButtonContainer}>
+            <View style={styles.selectCarContainer}>
+              <Text style={styles.dropdownLbl}>Vehicle</Text>
+              <SelectDropdown
+                data={vehicles}
+                statusBarTranslucent={true}
+                onSelect={(selectedItem) => {
+                  setSelectedCar(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`);
+                  setSelectedCarID(selectedItem.id);
+                }}
+                renderButton={(selectedItem, isOpen) => (
+                  <View style={styles.dropdownButtonStyle}>
+                    <Text style={styles.dropdownButtonTxtStyle}>
+                      {(selectedItem && `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) ||
+                        'Select vehicle'}
+                    </Text>
+                    <MaterialCommunityIcons
+                      name={isOpen ? 'chevron-up' : 'chevron-down'}
+                      style={styles.dropdownButtonArrowStyle}
+                    />
+                  </View>
+                )}
+                renderItem={(item, _index, isSelected) => (
+                  <View
+                    style={{
+                      ...styles.dropdownItemStyle,
+                      ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                    }}
+                  >
+                    <Text style={styles.dropdownItemTxtStyle}>{`${item.year} ${item.make} ${item.model}`}</Text>
+                  </View>
+                )}
+                showsVerticalScrollIndicator={false}
+                dropdownStyle={styles.dropdownMenuStyle}
+              />
+            </View>
 
-          <View style={styles.buttonContainer}>
-            <TouchableHighlight style={styles.scanButton} onPress={() => handleCodeInterpretation()}>
-              <View style={styles.innerContainer}>
-                <Text style={styles.buttonTxt}>Scan</Text>
-              </View>
-            </TouchableHighlight>
+            <View style={styles.buttonContainer}>
+              <TouchableHighlight style={styles.scanButton} onPress={() => handleCodeInterpretation()}>
+                <View style={styles.innerContainer}>
+                  <Text style={styles.buttonTxt}>Scan</Text>
+                </View>
+              </TouchableHighlight>
 
-            <LottieView
-              source={require('@/assets/images/scan.json')}
-              autoPlay
-              loop
-              style={{
-                width: 300,
-                height: 300,
-                zIndex: 1,
-              }}
-            />
+              <LottieView
+                source={require('@/assets/images/scan.json')}
+                autoPlay
+                loop
+                style={{
+                  width: 180,
+                  height: 180,
+                  zIndex: 1,
+                }}
+              />
+            </View>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -356,9 +419,50 @@ const styles = StyleSheet.create({
   lowerBox: {
     width: '90%',
     alignSelf: 'center',
+    marginTop: 20,
+    marginBottom: 100,
+  },
+  obd2Container: {
+    width: '100%',
+  },
+  scanDevButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    flex: 1,
+    backgroundColor: '#000B58',
+    width: 180,
+    padding: 10,
+    borderRadius: 10,
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  scanDevButtonText: {
+    fontFamily: 'BodyRegular',
+    color: '#FFF',
+  },
+  devicesContainer: {
+    backgroundColor: '#EAEAEA',
+    marginBottom: 10,
+    borderRadius: 5,
+    height: 120,
+  },
+  selectDeviceButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 5,
+  },
+  selectDeviceButtonText: {
+    fontFamily: 'BodyRegular',
+    color: '#333',
+  },
+  noDevicesContainer: {
+    width: '100%',
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noDevicesText: {
+    fontFamily: 'BodyRegular',
+    color: '#555',
   },
   selectCarButtonContainer: {
     width: '100%',
@@ -371,7 +475,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    marginTop: -10,
   },
   selectCarContainer: {
     width: '100%',
@@ -383,7 +486,6 @@ const styles = StyleSheet.create({
   },
   dropdownLbl: {
     fontFamily: 'BodyRegular',
-    fontSize: 18,
     color: '#FFF',
     marginBottom: 10,
   },
@@ -425,15 +527,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#EAEAEA',
-    height: 350,
+    height: 200,
     position: 'relative',
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
   },
   scanButton: {
-    width: 120,
-    height: 120,
-    borderRadius: 120,
+    width: 100,
+    height: 100,
+    borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
@@ -441,9 +543,9 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     backgroundColor: '#000B58',
-    width: 120,
-    height: 120,
-    borderRadius: 120,
+    width: 100,
+    height: 100,
+    borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
   },
