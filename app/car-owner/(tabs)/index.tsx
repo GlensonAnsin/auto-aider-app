@@ -217,6 +217,7 @@ export default function Home() {
       year: year.trim(),
       date_added: dayjs().format(),
       is_deleted: false,
+      last_pms_trigger: dayjs().format(),
     };
 
     try {
