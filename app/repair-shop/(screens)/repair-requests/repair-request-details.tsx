@@ -403,7 +403,14 @@ const RepairRequestDetails = () => {
     return (R * c).toFixed(2);
   };
 
-  const handleRejectRequest = async (IDs: number[]) => {
+  const handleRejectRequest = async (
+    IDs: number[],
+    scanReference: string,
+    year: string,
+    make: string,
+    model: string,
+    userID: number
+  ) => {
     if (!selectedReason) {
       showMessage({
         message: 'Please select reason for rejection.',
@@ -417,7 +424,7 @@ const RepairRequestDetails = () => {
 
     try {
       if (selectedReason === 'Others') {
-        await rejectRequest(IDs, otherReason);
+        await rejectRequest(IDs, otherReason, scanReference, year, make, model, userID);
         showMessage({
           message: 'Request rejected',
           type: 'success',
@@ -428,7 +435,7 @@ const RepairRequestDetails = () => {
         return;
       }
 
-      await rejectRequest(IDs, selectedReason);
+      await rejectRequest(IDs, selectedReason, scanReference, year, make, model, userID);
       showMessage({
         message: 'Request rejected',
         type: 'success',
@@ -447,9 +454,16 @@ const RepairRequestDetails = () => {
     }
   };
 
-  const handleAcceptRequest = async (IDs: number[]) => {
+  const handleAcceptRequest = async (
+    IDs: number[],
+    scanReference: string,
+    year: string,
+    make: string,
+    model: string,
+    userID: number
+  ) => {
     try {
-      await acceptRequest(IDs);
+      await acceptRequest(IDs, scanReference, year, make, model, userID);
       showMessage({
         message: 'Request accepted',
         type: 'success',
@@ -468,7 +482,14 @@ const RepairRequestDetails = () => {
     }
   };
 
-  const handleRequestCompleted = async (IDs: number[]) => {
+  const handleRequestCompleted = async (
+    IDs: number[],
+    scanReference: string,
+    year: string,
+    make: string,
+    model: string,
+    userID: number
+  ) => {
     if (!selectedOptCompleted && !repairProcedure) {
       showMessage({
         message: 'Please fill in required field.',
@@ -482,7 +503,7 @@ const RepairRequestDetails = () => {
 
     try {
       if (selectedOptCompleted === 'Repair unsuccessful') {
-        await requestCompleted(IDs, 'Repair unsuccessful', dayjs().format());
+        await requestCompleted(IDs, 'Repair unsuccessful', dayjs().format(), scanReference, year, make, model, userID);
         showMessage({
           message: 'Request completed',
           type: 'success',
@@ -494,7 +515,7 @@ const RepairRequestDetails = () => {
       }
 
       if (selectedOptCompleted === 'Prefer not to say') {
-        await requestCompleted(IDs, null, dayjs().format());
+        await requestCompleted(IDs, null, dayjs().format(), scanReference, year, make, model, userID);
         showMessage({
           message: 'Request completed',
           type: 'success',
@@ -506,7 +527,7 @@ const RepairRequestDetails = () => {
       }
 
       if (!selectedOptCompleted) {
-        await requestCompleted(IDs, repairProcedure, dayjs().format());
+        await requestCompleted(IDs, repairProcedure, dayjs().format(), scanReference, year, make, model, userID);
         showMessage({
           message: 'Request completed',
           type: 'success',
@@ -818,7 +839,16 @@ const RepairRequestDetails = () => {
 
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: '#000B58' }]}
-                    onPress={() => handleAcceptRequest(item.requestID)}
+                    onPress={() =>
+                      handleAcceptRequest(
+                        item.requestID,
+                        item.scanReference,
+                        item.year,
+                        item.make,
+                        item.model,
+                        item.userID
+                      )
+                    }
                   >
                     <Text style={styles.buttonText}>Accept</Text>
                   </TouchableOpacity>
@@ -871,7 +901,16 @@ const RepairRequestDetails = () => {
 
                           <TouchableOpacity
                             style={[styles.button, { backgroundColor: '#000B58' }]}
-                            onPress={() => handleRejectRequest(item.requestID)}
+                            onPress={() =>
+                              handleRejectRequest(
+                                item.requestID,
+                                item.scanReference,
+                                item.year,
+                                item.make,
+                                item.model,
+                                item.userID
+                              )
+                            }
                           >
                             <Text style={styles.buttonText}>Proceed</Text>
                           </TouchableOpacity>
@@ -963,7 +1002,16 @@ const RepairRequestDetails = () => {
 
                           <TouchableOpacity
                             style={[styles.button, { backgroundColor: '#000B58' }]}
-                            onPress={() => handleRequestCompleted(item.requestID)}
+                            onPress={() =>
+                              handleRequestCompleted(
+                                item.requestID,
+                                item.scanReference,
+                                item.year,
+                                item.make,
+                                item.model,
+                                item.userID
+                              )
+                            }
                           >
                             <Text style={styles.buttonText}>Proceed</Text>
                           </TouchableOpacity>

@@ -415,12 +415,12 @@ export const getRequestsForRepairShop = async () => {
 };
 
 // REJECT REQUEST
-export const rejectRequest = async (requestIDs: number[], reason_rejected: string) => {
+export const rejectRequest = async (requestIDs: number[], reason_rejected: string, scanReference: string, year: string, make: string, model: string, userID: number) => {
   try {
     const token = await getAccessToken();
     await axios.patch(
       `${apiURL}/mechanic_request/reject-request`,
-      { requestIDs, reason_rejected },
+      { requestIDs, reason_rejected, scanReference, year, make, model, userID, },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -433,12 +433,12 @@ export const rejectRequest = async (requestIDs: number[], reason_rejected: strin
 };
 
 // ACCEPT REQUEST
-export const acceptRequest = async (requestIDs: number[]) => {
+export const acceptRequest = async (requestIDs: number[], scanReference: string, year: string, make: string, model: string, userID: number) => {
   try {
     const token = await getAccessToken();
     await axios.patch(
       `${apiURL}/mechanic_request/accept-request`,
-      { requestIDs },
+      { requestIDs, scanReference, year, make, model, userID, },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -451,7 +451,7 @@ export const acceptRequest = async (requestIDs: number[]) => {
 };
 
 // REQUEST COMPLETED
-export const requestCompleted = async (requestIDs: number[], repair_procedure: string | null, completed_on: string) => {
+export const requestCompleted = async (requestIDs: number[], repair_procedure: string | null, completed_on: string, scanReference: string, year: string, make: string, model: string, userID: number) => {
   try {
     const token = await getAccessToken();
     await axios.patch(
@@ -460,6 +460,11 @@ export const requestCompleted = async (requestIDs: number[], repair_procedure: s
         requestIDs,
         repair_procedure,
         completed_on,
+        scanReference,
+        year,
+        make,
+        model,
+        userID,
       },
       {
         headers: {
