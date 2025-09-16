@@ -11,24 +11,19 @@ export function BackHandlerManager() {
   const routes: any[] = useSelector((state: RootState) => state.route.route);
 
   useEffect(() => {
-    let backHandler: any;
-    if (routes.length === 0) {
-      BackHandler.exitApp();
-    } else {
-      const backAction = () => {
+    const backAction = () => {
+      if (routes.length === 0) {
+        BackHandler.exitApp();
+      } else {
         router.replace(routes[routes.length - 1]);
         dispatch(popRouteState());
-        return true;
-      };
-
-      backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-    }
-
-    return () => {
-      if (backHandler) {
-        backHandler.remove();
       }
+      return true;
     };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', backAction);
+
+    return () => subscription.remove();
   }, [dispatch, router, routes]);
 
   return null;

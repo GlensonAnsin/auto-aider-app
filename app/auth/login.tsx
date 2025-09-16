@@ -62,7 +62,7 @@ export default function Login() {
         });
 
         setTimeout(() => {
-          router.replace('/car-owner/(tabs)');
+          router.replace('/car-owner');
 
           setUsername('');
           setPassword('');
@@ -106,7 +106,7 @@ export default function Login() {
         });
 
         setTimeout(() => {
-          router.replace('/repair-shop/(tabs)');
+          router.replace('/repair-shop');
 
           setUsername('');
           setPassword('');
