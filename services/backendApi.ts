@@ -74,7 +74,6 @@ export const getUserInfoForChat = async (userID: number) => {
       }
     );
     return res.data;
-
   } catch (e) {
     console.error('Get User Info For Chat Error: ', e);
     return null;
@@ -489,7 +488,6 @@ export const getConversationForCarOwner = async (repairShopID: number) => {
       }
     );
     return res.data;
-
   } catch (e) {
     console.error('Get Convo For Car Owner Error: ', e);
     return null;
@@ -508,7 +506,6 @@ export const getConversationForShop = async (userID: number) => {
       }
     );
     return res.data;
-
   } catch (e) {
     console.error('Get Convo For Shop Error: ', e);
     return null;
@@ -528,7 +525,6 @@ export const getAllConversationsCO = async () => {
       }
     );
     return res.data;
-
   } catch (e) {
     console.error('Get All Chats For Car Owner Error: ', e);
     return null;
@@ -547,9 +543,112 @@ export const getAllConversationsRS = async () => {
       }
     );
     return res.data;
-    
   } catch (e) {
     console.error('Get All Chats For Shop Error: ', e);
     return null;
+  }
+};
+
+// GET ALL NOTIFICATIONS FOR CAR OWNER
+export const getNotificationsCO = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/notifications/get-notifications-co`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+  } catch (e) {
+    console.error('Get Notifications For Car Owner Error: ', e);
+    return null;
+  }
+};
+
+// GET ALL NOTIFICATIONS FOR REPAIR SHOP
+export const getNotificationsRS = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/notifications/get-notifications-rs`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    return res.data;
+  } catch (e) {
+    console.error('Get Notifications For Shop Error: ', e);
+    return null;
+  }
+};
+
+// UPDATE NOTIFICATION STATUS FOR CAR OWNER
+export const updateNotificationStatusCO = async (notificationID: number) => {
+  try {
+    const token = await getAccessToken();
+    await axios.patch(`${apiURL}/notifications/update-notification-co`,
+      { notificationID },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+  } catch (e) {
+    console.error('Update Notification For Car Owner Error: ', e);
+  }
+};
+
+// UPDATE NOTIFICATION STATUS FOR REPAIR SHOP
+export const updateNotificationStatusRS = async (notificationID: number) => {
+  try {
+    const token = await getAccessToken();
+    await axios.patch(`${apiURL}/notifications/update-notification-rs`,
+      { notificationID },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+  } catch (e) {
+    console.error('Update Notification For Shop Error: ', e);
+  }
+};
+
+// DELETE NOTIFICATION FOR CAR OWNER
+export const deleteNotificationCO = async (notificationID: number) => {
+  try {
+    const token = await getAccessToken();
+    await axios.delete(`${apiURL}/notifications/delete-notification-co`,
+      {
+        data: { notificationID },
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+      },
+    );
+  } catch (e) {
+    console.error('Delete Notification For Car Owner Error: ', e);
+  }
+};
+
+// DELETE NOTIFICATION FOR REPAIR SHOP
+export const deleteNotificationRS = async (notificationID: number) => {
+  try {
+    const token = await getAccessToken();
+    await axios.delete(`${apiURL}/notifications/delete-notification-rs`,
+      {
+        data: { notificationID },
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+      },
+    );
+  } catch (e) {
+    console.error('Delete Notification For Shop Error: ', e);
   }
 };
