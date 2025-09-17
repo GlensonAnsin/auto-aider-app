@@ -3,6 +3,7 @@ import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setScanReferenceState } from '@/redux/slices/scanReferenceSlice';
 import { getRequestsForRepairShop } from '@/services/backendApi';
+import socket from '@/services/socket';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -22,6 +23,7 @@ const RepairRequests = () => {
   const [activeButton, setActiveButton] = useState<string>('All');
   const [requestStatus, setRequestStatus] = useState<
     {
+      requestID: number;
       vehicleName: string;
       customer: string;
       scanReference: string;
@@ -38,6 +40,7 @@ const RepairRequests = () => {
         setIsLoading(true);
         const res = await getRequestsForRepairShop();
         const statusData: {
+          requestID: number;
           vehicleName: string;
           customer: string;
           scanReference: string;
@@ -48,6 +51,7 @@ const RepairRequests = () => {
         if (res) {
           res.mechanic_requests.forEach((request: any) => {
             if (request) {
+              const requestID = request.request_id;
               const datetime = dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
               const status = request.status;
               if (request.vehicle_diagnostic) {
@@ -67,6 +71,7 @@ const RepairRequests = () => {
                             users.forEach((customer: any) => {
                               if (customer) {
                                 statusData.push({
+                                  requestID,
                                   vehicleName,
                                   customer: `${customer.firstname} ${customer.lastname}`,
                                   scanReference,
@@ -93,6 +98,47 @@ const RepairRequests = () => {
         setIsLoading(false);
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('requestRejected', ({ requestIDs, reason_rejected }) => {
+      for (const id of requestIDs) {
+        setRequestStatus((prev) =>
+          prev.map((r) => (r.requestID === id ? { ...r, status: 'Rejected', reasonRejected: reason_rejected } : r))
+        );
+      }
+    });
+
+    socket.on('requestAccepted', ({ requestIDs }) => {
+      for (const id of requestIDs) {
+        setRequestStatus((prev) => prev.map((r) => (r.requestID === id ? { ...r, status: 'Ongoing' } : r)));
+      }
+    });
+
+    socket.on('requestCompleted', ({ requestIDs, repair_procedure, completed_on }) => {
+      for (const id of requestIDs) {
+        setRequestStatus((prev) =>
+          prev.map((r) =>
+            r.requestID === id
+              ? {
+                  ...r,
+                  status: 'Completed',
+                  repairProcedure: repair_procedure,
+                  completedOn: dayjs(completed_on).utc(true).format('ddd MMM DD YYYY, h:mm A'),
+                }
+              : r
+          )
+        );
+      }
+    });
+
+    return () => {
+      socket.off('requestRejected');
+      socket.off('requestAccepted');
+      socket.off('requestCompleted');
+    };
   }, []);
 
   const grouped = Object.values(

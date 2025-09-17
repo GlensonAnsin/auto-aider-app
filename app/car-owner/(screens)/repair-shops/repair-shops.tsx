@@ -203,7 +203,6 @@ const RepairShops = () => {
       locationSubscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
-          timeInterval: 5000,
           distanceInterval: 10,
         },
         (location) => {
@@ -726,6 +725,7 @@ const RepairShops = () => {
                                   <TextInput
                                     style={styles.textArea}
                                     placeholder="Describe vehicle issue"
+                                    placeholderTextColor="#555"
                                     multiline={true}
                                     numberOfLines={5}
                                     value={vehicleIssue}

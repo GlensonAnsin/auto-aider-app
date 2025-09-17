@@ -3,6 +3,7 @@ import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setScanReferenceState } from '@/redux/slices/scanReferenceSlice';
 import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
+import socket from '@/services/socket';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -21,6 +22,7 @@ const RequestStatus = () => {
   const backRoute = useBackRoute('/car-owner/(screens)/request-status/request-status');
   const [requestStatus, setRequestStatus] = useState<
     {
+      requestID: number;
       vehicleName: string;
       repairShop: string;
       scanReference: string;
@@ -40,6 +42,7 @@ const RequestStatus = () => {
         const res1 = await getRequestsForCarOwner();
         const res2 = await getRepairShops();
         const statusData: {
+          requestID: number;
           vehicleName: string;
           repairShop: string;
           scanReference: string;
@@ -60,6 +63,7 @@ const RequestStatus = () => {
                         const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
                         if (repairShop) {
                           statusData.push({
+                            requestID: request.request_id,
                             vehicleName,
                             repairShop: repairShop.shop_name,
                             scanReference,
@@ -86,6 +90,47 @@ const RequestStatus = () => {
         setIsLoading(false);
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('requestRejected', ({ requestIDs, reason_rejected }) => {
+      for (const id of requestIDs) {
+        setRequestStatus((prev) =>
+          prev.map((r) => (r.requestID === id ? { ...r, status: 'Rejected', reasonRejected: reason_rejected } : r))
+        );
+      }
+    });
+
+    socket.on('requestAccepted', ({ requestIDs }) => {
+      for (const id of requestIDs) {
+        setRequestStatus((prev) => prev.map((r) => (r.requestID === id ? { ...r, status: 'Ongoing' } : r)));
+      }
+    });
+
+    socket.on('requestCompleted', ({ requestIDs, repair_procedure, completed_on }) => {
+      for (const id of requestIDs) {
+        setRequestStatus((prev) =>
+          prev.map((r) =>
+            r.requestID === id
+              ? {
+                  ...r,
+                  status: 'Completed',
+                  repairProcedure: repair_procedure,
+                  completedOn: dayjs(completed_on).utc(true).format('ddd MMM DD YYYY, h:mm A'),
+                }
+              : r
+          )
+        );
+      }
+    });
+
+    return () => {
+      socket.off('requestRejected');
+      socket.off('requestAccepted');
+      socket.off('requestCompleted');
+    };
   }, []);
 
   const grouped = Object.values(
