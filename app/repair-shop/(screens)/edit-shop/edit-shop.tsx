@@ -196,7 +196,7 @@ const EditShop = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('updatedRepairShopInfo', ({ updatedRepairShopInfo }) => {
+    socket.on(`updatedRepairShopInfo-RS-${repShopID}`, ({ updatedRepairShopInfo }) => {
       setRepShopName(updatedRepairShopInfo.shop_name);
       setOwnerFirstname(updatedRepairShopInfo.owner_firstname);
       setOwnerLastname(updatedRepairShopInfo.owner_lastname);
@@ -230,9 +230,9 @@ const EditShop = () => {
     });
 
     return () => {
-      socket.off('updatedRepairShopInfo');
+      socket.off(`updatedRepairShopInfo-RS-${repShopID}`);
     };
-  }, []);
+  }, [repShopID]);
 
   const handleRestoreInfo = (field: string) => {
     switch (field) {

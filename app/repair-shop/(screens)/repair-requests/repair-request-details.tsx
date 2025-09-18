@@ -86,6 +86,7 @@ const RepairRequestDetails = () => {
   const [repairProcedure, setRepairProcedure] = useState<string>('');
   const [selectedOptCompleted, setSelectedOptCompleted] = useState<string>('');
   const scanReference: string | null = useSelector((state: RootState) => state.scanReference.scanReference);
+  const shopID = useSelector((state: RootState) => state.role.ID);
 
   const reasons = [
     'Overbooked / No Available Slot',
@@ -254,7 +255,7 @@ const RepairRequestDetails = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('requestRejected', ({ requestIDs, reason_rejected }) => {
+    socket.on(`requestRejected-RS-${shopID}`, ({ requestIDs, reason_rejected }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) =>
           prev.map((r) => (r.requestID === id ? { ...r, status: 'Rejected', reasonRejected: reason_rejected } : r))
@@ -262,13 +263,13 @@ const RepairRequestDetails = () => {
       }
     });
 
-    socket.on('requestAccepted', ({ requestIDs }) => {
+    socket.on(`requestAccepted-RS-${shopID}`, ({ requestIDs }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) => prev.map((r) => (r.requestID === id ? { ...r, status: 'Ongoing' } : r)));
       }
     });
 
-    socket.on('requestCompleted', ({ requestIDs, repair_procedure, completed_on }) => {
+    socket.on(`requestCompleted-RS-${shopID}`, ({ requestIDs, repair_procedure, completed_on }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) =>
           prev.map((r) =>
@@ -286,11 +287,11 @@ const RepairRequestDetails = () => {
     });
 
     return () => {
-      socket.off('requestRejected');
-      socket.off('requestAccepted');
-      socket.off('requestCompleted');
+      socket.off(`requestRejected-RS-${shopID}`);
+      socket.off(`requestAccepted-RS-${shopID}`);
+      socket.off(`requestCompleted-RS-${shopID}`);
     };
-  }, []);
+  }, [shopID]);
 
   const selectedRequest = requestDetails.filter((item: any) => item.scanReference === scanReference);
 

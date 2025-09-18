@@ -86,7 +86,12 @@ export default function Home() {
     (async () => {
       try {
         setIsLoading(true);
-        dispatch(setRoleState('car-owner'));
+        dispatch(
+          setRoleState({
+            ID: Number(userID),
+            role: 'car-owner',
+          })
+        );
         dispatch(clearRouteState());
         const res1 = await getUserInfo();
         const res2 = await getVehicle();
@@ -110,30 +115,29 @@ export default function Home() {
         setIsLoading(false);
       }
     })();
-  }, [dispatch]);
+  }, [dispatch, userID]);
 
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('updatedUserInfo', ({ updatedUserInfo }) => {
-      setUserID(updatedUserInfo.user_id);
+    socket.on(`updatedUserInfo-CO-${userID}`, ({ updatedUserInfo }) => {
       setFirstname(updatedUserInfo.firstname);
       setLastname(updatedUserInfo.lastname);
       setProfilePic(updatedUserInfo.profile_pic);
     });
 
-    socket.on('vehicleAdded', ({ vehicleAdded }) => {
+    socket.on(`vehicleAdded-CO-${userID}`, ({ vehicleAdded }) => {
       setIsVehicles(vehicleAdded);
     });
 
-    socket.on('noVehicles', ({ noVehicles }) => {
+    socket.on(`noVehicles-CO-${userID}`, ({ noVehicles }) => {
       setIsVehicles(noVehicles);
     });
 
     return () => {
-      socket.off('updatedUserInfo');
-      socket.off('vehicleAdded');
-      socket.off('noVehicles');
+      socket.off(`updatedUserInfo-CO-${userID}`);
+      socket.off(`vehicleAdded-CO-${userID}`);
+      socket.off(`noVehicles-CO-${userID}`);
     };
   }, [userID]);
 

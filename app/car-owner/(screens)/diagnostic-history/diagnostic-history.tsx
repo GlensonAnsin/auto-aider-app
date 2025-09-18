@@ -2,6 +2,7 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setScanState } from '@/redux/slices/scanSlice';
+import { RootState } from '@/redux/store';
 import { deleteAllVehicleDiagnostics, deleteVehicleDiagnostic, getVehicleDiagnostics } from '@/services/backendApi';
 import socket from '@/services/socket';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -12,7 +13,7 @@ import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const DiagnosticHistory = () => {
   dayjs.extend(utc);
@@ -30,6 +31,7 @@ const DiagnosticHistory = () => {
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedScanReference, setSelectedScanReference] = useState<string>('');
+  const userID = useSelector((state: RootState) => state.role.ID);
 
   useEffect(() => {
     (async () => {
@@ -67,19 +69,19 @@ const DiagnosticHistory = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('vehicleDiagnosticDeleted', ({ deletedVehicleDiag }) => {
+    socket.on(`vehicleDiagnosticDeleted-CO-${userID}`, ({ deletedVehicleDiag }) => {
       setHistory((prev) => prev.filter((v) => !deletedVehicleDiag.includes(v.scanReference)));
     });
 
-    socket.on('allVehicleDiagnosticDeleted', ({ allDeletedVehicleDiag }) => {
+    socket.on(`allVehicleDiagnosticDeleted-CO-${userID}`, ({ allDeletedVehicleDiag }) => {
       setHistory((prev) => prev.filter((v) => !allDeletedVehicleDiag.includes(v.scanReference)));
     });
 
     return () => {
-      socket.off('vehicleDiagnosticDeleted');
-      socket.off('allVehicleDiagnosticDeleted');
+      socket.off(`vehicleDiagnosticDeleted-CO-${userID}`);
+      socket.off(`allVehicleDiagnosticDeleted-CO-${userID}`);
     };
-  }, []);
+  }, [userID]);
 
   const grouped = Object.values(
     history.reduce(

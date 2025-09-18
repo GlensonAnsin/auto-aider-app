@@ -3,6 +3,7 @@ import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setScanState } from '@/redux/slices/scanSlice';
 import { setTabState } from '@/redux/slices/tabBarSlice';
+import { RootState } from '@/redux/store';
 import { addVehicleDiagnostic, getVehicle } from '@/services/backendApi';
 import { codeMeaning, codePossibleCauses, codeRecommendedRepair, codeTechnicalDescription } from '@/services/geminiApi';
 import { generateReference } from '@/services/generateReference';
@@ -26,7 +27,7 @@ import RNBluetoothClassic, { BluetoothDevice } from 'react-native-bluetooth-clas
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 LogBox.ignoreLogs([
   'VirtualizedLists should never be nested inside plain ScrollViews with the same orientation because it can break windowing and other functionality - use another VirtualizedList-backed container instead.',
@@ -39,12 +40,13 @@ const RunDiagnostics = () => {
   const [selectedCar, setSelectedCar] = useState<string>('');
   const [selectedCarID, setSelectedCarID] = useState<number | undefined>(undefined);
   const [vehicles, setVehicles] = useState<{ id: number; make: string; model: string; year: string }[]>([]);
-  const [DTC, setDTC] = useState<string[]>([]);
   const [scanLoading, setScanLoading] = useState<boolean>(false);
+  const [interpretLoading, setInterpretLoading] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [devices, setDevices] = useState<BluetoothDevice[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<BluetoothDevice | null>(null);
   const [log, setLog] = useState<string[]>([]);
+  const userID = useSelector((state: RootState) => state.role.ID);
 
   RNBluetoothClassic.onBluetoothDisabled(() => setDevices([]));
 
@@ -71,7 +73,7 @@ const RunDiagnostics = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('updatedVehicleList', ({ updatedVehicleList }) => {
+    socket.on(`updatedVehicleList-CO-${userID}`, ({ updatedVehicleList }) => {
       const vehicleInfo = updatedVehicleList.map(
         (v: { vehicle_id: number; make: string; model: string; year: string }) => ({
           id: v.vehicle_id,
@@ -84,9 +86,9 @@ const RunDiagnostics = () => {
     });
 
     return () => {
-      socket.off('updatedVehicleList');
+      socket.off(`updatedVehicleList-CO-${userID}`);
     };
-  }, []);
+  }, [userID]);
 
   const handleCodeTechnicalDescription = async (code: string) => {
     try {
@@ -128,7 +130,7 @@ const RunDiagnostics = () => {
     }
   };
 
-  const handleCodeInterpretation = async () => {
+  const handleCodeInterpretation = async (DTC: string[]) => {
     if (selectedCar === '') {
       showMessage({
         message: 'Please select a car.',
@@ -153,7 +155,8 @@ const RunDiagnostics = () => {
 
     try {
       dispatch(setTabState(false));
-      setScanLoading(true);
+      setScanLoading(false);
+      setInterpretLoading(true);
 
       const scanReference = generateReference();
       dispatch(
@@ -192,14 +195,13 @@ const RunDiagnostics = () => {
 
       setSelectedCarID(undefined);
       setSelectedCar('');
-      setDTC([]);
-      setScanLoading(false);
+      setInterpretLoading(false);
       backRoute();
       router.replace('./diagnosis');
     } catch (e) {
       console.error('Error: ', e);
     } finally {
-      setScanLoading(false);
+      setInterpretLoading(false);
       dispatch(setTabState(true));
     }
   };
@@ -253,13 +255,14 @@ const RunDiagnostics = () => {
 
   const readCodes = async () => {
     if (!connectedDevice) return;
+    setScanLoading(true);
     await sendCommand('03');
 
     setTimeout(async () => {
       const res = await connectedDevice.read();
       if (res) {
         const parsed = parseDTCResponse(res.toString());
-        setDTC(parsed);
+        handleCodeInterpretation(parsed);
       }
     }, 1000);
   };
@@ -267,7 +270,6 @@ const RunDiagnostics = () => {
   const clearCodes = async () => {
     if (!connectedDevice) return;
     await sendCommand('04');
-    setDTC([]);
   };
 
   const parseDTCResponse = (raw: string): string[] => {
@@ -318,6 +320,23 @@ const RunDiagnostics = () => {
           }}
         />
         <Text style={styles.loadingText}>SCANNING</Text>
+      </View>
+    );
+  }
+
+  if (interpretLoading) {
+    return (
+      <View style={styles.updateLoadingContainer}>
+        <LottieView
+          source={require('@/assets/images/scanning.json')}
+          autoPlay
+          loop
+          style={{
+            width: 200,
+            height: 200,
+          }}
+        />
+        <Text style={styles.loadingText}>INTERPRETING</Text>
       </View>
     );
   }
@@ -387,7 +406,7 @@ const RunDiagnostics = () => {
             </View>
 
             <View style={styles.buttonContainer}>
-              <TouchableHighlight style={styles.scanButton} onPress={() => handleCodeInterpretation()}>
+              <TouchableHighlight style={styles.scanButton} onPress={() => readCodes()}>
                 <View style={styles.innerContainer}>
                   <Text style={styles.buttonTxt}>Scan</Text>
                 </View>

@@ -64,6 +64,7 @@ const RequestDetails = () => {
   const [bulletRecommendedRepair, setBulletRecommendedRepair] = useState<string[][]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const scanReference: string | null = useSelector((state: RootState) => state.scanReference.scanReference);
+  const userID = useSelector((state: RootState) => state.role.ID);
 
   useEffect(() => {
     (async () => {
@@ -174,7 +175,7 @@ const RequestDetails = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('requestRejected', ({ requestIDs, reason_rejected }) => {
+    socket.on(`requestRejected-CO-${userID}`, ({ requestIDs, reason_rejected }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) =>
           prev.map((r) => (r.requestID === id ? { ...r, status: 'Rejected', reasonRejected: reason_rejected } : r))
@@ -182,13 +183,13 @@ const RequestDetails = () => {
       }
     });
 
-    socket.on('requestAccepted', ({ requestIDs }) => {
+    socket.on(`requestAccepted-CO-${userID}`, ({ requestIDs }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) => prev.map((r) => (r.requestID === id ? { ...r, status: 'Ongoing' } : r)));
       }
     });
 
-    socket.on('requestCompleted', ({ requestIDs, repair_procedure, completed_on }) => {
+    socket.on(`requestCompleted-CO-${userID}`, ({ requestIDs, repair_procedure, completed_on }) => {
       for (const id of requestIDs) {
         setRequestDetails((prev) =>
           prev.map((r) =>
@@ -206,11 +207,11 @@ const RequestDetails = () => {
     });
 
     return () => {
-      socket.off('requestRejected');
-      socket.off('requestAccepted');
-      socket.off('requestCompleted');
+      socket.off(`requestRejected-CO-${userID}`);
+      socket.off(`requestAccepted-CO-${userID}`);
+      socket.off(`requestCompleted-CO-${userID}`);
     };
-  }, []);
+  }, [userID]);
 
   const selectedRequest = requestDetails.filter((item: any) => item.scanReference === scanReference);
 

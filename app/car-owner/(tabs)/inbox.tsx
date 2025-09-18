@@ -1,6 +1,7 @@
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
+import { RootState } from '@/redux/store';
 import { getAllConversationsCO } from '@/services/backendApi';
 import socket from '@/services/socket';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -12,7 +13,7 @@ import { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 export default function ChatsTab() {
   dayjs.extend(utc);
@@ -41,6 +42,7 @@ export default function ChatsTab() {
       fromYou: boolean;
     }[]
   >([]);
+  const userID = useSelector((state: RootState) => state.role.ID);
 
   useEffect(() => {
     (async () => {
@@ -94,14 +96,14 @@ export default function ChatsTab() {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('updateCOInbox', ({ groupedChatInfoDataCO }) => {
+    socket.on(`updateInbox-CO-${userID}`, ({ groupedChatInfoDataCO }) => {
       setChatInfo(groupedChatInfoDataCO);
     });
 
     return () => {
-      socket.off('updateCOInbox');
+      socket.off(`updateInbox-CO-${userID}`);
     };
-  }, []);
+  }, [userID]);
 
   const transformDate = (date: string) => {
     const messageDate = dayjs(date).utc(true).local();

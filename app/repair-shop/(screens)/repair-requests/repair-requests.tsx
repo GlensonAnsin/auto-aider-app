@@ -2,6 +2,7 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setScanReferenceState } from '@/redux/slices/scanReferenceSlice';
+import { RootState } from '@/redux/store';
 import { getRequestsForRepairShop } from '@/services/backendApi';
 import socket from '@/services/socket';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -13,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const RepairRequests = () => {
   dayjs.extend(utc);
@@ -32,6 +33,7 @@ const RepairRequests = () => {
     }[]
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const shopID = useSelector((state: RootState) => state.role.ID);
   const buttons: string[] = ['All', 'Pending', 'Rejected', 'Ongoing', 'Completed'];
 
   useEffect(() => {
@@ -103,7 +105,7 @@ const RepairRequests = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('requestRejected', ({ requestIDs, reason_rejected }) => {
+    socket.on(`requestRejected-RS-${shopID}`, ({ requestIDs, reason_rejected }) => {
       for (const id of requestIDs) {
         setRequestStatus((prev) =>
           prev.map((r) => (r.requestID === id ? { ...r, status: 'Rejected', reasonRejected: reason_rejected } : r))
@@ -111,13 +113,13 @@ const RepairRequests = () => {
       }
     });
 
-    socket.on('requestAccepted', ({ requestIDs }) => {
+    socket.on(`requestAccepted-RS-${shopID}`, ({ requestIDs }) => {
       for (const id of requestIDs) {
         setRequestStatus((prev) => prev.map((r) => (r.requestID === id ? { ...r, status: 'Ongoing' } : r)));
       }
     });
 
-    socket.on('requestCompleted', ({ requestIDs, repair_procedure, completed_on }) => {
+    socket.on(`requestCompleted-RS-${shopID}`, ({ requestIDs, repair_procedure, completed_on }) => {
       for (const id of requestIDs) {
         setRequestStatus((prev) =>
           prev.map((r) =>
@@ -135,11 +137,11 @@ const RepairRequests = () => {
     });
 
     return () => {
-      socket.off('requestRejected');
-      socket.off('requestAccepted');
-      socket.off('requestCompleted');
+      socket.off(`requestRejected-RS-${shopID}`);
+      socket.off(`requestAccepted-RS-${shopID}`);
+      socket.off(`requestCompleted-RS-${shopID}`);
     };
-  }, []);
+  }, [shopID]);
 
   const grouped = Object.values(
     requestStatus.reduce(

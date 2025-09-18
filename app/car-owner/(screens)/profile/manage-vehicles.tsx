@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { RootState } from '@/redux/store';
 import { deleteVehicle, getVehicle } from '@/services/backendApi';
 import socket from '@/services/socket';
 import dayjs from 'dayjs';
@@ -8,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 
 const ManageVehicles = () => {
   dayjs.extend(utc);
@@ -21,6 +23,7 @@ const ManageVehicles = () => {
     }[]
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const userID = useSelector((state: RootState) => state.role.ID);
 
   useEffect(() => {
     (async () => {
@@ -58,14 +61,14 @@ const ManageVehicles = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('vehicleDeleted', ({ vehicleID }) => {
+    socket.on(`vehicleDeleted-CO-${userID}`, ({ vehicleID }) => {
       setVehicles((prev) => prev.filter((v) => v.vehicleID !== vehicleID));
     });
 
     return () => {
-      socket.off('vehicleDeleted');
+      socket.off(`vehicleDeleted-CO-${userID}`);
     };
-  }, []);
+  }, [userID]);
 
   const handleDelete = async (vehicleID: number) => {
     try {

@@ -73,7 +73,7 @@ const EditProfile = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('updatedUserInfo', ({ updatedUserInfo }) => {
+    socket.on(`updatedUserInfo-CO-${userID}`, ({ updatedUserInfo }) => {
       setFirstname(updatedUserInfo.firstname);
       setLastname(updatedUserInfo.lastname);
       setGender(updatedUserInfo.gender);
@@ -91,9 +91,9 @@ const EditProfile = () => {
     });
 
     return () => {
-      socket.off('updatedUserInfo');
+      socket.off(`updatedUserInfo-CO-${userID}`);
     };
-  }, []);
+  }, [userID]);
 
   const pickImage = async (): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();

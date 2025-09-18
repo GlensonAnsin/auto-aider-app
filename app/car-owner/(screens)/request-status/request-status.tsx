@@ -2,6 +2,7 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setScanReferenceState } from '@/redux/slices/scanReferenceSlice';
+import { RootState } from '@/redux/store';
 import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
 import socket from '@/services/socket';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -13,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const RequestStatus = () => {
   dayjs.extend(utc);
@@ -32,7 +33,7 @@ const RequestStatus = () => {
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeButton, setActiveButton] = useState<string>('All');
-
+  const userID = useSelector((state: RootState) => state.role.ID);
   const buttons: string[] = ['All', 'Pending', 'Rejected', 'Ongoing', 'Completed'];
 
   useEffect(() => {
@@ -95,7 +96,7 @@ const RequestStatus = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('requestRejected', ({ requestIDs, reason_rejected }) => {
+    socket.on(`requestRejected-CO-${userID}`, ({ requestIDs, reason_rejected }) => {
       for (const id of requestIDs) {
         setRequestStatus((prev) =>
           prev.map((r) => (r.requestID === id ? { ...r, status: 'Rejected', reasonRejected: reason_rejected } : r))
@@ -103,13 +104,13 @@ const RequestStatus = () => {
       }
     });
 
-    socket.on('requestAccepted', ({ requestIDs }) => {
+    socket.on(`requestAccepted-CO-${userID}`, ({ requestIDs }) => {
       for (const id of requestIDs) {
         setRequestStatus((prev) => prev.map((r) => (r.requestID === id ? { ...r, status: 'Ongoing' } : r)));
       }
     });
 
-    socket.on('requestCompleted', ({ requestIDs, repair_procedure, completed_on }) => {
+    socket.on(`requestCompleted-CO-${userID}`, ({ requestIDs, repair_procedure, completed_on }) => {
       for (const id of requestIDs) {
         setRequestStatus((prev) =>
           prev.map((r) =>
@@ -127,11 +128,11 @@ const RequestStatus = () => {
     });
 
     return () => {
-      socket.off('requestRejected');
-      socket.off('requestAccepted');
-      socket.off('requestCompleted');
+      socket.off(`requestRejected-CO-${userID}`);
+      socket.off(`requestAccepted-CO-${userID}`);
+      socket.off(`requestCompleted-CO-${userID}`);
     };
-  }, []);
+  }, [userID]);
 
   const grouped = Object.values(
     requestStatus.reduce(

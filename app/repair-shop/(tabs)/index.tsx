@@ -66,7 +66,12 @@ export default function Home() {
     (async () => {
       try {
         setIsLoading(true);
-        dispatch(setRoleState('repair-shop'));
+        dispatch(
+          setRoleState({
+            ID: Number(shopID),
+            role: 'repair-shop',
+          })
+        );
         dispatch(clearRouteState());
         const res = await getRepairShopInfo();
 
@@ -91,12 +96,12 @@ export default function Home() {
         setIsLoading(false);
       }
     })();
-  }, [dispatch]);
+  }, [dispatch, shopID]);
 
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('updatedRepairShopInfo', ({ updatedRepairShopInfo }) => {
+    socket.on(`updatedRepairShopInfo-RS-${shopID}`, ({ updatedRepairShopInfo }) => {
       setShopID(updatedRepairShopInfo.repair_shop_id);
       setRepShopName(updatedRepairShopInfo.shop_name);
       setOwnerFirstname(updatedRepairShopInfo.owner_firstname);
@@ -112,7 +117,7 @@ export default function Home() {
     });
 
     return () => {
-      socket.off('updatedRepairShopInfo');
+      socket.off(`updatedRepairShopInfo-RS-${shopID}`);
     };
   }, [shopID]);
 
