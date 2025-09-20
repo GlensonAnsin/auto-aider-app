@@ -8,6 +8,7 @@ import { addVehicleDiagnostic, getVehicle } from '@/services/backendApi';
 import { codeMeaning, codePossibleCauses, codeRecommendedRepair, codeTechnicalDescription } from '@/services/geminiApi';
 import { generateReference } from '@/services/generateReference';
 import socket from '@/services/socket';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
@@ -43,6 +44,7 @@ const RunDiagnostics = () => {
   const [scanLoading, setScanLoading] = useState<boolean>(false);
   const [interpretLoading, setInterpretLoading] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [noCodeDetected, setIsNoCodeDetected] = useState<boolean>(false);
   const [devices, setDevices] = useState<BluetoothDevice[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<BluetoothDevice | null>(null);
   const [log, setLog] = useState<string[]>([]);
@@ -131,30 +133,7 @@ const RunDiagnostics = () => {
   };
 
   const handleCodeInterpretation = async (DTC: string[]) => {
-    if (selectedCar === '') {
-      showMessage({
-        message: 'Please select a car.',
-        type: 'warning',
-        floating: true,
-        color: '#FFF',
-        icon: 'warning',
-      });
-      return;
-    }
-
-    if (!connectedDevice) {
-      showMessage({
-        message: 'OBD2 connection is required.',
-        type: 'warning',
-        floating: true,
-        color: '#FFF',
-        icon: 'warning',
-      });
-      return;
-    }
-
     try {
-      dispatch(setTabState(false));
       setScanLoading(false);
       setInterpretLoading(true);
 
@@ -254,7 +233,29 @@ const RunDiagnostics = () => {
   };
 
   const readCodes = async () => {
-    if (!connectedDevice) return;
+    if (selectedCar === '') {
+      showMessage({
+        message: 'Please select a car.',
+        type: 'warning',
+        floating: true,
+        color: '#FFF',
+        icon: 'warning',
+      });
+      return;
+    }
+
+    if (!connectedDevice) {
+      showMessage({
+        message: 'OBD2 connection is required.',
+        type: 'warning',
+        floating: true,
+        color: '#FFF',
+        icon: 'warning',
+      });
+      return;
+    }
+
+    dispatch(setTabState(false));
     setScanLoading(true);
     await sendCommand('03');
 
@@ -263,6 +264,9 @@ const RunDiagnostics = () => {
       if (res) {
         const parsed = parseDTCResponse(res.toString());
         handleCodeInterpretation(parsed);
+      } else {
+        setScanLoading(false);
+        setIsNoCodeDetected(true);
       }
     }, 1000);
   };
@@ -337,6 +341,24 @@ const RunDiagnostics = () => {
           }}
         />
         <Text style={styles.loadingText}>INTERPRETING</Text>
+      </View>
+    );
+  }
+
+  if (noCodeDetected) {
+    return (
+      <View style={styles.updateLoadingContainer}>
+        <AntDesign name="Safety" size={100} color="#17B978" />
+        <Text style={[styles.loadingText, { fontSize: 22 }]}>NO CODES DETECTED</Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => {
+            setIsNoCodeDetected(false);
+            dispatch(setTabState(true));
+          }}
+        >
+          <Text style={styles.backButtonText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -589,6 +611,17 @@ const styles = StyleSheet.create({
     fontFamily: 'BodyBold',
     fontSize: 28,
     color: '#000B58',
+  },
+  backButton: {
+    backgroundColor: '#000B58',
+    padding: 5,
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backButtonText: {
+    fontFamily: 'BodyRegular',
+    color: '#fff',
   },
 });
 
