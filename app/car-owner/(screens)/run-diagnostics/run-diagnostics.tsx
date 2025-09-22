@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   LogBox,
   ScrollView,
@@ -44,6 +45,7 @@ const RunDiagnostics = () => {
   const [scanLoading, setScanLoading] = useState<boolean>(false);
   const [interpretLoading, setInterpretLoading] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [connectLoading, setConnectLoading] = useState<boolean>(false);
   const [noCodeDetected, setIsNoCodeDetected] = useState<boolean>(false);
   const [devices, setDevices] = useState<BluetoothDevice[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<BluetoothDevice | null>(null);
@@ -209,6 +211,7 @@ const RunDiagnostics = () => {
 
   const connectToDevice = async (device: BluetoothDevice) => {
     try {
+      setConnectLoading(true);
       await device.connect();
       setConnectedDevice(device);
 
@@ -221,8 +224,17 @@ const RunDiagnostics = () => {
       await sendCommand('ATE0');
       await sendCommand('ATS0');
       await sendCommand('ATH0');
-    } catch (e) {
-      console.error('Connection failed', e);
+    } catch {
+      showMessage({
+        message: 'Connection failed. Make sure it is an OBD2 device or paired successfully.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+        duration: 5000,
+      });
+    } finally {
+      setConnectLoading(false);
     }
   };
 
@@ -368,10 +380,18 @@ const RunDiagnostics = () => {
       <ScrollView>
         <Header headerTitle="Diagnostic" />
 
+        <View style={[styles.connectionStatus, { backgroundColor: connectedDevice ? '#17B978' : '#780606' }]}>
+          {connectLoading && <ActivityIndicator size="small" color="#fff" />}
+
+          {!connectLoading && (
+            <Text style={styles.connectionStatusText}>{connectedDevice ? 'Connected' : 'Not Connected'}</Text>
+          )}
+        </View>
+
         <View style={styles.lowerBox}>
           <View style={styles.obd2Container}>
             <TouchableOpacity style={styles.scanDevButton} onPress={() => discoverDevices()}>
-              <Text style={styles.scanDevButtonText}>Scan Paired Devices</Text>
+              <Text style={styles.scanDevButtonText}>Discover Devices</Text>
             </TouchableOpacity>
             <FlatList
               data={devices}
@@ -457,6 +477,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFF',
   },
+  connectionStatus: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 2,
+  },
+  connectionStatusText: {
+    fontFamily: 'BodyRegular',
+    color: '#FFF',
+  },
   lowerBox: {
     width: '90%',
     alignSelf: 'center',
@@ -470,8 +499,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#000B58',
-    width: 180,
-    padding: 10,
+    padding: 8,
     borderRadius: 10,
     alignSelf: 'center',
     marginBottom: 10,

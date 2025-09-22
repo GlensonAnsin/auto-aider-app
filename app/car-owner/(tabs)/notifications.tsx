@@ -1,6 +1,7 @@
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
 import { RootState } from '@/redux/store';
-import { getNotificationsCO } from '@/services/backendApi';
+import { getNotificationsCO, updateNotificationStatusCO } from '@/services/backendApi';
 import socket from '@/services/socket';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -12,7 +13,7 @@ import dayOfYear from 'dayjs/plugin/dayOfYear';
 import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -25,6 +26,7 @@ export default function NotificationsTab() {
   const currentWeek = Math.ceil(currentDate.dayOfYear() / 7);
   const currentMonth = currentDate.month() + 1;
   const currentYear = currentDate.year();
+  const backRoute = useBackRoute('/car-owner');
   const router = useRouter();
   const [notification, setNotification] = useState<
     { notificationID: number; title: string; message: string; isRead: boolean; createdAt: string }[]
@@ -136,6 +138,29 @@ export default function NotificationsTab() {
     }
   };
 
+  const handleNotificationPress = async (title: string, notificationID: number) => {
+    try {
+      backRoute();
+
+      if (title === 'PMS Reminder' || title === 'PMS Overdue') {
+        router.replace('/car-owner/(screens)/repair-shops/repair-shops');
+      } else {
+        router.replace('/car-owner/(screens)/request-status/request-status');
+      }
+
+      await updateNotificationStatusCO(notificationID);
+      setNotification((prev) => prev.map((n) => (n.notificationID === notificationID ? { ...n, isRead: true } : n)));
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    }
+  };
+
   if (isLoading) {
     return <Loading />;
   }
@@ -152,26 +177,25 @@ export default function NotificationsTab() {
       </View>
 
       <View style={styles.lowerBox}>
-        {notification
-          .sort((a, b) => b.notificationID - a.notificationID)
-          .map((item) => (
-            <View key={item.notificationID}>
-              <ScrollView>
-                <TouchableOpacity
-                  style={[styles.notifButton, { backgroundColor: item.isRead ? '#fff' : 'rgba(0, 11, 88, 0.1)' }]}
-                >
-                  <View style={styles.iconTextContainer}>
-                    <View>{identifyIcon(item.title)}</View>
-                    <View>
-                      <Text style={styles.notifButtonText1}>{item.title}</Text>
-                      <Text style={styles.notifButtonText2}>{item.message}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.notifButtonText3}>{transformDate(item.createdAt)}</Text>
-                </TouchableOpacity>
-              </ScrollView>
-            </View>
-          ))}
+        <FlatList
+          data={notification.sort((a, b) => b.notificationID - a.notificationID)}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[styles.notifButton, { backgroundColor: item.isRead ? '#fff' : 'rgba(0, 11, 88, 0.1)' }]}
+              onPress={() => handleNotificationPress(item.title, item.notificationID)}
+            >
+              <View style={styles.iconTextContainer}>
+                <View>{identifyIcon(item.title)}</View>
+                <View>
+                  <Text style={styles.notifButtonText1}>{item.title}</Text>
+                  <Text style={styles.notifButtonText2}>{item.message}</Text>
+                </View>
+              </View>
+              <Text style={styles.notifButtonText3}>{transformDate(item.createdAt)}</Text>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item) => item.notificationID.toString()}
+        />
       </View>
     </SafeAreaView>
   );

@@ -10,7 +10,7 @@ import dayOfYear from 'dayjs/plugin/dayOfYear';
 import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -151,94 +151,89 @@ export default function ChatsTab() {
       </View>
 
       <View style={styles.lowerBox}>
-        {chatInfo
-          .sort((a, b) => b.chatID - a.chatID)
-          .map((item) => (
-            <View key={item.chatID}>
-              <ScrollView>
-                <TouchableOpacity
-                  style={styles.conversationButton}
-                  onPress={() => {
-                    backRoute();
-                    dispatch(
-                      setSenderReceiverState({
-                        senderID: Number(item.userID),
-                        receiverID: Number(item.shopID),
-                        role: 'car-owner',
-                      })
-                    );
-                    router.replace('/chat-room/chat-room');
-                  }}
-                >
-                  {item.profilePic === null && (
-                    <View style={[styles.profilePicWrapper, { backgroundColor: item.profileBG }]}>
-                      <MaterialCommunityIcons name="car-wrench" size={45} color="#FFF" />
+        <FlatList
+          data={chatInfo.sort((a, b) => b.chatID - a.chatID)}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.conversationButton}
+              onPress={() => {
+                backRoute();
+                dispatch(
+                  setSenderReceiverState({
+                    senderID: Number(item.userID),
+                    receiverID: Number(item.shopID),
+                    role: 'car-owner',
+                  })
+                );
+                router.replace('/chat-room/chat-room');
+              }}
+            >
+              {item.profilePic === null && (
+                <View style={[styles.profilePicWrapper, { backgroundColor: item.profileBG }]}>
+                  <MaterialCommunityIcons name="car-wrench" size={45} color="#FFF" />
+                </View>
+              )}
+
+              {item.profilePic !== null && (
+                <View style={styles.profilePicWrapper}>
+                  <Image style={styles.profilePic} source={{ uri: item.profilePic }} width={65} height={65} />
+                </View>
+              )}
+
+              <View style={styles.nameMessageContainer}>
+                {item.fromYou && (
+                  <>
+                    <Text
+                      numberOfLines={1}
+                      style={[styles.nameText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
+                    >
+                      {item.shopName}
+                    </Text>
+                    <View style={styles.messageDateContainer}>
+                      <Text
+                        numberOfLines={1}
+                        style={[styles.messageText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
+                      >
+                        {item.message}
+                      </Text>
+                      <Text style={[styles.dateText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}>
+                        {transformDate(item.messageDate)}
+                      </Text>
                     </View>
-                  )}
+                  </>
+                )}
 
-                  {item.profilePic !== null && (
-                    <View style={styles.profilePicWrapper}>
-                      <Image style={styles.profilePic} source={{ uri: item.profilePic }} width={65} height={65} />
+                {!item.fromYou && (
+                  <>
+                    <Text
+                      numberOfLines={1}
+                      style={[styles.nameText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
+                    >
+                      {item.shopName}
+                    </Text>
+                    <View style={styles.messageDateContainer}>
+                      <Text
+                        numberOfLines={1}
+                        style={[
+                          styles.messageText,
+                          { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' },
+                        ]}
+                      >
+                        {item.message}
+                      </Text>
+                      <Text
+                        style={[styles.dateText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
+                      >
+                        {transformDate(item.messageDate)}
+                      </Text>
                     </View>
-                  )}
-
-                  <View style={styles.nameMessageContainer}>
-                    {item.fromYou && (
-                      <>
-                        <Text
-                          numberOfLines={1}
-                          style={[styles.nameText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
-                        >
-                          {item.shopName}
-                        </Text>
-                        <View style={styles.messageDateContainer}>
-                          <Text
-                            numberOfLines={1}
-                            style={[styles.messageText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
-                          >
-                            {item.message}
-                          </Text>
-                          <Text style={[styles.dateText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}>
-                            {transformDate(item.messageDate)}
-                          </Text>
-                        </View>
-                      </>
-                    )}
-
-                    {!item.fromYou && (
-                      <>
-                        <Text
-                          numberOfLines={1}
-                          style={[styles.nameText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
-                        >
-                          {item.shopName}
-                        </Text>
-                        <View style={styles.messageDateContainer}>
-                          <Text
-                            numberOfLines={1}
-                            style={[
-                              styles.messageText,
-                              { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' },
-                            ]}
-                          >
-                            {item.message}
-                          </Text>
-                          <Text
-                            style={[
-                              styles.dateText,
-                              { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' },
-                            ]}
-                          >
-                            {transformDate(item.messageDate)}
-                          </Text>
-                        </View>
-                      </>
-                    )}
-                  </View>
-                </TouchableOpacity>
-              </ScrollView>
-            </View>
-          ))}
+                  </>
+                )}
+              </View>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item) => item.chatID.toString()}
+        />
       </View>
     </SafeAreaView>
   );
