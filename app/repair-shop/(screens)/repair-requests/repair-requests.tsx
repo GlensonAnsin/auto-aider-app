@@ -11,7 +11,7 @@ import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import { useDispatch, useSelector } from 'react-redux';
@@ -105,6 +105,62 @@ const RepairRequests = () => {
   useEffect(() => {
     if (!socket) return;
 
+    socket.on(`newRequest-RS-${shopID}`, ({ shopRequest }) => {
+      const statusData: {
+        requestID: number;
+        vehicleName: string;
+        customer: string;
+        scanReference: string;
+        datetime: string;
+        status: string;
+      }[] = [];
+
+      if (shopRequest) {
+        shopRequest.mechanic_requests.forEach((request: any) => {
+          if (request) {
+            const requestID = request.request_id;
+            const datetime = dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
+            const status = request.status;
+            if (request.vehicle_diagnostic) {
+              const diagnostics = Array.isArray(request.vehicle_diagnostic)
+                ? request.vehicle_diagnostic
+                : [request.vehicle_diagnostic];
+              diagnostics.forEach((diagnostic: any) => {
+                if (diagnostic) {
+                  const scanReference = diagnostic.scan_reference;
+                  if (diagnostic.vehicle) {
+                    const vehicles = Array.isArray(diagnostic.vehicle) ? diagnostic.vehicle : [diagnostic.vehicle];
+                    vehicles.forEach((vehicle: any) => {
+                      if (vehicle) {
+                        const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
+                        if (vehicle.user) {
+                          const users = Array.isArray(vehicle.user) ? vehicle.user : [vehicle.user];
+                          users.forEach((customer: any) => {
+                            if (customer) {
+                              statusData.push({
+                                requestID,
+                                vehicleName,
+                                customer: `${customer.firstname} ${customer.lastname}`,
+                                scanReference,
+                                datetime,
+                                status,
+                              });
+                            }
+                          });
+                        }
+                      }
+                    });
+                  }
+                }
+              });
+            }
+          }
+        });
+      }
+
+      setRequestStatus(statusData);
+    });
+
     socket.on(`requestRejected-RS-${shopID}`, ({ requestIDs, reason_rejected }) => {
       for (const id of requestIDs) {
         setRequestStatus((prev) =>
@@ -137,6 +193,7 @@ const RepairRequests = () => {
     });
 
     return () => {
+      socket.off(`newRequest-RS-${shopID}`);
       socket.off(`requestRejected-RS-${shopID}`);
       socket.off(`requestAccepted-RS-${shopID}`);
       socket.off(`requestCompleted-RS-${shopID}`);
@@ -184,129 +241,58 @@ const RepairRequests = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <Header headerTitle="Repair Requests" />
+      <Header headerTitle="Repair Requests" />
 
-        <View style={styles.lowerBox}>
-          <SelectDropdown
-            data={buttons}
-            defaultValue={activeButton}
-            statusBarTranslucent={true}
-            onSelect={(selectedItem) => setActiveButton(selectedItem)}
-            renderButton={(selectedItem, isOpen) => (
-              <View style={styles.dropdownButtonStyle}>
-                <Text style={styles.dropdownButtonTxtStyle}>{selectedItem}</Text>
-                <MaterialCommunityIcons
-                  name={isOpen ? 'chevron-up' : 'chevron-down'}
-                  style={styles.dropdownButtonArrowStyle}
-                />
-              </View>
-            )}
-            renderItem={(item, _index, isSelected) => (
-              <View
-                style={{
-                  ...styles.dropdownItemStyle,
-                  ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                }}
-              >
-                <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
-              </View>
-            )}
-            showsVerticalScrollIndicator={false}
-            dropdownStyle={styles.dropdownMenuStyle}
-          />
-
-          {activeButton === 'All' && (
-            <>
-              {grouped.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity
-                    style={styles.requestButton}
-                    onPress={() => {
-                      backRoute();
-                      dispatch(setScanReferenceState(item.scanReference));
-                      router.replace('./repair-request-details');
-                    }}
-                  >
-                    <View style={styles.vehicleCustomerContainer}>
-                      <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                      <Text style={styles.requestText}>{item.customer}</Text>
-                      <Text style={styles.requestText}>{item.datetime}</Text>
-                    </View>
-                    <View style={styles.statusContainer}>
-                      <Text style={styles.statusText}>{item.status}</Text>
-                      {item.status === 'Pending' && (
-                        <LottieView
-                          source={require('@/assets/images/pending.json')}
-                          autoPlay
-                          loop
-                          style={{
-                            width: 26,
-                            height: 26,
-                          }}
-                        />
-                      )}
-                      {item.status === 'Rejected' && (
-                        <LottieView
-                          source={require('@/assets/images/rejected.json')}
-                          autoPlay
-                          loop
-                          style={{
-                            width: 26,
-                            height: 26,
-                          }}
-                        />
-                      )}
-                      {item.status === 'Ongoing' && (
-                        <LottieView
-                          source={require('@/assets/images/ongoing.json')}
-                          autoPlay
-                          loop
-                          style={{
-                            width: 26,
-                            height: 26,
-                          }}
-                        />
-                      )}
-                      {item.status === 'Completed' && (
-                        <LottieView
-                          source={require('@/assets/images/completed.json')}
-                          autoPlay
-                          loop
-                          style={{
-                            width: 26,
-                            height: 26,
-                          }}
-                        />
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ))}
-
-              {grouped.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
-            </>
+      <View style={styles.lowerBox}>
+        <SelectDropdown
+          data={buttons}
+          defaultValue={activeButton}
+          statusBarTranslucent={true}
+          onSelect={(selectedItem) => setActiveButton(selectedItem)}
+          renderButton={(selectedItem, isOpen) => (
+            <View style={styles.dropdownButtonStyle}>
+              <Text style={styles.dropdownButtonTxtStyle}>{selectedItem}</Text>
+              <MaterialCommunityIcons
+                name={isOpen ? 'chevron-up' : 'chevron-down'}
+                style={styles.dropdownButtonArrowStyle}
+              />
+            </View>
           )}
+          renderItem={(item, _index, isSelected) => (
+            <View
+              style={{
+                ...styles.dropdownItemStyle,
+                ...(isSelected && { backgroundColor: '#D2D9DF' }),
+              }}
+            >
+              <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+            </View>
+          )}
+          showsVerticalScrollIndicator={false}
+          dropdownStyle={styles.dropdownMenuStyle}
+        />
 
-          {activeButton === 'Pending' && (
-            <>
-              {filterPending.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity
-                    style={styles.requestButton}
-                    onPress={() => {
-                      backRoute();
-                      dispatch(setScanReferenceState(item.scanReference));
-                      router.replace('./repair-request-details');
-                    }}
-                  >
-                    <View style={styles.vehicleCustomerContainer}>
-                      <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                      <Text style={styles.requestText}>{item.customer}</Text>
-                      <Text style={styles.requestText}>{item.datetime}</Text>
-                    </View>
-                    <View style={styles.statusContainer}>
-                      <Text style={styles.statusText}>{item.status}</Text>
+        {activeButton === 'All' && (
+          <>
+            <FlatList
+              data={grouped}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.requestButton}
+                  onPress={() => {
+                    backRoute();
+                    dispatch(setScanReferenceState(item.scanReference));
+                    router.replace('./repair-request-details');
+                  }}
+                >
+                  <View style={styles.vehicleCustomerContainer}>
+                    <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                    <Text style={styles.requestText}>{item.customer}</Text>
+                    <Text style={styles.requestText}>{item.datetime}</Text>
+                  </View>
+                  <View style={styles.statusContainer}>
+                    <Text style={styles.statusText}>{item.status}</Text>
+                    {item.status === 'Pending' && (
                       <LottieView
                         source={require('@/assets/images/pending.json')}
                         autoPlay
@@ -316,34 +302,8 @@ const RepairRequests = () => {
                           height: 26,
                         }}
                       />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ))}
-
-              {filterPending.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
-            </>
-          )}
-
-          {activeButton === 'Rejected' && (
-            <>
-              {filterRejected.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity
-                    style={styles.requestButton}
-                    onPress={() => {
-                      backRoute();
-                      dispatch(setScanReferenceState(item.scanReference));
-                      router.replace('./repair-request-details');
-                    }}
-                  >
-                    <View style={styles.vehicleCustomerContainer}>
-                      <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                      <Text style={styles.requestText}>{item.customer}</Text>
-                      <Text style={styles.requestText}>{item.datetime}</Text>
-                    </View>
-                    <View style={styles.statusContainer}>
-                      <Text style={styles.statusText}>{item.status}</Text>
+                    )}
+                    {item.status === 'Rejected' && (
                       <LottieView
                         source={require('@/assets/images/rejected.json')}
                         autoPlay
@@ -353,34 +313,8 @@ const RepairRequests = () => {
                           height: 26,
                         }}
                       />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ))}
-
-              {filterRejected.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
-            </>
-          )}
-
-          {activeButton === 'Ongoing' && (
-            <>
-              {filterOngoing.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity
-                    style={styles.requestButton}
-                    onPress={() => {
-                      backRoute();
-                      dispatch(setScanReferenceState(item.scanReference));
-                      router.replace('./repair-request-details');
-                    }}
-                  >
-                    <View style={styles.vehicleCustomerContainer}>
-                      <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                      <Text style={styles.requestText}>{item.customer}</Text>
-                      <Text style={styles.requestText}>{item.datetime}</Text>
-                    </View>
-                    <View style={styles.statusContainer}>
-                      <Text style={styles.statusText}>{item.status}</Text>
+                    )}
+                    {item.status === 'Ongoing' && (
                       <LottieView
                         source={require('@/assets/images/ongoing.json')}
                         autoPlay
@@ -390,34 +324,8 @@ const RepairRequests = () => {
                           height: 26,
                         }}
                       />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ))}
-
-              {filterOngoing.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
-            </>
-          )}
-
-          {activeButton === 'Completed' && (
-            <>
-              {filterCompleted.map((item, index) => (
-                <View key={index}>
-                  <TouchableOpacity
-                    style={styles.requestButton}
-                    onPress={() => {
-                      backRoute();
-                      dispatch(setScanReferenceState(item.scanReference));
-                      router.replace('./repair-request-details');
-                    }}
-                  >
-                    <View style={styles.vehicleCustomerContainer}>
-                      <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                      <Text style={styles.requestText}>{item.customer}</Text>
-                      <Text style={styles.requestText}>{item.datetime}</Text>
-                    </View>
-                    <View style={styles.statusContainer}>
-                      <Text style={styles.statusText}>{item.status}</Text>
+                    )}
+                    {item.status === 'Completed' && (
                       <LottieView
                         source={require('@/assets/images/completed.json')}
                         autoPlay
@@ -427,16 +335,173 @@ const RepairRequests = () => {
                           height: 26,
                         }}
                       />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ))}
+                    )}
+                  </View>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.scanReference}
+            />
 
-              {filterCompleted.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
-            </>
-          )}
-        </View>
-      </ScrollView>
+            {grouped.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
+          </>
+        )}
+
+        {activeButton === 'Pending' && (
+          <>
+            <FlatList
+              data={filterPending}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.requestButton}
+                  onPress={() => {
+                    backRoute();
+                    dispatch(setScanReferenceState(item.scanReference));
+                    router.replace('./repair-request-details');
+                  }}
+                >
+                  <View style={styles.vehicleCustomerContainer}>
+                    <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                    <Text style={styles.requestText}>{item.customer}</Text>
+                    <Text style={styles.requestText}>{item.datetime}</Text>
+                  </View>
+                  <View style={styles.statusContainer}>
+                    <Text style={styles.statusText}>{item.status}</Text>
+                    <LottieView
+                      source={require('@/assets/images/pending.json')}
+                      autoPlay
+                      loop
+                      style={{
+                        width: 26,
+                        height: 26,
+                      }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.scanReference}
+            />
+
+            {filterPending.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
+          </>
+        )}
+
+        {activeButton === 'Rejected' && (
+          <>
+            <FlatList
+              data={filterRejected}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.requestButton}
+                  onPress={() => {
+                    backRoute();
+                    dispatch(setScanReferenceState(item.scanReference));
+                    router.replace('./repair-request-details');
+                  }}
+                >
+                  <View style={styles.vehicleCustomerContainer}>
+                    <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                    <Text style={styles.requestText}>{item.customer}</Text>
+                    <Text style={styles.requestText}>{item.datetime}</Text>
+                  </View>
+                  <View style={styles.statusContainer}>
+                    <Text style={styles.statusText}>{item.status}</Text>
+                    <LottieView
+                      source={require('@/assets/images/rejected.json')}
+                      autoPlay
+                      loop
+                      style={{
+                        width: 26,
+                        height: 26,
+                      }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.scanReference}
+            />
+
+            {filterRejected.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
+          </>
+        )}
+
+        {activeButton === 'Ongoing' && (
+          <>
+            <FlatList
+              data={filterOngoing}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.requestButton}
+                  onPress={() => {
+                    backRoute();
+                    dispatch(setScanReferenceState(item.scanReference));
+                    router.replace('./repair-request-details');
+                  }}
+                >
+                  <View style={styles.vehicleCustomerContainer}>
+                    <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                    <Text style={styles.requestText}>{item.customer}</Text>
+                    <Text style={styles.requestText}>{item.datetime}</Text>
+                  </View>
+                  <View style={styles.statusContainer}>
+                    <Text style={styles.statusText}>{item.status}</Text>
+                    <LottieView
+                      source={require('@/assets/images/ongoing.json')}
+                      autoPlay
+                      loop
+                      style={{
+                        width: 26,
+                        height: 26,
+                      }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.scanReference}
+            />
+
+            {filterOngoing.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
+          </>
+        )}
+
+        {activeButton === 'Completed' && (
+          <>
+            <FlatList
+              data={filterCompleted}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.requestButton}
+                  onPress={() => {
+                    backRoute();
+                    dispatch(setScanReferenceState(item.scanReference));
+                    router.replace('./repair-request-details');
+                  }}
+                >
+                  <View style={styles.vehicleCustomerContainer}>
+                    <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                    <Text style={styles.requestText}>{item.customer}</Text>
+                    <Text style={styles.requestText}>{item.datetime}</Text>
+                  </View>
+                  <View style={styles.statusContainer}>
+                    <Text style={styles.statusText}>{item.status}</Text>
+                    <LottieView
+                      source={require('@/assets/images/completed.json')}
+                      autoPlay
+                      loop
+                      style={{
+                        width: 26,
+                        height: 26,
+                      }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.scanReference}
+            />
+
+            {filterCompleted.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
+          </>
+        )}
+      </View>
     </SafeAreaView>
   );
 };

@@ -377,17 +377,16 @@ const RunDiagnostics = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header headerTitle="Diagnostic" />
+      <View style={[styles.connectionStatus, { backgroundColor: connectedDevice ? '#17B978' : '#780606' }]}>
+        {connectLoading && <ActivityIndicator size="small" color="#fff" />}
+
+        {!connectLoading && (
+          <Text style={styles.connectionStatusText}>{connectedDevice ? 'Connected' : 'Not Connected'}</Text>
+        )}
+      </View>
+
       <ScrollView>
-        <Header headerTitle="Diagnostic" />
-
-        <View style={[styles.connectionStatus, { backgroundColor: connectedDevice ? '#17B978' : '#780606' }]}>
-          {connectLoading && <ActivityIndicator size="small" color="#fff" />}
-
-          {!connectLoading && (
-            <Text style={styles.connectionStatusText}>{connectedDevice ? 'Connected' : 'Not Connected'}</Text>
-          )}
-        </View>
-
         <View style={styles.lowerBox}>
           <View style={styles.obd2Container}>
             <TouchableOpacity style={styles.scanDevButton} onPress={() => discoverDevices()}>

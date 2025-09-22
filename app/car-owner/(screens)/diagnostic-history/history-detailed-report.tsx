@@ -78,9 +78,8 @@ const HistoryDetailedReport = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header headerTitle="Report Details" />
       <ScrollView>
-        <Header headerTitle="Report Details" />
-
         <View style={styles.lowerBox}>
           <View style={styles.codeContainer}>
             <>

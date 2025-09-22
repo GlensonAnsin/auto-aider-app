@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -191,21 +191,21 @@ const DiagnosticHistory = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <Header headerTitle="History" />
+      <Header headerTitle="History" />
+      <View style={styles.lowerBox}>
+        <View style={styles.clearHistoryContainer}>
+          <Text style={styles.header2}>Scanned Cars</Text>
+          <TouchableOpacity style={styles.button} onPress={() => deleteAllVehicleDiagAlert()}>
+            <Text style={styles.buttonTxt}>Clear history</Text>
+          </TouchableOpacity>
+        </View>
 
-        <View style={styles.lowerBox}>
-          <View style={styles.clearHistoryContainer}>
-            <Text style={styles.header2}>Scanned Cars</Text>
-            <TouchableOpacity style={styles.button} onPress={() => deleteAllVehicleDiagAlert()}>
-              <Text style={styles.buttonTxt}>Clear history</Text>
-            </TouchableOpacity>
-          </View>
+        {grouped.length === 0 && <Text style={styles.noHistoriesText}>-- No Histories --</Text>}
 
-          {grouped.length === 0 && <Text style={styles.noHistoriesText}>-- No Histories --</Text>}
-
-          {grouped.map((item) => (
-            <View style={{ width: '100%' }} key={item.scanReference}>
+        {grouped.length !== 0 && (
+          <FlatList
+            data={grouped}
+            renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.historyContainer}
                 onPress={() => {
@@ -244,10 +244,11 @@ const DiagnosticHistory = () => {
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
+            )}
+            keyExtractor={(item) => item.scanReference}
+          />
+        )}
+      </View>
     </SafeAreaView>
   );
 };

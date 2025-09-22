@@ -6,7 +6,7 @@ import socket from '@/services/socket';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -112,35 +112,38 @@ const ManageVehicles = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <Header headerTitle="Vehicles" />
+      <Header headerTitle="Vehicles" />
+      <View style={styles.lowerBox}>
+        {vehicles.length === 0 && <Text style={styles.noVehiclesTxt}>-- No vehicles added --</Text>}
 
-        <View style={styles.lowerBox}>
-          {vehicles.length === 0 && <Text style={styles.noVehiclesTxt}>-- No vehicles added --</Text>}
+        {vehicles.length !== 0 && (
+          <FlatList
+            data={vehicles}
+            renderItem={({ item }) => (
+              <View style={styles.vehicleContainer}>
+                <View style={styles.carDetailsContainer}>
+                  <Text style={styles.carDetail}>{`${item.year} ${item.make} ${item.model}`} </Text>
+                  <Text style={styles.dateAdded}>{`Date added: ${item.dateAdded}`}</Text>
+                </View>
 
-          {vehicles.map((item) => (
-            <View key={item.vehicleID} style={styles.vehicleContainer}>
-              <View style={styles.carDetailsContainer}>
-                <Text style={styles.carDetail}>{`${item.year} ${item.make} ${item.model}`} </Text>
-                <Text style={styles.dateAdded}>{`Date added: ${item.dateAdded}`}</Text>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity style={[styles.button, { backgroundColor: '#000B58' }]}>
+                    <Text style={styles.buttonTxt}>View</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: '#780606' }]}
+                    onPress={() => deleteVehicleAlert(item.vehicleID)}
+                  >
+                    <Text style={styles.buttonTxt}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={[styles.button, { backgroundColor: '#000B58' }]}>
-                  <Text style={styles.buttonTxt}>View</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.button, { backgroundColor: '#780606' }]}
-                  onPress={() => deleteVehicleAlert(item.vehicleID)}
-                >
-                  <Text style={styles.buttonTxt}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
+            )}
+            keyExtractor={(item) => item.vehicleID.toString()}
+          />
+        )}
+      </View>
     </SafeAreaView>
   );
 };

@@ -176,7 +176,6 @@ const Profile = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Header headerTitle="Profile" />
-
       <View style={styles.lowerBox}>
         <View style={styles.userContainer}>
           {profilePic === null && (

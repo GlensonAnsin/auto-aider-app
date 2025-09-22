@@ -313,9 +313,8 @@ const RequestDetails = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header headerTitle="Request Details" />
       <ScrollView>
-        <Header headerTitle="Request Details" />
-
         {grouped.map((item, groupedIndex) => (
           <View key={item.scanReference} style={styles.lowerBox}>
             <View style={styles.shopProfileContainer}>

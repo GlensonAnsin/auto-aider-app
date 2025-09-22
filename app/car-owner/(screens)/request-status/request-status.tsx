@@ -11,7 +11,7 @@ import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import { useDispatch, useSelector } from 'react-redux';
@@ -96,6 +96,51 @@ const RequestStatus = () => {
   useEffect(() => {
     if (!socket) return;
 
+    socket.on(`newRequest-CO-${userID}`, async ({ userRequest }) => {
+      const statusData: {
+        requestID: number;
+        vehicleName: string;
+        repairShop: string;
+        scanReference: string;
+        datetime: string;
+        status: string;
+      }[] = [];
+
+      const res2 = await getRepairShops();
+
+      if (userRequest) {
+        userRequest.vehicles.forEach((vehicle: any) => {
+          if (vehicle) {
+            const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
+            if (vehicle.vehicle_diagnostics) {
+              vehicle.vehicle_diagnostics.forEach((diagnostic: any) => {
+                if (diagnostic) {
+                  const scanReference = diagnostic.scan_reference;
+                  if (diagnostic.mechanic_requests) {
+                    diagnostic.mechanic_requests.forEach((request: any) => {
+                      const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
+                      if (repairShop) {
+                        statusData.push({
+                          requestID: request.request_id,
+                          vehicleName,
+                          repairShop: repairShop.shop_name,
+                          scanReference,
+                          datetime: dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A'),
+                          status: request.status,
+                        });
+                      }
+                    });
+                  }
+                }
+              });
+            }
+          }
+        });
+      }
+
+      setRequestStatus(statusData);
+    });
+
     socket.on(`requestRejected-CO-${userID}`, ({ requestIDs, reason_rejected }) => {
       for (const id of requestIDs) {
         setRequestStatus((prev) =>
@@ -128,6 +173,7 @@ const RequestStatus = () => {
     });
 
     return () => {
+      socket.off(`newRequest-CO-${userID}`);
       socket.off(`requestRejected-CO-${userID}`);
       socket.off(`requestAccepted-CO-${userID}`);
       socket.off(`requestCompleted-CO-${userID}`);
@@ -208,8 +254,9 @@ const RequestStatus = () => {
 
           {activeButton === 'All' && (
             <>
-              {grouped.map((item, index) => (
-                <View key={index}>
+              <FlatList
+                data={grouped}
+                renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.requestButton}
                     onPress={() => {
@@ -271,8 +318,9 @@ const RequestStatus = () => {
                       )}
                     </View>
                   </TouchableOpacity>
-                </View>
-              ))}
+                )}
+                keyExtractor={(item) => item.scanReference}
+              />
 
               {grouped.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
@@ -280,8 +328,9 @@ const RequestStatus = () => {
 
           {activeButton === 'Pending' && (
             <>
-              {filterPending.map((item, index) => (
-                <View key={index}>
+              <FlatList
+                data={filterPending}
+                renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.requestButton}
                     onPress={() => {
@@ -308,8 +357,9 @@ const RequestStatus = () => {
                       />
                     </View>
                   </TouchableOpacity>
-                </View>
-              ))}
+                )}
+                keyExtractor={(item) => item.scanReference}
+              />
 
               {filterPending.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
@@ -317,8 +367,9 @@ const RequestStatus = () => {
 
           {activeButton === 'Rejected' && (
             <>
-              {filterRejected.map((item, index) => (
-                <View key={index}>
+              <FlatList
+                data={filterRejected}
+                renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.requestButton}
                     onPress={() => {
@@ -345,8 +396,9 @@ const RequestStatus = () => {
                       />
                     </View>
                   </TouchableOpacity>
-                </View>
-              ))}
+                )}
+                keyExtractor={(item) => item.scanReference}
+              />
 
               {filterRejected.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
@@ -354,8 +406,9 @@ const RequestStatus = () => {
 
           {activeButton === 'Ongoing' && (
             <>
-              {filterOngoing.map((item, index) => (
-                <View key={index}>
+              <FlatList
+                data={filterOngoing}
+                renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.requestButton}
                     onPress={() => {
@@ -382,8 +435,9 @@ const RequestStatus = () => {
                       />
                     </View>
                   </TouchableOpacity>
-                </View>
-              ))}
+                )}
+                keyExtractor={(item) => item.scanReference}
+              />
 
               {filterOngoing.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>
@@ -391,8 +445,9 @@ const RequestStatus = () => {
 
           {activeButton === 'Completed' && (
             <>
-              {filterCompleted.map((item, index) => (
-                <View key={index}>
+              <FlatList
+                data={filterCompleted}
+                renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.requestButton}
                     onPress={() => {
@@ -419,8 +474,9 @@ const RequestStatus = () => {
                       />
                     </View>
                   </TouchableOpacity>
-                </View>
-              ))}
+                )}
+                keyExtractor={(item) => item.scanReference}
+              />
 
               {filterCompleted.length === 0 && <Text style={styles.noRequestText}>-- No Requests --</Text>}
             </>

@@ -55,9 +55,8 @@ const Diagnosis = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header headerTitle="Diagnosis" />
       <ScrollView>
-        <Header headerTitle="Diagnosis" />
-
         <View style={styles.lowerBox}>
           <View style={styles.buttonContainer}>
             <Text style={styles.car}>{scannedVehicle}</Text>

@@ -299,9 +299,8 @@ const EditProfile = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header headerTitle="Edit Profile" />
       <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-        <Header headerTitle="Edit Profile" />
-
         <View style={styles.lowerBox}>
           <View style={styles.editPicContainer}>
             {localProfilePic === null && (

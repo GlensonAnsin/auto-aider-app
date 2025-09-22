@@ -412,7 +412,6 @@ const RepairShops = () => {
     <SafeAreaView key={refreshKey} style={styles.container}>
       <GestureHandlerRootView>
         <Header headerTitle="Repair Shops" />
-
         <View style={styles.lowerBox}>
           <MapView
             ref={mapRef}

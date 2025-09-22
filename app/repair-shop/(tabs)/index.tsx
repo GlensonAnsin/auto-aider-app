@@ -187,16 +187,16 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <View style={styles.upperBox}>
-          <View style={styles.iconHeaderContainer}>
-            <TouchableOpacity style={styles.iconWrapper} onPress={() => handleLogout()}>
-              <MaterialCommunityIcons name="logout" style={styles.icon} />
-            </TouchableOpacity>
-            <Text style={styles.header}>Auto Repair Shop</Text>
-          </View>
+      <View style={styles.upperBox}>
+        <View style={styles.iconHeaderContainer}>
+          <TouchableOpacity style={styles.iconWrapper} onPress={() => handleLogout()}>
+            <MaterialCommunityIcons name="logout" style={styles.icon} />
+          </TouchableOpacity>
+          <Text style={styles.header}>Auto Repair Shop</Text>
         </View>
+      </View>
 
+      <ScrollView>
         <View style={styles.lowerBox}>
           <View style={styles.repShopUpperContainer}>
             {profilePic === null && (

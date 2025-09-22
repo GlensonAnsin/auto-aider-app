@@ -613,9 +613,8 @@ const EditShop = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header headerTitle="Edit Shop" />
       <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-        <Header headerTitle="Edit Shop" />
-
         <View style={styles.lowerBox}>
           <View style={styles.picRepNameContainer}>
             <View style={styles.editPicContainer}>
