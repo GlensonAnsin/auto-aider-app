@@ -29,7 +29,7 @@
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#000B58"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.glensonansin.autoaiderapp",

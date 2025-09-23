@@ -203,8 +203,8 @@ const RepairRequestDetails = () => {
                                   setCustomerRegion({
                                     latitude: latitude,
                                     longitude: longitude,
-                                    latitudeDelta: 0.001,
-                                    longitudeDelta: 0.001,
+                                    latitudeDelta: 0.01,
+                                    longitudeDelta: 0.01,
                                   });
                                 }
                               });
@@ -234,23 +234,6 @@ const RepairRequestDetails = () => {
       }
     })();
   }, []);
-
-  useEffect(() => {
-    const allCoords = [shopRegion, customerRegion]
-      .filter(
-        (coord): coord is Region =>
-          coord !== undefined && typeof coord.latitude === 'number' && typeof coord.longitude === 'number'
-      )
-      .map((coord) => ({
-        latitude: coord.latitude,
-        longitude: coord.longitude,
-      }));
-
-    mapRef.current?.fitToCoordinates(allCoords, {
-      edgePadding: { top: 300, right: 300, bottom: 300, left: 300 },
-      animated: true,
-    });
-  }, [shopRegion, customerRegion]);
 
   useEffect(() => {
     if (!socket) return;
@@ -371,6 +354,24 @@ const RepairRequestDetails = () => {
       >
     )
   );
+
+  const fitToCoord = () => {
+    setMapModalVisible(true);
+    const allCoords = [shopRegion, customerRegion]
+      .filter(
+        (coord): coord is Region =>
+          coord !== undefined && typeof coord.latitude === 'number' && typeof coord.longitude === 'number'
+      )
+      .map((coord) => ({
+        latitude: coord.latitude,
+        longitude: coord.longitude,
+      }));
+
+    mapRef.current?.fitToCoordinates(allCoords, {
+      edgePadding: { top: 10, right: 10, bottom: 10, left: 10 },
+      animated: true,
+    });
+  };
 
   const handleTransformText = (index: number) => {
     const bulletPossibleCauses = grouped.map((item) => {
@@ -686,7 +687,7 @@ const RepairRequestDetails = () => {
                   </MapView>
                 </View>
 
-                <TouchableOpacity style={styles.mapButton} onPress={() => setMapModalVisible(true)}></TouchableOpacity>
+                <TouchableOpacity style={styles.mapButton} onPress={() => fitToCoord()}></TouchableOpacity>
               </View>
 
               <Modal

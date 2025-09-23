@@ -11,7 +11,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Image,
   Modal,
@@ -23,6 +23,8 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import { Rating } from 'react-native-ratings';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -58,11 +60,17 @@ const RequestDetails = () => {
       reasonRejected: string | null;
     }[]
   >([]);
+  const mapRef = useRef<MapView | null>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [ratingModalVisible, setRatingModalVisible] = useState<boolean>(false);
+  const [mapModalVisible, setMapModalVisible] = useState<boolean>(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [bulletPossibleCauses, setBulletPossibleCauses] = useState<string[][]>([]);
   const [bulletRecommendedRepair, setBulletRecommendedRepair] = useState<string[][]>([]);
+  const [customerRegion, setCustomerRegion] = useState<Region | undefined>(undefined);
+  const [shopRegion, setShopRegion] = useState<Region | undefined>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [rating, setRating] = useState<number>(0);
   const scanReference: string | null = useSelector((state: RootState) => state.scanReference.scanReference);
   const userID = useSelector((state: RootState) => state.role.ID);
 
@@ -119,6 +127,8 @@ const RequestDetails = () => {
                       const vehicleIssue = diagnostic.vehicle_issue_description;
                       if (diagnostic.mechanic_requests) {
                         diagnostic.mechanic_requests.forEach((request: any) => {
+                          const longitude = parseFloat(request.longitude);
+                          const latitude = parseFloat(request.latitude);
                           const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
                           if (repairShop) {
                             requestDetailsData.push({
@@ -151,6 +161,20 @@ const RequestDetails = () => {
                                 .local()
                                 .format('ddd MMM DD YYYY, h:mm A'),
                               reasonRejected: request.reason_rejected,
+                            });
+
+                            setCustomerRegion({
+                              latitude: latitude,
+                              longitude: longitude,
+                              latitudeDelta: 0.01,
+                              longitudeDelta: 0.01,
+                            });
+
+                            setShopRegion({
+                              latitude: parseFloat(repairShop.latitude),
+                              longitude: parseFloat(repairShop.longitude),
+                              latitudeDelta: 0.01,
+                              longitudeDelta: 0.01,
                             });
                           }
                         });
@@ -288,6 +312,26 @@ const RequestDetails = () => {
     )
   );
 
+  const fitToCoord = () => {
+    setMapModalVisible(true);
+    const allCoords = [shopRegion, customerRegion]
+      .filter(
+        (coord): coord is Region =>
+          coord !== undefined && typeof coord.latitude === 'number' && typeof coord.longitude === 'number'
+      )
+      .map((coord) => ({
+        latitude: coord.latitude,
+        longitude: coord.longitude,
+      }));
+
+    console.log(allCoords);
+
+    mapRef.current?.fitToCoordinates(allCoords, {
+      edgePadding: { top: 10, right: 10, bottom: 10, left: 10 },
+      animated: true,
+    });
+  };
+
   const handleTransformText = (index: number) => {
     const bulletPossibleCauses = grouped.map((item) => {
       return (item.possibleCauses?.[index] ?? '')
@@ -305,6 +349,19 @@ const RequestDetails = () => {
 
     setBulletPossibleCauses(bulletPossibleCauses);
     setBulletRecommendedRepair(bulletRecommendedRepair);
+  };
+
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const toRad = (deg: number) => (deg * Math.PI) / 180;
+    const R = 6371;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return (R * c).toFixed(2);
   };
 
   if (isLoading) {
@@ -426,6 +483,73 @@ const RequestDetails = () => {
                   {item.year}
                 </Text>
               </View>
+            </View>
+
+            <View style={styles.locationContainer}>
+              <Text style={styles.subHeader}>Location</Text>
+              <View style={styles.mapButtonContainer}>
+                <View style={styles.mapView}>
+                  <MapView style={styles.map} mapType="hybrid" region={shopRegion} provider={PROVIDER_GOOGLE}>
+                    {shopRegion && (
+                      <Marker
+                        coordinate={{
+                          latitude: shopRegion.latitude,
+                          longitude: shopRegion.longitude,
+                        }}
+                      />
+                    )}
+                  </MapView>
+                </View>
+
+                <TouchableOpacity style={styles.mapButton} onPress={() => fitToCoord()}></TouchableOpacity>
+              </View>
+
+              <Modal
+                animationType="fade"
+                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                visible={mapModalVisible}
+                onRequestClose={() => setMapModalVisible(false)}
+              >
+                <View style={styles.centeredView}>
+                  <View style={styles.mapView2}>
+                    <MapView
+                      style={styles.map2}
+                      ref={mapRef}
+                      mapType="hybrid"
+                      initialRegion={customerRegion}
+                      provider={PROVIDER_GOOGLE}
+                    >
+                      {customerRegion && (
+                        <Marker
+                          coordinate={{
+                            latitude: customerRegion.latitude,
+                            longitude: customerRegion.longitude,
+                          }}
+                          image={require('../../../../assets/images/circle-marker.png')}
+                          title="You"
+                        />
+                      )}
+
+                      {shopRegion && (
+                        <Marker
+                          coordinate={{
+                            latitude: shopRegion.latitude,
+                            longitude: shopRegion.longitude,
+                          }}
+                          title="Shop"
+                        />
+                      )}
+                    </MapView>
+
+                    <TouchableOpacity style={styles.exitButton2} onPress={() => setMapModalVisible(false)}>
+                      <Entypo name="cross" size={20} color="#FFF" />
+                    </TouchableOpacity>
+                    <Text
+                      style={styles.text}
+                    >{`${getDistance(shopRegion?.latitude ?? 0, shopRegion?.longitude ?? 0, customerRegion?.latitude ?? 0, customerRegion?.longitude ?? 0)}KM Away`}</Text>
+                  </View>
+                </View>
+              </Modal>
             </View>
 
             <View style={styles.vehicleIssueContainer}>
@@ -556,9 +680,40 @@ const RequestDetails = () => {
                   )}
                 </View>
 
-                <TouchableOpacity style={styles.rateButton}>
+                <TouchableOpacity style={styles.rateButton} onPress={() => setRatingModalVisible(true)}>
                   <Text style={styles.rateButtonText}>Rate Shop</Text>
                 </TouchableOpacity>
+
+                <Modal
+                  animationType="fade"
+                  backdropColor={'rgba(0, 0, 0, 0.5)'}
+                  visible={ratingModalVisible}
+                  onRequestClose={() => setRatingModalVisible(false)}
+                >
+                  <TouchableWithoutFeedback onPress={() => setRatingModalVisible(false)}>
+                    <View style={styles.centeredView}>
+                      <Pressable style={styles.modalView} onPress={() => {}}>
+                        <TouchableOpacity style={styles.exitButton} onPress={() => setRatingModalVisible(false)}>
+                          <Entypo name="cross" size={20} color="#333" />
+                        </TouchableOpacity>
+
+                        <Rating
+                          type="star"
+                          ratingCount={5}
+                          imageSize={40}
+                          showRating
+                          startingValue={1}
+                          minValue={1}
+                          onFinishRating={setRating}
+                        />
+
+                        <TouchableOpacity style={styles.submitButton}>
+                          <Text style={styles.submitButtonText}>Submit Rating</Text>
+                        </TouchableOpacity>
+                      </Pressable>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </Modal>
               </>
             )}
           </View>
@@ -626,6 +781,37 @@ const styles = StyleSheet.create({
     fontFamily: 'BodyBold',
     color: '#333',
   },
+  locationContainer: {
+    width: '100%',
+    marginTop: 10,
+  },
+  mapButtonContainer: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  mapView: {
+    minHeight: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    overflow: 'hidden',
+    width: '100%',
+    position: 'absolute',
+    zIndex: 1,
+  },
+  map: {
+    width: '100%',
+    height: 100,
+  },
+  mapButton: {
+    backgroundColor: 'rgba(217, 217, 217, 0.2)',
+    minHeight: 100,
+    borderRadius: 10,
+    width: '100%',
+    zIndex: 2,
+  },
   vehicleIssueContainer: {
     width: '100%',
     marginTop: 10,
@@ -679,14 +865,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FDCC0D',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 130,
+    width: 100,
     padding: 5,
     borderRadius: 10,
     alignSelf: 'center',
     marginTop: 30,
   },
   rateButtonText: {
-    fontFamily: 'HeaderBold',
+    fontFamily: 'BodyRegular',
     color: '#FFF',
   },
   centeredView: {
@@ -767,6 +953,45 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFF',
     fontFamily: 'BodyRegular',
+  },
+  submitButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000B58',
+    padding: 8,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  submitButtonText: {
+    fontFamily: 'BodyRegular',
+    color: '#fff',
+  },
+  mapView2: {
+    backgroundColor: '#FFF',
+    width: '95%',
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  map2: {
+    width: '100%',
+    height: 500,
+  },
+  exitButton2: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    position: 'absolute',
+    padding: 10,
   },
 });
 
