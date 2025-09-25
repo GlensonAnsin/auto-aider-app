@@ -202,6 +202,40 @@ export const updateRepairShopInfo = async (userData: UpdateRepairShopInfo) => {
   }
 };
 
+// UPDATE SHOP RATING
+export const updateRatings = async (shopID: number, requestID: number[], score: number) => {
+  try {
+    const token = await getAccessToken();
+    await axios.patch(`${apiURL}/auto_repair_shop/update-ratings`,
+      { shopID, requestID, score },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      },
+    );
+  } catch (e) {
+    console.error('Update Rating Error:', e);
+  }
+}
+
+// UPDATE SHOP AVAILABILITY
+export const updateAvailability = async (availability: boolean) => {
+  try {
+    const token = await getAccessToken();
+    await axios.patch(`${apiURL}/auto_repair_shop/update-availability`,
+      { availability },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      },
+    );
+  } catch (e) {
+    console.error('Update Availability Error:', e);
+  }
+}
+
 // ADD VEHICLE
 export const addVehicle = async (vehicleInfo: Vehicle) => {
   try {

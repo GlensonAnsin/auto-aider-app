@@ -66,6 +66,7 @@ const RepairShops = () => {
         servicesOffered: string[];
         ratingsNum: number;
         averageRating: number;
+        availability: string;
       }[]
     | undefined
   >(undefined);
@@ -86,6 +87,7 @@ const RepairShops = () => {
         servicesOffered: string[];
         ratingsNum: number;
         averageRating: number;
+        availability: string;
         distance: number;
       }[]
     | undefined
@@ -160,6 +162,7 @@ const RepairShops = () => {
               servicesOffered: shop.services_offered,
               ratingsNum: shop.number_of_ratings,
               averageRating: shop.average_rating,
+              availability: shop.availability,
             }))
           );
 
@@ -521,6 +524,17 @@ const RepairShops = () => {
                           <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].ratingsNum}</Text>
                           <MaterialIcons name="star-rate" size={16} color="#FDCC0D" />
                           <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].averageRating}</Text>
+                          <Text
+                            style={[
+                              styles.contactText,
+                              {
+                                color: nearbyRepShop[selectedRepShop].availability === 'open' ? '#17B978' : '#780606',
+                                marginLeft: 10,
+                              },
+                            ]}
+                          >
+                            {nearbyRepShop[selectedRepShop].availability.toUpperCase()}
+                          </Text>
                         </View>
                       </View>
                     </View>

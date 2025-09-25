@@ -70,6 +70,8 @@ const RepairRequestDetails = () => {
       vehicleIssue: string;
       repairProcedure: string | null;
       reasonRejected: string | null;
+      isRated: boolean;
+      score: number | null;
     }[]
   >([]);
   const [customerRegion, setCustomerRegion] = useState<Region | undefined>(undefined);
@@ -134,13 +136,15 @@ const RepairRequestDetails = () => {
           vehicleIssue: string;
           repairProcedure: string | null;
           reasonRejected: string | null;
+          isRated: boolean;
+          score: number | null;
         }[] = [];
 
         if (res1) {
           if (res1.mechanic_requests) {
             res1.mechanic_requests.forEach((request: any) => {
               if (request) {
-                const requestID = request.mechanic_request_id;
+                const requestID = request.mechanic_request;
                 const datetime = dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
                 const completedOn = dayjs(request.completed_on).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
                 const longitude = parseFloat(request.longitude);
@@ -148,6 +152,8 @@ const RepairRequestDetails = () => {
                 const status = request.status;
                 const repairProcedure = request.repair_procedure;
                 const reasonRejected = request.reason_rejected;
+                const isRated = request.is_rated;
+                const score = request.score;
                 if (request.vehicle_diagnostic) {
                   const diagnostics = Array.isArray(request.vehicle_diagnostic)
                     ? request.vehicle_diagnostic
@@ -198,6 +204,8 @@ const RepairRequestDetails = () => {
                                     vehicleIssue: vehicleIssue,
                                     repairProcedure: repairProcedure,
                                     reasonRejected: reasonRejected,
+                                    isRated: isRated,
+                                    score: score,
                                   });
 
                                   setCustomerRegion({
@@ -310,6 +318,8 @@ const RepairRequestDetails = () => {
             vehicleIssue: item.vehicleIssue,
             repairProcedure: item.repairProcedure,
             reasonRejected: item.reasonRejected,
+            isRated: item.isRated,
+            score: item.score,
           };
         } else {
           acc[ref].requestID.push(item.requestID);
@@ -350,6 +360,8 @@ const RepairRequestDetails = () => {
           vehicleIssue: string | null;
           repairProcedure: string | null;
           reasonRejected: string | null;
+          isRated: boolean;
+          score: number | null;
         }
       >
     )
@@ -668,6 +680,12 @@ const RepairRequestDetails = () => {
                   <Text style={styles.nestedText}>Year: </Text>
                   {item.year}
                 </Text>
+                {item.isRated && (
+                  <Text style={styles.text}>
+                    <Text style={styles.nestedText}>Rating: </Text>
+                    {`${item.score}/5`}
+                  </Text>
+                )}
               </View>
             </View>
 

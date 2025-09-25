@@ -3,7 +3,7 @@ import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
 import { RootState } from '@/redux/store';
-import { getRepairShops, getRequestsForCarOwner } from '@/services/backendApi';
+import { getRepairShops, getRequestsForCarOwner, updateRatings } from '@/services/backendApi';
 import socket from '@/services/socket';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -23,6 +23,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { Rating } from 'react-native-ratings';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -58,6 +59,8 @@ const RequestDetails = () => {
       repairProcedure: string | null;
       completedOn: string | null;
       reasonRejected: string | null;
+      isRated: boolean;
+      score: number | null;
     }[]
   >([]);
   const mapRef = useRef<MapView | null>(null);
@@ -105,6 +108,8 @@ const RequestDetails = () => {
           repairProcedure: string | null;
           completedOn: string | null;
           reasonRejected: string | null;
+          isRated: boolean;
+          score: number | null;
         }[] = [];
 
         if (res1) {
@@ -133,7 +138,7 @@ const RequestDetails = () => {
                           if (repairShop) {
                             requestDetailsData.push({
                               userID: userID,
-                              requestID: request.mechanic_request_id,
+                              requestID: request.mechanic_request,
                               repairShopID: repairShop.repair_shop_id,
                               repairShop: repairShop.shop_name,
                               repairShopNum: repairShop.mobile_num,
@@ -161,6 +166,8 @@ const RequestDetails = () => {
                                 .local()
                                 .format('ddd MMM DD YYYY, h:mm A'),
                               reasonRejected: request.reason_rejected,
+                              isRated: request.is_rated,
+                              score: request.score,
                             });
 
                             setCustomerRegion({
@@ -269,6 +276,8 @@ const RequestDetails = () => {
             repairProcedure: item.repairProcedure,
             completedOn: item.completedOn,
             reasonRejected: item.reasonRejected,
+            isRated: item.isRated,
+            score: item.score,
           };
         } else {
           acc[ref].requestID.push(item.requestID);
@@ -307,6 +316,8 @@ const RequestDetails = () => {
           repairProcedure: string | null;
           completedOn: string | null;
           reasonRejected: string | null;
+          isRated: boolean;
+          score: number | null;
         }
       >
     )
@@ -362,6 +373,44 @@ const RequestDetails = () => {
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return (R * c).toFixed(2);
+  };
+
+  const handleUpdateRating = async (shopID: number, requestID: number[]) => {
+    try {
+      await updateRatings(shopID, requestID, rating);
+
+      showMessage({
+        message: 'Rating submitted!',
+        type: 'success',
+        floating: true,
+        color: '#FFF',
+        icon: 'success',
+      });
+
+      setRatingModalVisible(false);
+
+      for (const id of requestID) {
+        setRequestDetails((prev) =>
+          prev.map((r) =>
+            r.requestID === id
+              ? {
+                  ...r,
+                  isRated: true,
+                  score: rating,
+                }
+              : r
+          )
+        );
+      }
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    }
   };
 
   if (isLoading) {
@@ -482,6 +531,12 @@ const RequestDetails = () => {
                   <Text style={styles.nestedText}>Year: </Text>
                   {item.year}
                 </Text>
+                {item.isRated && (
+                  <Text style={styles.text}>
+                    <Text style={styles.nestedText}>Rating: </Text>
+                    {`${item.score}/5`}
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -680,7 +735,11 @@ const RequestDetails = () => {
                   )}
                 </View>
 
-                <TouchableOpacity style={styles.rateButton} onPress={() => setRatingModalVisible(true)}>
+                <TouchableOpacity
+                  style={[styles.rateButton, { backgroundColor: item.isRated ? '#808080' : '#FDCC0D' }]}
+                  onPress={() => setRatingModalVisible(true)}
+                  disabled={item.isRated ? true : false}
+                >
                   <Text style={styles.rateButtonText}>Rate Shop</Text>
                 </TouchableOpacity>
 
@@ -707,7 +766,10 @@ const RequestDetails = () => {
                           onFinishRating={setRating}
                         />
 
-                        <TouchableOpacity style={styles.submitButton}>
+                        <TouchableOpacity
+                          style={styles.submitButton}
+                          onPress={() => handleUpdateRating(item.repairShopID, item.requestID)}
+                        >
                           <Text style={styles.submitButtonText}>Submit Rating</Text>
                         </TouchableOpacity>
                       </Pressable>
@@ -862,7 +924,6 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   rateButton: {
-    backgroundColor: '#FDCC0D',
     justifyContent: 'center',
     alignItems: 'center',
     width: 100,

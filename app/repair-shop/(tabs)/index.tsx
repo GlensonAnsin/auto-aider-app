@@ -7,7 +7,7 @@ import { clearScanState } from '@/redux/slices/scanSlice';
 import { clearSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
 import { clearVehicleDiagIDArrState } from '@/redux/slices/vehicleDiagIDArrSlice';
 import { clearVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
-import { getRepairShopInfo } from '@/services/backendApi';
+import { getRepairShopInfo, updateAvailability } from '@/services/backendApi';
 import { registerForPushNotificationsAsync } from '@/services/notifications';
 import socket from '@/services/socket';
 import { clearTokens } from '@/services/tokenStorage';
@@ -56,11 +56,9 @@ export default function Home() {
   const [servicesOffered, setServicesOffered] = useState<string[]>([]);
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [shopImages, setShopImages] = useState<string[]>([]);
-  const [isEnabled, setIsEnabled] = useState<boolean>(false);
+  const [isAvailable, setIsAvailable] = useState<boolean>(false);
   const [profileBG, setProfileBG] = useState<string>('');
   const [imageModalVisible, setImageModalVisible] = useState<boolean>(false);
-
-  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
   useEffect(() => {
     (async () => {
@@ -90,6 +88,7 @@ export default function Home() {
         setProfilePic(res.profile_pic);
         setShopImages(res.shop_images);
         setProfileBG(res.profile_bg);
+        setIsAvailable(Boolean(res.availability));
       } catch (e) {
         console.log('Error: ', e);
       } finally {
@@ -102,7 +101,6 @@ export default function Home() {
     if (!socket) return;
 
     socket.on(`updatedRepairShopInfo-RS-${shopID}`, ({ updatedRepairShopInfo }) => {
-      setShopID(updatedRepairShopInfo.repair_shop_id);
       setRepShopName(updatedRepairShopInfo.shop_name);
       setOwnerFirstname(updatedRepairShopInfo.owner_firstname);
       setOwnerLastname(updatedRepairShopInfo.owner_lastname);
@@ -177,7 +175,23 @@ export default function Home() {
         color: '#FFF',
         icon: 'danger',
       });
-      console.log('Login error:', e.message);
+      console.log('Logout error:', e.message);
+    }
+  };
+
+  const toggleSwitch = async () => {
+    setIsAvailable((previousState) => !previousState);
+
+    try {
+      await updateAvailability(isAvailable);
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
     }
   };
 
@@ -275,10 +289,10 @@ export default function Home() {
                   <Text style={styles.availabilityText}>Availability</Text>
                   <Switch
                     trackColor={{ false: '#767577', true: '#000B58' }}
-                    thumbColor={isEnabled ? '#EEE' : '#DDD'}
+                    thumbColor={isAvailable ? '#EEE' : '#DDD'}
                     ios_backgroundColor="#3e3e3e"
                     onValueChange={toggleSwitch}
-                    value={isEnabled}
+                    value={isAvailable}
                   />
                 </View>
               </View>
