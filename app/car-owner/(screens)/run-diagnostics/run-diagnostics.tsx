@@ -1,6 +1,7 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
+import { setDeviceState } from '@/redux/slices/deviceSlice';
 import { setScanState } from '@/redux/slices/scanSlice';
 import { setTabState } from '@/redux/slices/tabBarSlice';
 import { RootState } from '@/redux/store';
@@ -9,6 +10,7 @@ import { codeMeaning, codePossibleCauses, codeRecommendedRepair, codeTechnicalDe
 import { generateReference } from '@/services/generateReference';
 import socket from '@/services/socket';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import Feather from '@expo/vector-icons/Feather';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
@@ -52,7 +54,10 @@ const RunDiagnostics = () => {
   const [log, setLog] = useState<string[]>([]);
   const userID = useSelector((state: RootState) => state.role.ID);
 
-  RNBluetoothClassic.onBluetoothDisabled(() => setDevices([]));
+  RNBluetoothClassic.onBluetoothDisabled(() => {
+    setDevices([]);
+    setConnectedDevice(null);
+  });
 
   useEffect(() => {
     (async () => {
@@ -214,6 +219,7 @@ const RunDiagnostics = () => {
       setConnectLoading(true);
       await device.connect();
       setConnectedDevice(device);
+      dispatch(setDeviceState(device));
 
       device.onDataReceived((event: any) => {
         setLog((prev) => [...prev, `RX: ${event.data.trim()}`]);
@@ -226,7 +232,7 @@ const RunDiagnostics = () => {
       await sendCommand('ATH0');
     } catch {
       showMessage({
-        message: 'Connection failed. Make sure it is an OBD2 device or paired successfully.',
+        message: 'Connection failed. Please ensure the device is an OBD2 scanner and properly paired.',
         type: 'danger',
         floating: true,
         color: '#FFF',
@@ -281,11 +287,6 @@ const RunDiagnostics = () => {
         setIsNoCodeDetected(true);
       }
     }, 1000);
-  };
-
-  const clearCodes = async () => {
-    if (!connectedDevice) return;
-    await sendCommand('04');
   };
 
   const parseDTCResponse = (raw: string): string[] => {
@@ -409,60 +410,79 @@ const RunDiagnostics = () => {
               keyExtractor={(item) => item.address}
             />
           </View>
-          <View style={styles.selectCarButtonContainer}>
-            <View style={styles.selectCarContainer}>
-              <Text style={styles.dropdownLbl}>Vehicle</Text>
-              <SelectDropdown
-                data={vehicles}
-                statusBarTranslucent={true}
-                onSelect={(selectedItem) => {
-                  setSelectedCar(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`);
-                  setSelectedCarID(selectedItem.id);
-                }}
-                renderButton={(selectedItem, isOpen) => (
-                  <View style={styles.dropdownButtonStyle}>
-                    <Text style={styles.dropdownButtonTxtStyle}>
-                      {(selectedItem && `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) ||
-                        'Select vehicle'}
-                    </Text>
-                    <MaterialCommunityIcons
-                      name={isOpen ? 'chevron-up' : 'chevron-down'}
-                      style={styles.dropdownButtonArrowStyle}
-                    />
-                  </View>
-                )}
-                renderItem={(item, _index, isSelected) => (
-                  <View
-                    style={{
-                      ...styles.dropdownItemStyle,
-                      ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                    }}
-                  >
-                    <Text style={styles.dropdownItemTxtStyle}>{`${item.year} ${item.make} ${item.model}`}</Text>
-                  </View>
-                )}
-                showsVerticalScrollIndicator={false}
-                dropdownStyle={styles.dropdownMenuStyle}
-              />
-            </View>
 
-            <View style={styles.buttonContainer}>
-              <TouchableHighlight style={styles.scanButton} onPress={() => readCodes()}>
-                <View style={styles.innerContainer}>
-                  <Text style={styles.buttonTxt}>Scan</Text>
-                </View>
-              </TouchableHighlight>
-
-              <LottieView
-                source={require('@/assets/images/scan.json')}
-                autoPlay
-                loop
+          <SelectDropdown
+            data={vehicles}
+            statusBarTranslucent={true}
+            onSelect={(selectedItem) => {
+              setSelectedCar(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`);
+              setSelectedCarID(selectedItem.id);
+            }}
+            renderButton={(selectedItem, isOpen) => (
+              <View style={styles.dropdownButtonStyle}>
+                <Text style={styles.dropdownButtonTxtStyle}>
+                  {(selectedItem && `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) ||
+                    'Select vehicle'}
+                </Text>
+                <MaterialCommunityIcons
+                  name={isOpen ? 'chevron-up' : 'chevron-down'}
+                  style={styles.dropdownButtonArrowStyle}
+                />
+              </View>
+            )}
+            renderItem={(item, _index, isSelected) => (
+              <View
                 style={{
-                  width: 180,
-                  height: 180,
-                  zIndex: 1,
+                  ...styles.dropdownItemStyle,
+                  ...(isSelected && { backgroundColor: '#D2D9DF' }),
                 }}
-              />
+              >
+                <Text style={styles.dropdownItemTxtStyle}>{`${item.year} ${item.make} ${item.model}`}</Text>
+              </View>
+            )}
+            showsVerticalScrollIndicator={false}
+            dropdownStyle={styles.dropdownMenuStyle}
+          />
+
+          <View style={styles.buttonContainer}>
+            <TouchableHighlight style={styles.scanButton} onPress={() => readCodes()}>
+              <View style={styles.innerContainer}>
+                <Text style={styles.buttonTxt}>Scan</Text>
+              </View>
+            </TouchableHighlight>
+
+            <LottieView
+              source={require('@/assets/images/scan.json')}
+              autoPlay
+              loop
+              style={{
+                width: 180,
+                height: 180,
+                zIndex: 1,
+              }}
+            />
+          </View>
+
+          <View style={styles.infoContainer}>
+            <Feather name="info" size={24} color="#333" style={styles.infoIcon} />
+            <View style={styles.bulletView}>
+              <Text style={styles.bullet}>{'\u2022'}</Text>
+              <Text style={styles.bulletedText}>Plugin in the device. Turn on car ignition.</Text>
+            </View>
+            <View style={styles.bulletView}>
+              <Text style={styles.bullet}>{'\u2022'}</Text>
+              <Text style={styles.bulletedText}>Turn on Bluetooth and pair the device.</Text>
+            </View>
+            <View style={styles.bulletView}>
+              <Text style={styles.bullet}>{'\u2022'}</Text>
+              <Text style={styles.bulletedText}>You may also refer to the device&apos;s manual.</Text>
+            </View>
+            <View style={styles.bulletView}>
+              <Text style={styles.bullet}>{'\u2022'}</Text>
+              <Text style={styles.bulletedText}>
+                Select a car to scan. Make sure that the car details are correct as this will affect result&apos;s
+                accuracy.
+              </Text>
             </View>
           </View>
         </View>
@@ -532,31 +552,6 @@ const styles = StyleSheet.create({
     fontFamily: 'BodyRegular',
     color: '#555',
   },
-  selectCarButtonContainer: {
-    width: '100%',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  selectCarContainer: {
-    width: '100%',
-    alignItems: 'center',
-    backgroundColor: '#000B58',
-    padding: 10,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  dropdownLbl: {
-    fontFamily: 'BodyRegular',
-    color: '#FFF',
-    marginBottom: 10,
-  },
   dropdownButtonStyle: {
     width: '100%',
     height: 45,
@@ -592,13 +587,10 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     width: '100%',
+    marginTop: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EAEAEA',
-    height: 200,
     position: 'relative',
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
   },
   scanButton: {
     width: 100,
@@ -649,6 +641,28 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontFamily: 'BodyRegular',
     color: '#fff',
+  },
+  infoContainer: {
+    marginTop: 10,
+    padding: 20,
+  },
+  infoIcon: {
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  bulletView: {
+    width: '100%',
+    flexDirection: 'row',
+    gap: 10,
+    paddingLeft: 5,
+  },
+  bullet: {
+    fontFamily: 'BodyRegular',
+    color: '#333',
+  },
+  bulletedText: {
+    fontFamily: 'BodyRegular',
+    color: '#333',
   },
 });
 

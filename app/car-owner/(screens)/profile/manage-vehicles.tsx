@@ -154,8 +154,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   lowerBox: {
-    backgroundColor: '#fff',
+    width: '90%',
     alignItems: 'center',
+    alignSelf: 'center',
     marginTop: 20,
     flex: 1,
     marginBottom: 100,
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     minHeight: 80,
     padding: 10,
     marginBottom: 10,
-    width: '90%',
+    width: '100%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

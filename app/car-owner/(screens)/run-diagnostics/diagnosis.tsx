@@ -6,7 +6,8 @@ import { RootState } from '@/redux/store';
 import { getOnVehicleDiagnostic, getScannedVehicle } from '@/services/backendApi';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BluetoothDevice } from 'react-native-bluetooth-classic';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -22,6 +23,7 @@ const Diagnosis = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const vehicleID: number | null = useSelector((state: RootState) => state.scan.vehicleID);
   const scanReference: string | null = useSelector((state: RootState) => state.scan.scanReference);
+  const connectedDevice: BluetoothDevice | null = useSelector((state: RootState) => state.device.device);
 
   useEffect(() => {
     (async () => {
@@ -48,6 +50,30 @@ const Diagnosis = () => {
       }
     })();
   }, [vehicleID, scanReference]);
+
+  const clearCodesAlert = () => {
+    Alert.alert('Clear History', 'Are you sure you want to clear your history?', [
+      {
+        text: 'Cancel',
+        onPress: () => {},
+        style: 'cancel',
+      },
+      {
+        text: 'Yes',
+        onPress: () => clearCodes(),
+      },
+    ]);
+  };
+
+  const clearCodes = async () => {
+    if (!connectedDevice) return;
+    await sendCommand('04');
+  };
+
+  const sendCommand = async (cmd: string) => {
+    if (!connectedDevice) return;
+    await connectedDevice?.write(`${cmd}\r`);
+  };
 
   if (isLoading) {
     return <Loading />;

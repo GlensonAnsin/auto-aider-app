@@ -249,10 +249,11 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <Image source={require('../../../assets/images/screen-design-2.png')} style={styles.screenDesign} />
+      <View style={styles.upperBox}>
         <Image source={require('../../../assets/images/logo.png')} style={styles.logo} width={200} height={25} />
+      </View>
 
+      <ScrollView>
         <View style={styles.userContainer}>
           <View style={styles.userNameContainer}>
             <Text style={styles.header}>Hello,</Text>
@@ -494,13 +495,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFF',
   },
-  screenDesign: {
-    width: '100%',
+  upperBox: {
+    backgroundColor: '#000B58',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    height: 63,
   },
   logo: {
-    position: 'absolute',
-    top: 35,
-    left: 20,
+    marginLeft: 20,
   },
   userContainer: {
     flexDirection: 'row',
