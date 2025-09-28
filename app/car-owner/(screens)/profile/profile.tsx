@@ -10,6 +10,7 @@ import { clearVehicleDiagIDArrState } from '@/redux/slices/vehicleDiagIDArrSlice
 import { clearVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { changePass, getUserInfo } from '@/services/backendApi';
 import { clearTokens } from '@/services/tokenStorage';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -225,6 +226,18 @@ const Profile = () => {
           <TouchableOpacity style={styles.profileTab} onPress={() => setModalVisible(true)}>
             <MaterialCommunityIcons name="lock-outline" style={styles.icon} />
             <Text style={styles.tabName}>Change Password</Text>
+            <MaterialCommunityIcons name="arrow-right-thin" style={styles.forwardIcon} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.profileTab}
+            onPress={() => {
+              backRoute();
+              router.replace('./settings');
+            }}
+          >
+            <Ionicons name="settings-outline" style={styles.icon} />
+            <Text style={styles.tabName}>Settings</Text>
             <MaterialCommunityIcons name="arrow-right-thin" style={styles.forwardIcon} />
           </TouchableOpacity>
 

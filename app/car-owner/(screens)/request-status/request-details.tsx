@@ -447,8 +447,8 @@ const RequestDetails = () => {
                   backRoute();
                   dispatch(
                     setSenderReceiverState({
-                      senderID: item.userID,
-                      receiverID: item.repairShopID,
+                      senderID: Number(userID),
+                      receiverID: Number(item.repairShopID),
                       role: 'car-owner',
                     })
                   );

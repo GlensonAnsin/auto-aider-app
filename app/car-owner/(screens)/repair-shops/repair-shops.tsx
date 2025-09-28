@@ -2,6 +2,7 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { clearScanState } from '@/redux/slices/scanSlice';
+import { setSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
 import { RootState } from '@/redux/store';
 import {
   addRequest,
@@ -113,6 +114,7 @@ const RepairShops = () => {
 
   const vehicleID: number | null = useSelector((state: RootState) => state.scan.vehicleID);
   const scanReference: string | null = useSelector((state: RootState) => state.scan.scanReference);
+  const userID = useSelector((state: RootState) => state.role.ID);
 
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
@@ -544,7 +546,20 @@ const RepairShops = () => {
                         <Text style={styles.buttonText}>Request Repair</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity style={styles.button}>
+                      <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => {
+                          backRoute();
+                          dispatch(
+                            setSenderReceiverState({
+                              senderID: Number(userID),
+                              receiverID: Number(nearbyRepShop[selectedRepShop].repairShopID),
+                              role: 'car-owner',
+                            })
+                          );
+                          router.replace('/chat-room/chat-room');
+                        }}
+                      >
                         <Text style={styles.buttonText}>Chat Shop</Text>
                       </TouchableOpacity>
                     </View>

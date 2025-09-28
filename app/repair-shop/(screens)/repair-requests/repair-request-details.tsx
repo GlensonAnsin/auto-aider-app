@@ -596,8 +596,8 @@ const RepairRequestDetails = () => {
                   backRoute();
                   dispatch(
                     setSenderReceiverState({
-                      senderID: item.repairShopID,
-                      receiverID: item.userID,
+                      senderID: Number(shopID),
+                      receiverID: Number(item.userID),
                       role: 'repair-shop',
                     })
                   );

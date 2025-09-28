@@ -1,20 +1,11 @@
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Header } from '@/components/Header';
+import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsTab() {
-  const router = useRouter();
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.arrowHeaderContainer}>
-          <TouchableOpacity style={styles.arrowWrapper} onPress={() => router.replace('/car-owner')}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
-          </TouchableOpacity>
-          <Text style={styles.headerText}>Settings</Text>
-        </View>
-      </View>
+      <Header headerTitle="Settings" />
     </SafeAreaView>
   );
 }

@@ -13,7 +13,6 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
     '(tabs)/index': (color: string) => <Entypo name="home" size={22} color={color} />,
     '(tabs)/inbox': (color: string) => <Entypo name="chat" size={22} color={color} />,
     '(tabs)/notifications': (color: string) => <Ionicons name="notifications" size={22} color={color} />,
-    '(tabs)/settings': (color: string) => <Ionicons name="settings" size={22} color={color} />,
   };
 
   const tabVisible = useSelector((state: RootState) => state.tab.tabVisible);

@@ -1,7 +1,7 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
-import { setDeviceState } from '@/redux/slices/deviceSlice';
+import { clearDeviceState, setDeviceState } from '@/redux/slices/deviceSlice';
 import { setScanState } from '@/redux/slices/scanSlice';
 import { setTabState } from '@/redux/slices/tabBarSlice';
 import { RootState } from '@/redux/store';
@@ -320,6 +320,26 @@ const RunDiagnostics = () => {
     return `${firstChar}${firstDigit}${secondDigit}${thirdDigit}${fourthDigit}`;
   };
 
+  const disconnectToDevice = async () => {
+    try {
+      setConnectLoading(true);
+      await connectedDevice?.disconnect();
+      setConnectedDevice(null);
+      dispatch(clearDeviceState());
+      console.log('Disconnected!');
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    } finally {
+      setConnectLoading(false);
+    }
+  };
+
   if (isLoading) {
     return <Loading />;
   }
@@ -390,25 +410,38 @@ const RunDiagnostics = () => {
       <ScrollView>
         <View style={styles.lowerBox}>
           <View style={styles.obd2Container}>
-            <TouchableOpacity style={styles.scanDevButton} onPress={() => discoverDevices()}>
-              <Text style={styles.scanDevButtonText}>Discover Devices</Text>
-            </TouchableOpacity>
-            <FlatList
-              data={devices}
-              style={styles.devicesContainer}
-              nestedScrollEnabled={true}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.selectDeviceButton} onPress={() => connectToDevice(item)}>
-                  <Text style={styles.selectDeviceButtonText}>{item.name}</Text>
+            {connectedDevice && (
+              <TouchableOpacity
+                style={[styles.scanDevButton, { backgroundColor: '#780606' }]}
+                onPress={() => disconnectToDevice()}
+              >
+                <Text style={styles.scanDevButtonText}>Disconnect</Text>
+              </TouchableOpacity>
+            )}
+
+            {!connectedDevice && (
+              <>
+                <TouchableOpacity style={styles.scanDevButton} onPress={() => discoverDevices()}>
+                  <Text style={styles.scanDevButtonText}>Discover Devices</Text>
                 </TouchableOpacity>
-              )}
-              ListEmptyComponent={() => (
-                <View style={styles.noDevicesContainer}>
-                  <Text style={styles.noDevicesText}>Paired devices empty</Text>
-                </View>
-              )}
-              keyExtractor={(item) => item.address}
-            />
+                <FlatList
+                  data={devices}
+                  style={styles.devicesContainer}
+                  nestedScrollEnabled={true}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity style={styles.selectDeviceButton} onPress={() => connectToDevice(item)}>
+                      <Text style={styles.selectDeviceButtonText}>{item.name}</Text>
+                    </TouchableOpacity>
+                  )}
+                  ListEmptyComponent={() => (
+                    <View style={styles.noDevicesContainer}>
+                      <Text style={styles.noDevicesText}>Paired devices empty</Text>
+                    </View>
+                  )}
+                  keyExtractor={(item) => item.address}
+                />
+              </>
+            )}
           </View>
 
           <SelectDropdown
@@ -480,7 +513,7 @@ const RunDiagnostics = () => {
             <View style={styles.bulletView}>
               <Text style={styles.bullet}>{'\u2022'}</Text>
               <Text style={styles.bulletedText}>
-                Select a car to scan. Make sure that the car details are correct as this will affect result&apos;s
+                Select a car to scan. Make sure that the car details are correct as this will affect result&apos;s the
                 accuracy.
               </Text>
             </View>

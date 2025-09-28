@@ -1,6 +1,8 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
+import { clearDeviceState } from '@/redux/slices/deviceSlice';
+import { popRouteState } from '@/redux/slices/routeSlice';
 import { setVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { RootState } from '@/redux/store';
 import { getOnVehicleDiagnostic, getScannedVehicle } from '@/services/backendApi';
@@ -8,6 +10,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BluetoothDevice } from 'react-native-bluetooth-classic';
+import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -24,6 +27,7 @@ const Diagnosis = () => {
   const vehicleID: number | null = useSelector((state: RootState) => state.scan.vehicleID);
   const scanReference: string | null = useSelector((state: RootState) => state.scan.scanReference);
   const connectedDevice: BluetoothDevice | null = useSelector((state: RootState) => state.device.device);
+  const routes: any[] = useSelector((state: RootState) => state.route.route);
 
   useEffect(() => {
     (async () => {
@@ -52,7 +56,7 @@ const Diagnosis = () => {
   }, [vehicleID, scanReference]);
 
   const clearCodesAlert = () => {
-    Alert.alert('Clear History', 'Are you sure you want to clear your history?', [
+    Alert.alert('Clear Codes', 'Make sure the issues have been fixed before clearing the codes.', [
       {
         text: 'Cancel',
         onPress: () => {},
@@ -75,6 +79,24 @@ const Diagnosis = () => {
     await connectedDevice?.write(`${cmd}\r`);
   };
 
+  const disconnectToDevice = async () => {
+    try {
+      await connectedDevice?.disconnect();
+      dispatch(clearDeviceState());
+      console.log('Disconnected!');
+      router.replace(routes[routes.length - 1]);
+      dispatch(popRouteState());
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    }
+  };
+
   if (isLoading) {
     return <Loading />;
   }
@@ -86,11 +108,20 @@ const Diagnosis = () => {
         <View style={styles.lowerBox}>
           <View style={styles.buttonContainer}>
             <Text style={styles.car}>{scannedVehicle}</Text>
-            <TouchableOpacity style={[styles.button, { backgroundColor: '#780606' }]}>
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: '#780606' }]}
+              onPress={() => disconnectToDevice()}
+            >
               <Icon name="close-circle-outline" style={styles.buttonIcon} />
               <Text style={styles.buttonText}>Disconnect</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, { backgroundColor: '#000B58' }]}>
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: '#000B58' }]}
+              onPress={() => {
+                router.replace(routes[routes.length - 1]);
+                dispatch(popRouteState());
+              }}
+            >
               <Icon name="radiobox-marked" style={styles.buttonIcon} />
               <Text style={styles.buttonText}>Start another diagnosis</Text>
             </TouchableOpacity>
@@ -99,7 +130,7 @@ const Diagnosis = () => {
           <View style={styles.troubleCodesContainer}>
             <View style={styles.labelContainer}>
               <Text style={styles.troubleCodesLbl}>Detected Trouble Codes</Text>
-              <TouchableOpacity style={styles.clearButton}>
+              <TouchableOpacity style={styles.clearButton} onPress={() => clearCodesAlert()}>
                 <Text style={styles.clearButtonText}>Clear codes</Text>
               </TouchableOpacity>
             </View>
