@@ -154,6 +154,12 @@ export default function ChatsTab() {
       </View>
 
       <View style={styles.lowerBox}>
+        {chatInfo.length === 0 && (
+          <View style={styles.noHistoryContainer}>
+            <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
+            <Text style={styles.emptyText}>Empty</Text>
+          </View>
+        )}
         <FlatList
           data={chatInfo.sort((a, b) => b.chatID - a.chatID)}
           renderItem={({ item }) => (
@@ -270,6 +276,17 @@ const styles = StyleSheet.create({
   },
   lowerBox: {
     flex: 1,
+    marginBottom: 100,
+  },
+  noHistoryContainer: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontFamily: 'BodyRegular',
+    color: '#EAEAEA',
+    fontSize: 30,
   },
   conversationButton: {
     flexDirection: 'row',

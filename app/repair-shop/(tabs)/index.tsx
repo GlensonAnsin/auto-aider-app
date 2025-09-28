@@ -13,6 +13,7 @@ import socket from '@/services/socket';
 import { clearTokens } from '@/services/tokenStorage';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Fontisto from '@expo/vector-icons/Fontisto';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import axios from 'axios';
@@ -304,11 +305,11 @@ export default function Home() {
               style={styles.button}
               onPress={() => {
                 backRoute();
-                router.replace('./repair-history/repair-history');
+                router.replace('./edit-shop/edit-shop');
               }}
             >
-              <MaterialIcons name="manage-history" size={15} color="#FFF" />
-              <Text style={styles.buttonText}>History</Text>
+              <FontAwesome6 name="edit" size={10} color="#FFF" />
+              <Text style={styles.buttonText}>Edit Shop</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -326,11 +327,11 @@ export default function Home() {
               style={styles.button}
               onPress={() => {
                 backRoute();
-                router.replace('./edit-shop/edit-shop');
+                router.replace('./settings/settings');
               }}
             >
-              <FontAwesome6 name="edit" size={10} color="#FFF" />
-              <Text style={styles.buttonText}>Edit Shop</Text>
+              <Ionicons name="settings-outline" size={15} color="#FFF" />
+              <Text style={styles.buttonText}>Settings</Text>
             </TouchableOpacity>
           </View>
 

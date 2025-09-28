@@ -3,6 +3,7 @@ import { Loading } from '@/components/Loading';
 import { RootState } from '@/redux/store';
 import { deleteVehicle, getVehicle } from '@/services/backendApi';
 import socket from '@/services/socket';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
@@ -114,7 +115,12 @@ const ManageVehicles = () => {
     <SafeAreaView style={styles.container}>
       <Header headerTitle="Vehicles" />
       <View style={styles.lowerBox}>
-        {vehicles.length === 0 && <Text style={styles.noVehiclesTxt}>-- No vehicles added --</Text>}
+        {vehicles.length === 0 && (
+          <View style={styles.noHistoryContainer}>
+            <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
+            <Text style={styles.emptyText}>Empty</Text>
+          </View>
+        )}
 
         {vehicles.length !== 0 && (
           <FlatList
@@ -161,9 +167,15 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 100,
   },
-  noVehiclesTxt: {
+  noHistoryContainer: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
     fontFamily: 'BodyRegular',
-    color: '#555',
+    color: '#EAEAEA',
+    fontSize: 30,
   },
   vehicleContainer: {
     backgroundColor: '#EAEAEA',

@@ -6,6 +6,7 @@ import { RootState } from '@/redux/store';
 import { deleteAllVehicleDiagnostics, deleteVehicleDiagnostic, getVehicleDiagnostics } from '@/services/backendApi';
 import socket from '@/services/socket';
 import Entypo from '@expo/vector-icons/Entypo';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
@@ -130,6 +131,10 @@ const DiagnosticHistory = () => {
   };
 
   const deleteAllVehicleDiagAlert = () => {
+    if (grouped.length === 0) {
+      return;
+    }
+
     Alert.alert('Clear History', 'Are you sure you want to clear your history?', [
       {
         text: 'Cancel',
@@ -200,7 +205,12 @@ const DiagnosticHistory = () => {
           </TouchableOpacity>
         </View>
 
-        {grouped.length === 0 && <Text style={styles.noHistoriesText}>-- No Histories --</Text>}
+        {grouped.length === 0 && (
+          <View style={styles.noHistoryContainer}>
+            <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
+            <Text style={styles.emptyText}>Empty</Text>
+          </View>
+        )}
 
         {grouped.length !== 0 && (
           <FlatList
@@ -285,6 +295,16 @@ const styles = StyleSheet.create({
     fontFamily: 'HeaderRegular',
     color: '#000B58',
     fontSize: 16,
+  },
+  noHistoryContainer: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontFamily: 'BodyRegular',
+    color: '#EAEAEA',
+    fontSize: 30,
   },
   historyContainer: {
     width: '100%',

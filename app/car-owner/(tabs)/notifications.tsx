@@ -177,6 +177,12 @@ export default function NotificationsTab() {
       </View>
 
       <View style={styles.lowerBox}>
+        {notification.length === 0 && (
+          <View style={styles.noHistoryContainer}>
+            <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
+            <Text style={styles.emptyText}>Empty</Text>
+          </View>
+        )}
         <FlatList
           data={notification.sort((a, b) => b.notificationID - a.notificationID)}
           renderItem={({ item }) => (
@@ -229,6 +235,17 @@ const styles = StyleSheet.create({
   },
   lowerBox: {
     flex: 1,
+    marginBottom: 100,
+  },
+  noHistoryContainer: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontFamily: 'BodyRegular',
+    color: '#EAEAEA',
+    fontSize: 30,
   },
   notifButton: {
     borderBottomWidth: 1,
