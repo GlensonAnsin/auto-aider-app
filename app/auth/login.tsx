@@ -177,7 +177,12 @@ export default function Login() {
               dropdownStyle={styles.dropdownMenuStyle}
             />
 
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                backRoute();
+                router.replace('/forgot-pass/forgot-pass');
+              }}
+            >
               <Text style={styles.forgetPassLbl}>Forgot password?</Text>
             </TouchableOpacity>
           </View>

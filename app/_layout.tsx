@@ -47,6 +47,7 @@ export default function RootLayout() {
         <Stack.Screen name="car-owner" />
         <Stack.Screen name="repair-shop" />
         <Stack.Screen name="chat-room/chat-room" />
+        <Stack.Screen name="forgot-pass/forgot-pass" />
       </Stack>
     </Provider>
   );
