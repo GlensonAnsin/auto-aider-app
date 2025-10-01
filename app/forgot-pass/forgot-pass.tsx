@@ -11,8 +11,13 @@ const ForgotPass = () => {
   const [code, setCode] = useState<string>('');
 
   const sendVerification = async () => {
-    const confirmation = await signInWithPhoneNumber(auth, phoneNum);
-    setConfirm(confirmation);
+    try {
+      const confirmation = await signInWithPhoneNumber(auth, phoneNum);
+      setConfirm(confirmation);
+      console.log(confirmation);
+    } catch (e) {
+      console.error('Failed to send verification:', e);
+    }
   };
 
   const verifyCode = async () => {
@@ -29,9 +34,9 @@ const ForgotPass = () => {
       <Header headerTitle="Account Recovery" />
       <View style={styles.lowerBox}>
         <TextInput placeholder="+63..." value={phoneNum} onChangeText={setPhoneNum} />
-        <Button title="Send Code" onPress={() => sendVerification()} />
+        <Button title="Send Code" onPress={sendVerification} />
         <TextInput placeholder="Enter Code" value={code} onChangeText={setCode} />
-        <Button title="Confirm Code" onPress={() => verifyCode()} />
+        <Button title="Confirm Code" onPress={verifyCode} />
       </View>
     </SafeAreaView>
   );
