@@ -1,26 +1,29 @@
 import { Header } from '@/components/Header';
-import { auth } from '@/config/firebaseConfig';
-import { signInWithPhoneNumber } from 'firebase/auth';
+import { getAuth, signInWithPhoneNumber } from '@react-native-firebase/auth';
+import { Checkbox } from 'expo-checkbox';
 import { useState } from 'react';
-import { Button, StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ForgotPass = () => {
+  const [selectedAuthType, setSelectedAuthType] = useState<string>('sms');
   const [phoneNum, setPhoneNum] = useState<string>('');
   const [confirm, setConfirm] = useState<any>(null);
   const [code, setCode] = useState<string>('');
 
-  const sendVerification = async () => {
+  const authType = ['sms', 'email'];
+
+  const sendSMSVerification = async () => {
     try {
-      const confirmation = await signInWithPhoneNumber(auth, phoneNum);
+      const confirmation = await signInWithPhoneNumber(getAuth(), phoneNum);
       setConfirm(confirmation);
-      console.log(confirmation);
+      console.log('Verification sent!');
     } catch (e) {
       console.error('Failed to send verification:', e);
     }
   };
 
-  const verifyCode = async () => {
+  const verifySMSCode = async () => {
     try {
       await confirm.confirm(code);
       console.log('Phone number verified!');
@@ -33,10 +36,13 @@ const ForgotPass = () => {
     <SafeAreaView style={styles.container}>
       <Header headerTitle="Account Recovery" />
       <View style={styles.lowerBox}>
-        <TextInput placeholder="+63..." value={phoneNum} onChangeText={setPhoneNum} />
-        <Button title="Send Code" onPress={sendVerification} />
-        <TextInput placeholder="Enter Code" value={code} onChangeText={setCode} />
-        <Button title="Confirm Code" onPress={verifyCode} />
+        <Text style={styles.subHeader}>Select ways to reset your password:</Text>
+        <Checkbox
+          value={selectedAuthType.includes('sms')}
+          onValueChange={() => {}}
+          color={authType ? '#000B58' : undefined}
+        />
+        <Text style={styles.checkboxTxt}>SMS</Text>
       </View>
     </SafeAreaView>
   );
@@ -48,6 +54,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   lowerBox: {},
+  subHeader: {},
+  checkboxTxt: {},
 });
 
 export default ForgotPass;
