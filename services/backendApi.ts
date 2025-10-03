@@ -112,6 +112,30 @@ export const changePass = async (userData: ChangePass) => {
   }
 };
 
+// RESET USER PASS
+export const resetPassCO = async (number: string, email: string, authType: string, newPassword: string) => {
+  try {
+    await axios.patch(`${apiURL}/user/reset-pass-co`,
+      { number, email, authType, newPassword },
+    );
+  } catch (e) {
+    console.error('Reset Pass Error: ', e);
+  }
+};
+
+// CHECK EXISTENCE OF NUMBER OR EMAIL FOR CAR OWNER
+export const checkNumOrEmailCO = async (number: string, email: string, authType: string) => {
+  try {
+    const res = await axios.post(`${apiURL}/user/check-existence-co`,
+      { number, email, authType },
+    );
+    return res.data;
+  } catch (e) {
+    console.error('Checking User Existence Error: ', e);
+    return null;
+  }
+};
+
 // SIGNUP REPAIR SHOP
 export const createRepairShop = async (repairShopData: AutoRepairShop) => {
   try {
@@ -217,7 +241,7 @@ export const updateRatings = async (shopID: number, requestID: number[], score: 
   } catch (e) {
     console.error('Update Rating Error:', e);
   }
-}
+};
 
 // UPDATE SHOP AVAILABILITY
 export const updateAvailability = async (availability: boolean) => {
@@ -234,7 +258,31 @@ export const updateAvailability = async (availability: boolean) => {
   } catch (e) {
     console.error('Update Availability Error:', e);
   }
-}
+};
+
+// RESET SHOP PASS
+export const resetPassRS = async (number: string, email: string, authType: string, newPassword: string) => {
+  try {
+    await axios.patch(`${apiURL}/user/reset-pass-rs`,
+      { number, email, authType, newPassword },
+    );
+  } catch (e) {
+    console.error('Reset Pass Error: ', e);
+  }
+};
+
+// CHECK EXISTENCE OF NUMBER OR EMAIL FOR REPAIR SHOP
+export const checkNumOrEmailRS = async (number: string, email: string, authType: string) => {
+  try {
+    const res = await axios.post(`${apiURL}/auto_repair_shop/check-existence-rs`,
+      { number, email, authType },
+    );
+    return res.data;
+  } catch (e) {
+    console.error('Checking Shop Existence Error: ', e);
+    return null;
+  }
+};
 
 // ADD VEHICLE
 export const addVehicle = async (vehicleInfo: Vehicle) => {
