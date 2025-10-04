@@ -97,6 +97,7 @@ const ForgotPass = () => {
             color: '#FFF',
             icon: 'success',
           });
+          return;
         }
 
         if (selectedAuthType === 'sms') {
