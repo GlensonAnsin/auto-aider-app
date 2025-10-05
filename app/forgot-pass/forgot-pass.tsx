@@ -5,9 +5,10 @@ import { checkNumOrEmailCO, checkNumOrEmailRS, resetPassCO } from '@/services/ba
 import { getAuth, signInWithPhoneNumber } from '@react-native-firebase/auth';
 import { Checkbox } from 'expo-checkbox';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   Modal,
   Pressable,
   StyleSheet,
@@ -37,11 +38,66 @@ const ForgotPass = () => {
   const [verificationModalVisible, setVerificationModalVisible] = useState<boolean>(false);
   const [resetPassModalVisible, setResetPassModalVisible] = useState<boolean>(false);
   const [sendCodeLoading, setSendCodeLoading] = useState<boolean>(false);
+  const [confirmCodeLoading, setConfirmCodeLoading] = useState<boolean>(false);
   const [resetPassLoading, setResetPassLoading] = useState<boolean>(false);
   const [newPass, setNewPass] = useState<string>('');
   const [confirmNewPass, setConfirmNewPass] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const endRef = useRef<number>(Date.now() + 45 * 1000);
+  const [timer, setTimer] = useState<number>(45);
+  const [isTimerActivate, setIsTimerActivate] = useState<boolean>(false);
   const prefix = '09';
+
+  const startTimer = (seconds = timer) => {
+    endRef.current = Date.now() + seconds * 1000;
+    setIsTimerActivate(true);
+    setTimer(seconds);
+    scheduleTick();
+  };
+
+  const clearTimer = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
+  const scheduleTick = () => {
+    clearTimer();
+    const msLeft = endRef.current - Date.now();
+    const secsLeft = Math.max(Math.ceil(msLeft / 1000), 0);
+    setTimer(secsLeft);
+
+    if (secsLeft <= 0) {
+      clearTimer();
+      setIsTimerActivate(false);
+      setConfirm(null);
+      setError('');
+      setOtp(Array(6).fill(''));
+      setTimer(45);
+      return;
+    }
+
+    const remainder = msLeft % 1000;
+    const nextDelay = remainder === 0 ? 1000 : remainder;
+    timeoutRef.current = setTimeout(scheduleTick, nextDelay);
+  };
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        const msLeft = endRef.current - Date.now();
+        const secsLeft = Math.max(Math.ceil(msLeft / 1000), 0);
+        setTimer(secsLeft);
+
+        if (secsLeft > 0 && !timeoutRef.current) {
+          scheduleTick();
+        }
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   const roles = [
     { title: 'Car Owner', icon: 'car-outline' },
@@ -73,15 +129,28 @@ const ForgotPass = () => {
   };
 
   const handleSendCode = async () => {
-    if ((phoneNum === '09' && !email) || phoneNum.length < 11) {
+    if (phoneNum === '09' && !email) {
       showMessage({
-        message: 'Invalid number or email.',
+        message: 'Please fill out the field.',
         type: 'warning',
         floating: true,
         color: '#FFF',
         icon: 'warning',
       });
       return;
+    }
+
+    if (selectedAuthType === 'sms') {
+      if (phoneNum.length < 11) {
+        showMessage({
+          message: 'Invalid number or email.',
+          type: 'warning',
+          floating: true,
+          color: '#FFF',
+          icon: 'warning',
+        });
+        return;
+      }
     }
 
     try {
@@ -97,6 +166,10 @@ const ForgotPass = () => {
             color: '#FFF',
             icon: 'success',
           });
+          setTimeout(() => {
+            setVerificationModalVisible(true);
+            startTimer();
+          }, 2000);
           return;
         }
 
@@ -125,6 +198,11 @@ const ForgotPass = () => {
             color: '#FFF',
             icon: 'success',
           });
+          setTimeout(() => {
+            setVerificationModalVisible(true);
+            startTimer();
+          }, 2000);
+          return;
         }
 
         if (selectedAuthType === 'sms') {
@@ -144,6 +222,7 @@ const ForgotPass = () => {
       }
       setTimeout(() => {
         setVerificationModalVisible(true);
+        startTimer();
       }, 2000);
     } catch {
       showMessage({
@@ -158,8 +237,55 @@ const ForgotPass = () => {
     }
   };
 
+  const handleResendCode = async () => {
+    try {
+      setConfirmCodeLoading(true);
+      if (selectedRole === 'Car Owner') {
+        const res = await checkNumOrEmailCO(phoneNum, email, selectedAuthType);
+
+        if (!res.isExist) {
+          startTimer();
+          return;
+        }
+
+        if (selectedAuthType === 'sms') {
+          const intPhoneNum = phoneNum.replace(/^0/, '+63');
+          const confirmation = await signInWithPhoneNumber(getAuth(), intPhoneNum);
+          setConfirm(confirmation);
+        } else {
+          return;
+        }
+      } else {
+        const res = await checkNumOrEmailRS(phoneNum, email, selectedAuthType);
+
+        if (!res.isExist) {
+          startTimer();
+          return;
+        }
+
+        if (selectedAuthType === 'sms') {
+          const intPhoneNum = phoneNum.replace(/^0/, '+63');
+          const confirmation = await signInWithPhoneNumber(getAuth(), intPhoneNum);
+          setConfirm(confirmation);
+        } else {
+          return;
+        }
+      }
+      startTimer();
+    } catch {
+      setError('Failed to send verification.');
+    } finally {
+      setConfirmCodeLoading(false);
+    }
+  };
+
   const verifyCode = async () => {
-    if (otp.join('').length < 6) {
+    if (otp.join('') === '') {
+      setError('Please input code first.');
+      return;
+    }
+
+    if (otp.join('').length >= 1 && otp.join('').length <= 5) {
       setError('Invalid code');
       return;
     }
@@ -167,8 +293,15 @@ const ForgotPass = () => {
     setError('');
 
     try {
+      setConfirmCodeLoading(true);
       await confirm.confirm(otp.join(''));
       setVerificationModalVisible(false);
+      clearTimer();
+      setIsTimerActivate(false);
+      setConfirm(null);
+      setError('');
+      setOtp(Array(6).fill(''));
+      setTimer(45);
       showMessage({
         message: 'Verified!',
         type: 'success',
@@ -181,6 +314,8 @@ const ForgotPass = () => {
       }, 2000);
     } catch {
       setError('You entered a wrong code.');
+    } finally {
+      setConfirmCodeLoading(false);
     }
   };
 
@@ -229,6 +364,7 @@ const ForgotPass = () => {
         icon: 'danger',
       });
     } finally {
+      setConfirm(null);
       setResetPassLoading(false);
     }
   };
@@ -265,7 +401,10 @@ const ForgotPass = () => {
             <View style={styles.chooseButtonTextContainer}>
               <Checkbox
                 value={selectedAuthType.includes('sms')}
-                onValueChange={() => setSelectedAuthType('sms')}
+                onValueChange={() => {
+                  setSelectedAuthType('sms');
+                  setEmail('');
+                }}
                 color={selectedAuthType.includes('sms') ? '#000B58' : undefined}
               />
               <Text style={styles.checkboxTxt}>SMS</Text>
@@ -282,7 +421,10 @@ const ForgotPass = () => {
             <View style={styles.chooseButtonTextContainer}>
               <Checkbox
                 value={selectedAuthType.includes('email')}
-                onValueChange={() => setSelectedAuthType('email')}
+                onValueChange={() => {
+                  setSelectedAuthType('email');
+                  setPhoneNum('09');
+                }}
                 color={selectedAuthType.includes('email') ? '#000B58' : undefined}
               />
               <Text style={styles.checkboxTxt}>Email</Text>
@@ -305,12 +447,34 @@ const ForgotPass = () => {
               animationType="fade"
               backdropColor={'rgba(0, 0, 0, 0.5)'}
               visible={verificationModalVisible}
-              onRequestClose={() => setVerificationModalVisible(false)}
+              onRequestClose={() => {
+                setVerificationModalVisible(false);
+                clearTimer();
+                setIsTimerActivate(false);
+                setConfirm(null);
+                setError('');
+                setOtp(Array(6).fill(''));
+                setTimer(45);
+              }}
             >
-              <TouchableWithoutFeedback onPress={() => setVerificationModalVisible(false)}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setVerificationModalVisible(false);
+                  clearTimer();
+                  setIsTimerActivate(false);
+                  setConfirm(null);
+                  setError('');
+                  setOtp(Array(6).fill(''));
+                  setTimer(45);
+                }}
+              >
                 <View style={styles.centeredView}>
                   <Pressable style={styles.verificationModalView} onPress={() => {}}>
                     <Text style={styles.modalHeader}>Verification</Text>
+                    <Text style={styles.modalText}>
+                      We have sent the verification code to your{' '}
+                      {selectedAuthType === 'sms' ? 'number.' : 'email address.'}
+                    </Text>
                     <View style={styles.codeInputContainer}>
                       {otp.map((digit, index) => (
                         <TextInput
@@ -321,20 +485,40 @@ const ForgotPass = () => {
                           onKeyPress={(e) => handleKeyPress(e, index)}
                           keyboardType="number-pad"
                           maxLength={1}
+                          readOnly={isTimerActivate ? false : true}
                           ref={(ref) => {
                             inputs.current[index] = ref;
                           }}
                         />
                       ))}
                     </View>
+                    <Text style={[styles.modalText, { fontSize: 12 }]}>
+                      {isTimerActivate ? `Resend code in ${timer}s` : 'You can resend the code now'}
+                    </Text>
                     {error.length > 0 && (
                       <View style={styles.errorContainer}>
                         <Text style={styles.errorMessage}>{error}</Text>
                       </View>
                     )}
-                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => verifyCode()}>
-                      <Text style={styles.sendButtonText}>Verify Code</Text>
-                    </TouchableOpacity>
+
+                    {confirmCodeLoading && (
+                      <ActivityIndicator style={{ marginBottom: 10 }} size="small" color="#000B58" />
+                    )}
+
+                    {!isTimerActivate && (
+                      <TouchableOpacity
+                        style={[styles.sendButton, { marginTop: 0 }]}
+                        onPress={() => handleResendCode()}
+                      >
+                        <Text style={styles.sendButtonText}>Resend Code</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {isTimerActivate && (
+                      <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => verifyCode()}>
+                        <Text style={styles.sendButtonText}>Verify Code</Text>
+                      </TouchableOpacity>
+                    )}
                   </Pressable>
                 </View>
               </TouchableWithoutFeedback>
@@ -500,6 +684,11 @@ const styles = StyleSheet.create({
   modalHeader: {
     fontSize: 20,
     fontFamily: 'HeaderBold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  modalText: {
+    fontFamily: 'BodyRegular',
     color: '#333',
     marginBottom: 10,
   },
