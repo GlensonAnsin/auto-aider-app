@@ -1,11 +1,11 @@
 import { Header } from '@/components/Header';
 import { popRouteState } from '@/redux/slices/routeSlice';
 import { RootState } from '@/redux/store';
-import { checkNumOrEmailCO, checkNumOrEmailRS, resetPassCO } from '@/services/backendApi';
+import { checkNumOrEmailCO, checkNumOrEmailRS, generateOtp, resetPassCO } from '@/services/backendApi';
 import { getAuth, signInWithPhoneNumber } from '@react-native-firebase/auth';
 import { Checkbox } from 'expo-checkbox';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   AppState,
@@ -27,6 +27,7 @@ import { useDispatch, useSelector } from 'react-redux';
 const ForgotPass = () => {
   const dispatch = useDispatch();
   const router = useRouter();
+  const auth = getAuth();
   const routes: any[] = useSelector((state: RootState) => state.route.route);
   const [selectedRole, setSelectedRole] = useState<string>('Car Owner');
   const [selectedAuthType, setSelectedAuthType] = useState<string>('sms');
@@ -44,10 +45,15 @@ const ForgotPass = () => {
   const [confirmNewPass, setConfirmNewPass] = useState<string>('');
   const [error, setError] = useState<string>('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const endRef = useRef<number>(Date.now() + 45 * 1000);
   const [timer, setTimer] = useState<number>(45);
+  const endRef = useRef<number>(Date.now() + timer * 1000);
   const [isTimerActivate, setIsTimerActivate] = useState<boolean>(false);
   const prefix = '09';
+
+  const roles = [
+    { title: 'Car Owner', icon: 'car-outline' },
+    { title: 'Repair Shop', icon: 'tools' },
+  ];
 
   const startTimer = (seconds = timer) => {
     endRef.current = Date.now() + seconds * 1000;
@@ -56,14 +62,14 @@ const ForgotPass = () => {
     scheduleTick();
   };
 
-  const clearTimer = () => {
+  const clearTimer = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-  };
+  }, []);
 
-  const scheduleTick = () => {
+  const scheduleTick = useCallback(() => {
     clearTimer();
     const msLeft = endRef.current - Date.now();
     const secsLeft = Math.max(Math.ceil(msLeft / 1000), 0);
@@ -82,7 +88,7 @@ const ForgotPass = () => {
     const remainder = msLeft % 1000;
     const nextDelay = remainder === 0 ? 1000 : remainder;
     timeoutRef.current = setTimeout(scheduleTick, nextDelay);
-  };
+  }, [clearTimer, setIsTimerActivate, setConfirm, setError, setOtp, setTimer]);
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
@@ -97,12 +103,7 @@ const ForgotPass = () => {
       }
     });
     return () => sub.remove();
-  }, []);
-
-  const roles = [
-    { title: 'Car Owner', icon: 'car-outline' },
-    { title: 'Repair Shop', icon: 'tools' },
-  ];
+  }, [scheduleTick]);
 
   const handlePhoneNumInputChange = (text: string) => {
     if (!text.startsWith(prefix)) {
@@ -156,7 +157,7 @@ const ForgotPass = () => {
     try {
       setSendCodeLoading(true);
       if (selectedRole === 'Car Owner') {
-        const res = await checkNumOrEmailCO(phoneNum, email, selectedAuthType);
+        const res = await checkNumOrEmailCO(phoneNum.trim(), email.trim(), selectedAuthType);
 
         if (!res.isExist) {
           showMessage({
@@ -175,7 +176,7 @@ const ForgotPass = () => {
 
         if (selectedAuthType === 'sms') {
           const intPhoneNum = phoneNum.replace(/^0/, '+63');
-          const confirmation = await signInWithPhoneNumber(getAuth(), intPhoneNum);
+          const confirmation = await signInWithPhoneNumber(auth, intPhoneNum);
           setConfirm(confirmation);
           showMessage({
             message: 'Verification sent!',
@@ -185,10 +186,19 @@ const ForgotPass = () => {
             icon: 'success',
           });
         } else {
-          return;
+          setTimer(300);
+          const res = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole);
+          setConfirm(res);
+          showMessage({
+            message: 'Verification sent!',
+            type: 'success',
+            floating: true,
+            color: '#FFF',
+            icon: 'success',
+          });
         }
       } else {
-        const res = await checkNumOrEmailRS(phoneNum, email, selectedAuthType);
+        const res = await checkNumOrEmailRS(phoneNum.trim(), email.trim(), selectedAuthType);
 
         if (!res.isExist) {
           showMessage({
@@ -207,7 +217,7 @@ const ForgotPass = () => {
 
         if (selectedAuthType === 'sms') {
           const intPhoneNum = phoneNum.replace(/^0/, '+63');
-          const confirmation = await signInWithPhoneNumber(getAuth(), intPhoneNum);
+          const confirmation = await signInWithPhoneNumber(auth, intPhoneNum);
           setConfirm(confirmation);
           showMessage({
             message: 'Verification sent!',
@@ -217,7 +227,15 @@ const ForgotPass = () => {
             icon: 'success',
           });
         } else {
-          return;
+          const res = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole);
+          setConfirm(res);
+          showMessage({
+            message: 'Verification sent!',
+            type: 'success',
+            floating: true,
+            color: '#FFF',
+            icon: 'success',
+          });
         }
       }
       setTimeout(() => {
@@ -241,7 +259,7 @@ const ForgotPass = () => {
     try {
       setConfirmCodeLoading(true);
       if (selectedRole === 'Car Owner') {
-        const res = await checkNumOrEmailCO(phoneNum, email, selectedAuthType);
+        const res = await checkNumOrEmailCO(phoneNum.trim(), email.trim(), selectedAuthType);
 
         if (!res.isExist) {
           startTimer();
@@ -250,13 +268,13 @@ const ForgotPass = () => {
 
         if (selectedAuthType === 'sms') {
           const intPhoneNum = phoneNum.replace(/^0/, '+63');
-          const confirmation = await signInWithPhoneNumber(getAuth(), intPhoneNum);
+          const confirmation = await signInWithPhoneNumber(auth, intPhoneNum);
           setConfirm(confirmation);
         } else {
           return;
         }
       } else {
-        const res = await checkNumOrEmailRS(phoneNum, email, selectedAuthType);
+        const res = await checkNumOrEmailRS(phoneNum.trim(), email.trim(), selectedAuthType);
 
         if (!res.isExist) {
           startTimer();
@@ -265,7 +283,7 @@ const ForgotPass = () => {
 
         if (selectedAuthType === 'sms') {
           const intPhoneNum = phoneNum.replace(/^0/, '+63');
-          const confirmation = await signInWithPhoneNumber(getAuth(), intPhoneNum);
+          const confirmation = await signInWithPhoneNumber(auth, intPhoneNum);
           setConfirm(confirmation);
         } else {
           return;
@@ -294,7 +312,14 @@ const ForgotPass = () => {
 
     try {
       setConfirmCodeLoading(true);
-      await confirm.confirm(otp.join(''));
+      if (selectedAuthType === 'sms') {
+        await confirm.confirm(otp.join(''));
+      } else {
+        if (otp.join('') !== confirm) {
+          setError('You entered a wrong code.');
+          return;
+        }
+      }
       setVerificationModalVisible(false);
       clearTimer();
       setIsTimerActivate(false);
@@ -339,7 +364,7 @@ const ForgotPass = () => {
     try {
       setResetPassLoading(true);
       if (selectedRole === 'Car Owner') {
-        await resetPassCO(phoneNum, email, selectedAuthType, newPass);
+        await resetPassCO(phoneNum.trim(), email.trim(), selectedAuthType, newPass);
         setResetPassModalVisible(false);
         setPhoneNum('');
         setEmail('');

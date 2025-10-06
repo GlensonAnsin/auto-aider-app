@@ -734,3 +734,21 @@ export const deleteNotificationRS = async (notificationID: number) => {
     console.error('Delete Notification For Shop Error: ', e);
   }
 };
+
+// GENERATE OTP
+export const generateOtp = async (number: string, email: string, authType: string, role: string) => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.post(`${apiURL}/authentication/generate-otp`,
+      { number, email, authType, role },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      },
+    );
+    return res.data;
+  } catch (e) {
+    console.error('Generate OTP Error:', e);
+  }
+};
