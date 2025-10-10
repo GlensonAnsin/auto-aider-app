@@ -24,7 +24,7 @@ export default function Login() {
   const handleLogin = async () => {
     if (!username || !password || !role) {
       showMessage({
-        message: 'Please fill in all fields.',
+        message: 'Please fill out all fields.',
         type: 'warning',
         floating: true,
         color: '#FFF',

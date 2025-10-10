@@ -736,11 +736,11 @@ export const deleteNotificationRS = async (notificationID: number) => {
 };
 
 // GENERATE OTP
-export const generateOtp = async (number: string, email: string, authType: string, role: string) => {
+export const generateOtp = async (number: string, email: string, authType: string, role: string, purpose: string) => {
   try {
     const token = await getAccessToken();
     const res = await axios.post(`${apiURL}/authentication/generate-otp`,
-      { number, email, authType, role },
+      { number, email, authType, role, purpose },
       {
         headers: {
           Authorization: `Bearer ${token}`

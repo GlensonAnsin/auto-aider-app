@@ -32,7 +32,7 @@ export interface UpdateUserInfo {
   email: string | null;
   mobile_num: string | null;
   profile_pic: string | null;
-  field: string;
+  field: string | null;
 }
 
 export interface ChangePass {

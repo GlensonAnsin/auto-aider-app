@@ -1,6 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
-import { getUserInfo, getUsers, updateUserInfo } from '@/services/backendApi';
+import { generateOtp, getUserInfo, getUsers, updateUserInfo } from '@/services/backendApi';
 import socket from '@/services/socket';
 import { UpdateUserInfo, UserWithID } from '@/types/user';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -9,8 +9,21 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  AppState,
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -37,6 +50,17 @@ const EditProfile = () => {
   const [localMobileNum, setLocalMobileNum] = useState<string>('');
   const [localEmail, setLocalEmail] = useState<string | null>(null);
   const [localProfilePic, setLocalProfilePic] = useState<string | null>(null);
+
+  const [error, setError] = useState<string>('');
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [timer, setTimer] = useState<number>(300);
+  const endRef = useRef<number>(Date.now() + timer * 1000);
+  const [isTimerActivate, setIsTimerActivate] = useState<boolean>(false);
+  const [confirm, setConfirm] = useState<any>(null);
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
+  const inputs = useRef<(TextInput | null)[]>([]);
+  const [verificationModalVisible, setVerificationModalVisible] = useState<boolean>(false);
+  const [confirmCodeLoading, setConfirmCodeLoading] = useState<boolean>(false);
 
   const genders = ['Male', 'Female'];
 
@@ -94,6 +118,56 @@ const EditProfile = () => {
       socket.off(`updatedUserInfo-CO-${userID}`);
     };
   }, [userID]);
+
+  const startTimer = (seconds = timer) => {
+    endRef.current = Date.now() + seconds * 1000;
+    setIsTimerActivate(true);
+    setTimer(seconds);
+    scheduleTick();
+  };
+
+  const clearTimer = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const scheduleTick = useCallback(() => {
+    clearTimer();
+    const msLeft = endRef.current - Date.now();
+    const secsLeft = Math.max(Math.ceil(msLeft / 1000), 0);
+    setTimer(secsLeft);
+
+    if (secsLeft <= 0) {
+      clearTimer();
+      setIsTimerActivate(false);
+      setConfirm(null);
+      setError('');
+      setOtp(Array(6).fill(''));
+      setTimer(45);
+      return;
+    }
+
+    const remainder = msLeft % 1000;
+    const nextDelay = remainder === 0 ? 1000 : remainder;
+    timeoutRef.current = setTimeout(scheduleTick, nextDelay);
+  }, [clearTimer, setIsTimerActivate, setConfirm, setError, setOtp, setTimer]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        const msLeft = endRef.current - Date.now();
+        const secsLeft = Math.max(Math.ceil(msLeft / 1000), 0);
+        setTimer(secsLeft);
+
+        if (secsLeft > 0 && !timeoutRef.current) {
+          scheduleTick();
+        }
+      }
+    });
+    return () => sub.remove();
+  }, [scheduleTick]);
 
   const pickImage = async (): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -162,19 +236,6 @@ const EditProfile = () => {
           setMobileNum(localMobileNum);
           break;
         case 'email':
-          const emailExists = userExcluded.some((user) => user.email === localEmail?.trim());
-
-          if (emailExists) {
-            showMessage({
-              message: 'Email is already used by another account.',
-              type: 'warning',
-              floating: true,
-              color: '#FFF',
-              icon: 'warning',
-            });
-            return;
-          }
-
           if (localEmail === '') {
             userInfo.email = null;
             setEmail(null);
@@ -291,6 +352,146 @@ const EditProfile = () => {
     await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/cloudinary/delete-image `, {
       public_id: `${folderName}/${fileName}`,
     });
+  };
+
+  const handleOtpInputChange = (text: string, index: number) => {
+    let newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+
+    if (text && index < 5) {
+      inputs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
+      inputs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleSendCode = async () => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const fetchedUsers: UserWithID[] = await getUsers();
+    const userExcluded = fetchedUsers.filter((user) => user.user_id !== userID);
+
+    if (localEmail === '') {
+      handleUpdateUserInfo('email', null);
+      return;
+    }
+
+    if (!emailPattern.test(localEmail ?? '')) {
+      showMessage({
+        message: 'Invalid email format.',
+        type: 'warning',
+        color: '#FFF',
+        floating: true,
+        icon: 'warning',
+      });
+      return;
+    }
+
+    const emailExists = userExcluded.some((user) => user.email === localEmail?.trim());
+
+    if (emailExists) {
+      showMessage({
+        message: 'Email is already used by another account.',
+        type: 'warning',
+        floating: true,
+        color: '#FFF',
+        icon: 'warning',
+      });
+      return;
+    }
+
+    try {
+      setUpdateLoading(true);
+      const res2 = await generateOtp('', localEmail?.trim() ?? '', 'email', 'Car Owner', 'email-verification');
+      setConfirm(res2);
+
+      showMessage({
+        message: 'Verification sent!',
+        type: 'success',
+        floating: true,
+        color: '#FFF',
+        icon: 'success',
+      });
+
+      setTimeout(() => {
+        setVerificationModalVisible(true);
+        startTimer();
+      }, 2000);
+    } catch {
+      showMessage({
+        message: 'Failed to send verification.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    try {
+      setConfirmCodeLoading(true);
+      const res2 = await generateOtp('', localEmail?.trim() ?? '', 'email', 'Car Owner', 'email-verification');
+      setConfirm(res2);
+      startTimer();
+    } catch {
+      setError('Failed to send verification.');
+    } finally {
+      setConfirmCodeLoading(false);
+    }
+  };
+
+  const verifyCode = async () => {
+    if (otp.join('') === '') {
+      setError('Please input code first.');
+      return;
+    }
+
+    if (otp.join('').length >= 1 && otp.join('').length <= 5) {
+      setError('Invalid code');
+      return;
+    }
+
+    setError('');
+
+    try {
+      setConfirmCodeLoading(true);
+
+      if (otp.join('') !== confirm) {
+        setError('You entered a wrong code.');
+        return;
+      }
+
+      setVerificationModalVisible(false);
+      clearTimer();
+      setIsTimerActivate(false);
+      setConfirm(null);
+      setError('');
+      setOtp(Array(6).fill(''));
+      setTimer(45);
+
+      showMessage({
+        message: 'Verified!',
+        type: 'success',
+        floating: true,
+        color: '#FFF',
+        icon: 'success',
+      });
+
+      setTimeout(() => {
+        handleUpdateUserInfo('email', null);
+      }, 2000);
+    } catch {
+      setError('You entered a wrong code.');
+    } finally {
+      setConfirmCodeLoading(false);
+    }
   };
 
   if (isLoading) {
@@ -565,7 +766,7 @@ const EditProfile = () => {
                         <Entypo name="cross" size={20} color="#780606" />
                       </TouchableOpacity>
 
-                      <TouchableOpacity onPress={() => handleUpdateUserInfo('email', null)}>
+                      <TouchableOpacity onPress={() => handleSendCode()}>
                         <FontAwesome5 name="check" size={16} color="#22bb33" />
                       </TouchableOpacity>
                     </>
@@ -583,6 +784,81 @@ const EditProfile = () => {
               )}
             </View>
           </View>
+
+          <Modal
+            animationType="fade"
+            backdropColor={'rgba(0, 0, 0, 0.5)'}
+            visible={verificationModalVisible}
+            onRequestClose={() => {
+              setVerificationModalVisible(false);
+              clearTimer();
+              setIsTimerActivate(false);
+              setConfirm(null);
+              setError('');
+              setOtp(Array(6).fill(''));
+              setTimer(45);
+            }}
+          >
+            <TouchableWithoutFeedback
+              onPress={() => {
+                setVerificationModalVisible(false);
+                clearTimer();
+                setIsTimerActivate(false);
+                setConfirm(null);
+                setError('');
+                setOtp(Array(6).fill(''));
+                setTimer(45);
+              }}
+            >
+              <View style={styles.centeredView}>
+                <Pressable style={styles.verificationModalView} onPress={() => {}}>
+                  <Text style={styles.modalHeader}>Verification</Text>
+                  <Text style={styles.modalText}>We have sent the verification code to your email address.</Text>
+                  <View style={styles.codeInputContainer}>
+                    {otp.map((digit, index) => (
+                      <TextInput
+                        key={index}
+                        style={styles.otpInput}
+                        value={digit}
+                        onChangeText={(text) => handleOtpInputChange(text.replace(/[^0-9]/g, ''), index)}
+                        onKeyPress={(e) => handleKeyPress(e, index)}
+                        keyboardType="number-pad"
+                        maxLength={1}
+                        readOnly={isTimerActivate ? false : true}
+                        ref={(ref) => {
+                          inputs.current[index] = ref;
+                        }}
+                      />
+                    ))}
+                  </View>
+                  <Text style={[styles.modalText, { fontSize: 12 }]}>
+                    {isTimerActivate ? `Resend code in ${timer}s` : 'You can resend the code now'}
+                  </Text>
+                  {error.length > 0 && (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorMessage}>{error}</Text>
+                    </View>
+                  )}
+
+                  {confirmCodeLoading && (
+                    <ActivityIndicator style={{ marginBottom: 10 }} size="small" color="#000B58" />
+                  )}
+
+                  {!isTimerActivate && (
+                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => handleResendCode()}>
+                      <Text style={styles.sendButtonText}>Resend Code</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {isTimerActivate && (
+                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => verifyCode()}>
+                      <Text style={styles.sendButtonText}>Verify Code</Text>
+                    </TouchableOpacity>
+                  )}
+                </Pressable>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
         </View>
       </KeyboardAwareScrollView>
       {updateLoading && (
@@ -756,6 +1032,76 @@ const styles = StyleSheet.create({
     left: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 10,
+  },
+  sendButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000B58',
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  sendButtonText: {
+    fontFamily: 'BodyRegular',
+    color: '#fff',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  verificationModalView: {
+    backgroundColor: '#FFF',
+    width: '85%',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    fontSize: 20,
+    fontFamily: 'HeaderBold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  modalText: {
+    fontFamily: 'BodyRegular',
+    color: '#333',
+    marginBottom: 10,
+  },
+  codeInputContainer: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  otpInput: {
+    width: 30,
+    height: 45,
+    borderRadius: 10,
+    padding: 10,
+    color: '#333',
+    fontFamily: 'BodyRegular',
+    marginBottom: 20,
+    backgroundColor: '#EAEAEA',
+  },
+  errorContainer: {
+    backgroundColor: '#EAEAEA',
+    borderRadius: 5,
+    width: '100%',
+    padding: 10,
+    marginBottom: 10,
+  },
+  errorMessage: {
+    fontFamily: 'BodyRegular',
+    color: 'red',
+    textAlign: 'center',
+    fontSize: 12,
   },
 });
 

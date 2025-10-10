@@ -2,7 +2,6 @@ import { Header } from '@/components/Header';
 import { popRouteState } from '@/redux/slices/routeSlice';
 import { RootState } from '@/redux/store';
 import { checkNumOrEmailCO, checkNumOrEmailRS, generateOtp, resetPassCO } from '@/services/backendApi';
-import { getAuth, signInWithPhoneNumber } from '@react-native-firebase/auth';
 import { Checkbox } from 'expo-checkbox';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -27,7 +26,6 @@ import { useDispatch, useSelector } from 'react-redux';
 const ForgotPass = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const auth = getAuth();
   const routes: any[] = useSelector((state: RootState) => state.route.route);
   const [selectedRole, setSelectedRole] = useState<string>('Car Owner');
   const [selectedAuthType, setSelectedAuthType] = useState<string>('sms');
@@ -158,7 +156,7 @@ const ForgotPass = () => {
     if (selectedAuthType === 'sms') {
       if (phoneNum.length < 11) {
         showMessage({
-          message: 'Invalid number or email.',
+          message: 'Invalid number.',
           type: 'warning',
           floating: true,
           color: '#FFF',
@@ -182,9 +180,9 @@ const ForgotPass = () => {
     try {
       setSendCodeLoading(true);
       if (selectedRole === 'Car Owner') {
-        const res = await checkNumOrEmailCO(phoneNum.trim(), email.trim(), selectedAuthType);
+        const res1 = await checkNumOrEmailCO(phoneNum.trim(), email.trim(), selectedAuthType);
 
-        if (!res.isExist) {
+        if (!res1.isExist) {
           showMessage({
             message: 'Verification sent!',
             type: 'success',
@@ -199,32 +197,19 @@ const ForgotPass = () => {
           return;
         }
 
-        if (selectedAuthType === 'sms') {
-          const intPhoneNum = phoneNum.replace(/^0/, '+63');
-          const confirmation = await signInWithPhoneNumber(auth, intPhoneNum);
-          setConfirm(confirmation);
-          showMessage({
-            message: 'Verification sent!',
-            type: 'success',
-            floating: true,
-            color: '#FFF',
-            icon: 'success',
-          });
-        } else {
-          const res = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole);
-          setConfirm(res);
-          showMessage({
-            message: 'Verification sent!',
-            type: 'success',
-            floating: true,
-            color: '#FFF',
-            icon: 'success',
-          });
-        }
+        const res2 = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole, 'reset-password');
+        setConfirm(res2);
+        showMessage({
+          message: 'Verification sent!',
+          type: 'success',
+          floating: true,
+          color: '#FFF',
+          icon: 'success',
+        });
       } else {
-        const res = await checkNumOrEmailRS(phoneNum.trim(), email.trim(), selectedAuthType);
+        const res1 = await checkNumOrEmailRS(phoneNum.trim(), email.trim(), selectedAuthType);
 
-        if (!res.isExist) {
+        if (!res1.isExist) {
           showMessage({
             message: 'Verification sent!',
             type: 'success',
@@ -239,29 +224,17 @@ const ForgotPass = () => {
           return;
         }
 
-        if (selectedAuthType === 'sms') {
-          const intPhoneNum = phoneNum.replace(/^0/, '+63');
-          const confirmation = await signInWithPhoneNumber(auth, intPhoneNum);
-          setConfirm(confirmation);
-          showMessage({
-            message: 'Verification sent!',
-            type: 'success',
-            floating: true,
-            color: '#FFF',
-            icon: 'success',
-          });
-        } else {
-          const res = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole);
-          setConfirm(res);
-          showMessage({
-            message: 'Verification sent!',
-            type: 'success',
-            floating: true,
-            color: '#FFF',
-            icon: 'success',
-          });
-        }
+        const res2 = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole, 'reset-password');
+        setConfirm(res2);
+        showMessage({
+          message: 'Verification sent!',
+          type: 'success',
+          floating: true,
+          color: '#FFF',
+          icon: 'success',
+        });
       }
+
       setTimeout(() => {
         setVerificationModalVisible(true);
         startTimer();
@@ -283,38 +256,27 @@ const ForgotPass = () => {
     try {
       setConfirmCodeLoading(true);
       if (selectedRole === 'Car Owner') {
-        const res = await checkNumOrEmailCO(phoneNum.trim(), email.trim(), selectedAuthType);
+        const res1 = await checkNumOrEmailCO(phoneNum.trim(), email.trim(), selectedAuthType);
 
-        if (!res.isExist) {
+        if (!res1.isExist) {
           startTimer();
           return;
         }
 
-        if (selectedAuthType === 'sms') {
-          const intPhoneNum = phoneNum.replace(/^0/, '+63');
-          const confirmation = await signInWithPhoneNumber(auth, intPhoneNum);
-          setConfirm(confirmation);
-        } else {
-          const res = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole);
-          setConfirm(res);
-        }
+        const res2 = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole, 'reset-password');
+        setConfirm(res2);
       } else {
-        const res = await checkNumOrEmailRS(phoneNum.trim(), email.trim(), selectedAuthType);
+        const res1 = await checkNumOrEmailRS(phoneNum.trim(), email.trim(), selectedAuthType);
 
-        if (!res.isExist) {
+        if (!res1.isExist) {
           startTimer();
           return;
         }
 
-        if (selectedAuthType === 'sms') {
-          const intPhoneNum = phoneNum.replace(/^0/, '+63');
-          const confirmation = await signInWithPhoneNumber(auth, intPhoneNum);
-          setConfirm(confirmation);
-        } else {
-          const res = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole);
-          setConfirm(res);
-        }
+        const res2 = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole, 'reset-password');
+        setConfirm(res2);
       }
+
       startTimer();
     } catch {
       setError('Failed to send verification.');
@@ -338,14 +300,12 @@ const ForgotPass = () => {
 
     try {
       setConfirmCodeLoading(true);
-      if (selectedAuthType === 'sms') {
-        await confirm.confirm(otp.join(''));
-      } else {
-        if (otp.join('') !== confirm) {
-          setError('You entered a wrong code.');
-          return;
-        }
+
+      if (otp.join('') !== confirm) {
+        setError('You entered a wrong code.');
+        return;
       }
+
       setVerificationModalVisible(false);
       clearTimer();
       setIsTimerActivate(false);
@@ -353,6 +313,7 @@ const ForgotPass = () => {
       setError('');
       setOtp(Array(6).fill(''));
       setTimer(45);
+
       showMessage({
         message: 'Verified!',
         type: 'success',
@@ -360,6 +321,7 @@ const ForgotPass = () => {
         color: '#FFF',
         icon: 'success',
       });
+
       setTimeout(() => {
         setResetPassModalVisible(true);
       }, 2000);

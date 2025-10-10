@@ -1,14 +1,26 @@
 import { popRouteState } from '@/redux/slices/routeSlice';
 import { RootState } from '@/redux/store';
-import { createRepairShop, createUser, getRepairShops, getUsers } from '@/services/backendApi';
+import { createRepairShop, createUser, generateOtp, getRepairShops, getUsers } from '@/services/backendApi';
 import { AutoRepairShop } from '@/types/autoRepairShop';
 import { User } from '@/types/user';
 import dayjs from 'dayjs';
 import { Checkbox } from 'expo-checkbox';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
-import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  AppState,
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import MapView, { Marker, Region } from 'react-native-maps';
@@ -25,7 +37,7 @@ const Signup = () => {
   const [firstname, setFirstname] = useState<string>('');
   const [lastname, setLastname] = useState<string>('');
   const [gender, setGender] = useState<string>('');
-  const [mobileNum, setMobileNum] = useState<string>('');
+  const [mobileNum, setMobileNum] = useState<string>('09');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [role, setRole] = useState<string>('');
@@ -35,6 +47,18 @@ const Signup = () => {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [carOwnerModalVisible, isCarOwnerModalVisible] = useState<boolean>(false);
   const [repairShopModalVisible, isRepairShopModalVisible] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [timer, setTimer] = useState<number>(45);
+  const endRef = useRef<number>(Date.now() + timer * 1000);
+  const [isTimerActivate, setIsTimerActivate] = useState<boolean>(false);
+  const [confirm, setConfirm] = useState<any>(null);
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
+  const [sendCodeLoading, setSendCodeLoading] = useState<boolean>(false);
+  const [confirmCodeLoading, setConfirmCodeLoading] = useState<boolean>(false);
+  const [verificationModalVisible, setVerificationModalVisible] = useState<boolean>(false);
+  const inputs = useRef<(TextInput | null)[]>([]);
+  const prefix = '09';
 
   const roles = [
     { title: 'Car Owner', icon: 'car-outline' },
@@ -137,6 +161,84 @@ const Signup = () => {
     })();
   }, []);
 
+  const startTimer = (seconds = timer) => {
+    endRef.current = Date.now() + seconds * 1000;
+    setIsTimerActivate(true);
+    setTimer(seconds);
+    scheduleTick();
+  };
+
+  const clearTimer = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const scheduleTick = useCallback(() => {
+    clearTimer();
+    const msLeft = endRef.current - Date.now();
+    const secsLeft = Math.max(Math.ceil(msLeft / 1000), 0);
+    setTimer(secsLeft);
+
+    if (secsLeft <= 0) {
+      clearTimer();
+      setIsTimerActivate(false);
+      setConfirm(null);
+      setError('');
+      setOtp(Array(6).fill(''));
+      setTimer(45);
+      return;
+    }
+
+    const remainder = msLeft % 1000;
+    const nextDelay = remainder === 0 ? 1000 : remainder;
+    timeoutRef.current = setTimeout(scheduleTick, nextDelay);
+  }, [clearTimer, setIsTimerActivate, setConfirm, setError, setOtp, setTimer]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        const msLeft = endRef.current - Date.now();
+        const secsLeft = Math.max(Math.ceil(msLeft / 1000), 0);
+        setTimer(secsLeft);
+
+        if (secsLeft > 0 && !timeoutRef.current) {
+          scheduleTick();
+        }
+      }
+    });
+    return () => sub.remove();
+  }, [scheduleTick]);
+
+  const handlePhoneNumInputChange = (text: string) => {
+    if (!text.startsWith(prefix)) {
+      setMobileNum(prefix);
+    } else {
+      setMobileNum(text);
+    }
+
+    if (!/^[0-9]*$/.test(text)) {
+      setMobileNum(prefix);
+    }
+  };
+
+  const handleOtpInputChange = (text: string, index: number) => {
+    let newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+
+    if (text && index < 5) {
+      inputs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
+      inputs.current[index - 1]?.focus();
+    }
+  };
+
   const handleDrag = (e: any) => {
     const { latitude, longitude } = e.nativeEvent.coordinate;
 
@@ -210,6 +312,7 @@ const Signup = () => {
         });
         return;
       }
+      handleSendCode();
     } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
@@ -220,46 +323,13 @@ const Signup = () => {
       });
       return;
     }
-
-    const newUser = {
-      firstname: firstname.trim(),
-      lastname: lastname.trim(),
-      gender: gender.trim(),
-      email: null,
-      mobile_num: mobileNum.trim(),
-      password: password.trim(),
-      creation_date: dayjs().format(),
-      profile_pic: null,
-      role: role.trim(),
-      user_initials_bg: getRandomHexColor(),
-      is_deleted: false,
-    };
-
-    try {
-      await createUser(newUser);
-      setFirstname('');
-      setLastname('');
-      setGender('');
-      setMobileNum('');
-      setPassword('');
-      setConfirmPassword('');
-      isCarOwnerModalVisible(true);
-    } catch {
-      showMessage({
-        message: 'Something went wrong. Please try again.',
-        type: 'danger',
-        floating: true,
-        color: '#FFF',
-        icon: 'danger',
-      });
-    }
   };
 
   const handleAddRepairShop = async () => {
     if (page === 'Repair Shop') {
       if (!firstname || !lastname || !gender || !mobileNum || !password || !confirmPassword || !shopName || !role) {
         showMessage({
-          message: 'Please fill in all fields.',
+          message: 'Please fill out all fields.',
           type: 'warning',
           floating: true,
           color: '#FFF',
@@ -328,43 +398,153 @@ const Signup = () => {
         });
         return;
       }
+      handleSendCode();
+    }
+  };
 
-      const newRepairShop = {
-        repair_shop_id: null,
-        owner_firstname: firstname.trim(),
-        owner_lastname: lastname.trim(),
-        gender: gender.trim(),
-        shop_name: shopName.trim(),
-        mobile_num: mobileNum.trim(),
-        password: password.trim(),
-        email: null,
-        services_offered: selectedServices,
-        longitude: region?.longitude !== undefined ? region.longitude.toString() : '',
-        latitude: region?.latitude !== undefined ? region.latitude.toString() : '',
-        creation_date: null,
-        profile_pic: null,
-        shop_images: [],
-        number_of_ratings: 0,
-        average_rating: 0,
-        approval_status: 'Pending',
-        total_score: 0,
-        profile_bg: getRandomHexColor(),
-        availability: 'close',
-        is_deleted: false,
-      };
+  const handleSendCode = async () => {
+    if (mobileNum.length < 11) {
+      showMessage({
+        message: 'Invalid number.',
+        type: 'warning',
+        floating: true,
+        color: '#FFF',
+        icon: 'warning',
+      });
+      return;
+    }
+
+    try {
+      setSendCodeLoading(true);
+      const res = await generateOtp(mobileNum.trim(), '', 'sms', role, 'sms-verification');
+      setConfirm(res);
+
+      showMessage({
+        message: 'Verification sent!',
+        type: 'success',
+        floating: true,
+        color: '#FFF',
+        icon: 'success',
+      });
+
+      setTimeout(() => {
+        setVerificationModalVisible(true);
+        startTimer();
+      }, 2000);
+    } catch {
+      showMessage({
+        message: 'Failed to send verification.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    } finally {
+      setSendCodeLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    try {
+      setConfirmCodeLoading(true);
+      const res = await generateOtp(mobileNum.trim(), '', 'sms', role, 'sms-verification');
+      setConfirm(res);
+      startTimer();
+    } catch {
+      setError('Failed to send verification.');
+    } finally {
+      setConfirmCodeLoading(false);
+    }
+  };
+
+  const verifyCode = async () => {
+    if (otp.join('') === '') {
+      setError('Please input code first.');
+      return;
+    }
+
+    if (otp.join('').length >= 1 && otp.join('').length <= 5) {
+      setError('Invalid code');
+      return;
+    }
+
+    setError('');
+
+    try {
+      setConfirmCodeLoading(true);
+
+      if (otp.join('') !== confirm) {
+        setError('You entered a wrong code.');
+        return;
+      }
+
+      setVerificationModalVisible(false);
+      clearTimer();
+      setIsTimerActivate(false);
+      setConfirm(null);
+      setError('');
+      setOtp(Array(6).fill(''));
+      setTimer(45);
 
       try {
-        await createRepairShop(newRepairShop);
-        setFirstname('');
-        setLastname('');
-        setGender('');
-        setShopName('');
-        setMobileNum('');
-        setPassword('');
-        setConfirmPassword('');
-        setSelectedServices([]);
-        setRegion(undefined);
-        isRepairShopModalVisible(true);
+        if (role === 'Car Owner') {
+          const newUser = {
+            firstname: firstname.trim(),
+            lastname: lastname.trim(),
+            gender: gender.trim(),
+            email: null,
+            mobile_num: mobileNum.trim(),
+            password: password.trim(),
+            creation_date: dayjs().format(),
+            profile_pic: null,
+            role: role.trim(),
+            user_initials_bg: getRandomHexColor(),
+            is_deleted: false,
+          };
+
+          await createUser(newUser);
+          setFirstname('');
+          setLastname('');
+          setGender('');
+          setMobileNum('');
+          setPassword('');
+          setConfirmPassword('');
+        } else {
+          const newRepairShop = {
+            repair_shop_id: null,
+            owner_firstname: firstname.trim(),
+            owner_lastname: lastname.trim(),
+            gender: gender.trim(),
+            shop_name: shopName.trim(),
+            mobile_num: mobileNum.trim(),
+            password: password.trim(),
+            email: null,
+            services_offered: selectedServices,
+            longitude: region?.longitude !== undefined ? region.longitude.toString() : '',
+            latitude: region?.latitude !== undefined ? region.latitude.toString() : '',
+            creation_date: null,
+            profile_pic: null,
+            shop_images: [],
+            number_of_ratings: 0,
+            average_rating: 0,
+            approval_status: 'Pending',
+            total_score: 0,
+            profile_bg: getRandomHexColor(),
+            availability: 'close',
+            is_deleted: false,
+          };
+
+          await createRepairShop(newRepairShop);
+          setFirstname('');
+          setLastname('');
+          setGender('');
+          setShopName('');
+          setMobileNum('');
+          setPassword('');
+          setConfirmPassword('');
+          setSelectedServices([]);
+          setRegion(undefined);
+        }
       } catch {
         showMessage({
           message: 'Something went wrong. Please try again.',
@@ -373,7 +553,28 @@ const Signup = () => {
           color: '#FFF',
           icon: 'danger',
         });
+        return;
       }
+
+      showMessage({
+        message: 'Verified!',
+        type: 'success',
+        floating: true,
+        color: '#FFF',
+        icon: 'success',
+      });
+
+      setTimeout(() => {
+        if (role === 'Car Owner') {
+          isCarOwnerModalVisible(true);
+        } else {
+          isRepairShopModalVisible(true);
+        }
+      }, 2000);
+    } catch {
+      setError('You entered a wrong code.');
+    } finally {
+      setConfirmCodeLoading(false);
     }
   };
 
@@ -381,7 +582,6 @@ const Signup = () => {
     <SafeAreaView style={styles.container}>
       <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <View style={styles.upperBox}>
-          <Text style={styles.welcomeTxt}>Welcome to</Text>
           <Image source={require('../../assets/images/logo.png')} />
 
           <View style={styles.textInputContainer1}>
@@ -492,7 +692,8 @@ const Signup = () => {
                   <Text style={styles.textInputLbl}>Mobile Number</Text>
                   <TextInput
                     value={mobileNum}
-                    onChangeText={setMobileNum}
+                    onChangeText={handlePhoneNumInputChange}
+                    maxLength={11}
                     style={styles.input}
                     keyboardType="number-pad"
                   />
@@ -531,7 +732,11 @@ const Signup = () => {
                 animationType="fade"
                 backdropColor={'rgba(0, 0, 0, 0.5)'}
                 visible={carOwnerModalVisible}
-                onRequestClose={() => isCarOwnerModalVisible(!carOwnerModalVisible)}
+                onRequestClose={() => {
+                  isCarOwnerModalVisible(!carOwnerModalVisible);
+                  router.replace('/auth/login');
+                  setPage('');
+                }}
               >
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
@@ -615,7 +820,8 @@ const Signup = () => {
                   <Text style={styles.textInputLbl}>Mobile Number</Text>
                   <TextInput
                     value={mobileNum}
-                    onChangeText={setMobileNum}
+                    onChangeText={handlePhoneNumInputChange}
+                    maxLength={11}
                     style={styles.input}
                     keyboardType="number-pad"
                   />
@@ -716,7 +922,11 @@ const Signup = () => {
                 animationType="fade"
                 backdropColor={'rgba(0, 0, 0, 0.5)'}
                 visible={repairShopModalVisible}
-                onRequestClose={() => isRepairShopModalVisible(!repairShopModalVisible)}
+                onRequestClose={() => {
+                  isRepairShopModalVisible(!repairShopModalVisible);
+                  router.replace('/auth/login');
+                  setPage('');
+                }}
               >
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
@@ -738,8 +948,88 @@ const Signup = () => {
               </Modal>
             </>
           )}
+
+          <Modal
+            animationType="fade"
+            backdropColor={'rgba(0, 0, 0, 0.5)'}
+            visible={verificationModalVisible}
+            onRequestClose={() => {
+              setVerificationModalVisible(false);
+              clearTimer();
+              setIsTimerActivate(false);
+              setConfirm(null);
+              setError('');
+              setOtp(Array(6).fill(''));
+              setTimer(45);
+            }}
+          >
+            <TouchableWithoutFeedback
+              onPress={() => {
+                setVerificationModalVisible(false);
+                clearTimer();
+                setIsTimerActivate(false);
+                setConfirm(null);
+                setError('');
+                setOtp(Array(6).fill(''));
+                setTimer(45);
+              }}
+            >
+              <View style={styles.centeredView}>
+                <Pressable style={styles.verificationModalView} onPress={() => {}}>
+                  <Text style={styles.modalHeader}>Verification</Text>
+                  <Text style={styles.modalText}>We have sent the verification code to your number.</Text>
+                  <View style={styles.codeInputContainer}>
+                    {otp.map((digit, index) => (
+                      <TextInput
+                        key={index}
+                        style={[styles.input, { width: 30 }]}
+                        value={digit}
+                        onChangeText={(text) => handleOtpInputChange(text.replace(/[^0-9]/g, ''), index)}
+                        onKeyPress={(e) => handleKeyPress(e, index)}
+                        keyboardType="number-pad"
+                        maxLength={1}
+                        readOnly={isTimerActivate ? false : true}
+                        ref={(ref) => {
+                          inputs.current[index] = ref;
+                        }}
+                      />
+                    ))}
+                  </View>
+                  <Text style={[styles.modalText, { fontSize: 12 }]}>
+                    {isTimerActivate ? `Resend code in ${timer}s` : 'You can resend the code now'}
+                  </Text>
+                  {error.length > 0 && (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorMessage}>{error}</Text>
+                    </View>
+                  )}
+
+                  {confirmCodeLoading && (
+                    <ActivityIndicator style={{ marginBottom: 10 }} size="small" color="#000B58" />
+                  )}
+
+                  {!isTimerActivate && (
+                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => handleResendCode()}>
+                      <Text style={styles.sendButtonText}>Resend Code</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {isTimerActivate && (
+                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => verifyCode()}>
+                      <Text style={styles.sendButtonText}>Verify Code</Text>
+                    </TouchableOpacity>
+                  )}
+                </Pressable>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
         </View>
       </KeyboardAwareScrollView>
+      {sendCodeLoading && (
+        <View style={styles.sendCodeLoadingContainer}>
+          <ActivityIndicator size="large" color="#000B58" />
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -823,6 +1113,7 @@ const styles = StyleSheet.create({
     padding: 10,
     color: '#333',
     fontFamily: 'BodyRegular',
+    marginBottom: 20,
   },
   dropdownButtonStyle: {
     width: '100%',
@@ -910,7 +1201,7 @@ const styles = StyleSheet.create({
   },
   map: {
     width: '100%',
-    height: 350,
+    flex: 1,
     borderRadius: 10,
   },
   arrowHeaderContainer: {
@@ -974,6 +1265,73 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 20,
     marginTop: 10,
+  },
+  sendButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000B58',
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  sendButtonText: {
+    fontFamily: 'BodyRegular',
+    color: '#fff',
+  },
+  verificationModalView: {
+    backgroundColor: '#FFF',
+    width: '85%',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    fontSize: 20,
+    fontFamily: 'HeaderBold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  modalText: {
+    fontFamily: 'BodyRegular',
+    color: '#333',
+    marginBottom: 10,
+  },
+  codeInputContainer: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  errorContainer: {
+    backgroundColor: '#EAEAEA',
+    borderRadius: 5,
+    width: '100%',
+    padding: 10,
+    marginBottom: 10,
+  },
+  errorMessage: {
+    fontFamily: 'BodyRegular',
+    color: 'red',
+    textAlign: 'center',
+    fontSize: 12,
+  },
+  sendCodeLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 10,
   },
 });
 
