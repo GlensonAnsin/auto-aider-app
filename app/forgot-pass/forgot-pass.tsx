@@ -55,6 +55,14 @@ const ForgotPass = () => {
     { title: 'Repair Shop', icon: 'tools' },
   ];
 
+  useEffect(() => {
+    if (selectedAuthType === 'sms') {
+      setTimer(45);
+    } else {
+      setTimer(300);
+    }
+  }, [selectedAuthType]);
+
   const startTimer = (seconds = timer) => {
     endRef.current = Date.now() + seconds * 1000;
     setIsTimerActivate(true);
@@ -111,6 +119,10 @@ const ForgotPass = () => {
     } else {
       setPhoneNum(text);
     }
+
+    if (!/^[0-9]*$/.test(text)) {
+      setPhoneNum(prefix);
+    }
   };
 
   const handleOtpInputChange = (text: string, index: number) => {
@@ -130,6 +142,8 @@ const ForgotPass = () => {
   };
 
   const handleSendCode = async () => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (phoneNum === '09' && !email) {
       showMessage({
         message: 'Please fill out the field.',
@@ -148,6 +162,17 @@ const ForgotPass = () => {
           type: 'warning',
           floating: true,
           color: '#FFF',
+          icon: 'warning',
+        });
+        return;
+      }
+    } else {
+      if (!emailPattern.test(email)) {
+        showMessage({
+          message: 'Invalid email format.',
+          type: 'warning',
+          color: '#FFF',
+          floating: true,
           icon: 'warning',
         });
         return;
@@ -186,7 +211,6 @@ const ForgotPass = () => {
             icon: 'success',
           });
         } else {
-          setTimer(300);
           const res = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole);
           setConfirm(res);
           showMessage({
@@ -271,7 +295,8 @@ const ForgotPass = () => {
           const confirmation = await signInWithPhoneNumber(auth, intPhoneNum);
           setConfirm(confirmation);
         } else {
-          return;
+          const res = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole);
+          setConfirm(res);
         }
       } else {
         const res = await checkNumOrEmailRS(phoneNum.trim(), email.trim(), selectedAuthType);
@@ -286,7 +311,8 @@ const ForgotPass = () => {
           const confirmation = await signInWithPhoneNumber(auth, intPhoneNum);
           setConfirm(confirmation);
         } else {
-          return;
+          const res = await generateOtp(phoneNum.trim(), email.trim(), selectedAuthType, selectedRole);
+          setConfirm(res);
         }
       }
       startTimer();
