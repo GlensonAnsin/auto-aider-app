@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { BluetoothDevice } from 'react-native-bluetooth-classic';
+import { Device } from 'react-native-ble-plx';
 
 interface DeviceState {
-  device: BluetoothDevice | null;
+  device: Device | null;
 }
 
 const initialState: DeviceState = {
@@ -13,7 +13,7 @@ const DeviceSlice = createSlice({
   name: 'device',
   initialState,
   reducers: {
-    setDeviceState: (state, action: PayloadAction<BluetoothDevice>) => {
+    setDeviceState: (state, action: PayloadAction<Device>) => {
       state.device = action.payload;
     },
     clearDeviceState: (state) => {

@@ -12,10 +12,11 @@ import socket from '@/services/socket';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Buffer } from 'buffer';
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -27,7 +28,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import RNBluetoothClassic, { BluetoothDevice } from 'react-native-bluetooth-classic';
+import { BleManager, Characteristic, Device } from 'react-native-ble-plx';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -49,15 +50,19 @@ const RunDiagnostics = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [connectLoading, setConnectLoading] = useState<boolean>(false);
   const [noCodeDetected, setIsNoCodeDetected] = useState<boolean>(false);
-  const [devices, setDevices] = useState<BluetoothDevice[]>([]);
-  const [connectedDevice, setConnectedDevice] = useState<BluetoothDevice | null>(null);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [log, setLog] = useState<string[]>([]);
   const userID = useSelector((state: RootState) => state.role.ID);
 
-  RNBluetoothClassic.onBluetoothDisabled(() => {
-    setDevices([]);
-    setConnectedDevice(null);
-  });
+  // BLE manager
+  const managerRef = useRef(new BleManager());
+  const stateSubscriptionRef = useRef<any>(null);
+  // notification subscription for current characteristic
+  const notifySubscriptionRef = useRef<any>(null);
+
+  // command queue guard to prevent overlapping commands
+  const commandLockRef = useRef(false);
 
   useEffect(() => {
     (async () => {
@@ -98,6 +103,30 @@ const RunDiagnostics = () => {
       socket.off(`updatedVehicleList-CO-${userID}`);
     };
   }, [userID]);
+
+  // Listen for Bluetooth state changes (e.g., PoweredOff)
+  useEffect(() => {
+    const manager = managerRef.current;
+    stateSubscriptionRef.current = manager.onStateChange((state) => {
+      if (state === 'PoweredOff') {
+        setDevices([]);
+        setConnectedDevice(null);
+        setLog((p) => [...p, 'Bluetooth turned off']);
+      }
+    }, true);
+
+    return () => {
+      // cleanup subscriptions and destroy manager
+      try {
+        stateSubscriptionRef.current?.remove?.();
+      } catch {}
+      try {
+        notifySubscriptionRef.current?.remove?.();
+      } catch {}
+      // you may choose to destroy the manager on unmount in certain apps:
+      // managerRef.current.destroy();
+    };
+  }, []);
 
   const handleCodeTechnicalDescription = async (code: string) => {
     try {
@@ -192,47 +221,155 @@ const RunDiagnostics = () => {
     }
   };
 
+  // --- BLE helpers ---
+  // Discover devices (scan)
   const discoverDevices = async () => {
-    const bluetoothStatus = await RNBluetoothClassic.isBluetoothEnabled();
-    if (!bluetoothStatus) {
-      showMessage({
-        message: 'Bluetooth is off.',
-        type: 'warning',
-        floating: true,
-        color: '#FFF',
-        icon: 'warning',
-      });
-      return;
-    }
+    const manager = managerRef.current;
 
+    setDevices([]);
+    setScanLoading(true);
+    setLog((p) => [...p, 'Scanning for BLE devices...']);
+
+    const foundDevicesMap = new Map<string, Device>();
+
+    // Setup scan callback
+    manager.startDeviceScan(null, { allowDuplicates: false }, (error, device) => {
+      if (error) {
+        setScanLoading(false);
+        setLog((p) => [...p, `Scan error: ${error.message || error}`]);
+        return;
+      }
+      if (!device) return;
+
+      // Heuristic: many OBD BLE adapters include 'OBD' in name or 'ELM'
+      const name = device.name ?? '';
+      if (
+        name.toUpperCase().includes('OBD') ||
+        name.toUpperCase().includes('ELM') ||
+        name.toUpperCase().includes('VEEPEAK')
+      ) {
+        if (!foundDevicesMap.has(device.id)) {
+          foundDevicesMap.set(device.id, device);
+          setDevices(Array.from(foundDevicesMap.values()));
+        }
+      }
+      // Optionally include all devices:
+      // if (!foundDevicesMap.has(device.id)) { foundDevicesMap.set(device.id, device); setDevices([...foundDevicesMap.values()]); }
+    });
+
+    // stop scan after 8 seconds
+    setTimeout(() => {
+      manager.stopDeviceScan();
+      setScanLoading(false);
+      setLog((p) => [...p, `Scan finished. ${foundDevicesMap.size} device(s) found.`]);
+      if (foundDevicesMap.size === 0) {
+        showMessage({
+          message: 'No OBD BLE devices found. Make sure the adapter is powered and near the phone.',
+          type: 'warning',
+          floating: true,
+          color: '#FFF',
+          icon: 'warning',
+        });
+      }
+    }, 8000);
+  };
+
+  // Utility: find a writable & notifiable characteristic pair
+  const findReadWriteCharacteristics = async (device: Device) => {
+    // returns { serviceUUID, writeUUID, notifyUUID } or null
     try {
-      const bonded = await RNBluetoothClassic.getBondedDevices();
-      console.log(bonded);
-      setDevices(bonded);
+      const services = await device.services();
+      for (const svc of services) {
+        const characteristics = await svc.characteristics();
+        let writeChar: Characteristic | null = null;
+        let notifyChar: Characteristic | null = null;
+
+        for (const ch of characteristics) {
+          if (!writeChar && (ch.isWritableWithResponse || ch.isWritableWithoutResponse)) {
+            writeChar = ch;
+          }
+          if (!notifyChar && ch.isNotifiable) {
+            notifyChar = ch;
+          }
+        }
+
+        if (writeChar && notifyChar) {
+          return {
+            serviceUUID: svc.uuid,
+            writeUUID: writeChar.uuid,
+            notifyUUID: notifyChar.uuid,
+          };
+        }
+      }
+      return null;
     } catch (e) {
-      console.error('Discovery failed:', e);
+      console.error('findReadWriteCharacteristics error', e);
+      return null;
     }
   };
 
-  const connectToDevice = async (device: BluetoothDevice) => {
+  // Connect to device (BLE)
+  const connectToDevice = async (device: Device) => {
+    const manager = managerRef.current;
     try {
       setConnectLoading(true);
-      await device.connect();
-      setConnectedDevice(device);
-      dispatch(setDeviceState(device));
+      setLog((p) => [...p, `Connecting to ${device.name ?? device.id}...`]);
+      const connected = await device.connect();
+      // Discover services & characteristics
+      await connected.discoverAllServicesAndCharacteristics();
+      setConnectedDevice(connected);
+      dispatch(setDeviceState(connected as unknown as any)); // adapt type to your slice
 
-      device.onDataReceived((event: any) => {
-        setLog((prev) => [...prev, `RX: ${event.data.trim()}`]);
-      });
+      // find usable characteristics
+      const pair = await findReadWriteCharacteristics(connected);
+      if (!pair) {
+        showMessage({
+          message: 'Could not find suitable characteristics (write/notify).',
+          type: 'danger',
+          floating: true,
+          color: '#FFF',
+          icon: 'danger',
+        });
+        setConnectLoading(false);
+        return;
+      }
 
-      console.log('Connected!');
+      // Subscribe to notifications using device.monitorCharacteristicForService
+      const { serviceUUID, notifyUUID } = pair;
+      // clear previous subscription if any
+      try {
+        notifySubscriptionRef.current?.remove?.();
+      } catch {}
+      notifySubscriptionRef.current = manager.monitorCharacteristicForDevice(
+        connected.id,
+        serviceUUID,
+        notifyUUID,
+        (error, char) => {
+          if (error) {
+            setLog((p) => [...p, `Notify error: ${error.message || error}`]);
+            return;
+          }
+          if (!char?.value) return;
+          const chunk = Buffer.from(char.value, 'base64').toString('ascii');
+          setLog((p) => [...p, `RX: ${chunk.trim()}`]);
+          // store incoming data into a temporary rx buffer on the device object for reads
+          // attach rxBuffer to device (works but be careful with types)
+          // @ts-ignore
+          connected.rxBuffer = (connected.rxBuffer ?? '') + chunk;
+        }
+      );
+
+      // initialize ELM-like adapter
       await sendCommand('ATZ');
       await sendCommand('ATE0');
       await sendCommand('ATS0');
       await sendCommand('ATH0');
-    } catch {
+
+      setLog((p) => [...p, 'Connected!']);
+    } catch (e) {
+      console.error('Connection failed:', e);
       showMessage({
-        message: 'Connection failed. Please ensure the device is an OBD2 scanner and properly paired.',
+        message: 'Connection failed. Please ensure the device is an OBD2 BLE adapter and in range.',
         type: 'danger',
         floating: true,
         color: '#FFF',
@@ -244,12 +381,69 @@ const RunDiagnostics = () => {
     }
   };
 
-  const sendCommand = async (cmd: string) => {
-    if (!connectedDevice) return;
-    await connectedDevice?.write(`${cmd}\r`);
-    setLog((prev) => [...prev, `TX: ${cmd}`]);
+  // Send ASCII command and wait for a response that contains '>' prompt or newline.
+  // It will use the first writable characteristic it finds for the connected device.
+  const sendCommand = async (cmd: string, timeout = 2000): Promise<string | null> => {
+    if (!connectedDevice) return null;
+
+    // simple lock to avoid overlapping commands
+    while (commandLockRef.current) {
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    commandLockRef.current = true;
+
+    try {
+      // ensure services & characteristics discovered
+      await connectedDevice.discoverAllServicesAndCharacteristics();
+      const pair = await findReadWriteCharacteristics(connectedDevice);
+      if (!pair) throw new Error('No writable/notifiable characteristic pair found.');
+
+      const { serviceUUID, writeUUID } = pair;
+      // write command (ELM expects CR terminated)
+      const toSend = `${cmd}\r`;
+      const base64cmd = Buffer.from(toSend, 'ascii').toString('base64');
+
+      setLog((p) => [...p, `TX: ${cmd}`]);
+
+      // clear rxBuffer
+      // @ts-ignore
+      connectedDevice.rxBuffer = '';
+
+      // write
+      await connectedDevice.writeCharacteristicWithResponseForService(serviceUUID, writeUUID, base64cmd);
+
+      // wait for response until '>' prompt or timeout
+      const start = Date.now();
+      while (Date.now() - start < timeout) {
+        // @ts-ignore
+        const rx = connectedDevice.rxBuffer ?? '';
+        if (rx.includes('>')) {
+          // return full buffer
+          const result = rx;
+          // clear rxBuffer
+          // @ts-ignore
+          connectedDevice.rxBuffer = '';
+          return result;
+        }
+        await new Promise((r) => setTimeout(r, 50));
+      }
+
+      // timed out: return whatever we have (may be empty)
+      // @ts-ignore
+      const leftover = connectedDevice.rxBuffer ?? '';
+      // clear rxBuffer
+      // @ts-ignore
+      connectedDevice.rxBuffer = '';
+      return leftover || null;
+    } catch (e) {
+      console.error('sendCommand error', e);
+      return null;
+    } finally {
+      commandLockRef.current = false;
+    }
   };
 
+  // Read Codes flow: send '03', wait, parse, interpret
   const readCodes = async () => {
     if (selectedCar === '') {
       showMessage({
@@ -275,18 +469,36 @@ const RunDiagnostics = () => {
 
     dispatch(setTabState(false));
     setScanLoading(true);
-    await sendCommand('03');
 
-    setTimeout(async () => {
-      const res = await connectedDevice.read();
+    try {
+      await sendCommand('03', 3000); // request stored DTCs
+      // wait a short while and then read rxBuffer content (sendCommand already consumed buffer but in case)
+      // As fallback, try to call sendCommand('03') and inspect reply returned
+      const res = await sendCommand('03', 3000);
       if (res) {
         const parsed = parseDTCResponse(res.toString());
-        handleCodeInterpretation(parsed);
+        if (parsed.length === 0) {
+          setScanLoading(false);
+          setIsNoCodeDetected(true);
+        } else {
+          await handleCodeInterpretation(parsed);
+        }
       } else {
         setScanLoading(false);
         setIsNoCodeDetected(true);
       }
-    }, 1000);
+    } catch (e) {
+      console.error('readCodes error', e);
+      showMessage({
+        message: 'Failed to read codes.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    } finally {
+      setScanLoading(false);
+    }
   };
 
   const parseDTCResponse = (raw: string): string[] => {
@@ -323,10 +535,14 @@ const RunDiagnostics = () => {
   const disconnectToDevice = async () => {
     try {
       setConnectLoading(true);
-      await connectedDevice?.disconnect();
+      if (connectedDevice) {
+        try {
+          await connectedDevice.cancelConnection();
+        } catch {}
+      }
       setConnectedDevice(null);
       dispatch(clearDeviceState());
-      console.log('Disconnected!');
+      setLog((p) => [...p, 'Disconnected!']);
     } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
@@ -438,7 +654,7 @@ const RunDiagnostics = () => {
                       <Text style={styles.noDevicesText}>Paired devices empty</Text>
                     </View>
                   )}
-                  keyExtractor={(item) => item.address}
+                  keyExtractor={(item) => item.id}
                 />
               </>
             )}

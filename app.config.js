@@ -82,6 +82,14 @@ export default {
         "@react-native-firebase/app",
         "@react-native-firebase/auth"
       ],
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": ["peripheral", "central"],
+          "bluetoothAlwaysPermission": "Allow Auto AIDER to connect to bluetooth devices."
+        }
+      ],
       "expo-web-browser"
     ],
     "experiments": {
