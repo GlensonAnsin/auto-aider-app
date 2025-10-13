@@ -53,7 +53,7 @@ const EditProfile = () => {
 
   const [error, setError] = useState<string>('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [timer, setTimer] = useState<number>(300);
+  const [timer, setTimer] = useState<number>(45);
   const endRef = useRef<number>(Date.now() + timer * 1000);
   const [isTimerActivate, setIsTimerActivate] = useState<boolean>(false);
   const [confirm, setConfirm] = useState<any>(null);
@@ -61,6 +61,8 @@ const EditProfile = () => {
   const inputs = useRef<(TextInput | null)[]>([]);
   const [verificationModalVisible, setVerificationModalVisible] = useState<boolean>(false);
   const [confirmCodeLoading, setConfirmCodeLoading] = useState<boolean>(false);
+  const [buttonDisable, setButtonDisable] = useState<boolean>(false);
+  const prefix = '09';
 
   const genders = ['Male', 'Female'];
 
@@ -118,6 +120,16 @@ const EditProfile = () => {
       socket.off(`updatedUserInfo-CO-${userID}`);
     };
   }, [userID]);
+
+  useEffect(() => {
+    if (edit === 'mobile-num') {
+      setTimer(45);
+    } else if (edit === 'email') {
+      setTimer(300);
+    } else {
+      return;
+    }
+  }, [edit]);
 
   const startTimer = (seconds = timer) => {
     endRef.current = Date.now() + seconds * 1000;
@@ -202,36 +214,32 @@ const EditProfile = () => {
         field,
       };
 
-      const fetchedUsers: UserWithID[] = await getUsers();
-      const userExcluded = fetchedUsers.filter((user) => user.user_id !== userID);
-
       switch (field) {
         case 'firstname':
+          if (localFirstname === firstname) {
+            setEdit('');
+            return;
+          }
           userInfo.firstname = localFirstname.trim();
           setFirstname(localFirstname);
           break;
         case 'lastname':
+          if (localLastname === lastname) {
+            setEdit('');
+            return;
+          }
           userInfo.lastname = localLastname.trim();
           setLastname(localLastname);
           break;
         case 'gender':
+          if (localGender === gender) {
+            setEdit('');
+            return;
+          }
           userInfo.gender = localGender.trim();
           setGender(localGender);
           break;
         case 'mobile-num':
-          const mobileNumExists = userExcluded.some((user) => user.mobile_num === localMobileNum.trim());
-
-          if (mobileNumExists) {
-            showMessage({
-              message: 'Mobile number is already used by another account.',
-              type: 'warning',
-              floating: true,
-              color: '#FFF',
-              icon: 'warning',
-            });
-            return;
-          }
-
           userInfo.mobile_num = localMobileNum.trim();
           setMobileNum(localMobileNum);
           break;
@@ -354,6 +362,14 @@ const EditProfile = () => {
     });
   };
 
+  const handlePhoneNumInputChange = (text: string) => {
+    if (/^[0-9]*$/.test(text)) {
+      setLocalMobileNum(text);
+    } else {
+      setLocalMobileNum('');
+    }
+  };
+
   const handleOtpInputChange = (text: string, index: number) => {
     let newOtp = [...otp];
     newOtp[index] = text;
@@ -380,6 +396,66 @@ const EditProfile = () => {
       return;
     }
 
+    if (edit === 'mobile-num') {
+      if (localMobileNum === mobileNum) {
+        setEdit('');
+        return;
+      }
+
+      if (!localMobileNum.startsWith(prefix)) {
+        showMessage({
+          message: 'Invalid number format.',
+          type: 'warning',
+          color: '#FFF',
+          floating: true,
+          icon: 'warning',
+        });
+        return;
+      }
+
+      const mobileNumExists = userExcluded.some((user) => user.mobile_num === localMobileNum.trim());
+
+      if (mobileNumExists) {
+        showMessage({
+          message: 'Mobile number is already used by another account.',
+          type: 'warning',
+          floating: true,
+          color: '#FFF',
+          icon: 'warning',
+        });
+        return;
+      }
+    } else {
+      if (localEmail === email) {
+        setEdit('');
+        return;
+      }
+
+      if (!emailPattern.test(localEmail ?? '')) {
+        showMessage({
+          message: 'Invalid email format.',
+          type: 'warning',
+          color: '#FFF',
+          floating: true,
+          icon: 'warning',
+        });
+        return;
+      }
+
+      const emailExists = userExcluded.some((user) => user.email === localEmail?.trim());
+
+      if (emailExists) {
+        showMessage({
+          message: 'Email is already used by another account.',
+          type: 'warning',
+          floating: true,
+          color: '#FFF',
+          icon: 'warning',
+        });
+        return;
+      }
+    }
+
     if (!emailPattern.test(localEmail ?? '')) {
       showMessage({
         message: 'Invalid email format.',
@@ -391,23 +467,17 @@ const EditProfile = () => {
       return;
     }
 
-    const emailExists = userExcluded.some((user) => user.email === localEmail?.trim());
-
-    if (emailExists) {
-      showMessage({
-        message: 'Email is already used by another account.',
-        type: 'warning',
-        floating: true,
-        color: '#FFF',
-        icon: 'warning',
-      });
-      return;
-    }
-
     try {
       setUpdateLoading(true);
-      const res2 = await generateOtp('', localEmail?.trim() ?? '', 'email', 'Car Owner', 'email-verification');
-      setConfirm(res2);
+      setButtonDisable(true);
+
+      if (edit === 'mobile-num') {
+        const res = await generateOtp(localMobileNum.trim(), '', 'sms', 'Repair Shop', 'sms-verification');
+        setConfirm(res);
+      } else {
+        const res = await generateOtp('', localEmail?.trim() ?? '', 'email', 'Repair Shop', 'email-verification');
+        setConfirm(res);
+      }
 
       showMessage({
         message: 'Verification sent!',
@@ -420,6 +490,7 @@ const EditProfile = () => {
       setTimeout(() => {
         setVerificationModalVisible(true);
         startTimer();
+        setButtonDisable(false);
       }, 2000);
     } catch {
       showMessage({
@@ -437,8 +508,15 @@ const EditProfile = () => {
   const handleResendCode = async () => {
     try {
       setConfirmCodeLoading(true);
-      const res2 = await generateOtp('', localEmail?.trim() ?? '', 'email', 'Car Owner', 'email-verification');
-      setConfirm(res2);
+
+      if (edit === 'mobile-num') {
+        const res = await generateOtp(localMobileNum.trim(), '', 'sms', 'Repair Shop', 'sms-verification');
+        setConfirm(res);
+      } else {
+        const res = await generateOtp('', localEmail?.trim() ?? '', 'email', 'Repair Shop', 'email-verification');
+        setConfirm(res);
+      }
+
       startTimer();
     } catch {
       setError('Failed to send verification.');
@@ -462,6 +540,7 @@ const EditProfile = () => {
 
     try {
       setConfirmCodeLoading(true);
+      setButtonDisable(true);
 
       if (otp.join('') !== confirm) {
         setError('You entered a wrong code.');
@@ -485,7 +564,13 @@ const EditProfile = () => {
       });
 
       setTimeout(() => {
-        handleUpdateUserInfo('email', null);
+        if (edit === 'mobile-num') {
+          handleUpdateUserInfo('mobile-num', null);
+        } else {
+          handleUpdateUserInfo('email', null);
+        }
+
+        setButtonDisable(false);
       }, 2000);
     } catch {
       setError('You entered a wrong code.');
@@ -516,7 +601,7 @@ const EditProfile = () => {
               </View>
             )}
 
-            <TouchableOpacity style={styles.editPicWrapper} onPress={() => pickImage()}>
+            <TouchableOpacity style={styles.editPicWrapper} onPress={() => pickImage()} disabled={buttonDisable}>
               <MaterialCommunityIcons name="pencil" style={styles.editIcon} />
             </TouchableOpacity>
           </View>
@@ -538,6 +623,7 @@ const EditProfile = () => {
                   deleteImage();
                   handleUpdateUserInfo('profile', null);
                 }}
+                disabled={buttonDisable}
               >
                 <MaterialCommunityIcons name="image-remove" size={20} color="#FFF" />
                 <Text style={styles.profileButtonText}>Remove</Text>
@@ -550,6 +636,7 @@ const EditProfile = () => {
               <TouchableOpacity
                 style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]}
                 onPress={() => handleRestoreInfo('profile')}
+                disabled={buttonDisable}
               >
                 <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
               </TouchableOpacity>
@@ -562,6 +649,7 @@ const EditProfile = () => {
                   }
                   uploadImage();
                 }}
+                disabled={buttonDisable}
               >
                 <Text style={styles.profileButtonText}>Save</Text>
               </TouchableOpacity>
@@ -579,18 +667,21 @@ const EditProfile = () => {
 
                     {localFirstname !== '' && (
                       <>
-                        <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
+                        <TouchableOpacity onPress={() => handleRestoreInfo('firstname')} disabled={buttonDisable}>
                           <Entypo name="cross" size={20} color="#780606" />
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => handleUpdateUserInfo('firstname', null)}>
+                        <TouchableOpacity
+                          onPress={() => handleUpdateUserInfo('firstname', null)}
+                          disabled={buttonDisable}
+                        >
                           <FontAwesome5 name="check" size={16} color="#22bb33" />
                         </TouchableOpacity>
                       </>
                     )}
 
                     {localFirstname === '' && (
-                      <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
+                      <TouchableOpacity onPress={() => handleRestoreInfo('firstname')} disabled={buttonDisable}>
                         <Entypo name="cross" size={20} color="#780606" />
                       </TouchableOpacity>
                     )}
@@ -600,7 +691,7 @@ const EditProfile = () => {
                 {edit !== 'firstname' && (
                   <>
                     <Text style={styles.infoText}>{localFirstname}</Text>
-                    <TouchableOpacity onPress={() => setEdit('firstname')}>
+                    <TouchableOpacity onPress={() => setEdit('firstname')} disabled={buttonDisable}>
                       <MaterialIcons name="edit" size={16} color="#555" />
                     </TouchableOpacity>
                   </>
@@ -617,18 +708,21 @@ const EditProfile = () => {
 
                     {localLastname !== '' && (
                       <>
-                        <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
+                        <TouchableOpacity onPress={() => handleRestoreInfo('lastname')} disabled={buttonDisable}>
                           <Entypo name="cross" size={20} color="#780606" />
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => handleUpdateUserInfo('lastname', null)}>
+                        <TouchableOpacity
+                          onPress={() => handleUpdateUserInfo('lastname', null)}
+                          disabled={buttonDisable}
+                        >
                           <FontAwesome5 name="check" size={16} color="#22bb33" />
                         </TouchableOpacity>
                       </>
                     )}
 
                     {localLastname === '' && (
-                      <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
+                      <TouchableOpacity onPress={() => handleRestoreInfo('lastname')} disabled={buttonDisable}>
                         <Entypo name="cross" size={20} color="#780606" />
                       </TouchableOpacity>
                     )}
@@ -638,7 +732,7 @@ const EditProfile = () => {
                 {edit !== 'lastname' && (
                   <>
                     <Text style={styles.infoText}>{localLastname}</Text>
-                    <TouchableOpacity onPress={() => setEdit('lastname')}>
+                    <TouchableOpacity onPress={() => setEdit('lastname')} disabled={buttonDisable}>
                       <MaterialIcons name="edit" size={16} color="#555" />
                     </TouchableOpacity>
                   </>
@@ -677,12 +771,13 @@ const EditProfile = () => {
                       )}
                       showsVerticalScrollIndicator={false}
                       dropdownStyle={styles.dropdownMenuStyle}
+                      disabled={buttonDisable}
                     />
-                    <TouchableOpacity onPress={() => handleRestoreInfo('gender')}>
+                    <TouchableOpacity onPress={() => handleRestoreInfo('gender')} disabled={buttonDisable}>
                       <Entypo name="cross" size={20} color="#780606" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => handleUpdateUserInfo('gender', null)}>
+                    <TouchableOpacity onPress={() => handleUpdateUserInfo('gender', null)} disabled={buttonDisable}>
                       <FontAwesome5 name="check" size={16} color="#22bb33" />
                     </TouchableOpacity>
                   </>
@@ -691,7 +786,7 @@ const EditProfile = () => {
                 {edit !== 'gender' && (
                   <>
                     <Text style={styles.infoText}>{localGender}</Text>
-                    <TouchableOpacity onPress={() => setEdit('gender')}>
+                    <TouchableOpacity onPress={() => setEdit('gender')} disabled={buttonDisable}>
                       <MaterialIcons name="edit" size={16} color="#555" />
                     </TouchableOpacity>
                   </>
@@ -706,25 +801,28 @@ const EditProfile = () => {
                   <>
                     <TextInput
                       value={localMobileNum}
-                      onChangeText={setLocalMobileNum}
+                      onChangeText={handlePhoneNumInputChange}
                       style={styles.input}
                       keyboardType="number-pad"
+                      maxLength={11}
                     />
 
                     {localMobileNum !== '' && (
                       <>
-                        <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
+                        <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')} disabled={buttonDisable}>
                           <Entypo name="cross" size={20} color="#780606" />
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => handleUpdateUserInfo('mobile-num', null)}>
-                          <FontAwesome5 name="check" size={16} color="#22bb33" />
-                        </TouchableOpacity>
+                        {localMobileNum.length === 11 && (
+                          <TouchableOpacity onPress={() => handleSendCode()} disabled={buttonDisable}>
+                            <FontAwesome5 name="check" size={16} color="#22bb33" />
+                          </TouchableOpacity>
+                        )}
                       </>
                     )}
 
                     {localMobileNum === '' && (
-                      <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
+                      <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')} disabled={buttonDisable}>
                         <Entypo name="cross" size={20} color="#780606" />
                       </TouchableOpacity>
                     )}
@@ -734,7 +832,7 @@ const EditProfile = () => {
                 {edit !== 'mobile-num' && (
                   <>
                     <Text style={styles.infoText}>{localMobileNum}</Text>
-                    <TouchableOpacity onPress={() => setEdit('mobile-num')}>
+                    <TouchableOpacity onPress={() => setEdit('mobile-num')} disabled={buttonDisable}>
                       <MaterialIcons name="edit" size={16} color="#555" />
                     </TouchableOpacity>
                   </>
@@ -751,6 +849,7 @@ const EditProfile = () => {
                     setLocalEmail('');
                     setEdit('email');
                   }}
+                  disabled={buttonDisable}
                 >
                   <Text style={styles.editButtonText}>Add Email</Text>
                 </TouchableOpacity>
@@ -762,11 +861,11 @@ const EditProfile = () => {
                     <>
                       <TextInput value={localEmail} onChangeText={setLocalEmail} style={styles.input} />
 
-                      <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
+                      <TouchableOpacity onPress={() => handleRestoreInfo('email')} disabled={buttonDisable}>
                         <Entypo name="cross" size={20} color="#780606" />
                       </TouchableOpacity>
 
-                      <TouchableOpacity onPress={() => handleSendCode()}>
+                      <TouchableOpacity onPress={() => handleSendCode()} disabled={buttonDisable}>
                         <FontAwesome5 name="check" size={16} color="#22bb33" />
                       </TouchableOpacity>
                     </>
@@ -775,7 +874,7 @@ const EditProfile = () => {
                   {edit !== 'email' && (
                     <>
                       <Text style={styles.infoText}>{localEmail}</Text>
-                      <TouchableOpacity onPress={() => setEdit('email')}>
+                      <TouchableOpacity onPress={() => setEdit('email')} disabled={buttonDisable}>
                         <MaterialIcons name="edit" size={16} color="#555" />
                       </TouchableOpacity>
                     </>
@@ -813,7 +912,9 @@ const EditProfile = () => {
               <View style={styles.centeredView}>
                 <Pressable style={styles.verificationModalView} onPress={() => {}}>
                   <Text style={styles.modalHeader}>Verification</Text>
-                  <Text style={styles.modalText}>We have sent the verification code to your email address.</Text>
+                  <Text style={styles.modalText}>
+                    We have sent the verification code to your {edit === 'mobile-num' ? 'number.' : 'email address.'}
+                  </Text>
                   <View style={styles.codeInputContainer}>
                     {otp.map((digit, index) => (
                       <TextInput

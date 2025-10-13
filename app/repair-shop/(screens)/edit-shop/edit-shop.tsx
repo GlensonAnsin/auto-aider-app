@@ -1,6 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
-import { getRepairShopInfo, getRepairShops, updateRepairShopInfo } from '@/services/backendApi';
+import { generateOtp, getRepairShopInfo, getRepairShops, updateRepairShopInfo } from '@/services/backendApi';
 import socket from '@/services/socket';
 import { AutoRepairShop, UpdateRepairShopInfo } from '@/types/autoRepairShop';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -15,6 +15,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  AppState,
   Image,
   Modal,
   Pressable,
@@ -68,6 +69,19 @@ const EditShop = () => {
   const [localServicesOffered, setLocalServicesOffered] = useState<string[]>([]);
   const [localRegion, setLocalRegion] = useState<Region | undefined>(undefined);
   const [localProfilePic, setLocalProfilePic] = useState<string | null>(null);
+
+  const [error, setError] = useState<string>('');
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [timer, setTimer] = useState<number>(45);
+  const endRef = useRef<number>(Date.now() + timer * 1000);
+  const [isTimerActivate, setIsTimerActivate] = useState<boolean>(false);
+  const [confirm, setConfirm] = useState<any>(null);
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
+  const inputs = useRef<(TextInput | null)[]>([]);
+  const [verificationModalVisible, setVerificationModalVisible] = useState<boolean>(false);
+  const [confirmCodeLoading, setConfirmCodeLoading] = useState<boolean>(false);
+  const [buttonDisable, setButtonDisable] = useState<boolean>(false);
+  const prefix = '09';
 
   const genders = ['Male', 'Female'];
 
@@ -234,6 +248,66 @@ const EditShop = () => {
     };
   }, [repShopID]);
 
+  useEffect(() => {
+    if (edit === 'mobile-num') {
+      setTimer(45);
+    } else if (edit === 'email') {
+      setTimer(300);
+    } else {
+      return;
+    }
+  }, [edit]);
+
+  const startTimer = (seconds = timer) => {
+    endRef.current = Date.now() + seconds * 1000;
+    setIsTimerActivate(true);
+    setTimer(seconds);
+    scheduleTick();
+  };
+
+  const clearTimer = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const scheduleTick = useCallback(() => {
+    clearTimer();
+    const msLeft = endRef.current - Date.now();
+    const secsLeft = Math.max(Math.ceil(msLeft / 1000), 0);
+    setTimer(secsLeft);
+
+    if (secsLeft <= 0) {
+      clearTimer();
+      setIsTimerActivate(false);
+      setConfirm(null);
+      setError('');
+      setOtp(Array(6).fill(''));
+      setTimer(45);
+      return;
+    }
+
+    const remainder = msLeft % 1000;
+    const nextDelay = remainder === 0 ? 1000 : remainder;
+    timeoutRef.current = setTimeout(scheduleTick, nextDelay);
+  }, [clearTimer, setIsTimerActivate, setConfirm, setError, setOtp, setTimer]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        const msLeft = endRef.current - Date.now();
+        const secsLeft = Math.max(Math.ceil(msLeft / 1000), 0);
+        setTimer(secsLeft);
+
+        if (secsLeft > 0 && !timeoutRef.current) {
+          scheduleTick();
+        }
+      }
+    });
+    return () => sub.remove();
+  }, [scheduleTick]);
+
   const handleRestoreInfo = (field: string) => {
     switch (field) {
       case 'rep-shop-name':
@@ -279,9 +353,20 @@ const EditShop = () => {
     setModalVisible(!modalVisible);
   };
 
+  useEffect(() => {
+    if (servicesOffered.every((element) => localServicesOffered.includes(element))) {
+      setIsEditServices(false);
+    } else {
+      setIsEditServices(true);
+    }
+
+    if (localServicesOffered.length !== servicesOffered.length) {
+      setIsEditServices(true);
+    }
+  }, [localServicesOffered, servicesOffered]);
+
   const toggleCheckbox = (id: string) => {
     setLocalServicesOffered((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
-    setIsEditServices(true);
   };
 
   const handleDrag = (e: any) => {
@@ -321,57 +406,44 @@ const EditShop = () => {
         field: field,
       };
 
-      const fetchedAutoRepairShops: AutoRepairShop[] = await getRepairShops();
-      const userExcluded = fetchedAutoRepairShops.filter((repairShop) => repairShop.repair_shop_id !== repShopID);
-
       switch (field) {
         case 'firstname':
+          if (localOwnerFirstname === ownerFirstname) {
+            setEdit('');
+            return;
+          }
           repairShopData.owner_firstname = localOwnerFirstname.trim();
           setOwnerFirstname(localOwnerFirstname);
           break;
         case 'lastname':
+          if (localOwnerLastname === ownerLastname) {
+            setEdit('');
+            return;
+          }
           repairShopData.owner_lastname = localOwnerLastname.trim();
           setOwnerLastname(localOwnerLastname);
           break;
         case 'gender':
+          if (localGender === gender) {
+            setEdit('');
+            return;
+          }
           repairShopData.gender = localGender.trim();
           setGender(localGender);
           break;
         case 'rep-shop-name':
+          if (localRepShopName === repShopName) {
+            setEdit('');
+            return;
+          }
           repairShopData.shop_name = localRepShopName.trim();
           setRepShopName(localRepShopName);
           break;
         case 'mobile-num':
-          const mobileNumExists = userExcluded.some((repairShop) => repairShop.mobile_num === localMobileNum.trim());
-
-          if (mobileNumExists) {
-            showMessage({
-              message: 'Mobile number is already used by another account.',
-              type: 'warning',
-              floating: true,
-              color: '#FFF',
-              icon: 'warning',
-            });
-            return;
-          }
-
           repairShopData.mobile_num = localMobileNum.trim();
           setMobileNum(localMobileNum);
           break;
         case 'email':
-          const emailExists = userExcluded.some((repairShop) => repairShop.email === localEmail?.trim());
-
-          if (emailExists) {
-            showMessage({
-              message: 'Email is already used by another account.',
-              type: 'warning',
-              floating: true,
-              color: '#FFF',
-              icon: 'warning',
-            });
-            return;
-          }
-
           if (localEmail === '') {
             repairShopData.email = null;
             setEmail(null);
@@ -408,6 +480,12 @@ const EditShop = () => {
           setPasswordError('');
           break;
         case 'services-offered':
+          if (localServicesOffered.length === servicesOffered.length) {
+            if (localServicesOffered.every((element) => servicesOffered.includes(element))) {
+              setEdit('');
+              return;
+            }
+          }
           repairShopData.services_offered = localServicesOffered;
           setServicesOffered(localServicesOffered);
           break;
@@ -607,6 +685,212 @@ const EditShop = () => {
     }
   };
 
+  const handlePhoneNumInputChange = (text: string) => {
+    if (/^[0-9]*$/.test(text)) {
+      setLocalMobileNum(text);
+    } else {
+      setLocalMobileNum('');
+    }
+  };
+
+  const handleOtpInputChange = (text: string, index: number) => {
+    let newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+
+    if (text && index < 5) {
+      inputs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
+      inputs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleSendCode = async () => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const fetchedAutoRepairShops: AutoRepairShop[] = await getRepairShops();
+    const userExcluded = fetchedAutoRepairShops.filter((repairShop) => repairShop.repair_shop_id !== repShopID);
+
+    if (localEmail === '') {
+      handleUpdateRepShopInfo('email', null, null, null);
+      return;
+    }
+
+    if (edit === 'mobile-num') {
+      if (localMobileNum === mobileNum) {
+        setEdit('');
+        return;
+      }
+
+      if (!localMobileNum.startsWith(prefix)) {
+        showMessage({
+          message: 'Invalid number format.',
+          type: 'warning',
+          color: '#FFF',
+          floating: true,
+          icon: 'warning',
+        });
+        return;
+      }
+
+      const mobileNumExists = userExcluded.some((repairShop) => repairShop.mobile_num === localMobileNum.trim());
+
+      if (mobileNumExists) {
+        showMessage({
+          message: 'Mobile number is already used by another account.',
+          type: 'warning',
+          floating: true,
+          color: '#FFF',
+          icon: 'warning',
+        });
+        return;
+      }
+    } else {
+      if (localEmail === email) {
+        setEdit('');
+        return;
+      }
+
+      if (!emailPattern.test(localEmail ?? '')) {
+        showMessage({
+          message: 'Invalid email format.',
+          type: 'warning',
+          color: '#FFF',
+          floating: true,
+          icon: 'warning',
+        });
+        return;
+      }
+
+      const emailExists = userExcluded.some((repairShop) => repairShop.email === localEmail?.trim());
+
+      if (emailExists) {
+        showMessage({
+          message: 'Email is already used by another account.',
+          type: 'warning',
+          floating: true,
+          color: '#FFF',
+          icon: 'warning',
+        });
+        return;
+      }
+    }
+
+    try {
+      setUpdateLoading(true);
+      setButtonDisable(true);
+
+      if (edit === 'mobile-num') {
+        const res = await generateOtp(localMobileNum.trim(), '', 'sms', 'Repair Shop', 'sms-verification');
+        setConfirm(res);
+      } else {
+        const res = await generateOtp('', localEmail?.trim() ?? '', 'email', 'Repair Shop', 'email-verification');
+        setConfirm(res);
+      }
+
+      showMessage({
+        message: 'Verification sent!',
+        type: 'success',
+        floating: true,
+        color: '#FFF',
+        icon: 'success',
+      });
+
+      setTimeout(() => {
+        setVerificationModalVisible(true);
+        startTimer();
+        setButtonDisable(false);
+      }, 2000);
+    } catch {
+      showMessage({
+        message: 'Failed to send verification.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    try {
+      setConfirmCodeLoading(true);
+
+      if (edit === 'mobile-num') {
+        const res = await generateOtp(localMobileNum.trim(), '', 'sms', 'Repair Shop', 'sms-verification');
+        setConfirm(res);
+      } else {
+        const res = await generateOtp('', localEmail?.trim() ?? '', 'email', 'Repair Shop', 'email-verification');
+        setConfirm(res);
+      }
+
+      startTimer();
+    } catch {
+      setError('Failed to send verification.');
+    } finally {
+      setConfirmCodeLoading(false);
+    }
+  };
+
+  const verifyCode = async () => {
+    if (otp.join('') === '') {
+      setError('Please input code first.');
+      return;
+    }
+
+    if (otp.join('').length >= 1 && otp.join('').length <= 5) {
+      setError('Invalid code');
+      return;
+    }
+
+    setError('');
+
+    try {
+      setConfirmCodeLoading(true);
+      setButtonDisable(true);
+
+      if (otp.join('') !== confirm) {
+        setError('You entered a wrong code.');
+        return;
+      }
+
+      setVerificationModalVisible(false);
+      clearTimer();
+      setIsTimerActivate(false);
+      setConfirm(null);
+      setError('');
+      setOtp(Array(6).fill(''));
+      setTimer(45);
+
+      showMessage({
+        message: 'Verified!',
+        type: 'success',
+        floating: true,
+        color: '#FFF',
+        icon: 'success',
+      });
+
+      setTimeout(() => {
+        if (edit === 'mobile-num') {
+          handleUpdateRepShopInfo('mobile-num', null, null, null);
+        } else {
+          handleUpdateRepShopInfo('email', null, null, null);
+        }
+
+        setButtonDisable(false);
+      }, 2000);
+    } catch {
+      setError('You entered a wrong code.');
+    } finally {
+      setConfirmCodeLoading(false);
+    }
+  };
+
   if (isLoading) {
     return <Loading />;
   }
@@ -630,7 +914,11 @@ const EditShop = () => {
                 </View>
               )}
 
-              <TouchableOpacity style={styles.editPicWrapper} onPress={() => pickProfileImage()}>
+              <TouchableOpacity
+                style={styles.editPicWrapper}
+                onPress={() => pickProfileImage()}
+                disabled={buttonDisable}
+              >
                 <MaterialCommunityIcons name="pencil" style={styles.editIcon} />
               </TouchableOpacity>
             </View>
@@ -652,6 +940,7 @@ const EditShop = () => {
                     deleteImage('profile', null);
                     handleUpdateRepShopInfo('profile', null, null, null);
                   }}
+                  disabled={buttonDisable}
                 >
                   <MaterialCommunityIcons name="image-remove" size={20} color="#FFF" />
                   <Text style={styles.profileButtonText}>Remove</Text>
@@ -664,6 +953,7 @@ const EditShop = () => {
                 <TouchableOpacity
                   style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]}
                   onPress={() => handleRestoreInfo('profile')}
+                  disabled={buttonDisable}
                 >
                   <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
                 </TouchableOpacity>
@@ -676,6 +966,7 @@ const EditShop = () => {
                     }
                     uploadProfileImage();
                   }}
+                  disabled={buttonDisable}
                 >
                   <Text style={styles.profileButtonText}>Save</Text>
                 </TouchableOpacity>
@@ -689,18 +980,21 @@ const EditShop = () => {
 
                   {localRepShopName !== '' && (
                     <>
-                      <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')}>
+                      <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')} disabled={buttonDisable}>
                         <Entypo name="cross" size={26} color="#780606" />
                       </TouchableOpacity>
 
-                      <TouchableOpacity onPress={() => handleUpdateRepShopInfo('rep-shop-name', null, null, null)}>
+                      <TouchableOpacity
+                        onPress={() => handleUpdateRepShopInfo('rep-shop-name', null, null, null)}
+                        disabled={buttonDisable}
+                      >
                         <FontAwesome5 name="check" size={22} color="#22bb33" />
                       </TouchableOpacity>
                     </>
                   )}
 
                   {localRepShopName === '' && (
-                    <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')}>
+                    <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')} disabled={buttonDisable}>
                       <Entypo name="cross" size={26} color="#780606" />
                     </TouchableOpacity>
                   )}
@@ -710,7 +1004,7 @@ const EditShop = () => {
               {edit !== 'rep-shop-name' && (
                 <>
                   <Text style={styles.repShopName}>{localRepShopName}</Text>
-                  <TouchableOpacity onPress={() => setEdit('rep-shop-name')}>
+                  <TouchableOpacity onPress={() => setEdit('rep-shop-name')} disabled={buttonDisable}>
                     <MaterialIcons name="edit" size={22} color="#333" />
                   </TouchableOpacity>
                 </>
@@ -733,18 +1027,21 @@ const EditShop = () => {
 
                     {localOwnerFirstname !== '' && (
                       <>
-                        <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
+                        <TouchableOpacity onPress={() => handleRestoreInfo('firstname')} disabled={buttonDisable}>
                           <Entypo name="cross" size={20} color="#780606" />
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => handleUpdateRepShopInfo('firstname', null, null, null)}>
+                        <TouchableOpacity
+                          onPress={() => handleUpdateRepShopInfo('firstname', null, null, null)}
+                          disabled={buttonDisable}
+                        >
                           <FontAwesome5 name="check" size={16} color="#22bb33" />
                         </TouchableOpacity>
                       </>
                     )}
 
                     {localOwnerFirstname === '' && (
-                      <TouchableOpacity onPress={() => handleRestoreInfo('firstname')}>
+                      <TouchableOpacity onPress={() => handleRestoreInfo('firstname')} disabled={buttonDisable}>
                         <Entypo name="cross" size={20} color="#780606" />
                       </TouchableOpacity>
                     )}
@@ -754,7 +1051,7 @@ const EditShop = () => {
                 {edit !== 'firstname' && (
                   <>
                     <Text style={styles.infoText}>{localOwnerFirstname}</Text>
-                    <TouchableOpacity onPress={() => setEdit('firstname')}>
+                    <TouchableOpacity onPress={() => setEdit('firstname')} disabled={buttonDisable}>
                       <MaterialIcons name="edit" size={16} color="#555" />
                     </TouchableOpacity>
                   </>
@@ -771,18 +1068,21 @@ const EditShop = () => {
 
                     {localOwnerLastname !== '' && (
                       <>
-                        <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
+                        <TouchableOpacity onPress={() => handleRestoreInfo('lastname')} disabled={buttonDisable}>
                           <Entypo name="cross" size={20} color="#780606" />
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => handleUpdateRepShopInfo('lastname', null, null, null)}>
+                        <TouchableOpacity
+                          onPress={() => handleUpdateRepShopInfo('lastname', null, null, null)}
+                          disabled={buttonDisable}
+                        >
                           <FontAwesome5 name="check" size={16} color="#22bb33" />
                         </TouchableOpacity>
                       </>
                     )}
 
                     {localOwnerLastname === '' && (
-                      <TouchableOpacity onPress={() => handleRestoreInfo('lastname')}>
+                      <TouchableOpacity onPress={() => handleRestoreInfo('lastname')} disabled={buttonDisable}>
                         <Entypo name="cross" size={20} color="#780606" />
                       </TouchableOpacity>
                     )}
@@ -792,7 +1092,7 @@ const EditShop = () => {
                 {edit !== 'lastname' && (
                   <>
                     <Text style={styles.infoText}>{localOwnerLastname}</Text>
-                    <TouchableOpacity onPress={() => setEdit('lastname')}>
+                    <TouchableOpacity onPress={() => setEdit('lastname')} disabled={buttonDisable}>
                       <MaterialIcons name="edit" size={16} color="#555" />
                     </TouchableOpacity>
                   </>
@@ -830,13 +1130,17 @@ const EditShop = () => {
                       )}
                       showsVerticalScrollIndicator={false}
                       dropdownStyle={styles.dropdownMenuStyle}
+                      disabled={buttonDisable}
                     />
 
-                    <TouchableOpacity onPress={() => handleRestoreInfo('gender')}>
+                    <TouchableOpacity onPress={() => handleRestoreInfo('gender')} disabled={buttonDisable}>
                       <Entypo name="cross" size={20} color="#780606" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => handleUpdateRepShopInfo('gender', null, null, null)}>
+                    <TouchableOpacity
+                      onPress={() => handleUpdateRepShopInfo('gender', null, null, null)}
+                      disabled={buttonDisable}
+                    >
                       <FontAwesome5 name="check" size={16} color="#22bb33" />
                     </TouchableOpacity>
                   </>
@@ -845,7 +1149,7 @@ const EditShop = () => {
                 {edit !== 'gender' && (
                   <>
                     <Text style={styles.infoText}>{localGender}</Text>
-                    <TouchableOpacity onPress={() => setEdit('gender')}>
+                    <TouchableOpacity onPress={() => setEdit('gender')} disabled={buttonDisable}>
                       <MaterialIcons name="edit" size={16} color="#555" />
                     </TouchableOpacity>
                   </>
@@ -861,24 +1165,27 @@ const EditShop = () => {
                     <TextInput
                       style={styles.input2}
                       value={localMobileNum}
-                      onChangeText={setLocalMobileNum}
+                      onChangeText={handlePhoneNumInputChange}
                       keyboardType="number-pad"
+                      maxLength={11}
                     />
 
                     {localMobileNum !== '' && (
                       <>
-                        <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
+                        <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')} disabled={buttonDisable}>
                           <Entypo name="cross" size={20} color="#780606" />
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => handleUpdateRepShopInfo('mobile-num', null, null, null)}>
-                          <FontAwesome5 name="check" size={16} color="#22bb33" />
-                        </TouchableOpacity>
+                        {localMobileNum.length === 11 && (
+                          <TouchableOpacity onPress={() => handleSendCode()} disabled={buttonDisable}>
+                            <FontAwesome5 name="check" size={16} color="#22bb33" />
+                          </TouchableOpacity>
+                        )}
                       </>
                     )}
 
                     {localMobileNum === '' && (
-                      <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')}>
+                      <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')} disabled={buttonDisable}>
                         <Entypo name="cross" size={20} color="#780606" />
                       </TouchableOpacity>
                     )}
@@ -888,7 +1195,7 @@ const EditShop = () => {
                 {edit !== 'mobile-num' && (
                   <>
                     <Text style={styles.infoText}>{localMobileNum}</Text>
-                    <TouchableOpacity onPress={() => setEdit('mobile-num')}>
+                    <TouchableOpacity onPress={() => setEdit('mobile-num')} disabled={buttonDisable}>
                       <MaterialIcons name="edit" size={16} color="#555" />
                     </TouchableOpacity>
                   </>
@@ -905,6 +1212,7 @@ const EditShop = () => {
                     setLocalEmail('');
                     setEdit('email');
                   }}
+                  disabled={buttonDisable}
                 >
                   <Text style={styles.editButtonText}>Add Email</Text>
                 </TouchableOpacity>
@@ -916,11 +1224,11 @@ const EditShop = () => {
                     <>
                       <TextInput style={styles.input2} value={localEmail} onChangeText={setLocalEmail} />
 
-                      <TouchableOpacity onPress={() => handleRestoreInfo('email')}>
+                      <TouchableOpacity onPress={() => handleRestoreInfo('email')} disabled={buttonDisable}>
                         <Entypo name="cross" size={20} color="#780606" />
                       </TouchableOpacity>
 
-                      <TouchableOpacity onPress={() => handleUpdateRepShopInfo('email', null, null, null)}>
+                      <TouchableOpacity onPress={() => handleSendCode()} disabled={buttonDisable}>
                         <FontAwesome5 name="check" size={16} color="#22bb33" />
                       </TouchableOpacity>
                     </>
@@ -929,7 +1237,7 @@ const EditShop = () => {
                   {edit !== 'email' && (
                     <>
                       <Text style={styles.infoText}>{localEmail}</Text>
-                      <TouchableOpacity onPress={() => setEdit('email')}>
+                      <TouchableOpacity onPress={() => setEdit('email')} disabled={buttonDisable}>
                         <MaterialIcons name="edit" size={16} color="#555" />
                       </TouchableOpacity>
                     </>
@@ -941,7 +1249,11 @@ const EditShop = () => {
             <View style={styles.row}>
               <Text style={styles.infoLabel}>Password:</Text>
               <View style={styles.infoEdit2}>
-                <TouchableOpacity style={styles.editButton} onPress={() => setModalVisible(true)}>
+                <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={() => setModalVisible(true)}
+                  disabled={buttonDisable}
+                >
                   <Text style={styles.editButtonText}>Change Password</Text>
                 </TouchableOpacity>
               </View>
@@ -956,6 +1268,7 @@ const EditShop = () => {
                   value={localServicesOffered.includes(item.label)}
                   onValueChange={() => toggleCheckbox(item.label)}
                   color={localServicesOffered.includes(item.label) ? '#000B58' : undefined}
+                  disabled={buttonDisable}
                 />
                 <Text style={styles.checkboxTxt}>{item.label}</Text>
               </View>
@@ -969,6 +1282,7 @@ const EditShop = () => {
                     handleRestoreInfo('services-offered');
                     setIsEditServices(false);
                   }}
+                  disabled={buttonDisable}
                 >
                   <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
                 </TouchableOpacity>
@@ -979,6 +1293,7 @@ const EditShop = () => {
                     handleUpdateRepShopInfo('services-offered', null, null, null);
                     setIsEditServices(false);
                   }}
+                  disabled={buttonDisable}
                 >
                   <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                 </TouchableOpacity>
@@ -989,7 +1304,7 @@ const EditShop = () => {
           <View style={styles.shopImages}>
             <Text style={styles.subHeader}>Shop Images</Text>
             {shopImages.length === 0 && (
-              <TouchableOpacity style={styles.editButton2} onPress={() => pickShopImages()}>
+              <TouchableOpacity style={styles.editButton2} onPress={() => pickShopImages()} disabled={buttonDisable}>
                 <MaterialCommunityIcons name="image-plus" size={16} color="#555" />
                 <Text style={[styles.editButtonText, { color: '#555' }]}>Upload Image</Text>
               </TouchableOpacity>
@@ -1005,11 +1320,16 @@ const EditShop = () => {
                         setImageSource(item);
                         setImageModalVisible(true);
                       }}
+                      disabled={buttonDisable}
                     >
                       <Image key={item} style={styles.image} source={{ uri: item }} width={100} height={100} />
                     </TouchableOpacity>
                   ))}
-                  <TouchableOpacity style={styles.addImageButton} onPress={() => pickShopImages()}>
+                  <TouchableOpacity
+                    style={styles.addImageButton}
+                    onPress={() => pickShopImages()}
+                    disabled={buttonDisable}
+                  >
                     <MaterialCommunityIcons name="image-plus" size={30} color="#555" />
                   </TouchableOpacity>
                 </View>
@@ -1039,7 +1359,11 @@ const EditShop = () => {
                 </MapView>
               </View>
 
-              <TouchableOpacity style={styles.editButton3} onPress={() => setMapModalVisible(true)}>
+              <TouchableOpacity
+                style={styles.editButton3}
+                onPress={() => setMapModalVisible(true)}
+                disabled={buttonDisable}
+              >
                 <Entypo name="location" size={16} color="#555" />
                 <Text style={[styles.editButtonText, { color: '#555' }]}>Edit Location</Text>
               </TouchableOpacity>
@@ -1222,6 +1546,83 @@ const EditShop = () => {
                       <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Delete</Text>
                     </TouchableOpacity>
                   </View>
+                </Pressable>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
+
+          <Modal
+            animationType="fade"
+            backdropColor={'rgba(0, 0, 0, 0.5)'}
+            visible={verificationModalVisible}
+            onRequestClose={() => {
+              setVerificationModalVisible(false);
+              clearTimer();
+              setIsTimerActivate(false);
+              setConfirm(null);
+              setError('');
+              setOtp(Array(6).fill(''));
+              setTimer(45);
+            }}
+          >
+            <TouchableWithoutFeedback
+              onPress={() => {
+                setVerificationModalVisible(false);
+                clearTimer();
+                setIsTimerActivate(false);
+                setConfirm(null);
+                setError('');
+                setOtp(Array(6).fill(''));
+                setTimer(45);
+              }}
+            >
+              <View style={styles.centeredView}>
+                <Pressable style={styles.verificationModalView} onPress={() => {}}>
+                  <Text style={[styles.modalHeader, { marginBottom: 10 }]}>Verification</Text>
+                  <Text style={styles.modalText}>
+                    We have sent the verification code to your {edit === 'mobile-num' ? 'number.' : 'email address.'}
+                  </Text>
+                  <View style={styles.codeInputContainer}>
+                    {otp.map((digit, index) => (
+                      <TextInput
+                        key={index}
+                        style={styles.otpInput}
+                        value={digit}
+                        onChangeText={(text) => handleOtpInputChange(text.replace(/[^0-9]/g, ''), index)}
+                        onKeyPress={(e) => handleKeyPress(e, index)}
+                        keyboardType="number-pad"
+                        maxLength={1}
+                        readOnly={isTimerActivate ? false : true}
+                        ref={(ref) => {
+                          inputs.current[index] = ref;
+                        }}
+                      />
+                    ))}
+                  </View>
+                  <Text style={[styles.modalText, { fontSize: 12 }]}>
+                    {isTimerActivate ? `Resend code in ${timer}s` : 'You can resend the code now'}
+                  </Text>
+                  {error.length > 0 && (
+                    <View style={[styles.errorContainer, { marginTop: 0, marginBottom: 10 }]}>
+                      <Text style={styles.errorMessage}>{error}</Text>
+                    </View>
+                  )}
+
+                  {confirmCodeLoading && (
+                    <ActivityIndicator style={{ marginBottom: 10 }} size="small" color="#000B58" />
+                  )}
+
+                  {!isTimerActivate && (
+                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => handleResendCode()}>
+                      <Text style={styles.sendButtonText}>Resend Code</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {isTimerActivate && (
+                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => verifyCode()}>
+                      <Text style={styles.sendButtonText}>Verify Code</Text>
+                    </TouchableOpacity>
+                  )}
                 </Pressable>
               </View>
             </TouchableWithoutFeedback>
@@ -1627,6 +2028,52 @@ const styles = StyleSheet.create({
     left: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 10,
+  },
+  verificationModalView: {
+    backgroundColor: '#FFF',
+    width: '85%',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    fontFamily: 'BodyRegular',
+    color: '#333',
+    marginBottom: 10,
+  },
+  codeInputContainer: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  otpInput: {
+    width: 30,
+    height: 45,
+    borderRadius: 10,
+    padding: 10,
+    color: '#333',
+    fontFamily: 'BodyRegular',
+    marginBottom: 20,
+    backgroundColor: '#EAEAEA',
+  },
+  sendButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000B58',
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  sendButtonText: {
+    fontFamily: 'BodyRegular',
+    color: '#fff',
   },
 });
 

@@ -58,10 +58,10 @@ const RunDiagnostics = () => {
   // BLE manager
   const managerRef = useRef(new BleManager());
   const stateSubscriptionRef = useRef<any>(null);
-  // notification subscription for current characteristic
+  // Notification subscription for current characteristic
   const notifySubscriptionRef = useRef<any>(null);
 
-  // command queue guard to prevent overlapping commands
+  // Command queue guard to prevent overlapping commands
   const commandLockRef = useRef(false);
 
   useEffect(() => {
@@ -104,7 +104,7 @@ const RunDiagnostics = () => {
     };
   }, [userID]);
 
-  // Listen for Bluetooth state changes (e.g., PoweredOff)
+  // Listen for Bluetooth state changes
   useEffect(() => {
     const manager = managerRef.current;
     stateSubscriptionRef.current = manager.onStateChange((state) => {
@@ -116,14 +116,14 @@ const RunDiagnostics = () => {
     }, true);
 
     return () => {
-      // cleanup subscriptions and destroy manager
+      // Cleanup subscriptions and destroy manager
       try {
         stateSubscriptionRef.current?.remove?.();
       } catch {}
       try {
         notifySubscriptionRef.current?.remove?.();
       } catch {}
-      // you may choose to destroy the manager on unmount in certain apps:
+      // You may choose to destroy the manager on unmount in certain apps:
       // managerRef.current.destroy();
     };
   }, []);
@@ -257,7 +257,7 @@ const RunDiagnostics = () => {
       // if (!foundDevicesMap.has(device.id)) { foundDevicesMap.set(device.id, device); setDevices([...foundDevicesMap.values()]); }
     });
 
-    // stop scan after 8 seconds
+    // Stop scan after 8 seconds
     setTimeout(() => {
       manager.stopDeviceScan();
       setScanLoading(false);
@@ -320,7 +320,7 @@ const RunDiagnostics = () => {
       setConnectedDevice(connected);
       dispatch(setDeviceState(connected as unknown as any)); // adapt type to your slice
 
-      // find usable characteristics
+      // Find usable characteristics
       const pair = await findReadWriteCharacteristics(connected);
       if (!pair) {
         showMessage({
@@ -336,7 +336,7 @@ const RunDiagnostics = () => {
 
       // Subscribe to notifications using device.monitorCharacteristicForService
       const { serviceUUID, notifyUUID } = pair;
-      // clear previous subscription if any
+      // Clear previous subscription if any
       try {
         notifySubscriptionRef.current?.remove?.();
       } catch {}
@@ -352,14 +352,14 @@ const RunDiagnostics = () => {
           if (!char?.value) return;
           const chunk = Buffer.from(char.value, 'base64').toString('ascii');
           setLog((p) => [...p, `RX: ${chunk.trim()}`]);
-          // store incoming data into a temporary rx buffer on the device object for reads
-          // attach rxBuffer to device (works but be careful with types)
+          // Store incoming data into a temporary rx buffer on the device object for reads
+          // Attach rxBuffer to device (works but be careful with types)
           // @ts-ignore
           connected.rxBuffer = (connected.rxBuffer ?? '') + chunk;
         }
       );
 
-      // initialize ELM-like adapter
+      // Initialize ELM-like adapter
       await sendCommand('ATZ');
       await sendCommand('ATE0');
       await sendCommand('ATS0');
@@ -386,41 +386,41 @@ const RunDiagnostics = () => {
   const sendCommand = async (cmd: string, timeout = 2000): Promise<string | null> => {
     if (!connectedDevice) return null;
 
-    // simple lock to avoid overlapping commands
+    // Simple lock to avoid overlapping commands
     while (commandLockRef.current) {
       await new Promise((r) => setTimeout(r, 20));
     }
     commandLockRef.current = true;
 
     try {
-      // ensure services & characteristics discovered
+      // Ensure services & characteristics discovered
       await connectedDevice.discoverAllServicesAndCharacteristics();
       const pair = await findReadWriteCharacteristics(connectedDevice);
       if (!pair) throw new Error('No writable/notifiable characteristic pair found.');
 
       const { serviceUUID, writeUUID } = pair;
-      // write command (ELM expects CR terminated)
+      // Write command (ELM expects CR terminated)
       const toSend = `${cmd}\r`;
       const base64cmd = Buffer.from(toSend, 'ascii').toString('base64');
 
       setLog((p) => [...p, `TX: ${cmd}`]);
 
-      // clear rxBuffer
+      // Clear rxBuffer
       // @ts-ignore
       connectedDevice.rxBuffer = '';
 
-      // write
+      // Write
       await connectedDevice.writeCharacteristicWithResponseForService(serviceUUID, writeUUID, base64cmd);
 
-      // wait for response until '>' prompt or timeout
+      // Wait for response until '>' prompt or timeout
       const start = Date.now();
       while (Date.now() - start < timeout) {
         // @ts-ignore
         const rx = connectedDevice.rxBuffer ?? '';
         if (rx.includes('>')) {
-          // return full buffer
+          // Return full buffer
           const result = rx;
-          // clear rxBuffer
+          // Clear rxBuffer
           // @ts-ignore
           connectedDevice.rxBuffer = '';
           return result;
@@ -431,7 +431,7 @@ const RunDiagnostics = () => {
       // timed out: return whatever we have (may be empty)
       // @ts-ignore
       const leftover = connectedDevice.rxBuffer ?? '';
-      // clear rxBuffer
+      // Clear rxBuffer
       // @ts-ignore
       connectedDevice.rxBuffer = '';
       return leftover || null;
@@ -471,8 +471,8 @@ const RunDiagnostics = () => {
     setScanLoading(true);
 
     try {
-      await sendCommand('03', 3000); // request stored DTCs
-      // wait a short while and then read rxBuffer content (sendCommand already consumed buffer but in case)
+      await sendCommand('03', 3000); // Request stored DTCs
+      // Wait a short while and then read rxBuffer content (sendCommand already consumed buffer but in case)
       // As fallback, try to call sendCommand('03') and inspect reply returned
       const res = await sendCommand('03', 3000);
       if (res) {
