@@ -582,7 +582,9 @@ const Signup = () => {
     <SafeAreaView style={styles.container}>
       <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <View style={styles.upperBox}>
-          <Image source={require('../../assets/images/logo.png')} />
+          <View style={styles.logoContainer}>
+            <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
+          </View>
 
           <View style={styles.textInputContainer1}>
             <Text style={styles.upperTextInputLbl}>Register as</Text>
@@ -1046,10 +1048,13 @@ const styles = StyleSheet.create({
     gap: 10,
     padding: 10,
   },
-  welcomeTxt: {
-    color: '#FFF',
-    fontSize: 28,
-    fontFamily: 'HeaderBold',
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    width: 85,
+    height: 70,
   },
   upperTextInputLbl: {
     color: '#FFF',

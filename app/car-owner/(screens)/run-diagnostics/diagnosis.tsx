@@ -8,8 +8,8 @@ import { RootState } from '@/redux/store';
 import { getOnVehicleDiagnostic, getScannedVehicle } from '@/services/backendApi';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { BluetoothDevice } from 'react-native-bluetooth-classic';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Device } from 'react-native-ble-plx';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -26,7 +26,7 @@ const Diagnosis = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const vehicleID: number | null = useSelector((state: RootState) => state.scan.vehicleID);
   const scanReference: string | null = useSelector((state: RootState) => state.scan.scanReference);
-  const connectedDevice: BluetoothDevice | null = useSelector((state: RootState) => state.device.device);
+  const connectedDevice: Device | null = useSelector((state: RootState) => state.device.device);
   const routes: any[] = useSelector((state: RootState) => state.route.route);
 
   useEffect(() => {
@@ -55,33 +55,13 @@ const Diagnosis = () => {
     })();
   }, [vehicleID, scanReference]);
 
-  const clearCodesAlert = () => {
-    Alert.alert('Clear Codes', 'Make sure the issues have been fixed before clearing the codes.', [
-      {
-        text: 'Cancel',
-        onPress: () => {},
-        style: 'cancel',
-      },
-      {
-        text: 'Yes',
-        onPress: () => clearCodes(),
-      },
-    ]);
-  };
-
-  const clearCodes = async () => {
-    if (!connectedDevice) return;
-    await sendCommand('04');
-  };
-
-  const sendCommand = async (cmd: string) => {
-    if (!connectedDevice) return;
-    await connectedDevice?.write(`${cmd}\r`);
-  };
-
   const disconnectToDevice = async () => {
     try {
-      await connectedDevice?.disconnect();
+      if (connectedDevice) {
+        try {
+          await connectedDevice.cancelConnection();
+        } catch {}
+      }
       dispatch(clearDeviceState());
       console.log('Disconnected!');
       router.replace(routes[routes.length - 1]);
@@ -128,12 +108,7 @@ const Diagnosis = () => {
           </View>
 
           <View style={styles.troubleCodesContainer}>
-            <View style={styles.labelContainer}>
-              <Text style={styles.troubleCodesLbl}>Detected Trouble Codes</Text>
-              <TouchableOpacity style={styles.clearButton} onPress={() => clearCodesAlert()}>
-                <Text style={styles.clearButtonText}>Clear codes</Text>
-              </TouchableOpacity>
-            </View>
+            <Text style={styles.troubleCodesLbl}>Detected Trouble Codes</Text>
 
             {[...codeInterpretation]
               .sort((a, b) => a.vehicleDiagnosticID - b.vehicleDiagnosticID)

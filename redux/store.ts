@@ -21,6 +21,11 @@ export const store = configureStore({
     role: roleReducer,
     device: deviceReducer,
   },
+  middleware: (getDefaultMiddleware) => {
+    return getDefaultMiddleware({
+      serializableCheck: false,
+    });
+  }
 });
 
 export type RootState = ReturnType<typeof store.getState>;

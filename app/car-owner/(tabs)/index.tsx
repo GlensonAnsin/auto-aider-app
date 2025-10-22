@@ -250,7 +250,7 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.upperBox}>
-        <Image source={require('../../../assets/images/logo.png')} style={styles.logo} width={200} height={25} />
+        <Image source={require('../../../assets/images/logo.png')} style={styles.logo} />
       </View>
 
       <ScrollView>
@@ -502,6 +502,8 @@ const styles = StyleSheet.create({
     height: 63,
   },
   logo: {
+    width: 60,
+    height: 50,
     marginLeft: 20,
   },
   userContainer: {

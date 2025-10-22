@@ -52,7 +52,7 @@ export const getUserInfo = async () => {
     const token = await getAccessToken();
     const res = await axios.get(`${apiURL}/user/get-user-info`, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`
       },
     });
     return res.data;

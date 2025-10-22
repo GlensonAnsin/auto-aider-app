@@ -53,6 +53,8 @@ const RunDiagnostics = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [log, setLog] = useState<string[]>([]);
+  const [scannedDevicesVisibile, setScannedDevicesVisible] = useState<boolean>(true);
+  const [discoveringDevices, setDiscoveringDevices] = useState<boolean>(false);
   const userID = useSelector((state: RootState) => state.role.ID);
 
   // BLE manager
@@ -224,10 +226,12 @@ const RunDiagnostics = () => {
   // --- BLE helpers ---
   // Discover devices (scan)
   const discoverDevices = async () => {
+    setScannedDevicesVisible(false);
+    setDiscoveringDevices(true);
     const manager = managerRef.current;
 
     setDevices([]);
-    setScanLoading(true);
+    setConnectLoading(true);
     setLog((p) => [...p, 'Scanning for BLE devices...']);
 
     const foundDevicesMap = new Map<string, Device>();
@@ -235,7 +239,7 @@ const RunDiagnostics = () => {
     // Setup scan callback
     manager.startDeviceScan(null, { allowDuplicates: false }, (error, device) => {
       if (error) {
-        setScanLoading(false);
+        setConnectLoading(false);
         setLog((p) => [...p, `Scan error: ${error.message || error}`]);
         return;
       }
@@ -257,10 +261,9 @@ const RunDiagnostics = () => {
       // if (!foundDevicesMap.has(device.id)) { foundDevicesMap.set(device.id, device); setDevices([...foundDevicesMap.values()]); }
     });
 
-    // Stop scan after 8 seconds
     setTimeout(() => {
       manager.stopDeviceScan();
-      setScanLoading(false);
+      setConnectLoading(false);
       setLog((p) => [...p, `Scan finished. ${foundDevicesMap.size} device(s) found.`]);
       if (foundDevicesMap.size === 0) {
         showMessage({
@@ -269,8 +272,11 @@ const RunDiagnostics = () => {
           floating: true,
           color: '#FFF',
           icon: 'warning',
+          duration: 5000,
         });
       }
+      setScannedDevicesVisible(true);
+      setDiscoveringDevices(false);
     }, 8000);
   };
 
@@ -294,6 +300,9 @@ const RunDiagnostics = () => {
         }
 
         if (writeChar && notifyChar) {
+          console.log(`SVC: ${svc.uuid}`);
+          console.log(`writeChar: ${writeChar.uuid}`);
+          console.log(`notifyChar: ${notifyChar.uuid}`);
           return {
             serviceUUID: svc.uuid,
             writeUUID: writeChar.uuid,
@@ -318,7 +327,7 @@ const RunDiagnostics = () => {
       // Discover services & characteristics
       await connected.discoverAllServicesAndCharacteristics();
       setConnectedDevice(connected);
-      dispatch(setDeviceState(connected as unknown as any)); // adapt type to your slice
+      dispatch(setDeviceState(connected)); // adapt type to your slice
 
       // Find usable characteristics
       const pair = await findReadWriteCharacteristics(connected);
@@ -476,8 +485,12 @@ const RunDiagnostics = () => {
       // As fallback, try to call sendCommand('03') and inspect reply returned
       const res = await sendCommand('03', 3000);
       if (res) {
-        const parsed = parseDTCResponse(res.toString());
-        if (parsed.length === 0) {
+        console.log(`Raw: ${res}`);
+        const converted = res.toString();
+        console.log(`Converted: ${converted}`);
+        const parsed = await parseDTCResponse(converted);
+        console.log(`Parsed: ${parsed}`);
+        if (parsed?.length === 0) {
           setScanLoading(false);
           setIsNoCodeDetected(true);
         } else {
@@ -501,16 +514,27 @@ const RunDiagnostics = () => {
     }
   };
 
-  const parseDTCResponse = (raw: string): string[] => {
+  const parseDTCResponse = async (raw: string): Promise<string[]> => {
     const clean = raw.replace(/\s|\r|\n|>/g, '');
-    if (!clean.startsWith('43')) return [];
 
-    const dtcBytes = clean.slice(2);
+    if (clean.includes('NODATA')) {
+      console.log('No DTCs available.');
+      return []; // Return an empty array to indicate no data
+    }
+
+    const clean2 = clean.slice(2);
+
+    console.log(`Clean: ${clean2}`);
+
+    if (!clean2.startsWith('43')) return [];
+
+    const dtcBytes = clean2.slice(2);
 
     const dtcs: string[] = [];
     for (let i = 0; i < dtcBytes.length; i += 4) {
       const chunk = dtcBytes.slice(i, i + 4);
       if (chunk.length < 4 || chunk === '0000') continue;
+      console.log(`Chunk: ${chunk}`);
       dtcs.push(decodeDTC(chunk));
     }
     return dtcs;
@@ -637,25 +661,32 @@ const RunDiagnostics = () => {
 
             {!connectedDevice && (
               <>
-                <TouchableOpacity style={styles.scanDevButton} onPress={() => discoverDevices()}>
+                <TouchableOpacity
+                  style={styles.scanDevButton}
+                  onPress={() => discoverDevices()}
+                  disabled={discoveringDevices}
+                >
                   <Text style={styles.scanDevButtonText}>Discover Devices</Text>
                 </TouchableOpacity>
-                <FlatList
-                  data={devices}
-                  style={styles.devicesContainer}
-                  nestedScrollEnabled={true}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.selectDeviceButton} onPress={() => connectToDevice(item)}>
-                      <Text style={styles.selectDeviceButtonText}>{item.name}</Text>
-                    </TouchableOpacity>
-                  )}
-                  ListEmptyComponent={() => (
-                    <View style={styles.noDevicesContainer}>
-                      <Text style={styles.noDevicesText}>Paired devices empty</Text>
-                    </View>
-                  )}
-                  keyExtractor={(item) => item.id}
-                />
+
+                {scannedDevicesVisibile && (
+                  <FlatList
+                    data={devices}
+                    style={styles.devicesContainer}
+                    nestedScrollEnabled={true}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity style={styles.selectDeviceButton} onPress={() => connectToDevice(item)}>
+                        <Text style={styles.selectDeviceButtonText}>{item.name}</Text>
+                      </TouchableOpacity>
+                    )}
+                    ListEmptyComponent={() => (
+                      <View style={styles.noDevicesContainer}>
+                        <Text style={styles.noDevicesText}>No devices</Text>
+                      </View>
+                    )}
+                    keyExtractor={(item) => item.id}
+                  />
+                )}
               </>
             )}
           </View>
@@ -714,6 +745,12 @@ const RunDiagnostics = () => {
 
           <View style={styles.infoContainer}>
             <Feather name="info" size={24} color="#333" style={styles.infoIcon} />
+            <View style={styles.bulletView}>
+              <Text style={styles.bullet}>{'\u2022'}</Text>
+              <Text style={styles.bulletedText}>
+                A BLE OBD-II device is required to use this feature. We recommend using the Veepeak OBDCheck BLE.
+              </Text>
+            </View>
             <View style={styles.bulletView}>
               <Text style={styles.bullet}>{'\u2022'}</Text>
               <Text style={styles.bulletedText}>Plugin in the device. Turn on car ignition.</Text>
