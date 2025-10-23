@@ -89,7 +89,7 @@ export default function Home() {
         setProfilePic(res.profile_pic);
         setShopImages(res.shop_images);
         setProfileBG(res.profile_bg);
-        setIsAvailable(Boolean(res.availability));
+        setIsAvailable(res.availability === 'open' ? true : false);
       } catch (e) {
         console.log('Error: ', e);
       } finally {

@@ -7,10 +7,12 @@
 build/
 .idea
 .gradle
-local.properties
 *.iml
 *.hprof
 .cxx/
+*.keystore
 
 # Bundle artifacts
 *.jsbundle
+
+/app/google-services.json

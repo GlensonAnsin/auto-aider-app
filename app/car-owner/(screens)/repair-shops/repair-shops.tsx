@@ -12,6 +12,7 @@ import {
   getVehicle,
 } from '@/services/backendApi';
 import { generateReference } from '@/services/generateReference';
+import { startBackgroundLocation, stopBackgroundLocation } from '@/services/locationTask';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -97,7 +98,6 @@ const RepairShops = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedRepShop, setSelectedRepShop] = useState<number | null>(null);
   const [currentSnapPointIndex, setCurrentSnapPointIndex] = useState<number>(-1);
-  const [refreshKey, setRefreshKey] = useState(0);
   const maxDistanceKM: number = 10;
   const snapPoints = useMemo(() => ['37%', '99.9%'], []);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -111,18 +111,15 @@ const RepairShops = () => {
   const [scanReference2, setScanReference2] = useState<string>('');
   const [requestLoading, setRequestLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [animateToCurrReg, setAnimateToCurrReg] = useState<boolean>(true);
 
   const vehicleID: number | null = useSelector((state: RootState) => state.scan.vehicleID);
   const scanReference: string | null = useSelector((state: RootState) => state.scan.scanReference);
   const userID = useSelector((state: RootState) => state.role.ID);
 
-  const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
-
   useFocusEffect(
     useCallback(() => {
-      handleRefresh();
+      startBackgroundLocation();
       let isActive = true;
 
       const fetchData = async () => {
@@ -191,6 +188,8 @@ const RepairShops = () => {
       return () => {
         isActive = false;
         dispatch(clearScanState());
+        stopBackgroundLocation();
+        setAnimateToCurrReg(true);
       };
     }, [dispatch, scanReference, vehicleID])
   );
@@ -214,11 +213,16 @@ const RepairShops = () => {
           const newLocation = {
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
+            latitudeDelta: 0.1,
+            longitudeDelta: 0.1,
           };
 
           setCurrentLocation(newLocation);
+
+          if (animateToCurrReg) {
+            mapRef.current?.animateToRegion(newLocation);
+            setAnimateToCurrReg(false);
+          }
 
           const nearby = regions
             ?.map((loc) => {
@@ -230,17 +234,16 @@ const RepairShops = () => {
             })
             .filter((loc) => loc.distance <= maxDistanceKM);
 
-          setNearbyRepShop(nearby);
+          const isSameShops = (prev: any[] | undefined, next: string | any[] | undefined) => {
+            if (!prev || !next || prev.length !== next.length) return false;
+            return prev.every(
+              (shop, i) => shop.repairShopID === next[i].repairShopID && shop.distance === next[i].distance
+            );
+          };
 
-          const allCoords = [newLocation, ...(nearby || [])].map((coord) => ({
-            latitude: coord.latitude,
-            longitude: coord.longitude,
-          }));
-
-          mapRef.current?.fitToCoordinates(allCoords, {
-            edgePadding: { top: 300, right: 300, bottom: 300, left: 300 },
-            animated: true,
-          });
+          if (!isSameShops(nearbyRepShop, nearby)) {
+            setNearbyRepShop(nearby);
+          }
         }
       );
     })();
@@ -250,7 +253,7 @@ const RepairShops = () => {
         locationSubscription.remove();
       }
     };
-  }, [regions]);
+  }, [animateToCurrReg, nearbyRepShop, regions]);
 
   const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const toRad = (deg: number) => (deg * Math.PI) / 180;
@@ -414,7 +417,7 @@ const RepairShops = () => {
   }
 
   return (
-    <SafeAreaView key={refreshKey} style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <GestureHandlerRootView>
         <Header headerTitle="Repair Shops" />
         <View style={styles.lowerBox}>
@@ -434,6 +437,7 @@ const RepairShops = () => {
                   }}
                   image={require('../../../../assets/images/circle-marker.png')}
                   title="You"
+                  tracksViewChanges={false}
                 />
 
                 <Circle
@@ -455,7 +459,9 @@ const RepairShops = () => {
                   latitude: loc.latitude,
                   longitude: loc.longitude,
                 }}
+                image={require('../../../../assets/images/shop-marker.png')}
                 title={`${loc.distance}KM Away`}
+                tracksViewChanges={false}
                 onPress={() => {
                   bottomSheetRef.current?.snapToIndex(1);
                   setSelectedRepShop(index);
