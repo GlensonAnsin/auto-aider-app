@@ -649,12 +649,24 @@ const Signup = () => {
               <View style={styles.row}>
                 <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>First Name</Text>
-                  <TextInput value={firstname} onChangeText={setFirstname} style={styles.input} />
+                  <TextInput
+                    value={firstname}
+                    onChangeText={setFirstname}
+                    style={styles.input}
+                    placeholder="John"
+                    placeholderTextColor="#555"
+                  />
                 </View>
 
                 <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Last Name</Text>
-                  <TextInput value={lastname} onChangeText={setLastname} style={styles.input} />
+                  <TextInput
+                    value={lastname}
+                    onChangeText={setLastname}
+                    style={styles.input}
+                    placeholder="Doe"
+                    placeholderTextColor="#555"
+                  />
                 </View>
               </View>
 
@@ -698,6 +710,8 @@ const Signup = () => {
                     maxLength={11}
                     style={styles.input}
                     keyboardType="number-pad"
+                    placeholder="09XXXXXXXXX"
+                    placeholderTextColor="#555"
                   />
                 </View>
               </View>
@@ -705,7 +719,14 @@ const Signup = () => {
               <View style={styles.row}>
                 <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Password</Text>
-                  <TextInput value={password} onChangeText={setPassword} style={styles.input} secureTextEntry />
+                  <TextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    style={styles.input}
+                    secureTextEntry
+                    placeholder="********"
+                    placeholderTextColor="#555"
+                  />
                 </View>
 
                 <View style={styles.textInputContainer2}>
@@ -715,6 +736,8 @@ const Signup = () => {
                     onChangeText={setConfirmPassword}
                     style={styles.input}
                     secureTextEntry
+                    placeholder="********"
+                    placeholderTextColor="#555"
                   />
                 </View>
               </View>
@@ -777,12 +800,24 @@ const Signup = () => {
               <View style={styles.row}>
                 <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>First Name</Text>
-                  <TextInput value={firstname} onChangeText={setFirstname} style={styles.input} />
+                  <TextInput
+                    value={firstname}
+                    onChangeText={setFirstname}
+                    style={styles.input}
+                    placeholder="John"
+                    placeholderTextColor="#555"
+                  />
                 </View>
 
                 <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Last Name</Text>
-                  <TextInput value={lastname} onChangeText={setLastname} style={styles.input} />
+                  <TextInput
+                    value={lastname}
+                    onChangeText={setLastname}
+                    style={styles.input}
+                    placeholder="Doe"
+                    placeholderTextColor="#555"
+                  />
                 </View>
               </View>
 
@@ -826,6 +861,8 @@ const Signup = () => {
                     maxLength={11}
                     style={styles.input}
                     keyboardType="number-pad"
+                    placeholder="09XXXXXXXXX"
+                    placeholderTextColor="#555"
                   />
                 </View>
               </View>
@@ -833,7 +870,14 @@ const Signup = () => {
               <View style={styles.row}>
                 <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Password</Text>
-                  <TextInput value={password} onChangeText={setPassword} style={styles.input} secureTextEntry />
+                  <TextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    style={styles.input}
+                    secureTextEntry
+                    placeholder="********"
+                    placeholderTextColor="#555"
+                  />
                 </View>
 
                 <View style={styles.textInputContainer2}>
@@ -843,13 +887,21 @@ const Signup = () => {
                     onChangeText={setConfirmPassword}
                     style={styles.input}
                     secureTextEntry
+                    placeholder="********"
+                    placeholderTextColor="#555"
                   />
                 </View>
               </View>
 
               <View style={styles.textInputContainer3}>
                 <Text style={styles.textInputLbl}>Shop Name</Text>
-                <TextInput value={shopName} onChangeText={setShopName} style={styles.shopNameInput} />
+                <TextInput
+                  value={shopName}
+                  onChangeText={setShopName}
+                  style={styles.shopNameInput}
+                  placeholder="John Repair Shop"
+                  placeholderTextColor="#555"
+                />
               </View>
 
               <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
@@ -1039,7 +1091,7 @@ const Signup = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   upperBox: {
     backgroundColor: '#000B58',
@@ -1063,7 +1115,7 @@ const styles = StyleSheet.create({
   upperDropdownButtonStyle: {
     width: '100%',
     height: 45,
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 10,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -1111,7 +1163,7 @@ const styles = StyleSheet.create({
     fontFamily: 'BodyRegular',
   },
   input: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     width: '100%',
     height: 45,
     borderRadius: 10,
@@ -1123,7 +1175,7 @@ const styles = StyleSheet.create({
   dropdownButtonStyle: {
     width: '100%',
     height: 45,
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 10,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -1197,7 +1249,7 @@ const styles = StyleSheet.create({
     fontFamily: 'HeaderBold',
   },
   shopNameInput: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     width: '100%',
     height: 45,
     borderRadius: 10,

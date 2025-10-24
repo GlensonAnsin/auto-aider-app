@@ -394,14 +394,12 @@ const ForgotPass = () => {
                   <TouchableOpacity
                     style={[
                       styles.chooseButton,
-                      { backgroundColor: selectedRole === item.title ? '#000B58' : '#808080' },
+                      { backgroundColor: selectedRole === item.title ? '#000B58' : '#eaeaea' },
                     ]}
                     onPress={() => setSelectedRole(item.title)}
                   >
-                    <Icon name={item.icon} size={24} color={selectedRole === item.title ? '#fff' : '#EAEAEA'} />
-                    <Text
-                      style={[styles.chooseButtonText, { color: selectedRole === item.title ? '#fff' : '#EAEAEA' }]}
-                    >
+                    <Icon name={item.icon} size={24} color={selectedRole === item.title ? '#fff' : '#555'} />
+                    <Text style={[styles.chooseButtonText, { color: selectedRole === item.title ? '#fff' : '#555' }]}>
                       {item.title}
                     </Text>
                   </TouchableOpacity>
@@ -428,7 +426,7 @@ const ForgotPass = () => {
               keyboardType="number-pad"
               maxLength={11}
               readOnly={selectedAuthType === 'sms' ? false : true}
-              style={[styles.input, { backgroundColor: selectedAuthType === 'sms' ? '#fff' : '#808080' }]}
+              style={[styles.input, { backgroundColor: selectedAuthType === 'sms' ? '#f2f4f7' : '#eaeaea' }]}
             />
 
             <View style={styles.chooseButtonTextContainer}>
@@ -446,10 +444,10 @@ const ForgotPass = () => {
               value={email}
               onChangeText={setEmail}
               placeholder="example@gmail.com"
-              placeholderTextColor={selectedAuthType === 'email' ? '#555' : '#EAEAEA'}
+              placeholderTextColor={selectedAuthType === 'email' ? '#555' : '#555'}
               keyboardType="email-address"
               readOnly={selectedAuthType === 'email' ? false : true}
-              style={[styles.input, { backgroundColor: selectedAuthType === 'email' ? '#fff' : '#808080' }]}
+              style={[styles.input, { backgroundColor: selectedAuthType === 'email' ? '#f2f4f7' : '#eaeaea' }]}
             />
 
             <TouchableOpacity style={styles.sendButton} onPress={() => handleSendCode()}>
@@ -458,7 +456,7 @@ const ForgotPass = () => {
 
             <Modal
               animationType="fade"
-              backdropColor={'rgba(0, 0, 0, 0.5)'}
+              backdropColor={'rgba(0, 0, 0, 0.1)'}
               visible={verificationModalVisible}
               onRequestClose={() => {
                 setVerificationModalVisible(false);
@@ -539,7 +537,7 @@ const ForgotPass = () => {
 
             <Modal
               animationType="fade"
-              backdropColor={'rgba(0, 0, 0, 0.5)'}
+              backdropColor={'rgba(0, 0, 0, 0.1)'}
               visible={resetPassModalVisible}
               onRequestClose={() => setResetPassModalVisible(false)}
             >
@@ -600,7 +598,7 @@ const ForgotPass = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     width: '90%',
@@ -609,7 +607,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   formContainer: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
     shadowColor: '#000',
