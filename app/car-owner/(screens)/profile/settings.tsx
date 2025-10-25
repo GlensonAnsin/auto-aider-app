@@ -94,11 +94,11 @@ const Settings = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     flex: 1,
-    marginBottom: 100,
+    marginBottom: 80,
   },
   labelContainer: {
     padding: 10,
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   settingsButton: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

@@ -323,7 +323,7 @@ const Profile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     alignItems: 'center',
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   profileTab: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     padding: 10,
     shadowColor: '#000',
     shadowOffset: {
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalView: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
     width: '85%',
     borderRadius: 10,
     padding: 20,
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   input: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     width: '100%',
     height: 45,
     borderRadius: 10,

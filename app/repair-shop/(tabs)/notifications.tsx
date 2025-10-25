@@ -200,7 +200,7 @@ export default function NotificationsTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f2f4f7',
   },
   header: {
     backgroundColor: '#000B58',
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   },
   lowerBox: {
     flex: 1,
-    marginBottom: 100,
+    marginBottom: 80,
   },
   noHistoryContainer: {
     height: '100%',
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   },
   notifButton: {
     borderBottomWidth: 1,
-    borderColor: '#EAEAEA',
+    borderColor: '#fff',
     paddingVertical: 10,
     paddingHorizontal: 30,
   },

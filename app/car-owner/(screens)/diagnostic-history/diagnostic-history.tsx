@@ -215,9 +215,10 @@ const DiagnosticHistory = () => {
         {grouped.length !== 0 && (
           <FlatList
             data={grouped}
-            renderItem={({ item }) => (
+            style={{ width: '100%' }}
+            renderItem={({ item, index }) => (
               <TouchableOpacity
-                style={styles.historyContainer}
+                style={[styles.historyContainer, index === 0 && styles.firstChild]}
                 onPress={() => {
                   dispatch(
                     setScanState({
@@ -266,20 +267,20 @@ const DiagnosticHistory = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     alignItems: 'center',
-    width: '90%',
+    width: '100%',
     alignSelf: 'center',
     flex: 1,
-    marginBottom: 100,
+    marginBottom: 80,
     gap: 10,
   },
   clearHistoryContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
+    width: '90%',
     marginTop: 20,
   },
   header2: {
@@ -307,8 +308,10 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
   historyContainer: {
-    width: '100%',
-    backgroundColor: '#EAEAEA',
+    width: '90%',
+    marginBottom: 10,
+    alignSelf: 'center',
+    backgroundColor: '#fff',
     justifyContent: 'space-between',
     padding: 10,
     borderRadius: 10,
@@ -320,6 +323,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  firstChild: {
+    marginTop: 10,
   },
   carDetails: {
     fontFamily: 'BodyBold',

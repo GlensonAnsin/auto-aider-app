@@ -1361,7 +1361,17 @@ const EditShop = () => {
 
               <TouchableOpacity
                 style={styles.editButton3}
-                onPress={() => setMapModalVisible(true)}
+                onPress={() => {
+                  setMapModalVisible(true);
+                  setTimeout(() => {
+                    mapRef.current?.animateToRegion({
+                      latitude: localRegion?.latitude ?? 0,
+                      longitude: localRegion?.longitude ?? 0,
+                      latitudeDelta: 0.01,
+                      longitudeDelta: 0.01,
+                    });
+                  }, 1000);
+                }}
                 disabled={buttonDisable}
               >
                 <Entypo name="location" size={16} color="#555" />
@@ -1641,13 +1651,13 @@ const EditShop = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     width: '90%',
     alignSelf: 'center',
     marginTop: 20,
-    marginBottom: 100,
+    marginBottom: 80,
   },
   picRepNameContainer: {
     alignItems: 'center',
@@ -1887,7 +1897,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalView: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
     width: '85%',
     borderRadius: 10,
     padding: 20,
@@ -1916,7 +1926,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   modalInput: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     width: '100%',
     height: 45,
     borderRadius: 10,

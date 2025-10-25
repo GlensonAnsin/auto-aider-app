@@ -248,7 +248,7 @@ export default function ChatsTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f2f4f7',
   },
   header: {
     backgroundColor: '#000B58',
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   },
   lowerBox: {
     flex: 1,
-    marginBottom: 100,
+    marginBottom: 80,
   },
   noHistoryContainer: {
     height: '100%',

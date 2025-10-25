@@ -133,12 +133,12 @@ const HistoryDetailedReport = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     alignSelf: 'center',
     marginTop: 20,
-    marginBottom: 100,
+    marginBottom: 80,
     gap: 10,
     width: '90%',
   },
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   codeButton: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     color: '#780606',
   },
   textContainer: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 10,
     shadowColor: '#000',

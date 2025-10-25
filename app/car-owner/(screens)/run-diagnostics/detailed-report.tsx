@@ -86,17 +86,17 @@ const DetailedReport = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     alignSelf: 'center',
     marginTop: 20,
-    marginBottom: 100,
+    marginBottom: 80,
     gap: 10,
     width: '90%',
   },
   textContainer: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 10,
     shadowColor: '#000',

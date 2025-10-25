@@ -749,6 +749,26 @@ const Signup = () => {
                 </TouchableOpacity>
               </View>
 
+              <View style={styles.termsContainer}>
+                <Text style={styles.termsText}>By clicking Sign Up, you agree to our </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    /* navigate to Terms screen */
+                  }}
+                >
+                  <Text style={[styles.termsText, { color: '#007BFF' }]}>Terms of Service</Text>
+                </TouchableOpacity>
+                <Text> and </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    /* navigate to Privacy screen */
+                  }}
+                >
+                  <Text style={[styles.termsText, { color: '#007BFF' }]}>Privacy Policy</Text>
+                </TouchableOpacity>
+                <Text style={styles.termsText}>.</Text>
+              </View>
+
               <TouchableOpacity style={styles.button} onPress={() => handleAddUser()}>
                 <Text style={styles.buttonTxt}>Sign Up</Text>
               </TouchableOpacity>
@@ -968,8 +988,28 @@ const Signup = () => {
                 ))}
               </View>
 
+              <View style={[styles.termsContainer, { marginTop: 20 }]}>
+                <Text style={styles.termsText}>By clicking Sign Up, you agree to our </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    /* navigate to Terms screen */
+                  }}
+                >
+                  <Text style={[styles.termsText, { color: '#007BFF' }]}>Terms of Service</Text>
+                </TouchableOpacity>
+                <Text> and </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    /* navigate to Privacy screen */
+                  }}
+                >
+                  <Text style={[styles.termsText, { color: '#007BFF' }]}>Privacy Policy</Text>
+                </TouchableOpacity>
+                <Text style={styles.termsText}>.</Text>
+              </View>
+
               <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
-                <Text style={styles.buttonTxt}>Submit</Text>
+                <Text style={styles.buttonTxt}>Sign Up</Text>
               </TouchableOpacity>
 
               <Modal
@@ -1232,7 +1272,21 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: 5,
     alignItems: 'center',
-    marginTop: 30,
+    marginTop: 10,
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    width: '90%',
+    padding: 5,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  termsText: {
+    fontFamily: 'BodyRegular',
+    color: '#333',
+    fontSize: 13,
   },
   button: {
     width: 120,

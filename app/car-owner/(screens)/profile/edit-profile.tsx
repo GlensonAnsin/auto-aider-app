@@ -974,13 +974,13 @@ const EditProfile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     width: '90%',
     alignSelf: 'center',
     marginTop: 20,
-    marginBottom: 100,
+    marginBottom: 80,
   },
   editPicContainer: {
     position: 'relative',

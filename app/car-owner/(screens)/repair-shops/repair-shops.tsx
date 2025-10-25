@@ -1225,7 +1225,7 @@ const RepairShops = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     flex: 1,
@@ -1369,7 +1369,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalView: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
     width: '85%',
     borderRadius: 10,
     padding: 20,
@@ -1399,7 +1399,7 @@ const styles = StyleSheet.create({
   dropdownButtonStyle: {
     width: '100%',
     height: 45,
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 5,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -1416,7 +1416,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   dropdownMenuStyle: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 10,
   },
   dropdownItemStyle: {
@@ -1434,7 +1434,7 @@ const styles = StyleSheet.create({
     fontFamily: 'BodyRegular',
   },
   textArea: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     width: '100%',
     minHeight: 100,
     borderRadius: 5,
@@ -1470,7 +1470,7 @@ const styles = StyleSheet.create({
     fontFamily: 'HeaderBold',
   },
   troubleCodeContainer: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     marginBottom: 10,
     width: '100%',
     borderRadius: 5,

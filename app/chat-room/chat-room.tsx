@@ -342,7 +342,7 @@ const ChatRoom = () => {
       <FlatList
         data={reversedConversation}
         ref={flatListRef}
-        style={{ flex: 1, backgroundColor: '#F9FAFB' }}
+        style={{ flex: 1, backgroundColor: '#f2f4f7' }}
         keyboardShouldPersistTaps="handled"
         inverted
         initialNumToRender={10}
@@ -415,7 +415,7 @@ const ChatRoom = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   header: {
     backgroundColor: '#000B58',
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
   messageInput: {
     borderRadius: 20,
     padding: 10,
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     fontFamily: 'BodyRegular',
     color: '#333',
     flex: 1,

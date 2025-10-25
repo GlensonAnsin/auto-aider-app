@@ -223,32 +223,35 @@ const RequestStatus = () => {
     <SafeAreaView style={styles.container}>
       <Header headerTitle="Request Status" />
       <View style={styles.lowerBox}>
-        <SelectDropdown
-          data={buttons}
-          defaultValue={activeButton}
-          onSelect={(selectedItem) => setActiveButton(selectedItem)}
-          renderButton={(selectedItem, isOpen) => (
-            <View style={styles.dropdownButtonStyle}>
-              <Text style={styles.dropdownButtonTxtStyle}>{selectedItem}</Text>
-              <MaterialCommunityIcons
-                name={isOpen ? 'chevron-up' : 'chevron-down'}
-                style={styles.dropdownButtonArrowStyle}
-              />
-            </View>
-          )}
-          renderItem={(item, _index, isSelected) => (
-            <View
-              style={{
-                ...styles.dropdownItemStyle,
-                ...(isSelected && { backgroundColor: '#D2D9DF' }),
-              }}
-            >
-              <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
-            </View>
-          )}
-          showsVerticalScrollIndicator={false}
-          dropdownStyle={styles.dropdownMenuStyle}
-        />
+        <View style={{ width: '90%', alignSelf: 'center' }}>
+          <SelectDropdown
+            data={buttons}
+            defaultValue={activeButton}
+            statusBarTranslucent={true}
+            onSelect={(selectedItem) => setActiveButton(selectedItem)}
+            renderButton={(selectedItem, isOpen) => (
+              <View style={styles.dropdownButtonStyle}>
+                <Text style={styles.dropdownButtonTxtStyle}>{selectedItem}</Text>
+                <MaterialCommunityIcons
+                  name={isOpen ? 'chevron-up' : 'chevron-down'}
+                  style={styles.dropdownButtonArrowStyle}
+                />
+              </View>
+            )}
+            renderItem={(item, _index, isSelected) => (
+              <View
+                style={{
+                  ...styles.dropdownItemStyle,
+                  ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                }}
+              >
+                <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+              </View>
+            )}
+            showsVerticalScrollIndicator={false}
+            dropdownStyle={styles.dropdownMenuStyle}
+          />
+        </View>
 
         {activeButton === 'All' && (
           <>
@@ -262,9 +265,10 @@ const RequestStatus = () => {
             {grouped.length !== 0 && (
               <FlatList
                 data={grouped}
-                renderItem={({ item }) => (
+                style={{ width: '100%' }}
+                renderItem={({ item, index }) => (
                   <TouchableOpacity
-                    style={styles.requestButton}
+                    style={[styles.requestButton, index === 0 && styles.firstChild]}
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
@@ -522,13 +526,13 @@ const RequestStatus = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     alignSelf: 'center',
     marginTop: 20,
-    marginBottom: 100,
-    width: '90%',
+    marginBottom: 80,
+    width: '100%',
   },
   dropdownButtonStyle: {
     width: 120,
@@ -538,9 +542,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 10,
-    marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#EAEAEA',
+    borderColor: '#eaeaea',
   },
   dropdownButtonTxtStyle: {
     flex: 1,
@@ -565,7 +568,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   dropdownMenuStyle: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 10,
   },
   noHistoryContainer: {
@@ -579,8 +582,9 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
   requestButton: {
-    width: '100%',
-    backgroundColor: '#EAEAEA',
+    width: '90%',
+    alignSelf: 'center',
+    backgroundColor: '#fff',
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 10,
@@ -594,6 +598,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     marginBottom: 10,
+  },
+  firstChild: {
+    marginTop: 10,
   },
   vehicleShopContainer: {},
   vehicleName: {

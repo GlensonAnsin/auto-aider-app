@@ -780,7 +780,7 @@ const RunDiagnostics = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   connectionStatus: {
     justifyContent: 'center',
@@ -795,7 +795,7 @@ const styles = StyleSheet.create({
     width: '90%',
     alignSelf: 'center',
     marginTop: 20,
-    marginBottom: 100,
+    marginBottom: 80,
   },
   obd2Container: {
     width: '100%',
@@ -814,7 +814,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   devicesContainer: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     marginBottom: 10,
     borderRadius: 5,
     height: 120,
@@ -841,7 +841,7 @@ const styles = StyleSheet.create({
   dropdownButtonStyle: {
     width: '100%',
     height: 45,
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 10,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -868,7 +868,7 @@ const styles = StyleSheet.create({
     fontFamily: 'BodyRegular',
   },
   dropdownMenuStyle: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 10,
   },
   buttonContainer: {

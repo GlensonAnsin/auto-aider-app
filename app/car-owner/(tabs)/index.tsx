@@ -562,13 +562,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   featuresContainer: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     width: '94%',
     flexDirection: 'row',
     alignSelf: 'center',
     borderRadius: 8,
     marginTop: 20,
-    marginBottom: 100,
+    marginBottom: 80,
     gap: 5,
     paddingTop: 5,
     paddingBottom: 5,
@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addCarModalView: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
     width: '85%',
     borderRadius: 10,
     padding: 20,
@@ -654,7 +654,7 @@ const styles = StyleSheet.create({
   dropdownButtonStyle: {
     width: '100%',
     height: 45,
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 5,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   dropdownMenuStyle: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 10,
   },
   dropdownItemStyle: {
@@ -689,7 +689,7 @@ const styles = StyleSheet.create({
     fontFamily: 'BodyRegular',
   },
   input: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     width: '100%',
     height: 45,
     borderRadius: 5,

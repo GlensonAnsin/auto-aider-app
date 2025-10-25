@@ -379,10 +379,12 @@ const RepairRequestDetails = () => {
         longitude: coord.longitude,
       }));
 
-    mapRef.current?.fitToCoordinates(allCoords, {
-      edgePadding: { top: 10, right: 10, bottom: 10, left: 10 },
-      animated: true,
-    });
+    setTimeout(() => {
+      mapRef.current?.fitToCoordinates(allCoords, {
+        edgePadding: { top: 150, right: 150, bottom: 150, left: 150 },
+        animated: true,
+      });
+    }, 1000);
   };
 
   const handleTransformText = (index: number) => {
@@ -740,7 +742,7 @@ const RepairRequestDetails = () => {
                             latitude: customerRegion.latitude,
                             longitude: customerRegion.longitude,
                           }}
-                          title="Customer"
+                          title={item.customer}
                         />
                       )}
                     </MapView>
@@ -748,9 +750,12 @@ const RepairRequestDetails = () => {
                     <TouchableOpacity style={styles.exitButton2} onPress={() => setMapModalVisible(false)}>
                       <Entypo name="cross" size={20} color="#FFF" />
                     </TouchableOpacity>
-                    <Text
-                      style={styles.text}
-                    >{`${getDistance(shopRegion?.latitude ?? 0, shopRegion?.longitude ?? 0, customerRegion?.latitude ?? 0, customerRegion?.longitude ?? 0)}KM Away`}</Text>
+
+                    <View style={{ padding: 10 }}>
+                      <Text
+                        style={styles.text}
+                      >{`${getDistance(shopRegion?.latitude ?? 0, shopRegion?.longitude ?? 0, customerRegion?.latitude ?? 0, customerRegion?.longitude ?? 0)}KM Away`}</Text>
+                    </View>
                   </View>
                 </View>
               </Modal>
@@ -1080,7 +1085,7 @@ const RepairRequestDetails = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     alignSelf: 'center',
@@ -1177,7 +1182,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   diagnosisButton: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     width: '100%',
     marginBottom: 10,
     shadowColor: '#000',
@@ -1204,7 +1209,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   textContainer: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 10,
     shadowColor: '#000',

@@ -146,13 +146,13 @@ const Diagnosis = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
     alignItems: 'center',
     marginTop: 30,
     flex: 1,
-    marginBottom: 100,
+    marginBottom: 80,
   },
   buttonContainer: {
     width: '90%',
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   troubleCodeButton: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     width: '100%',
     marginBottom: 10,
     shadowColor: '#000',

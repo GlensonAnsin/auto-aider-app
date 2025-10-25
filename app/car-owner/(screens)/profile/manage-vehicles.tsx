@@ -125,25 +125,20 @@ const ManageVehicles = () => {
         {vehicles.length !== 0 && (
           <FlatList
             data={vehicles}
-            renderItem={({ item }) => (
-              <View style={styles.vehicleContainer}>
+            style={{ width: '100%' }}
+            renderItem={({ item, index }) => (
+              <View style={[styles.vehicleContainer, index === 0 && styles.firstChild]}>
                 <View style={styles.carDetailsContainer}>
                   <Text style={styles.carDetail}>{`${item.year} ${item.make} ${item.model}`} </Text>
                   <Text style={styles.dateAdded}>{`Date added: ${item.dateAdded}`}</Text>
                 </View>
 
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity style={[styles.button, { backgroundColor: '#000B58' }]}>
-                    <Text style={styles.buttonTxt}>View</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.button, { backgroundColor: '#780606' }]}
-                    onPress={() => deleteVehicleAlert(item.vehicleID)}
-                  >
-                    <Text style={styles.buttonTxt}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                  style={[styles.button, { backgroundColor: '#780606' }]}
+                  onPress={() => deleteVehicleAlert(item.vehicleID)}
+                >
+                  <Text style={styles.buttonTxt}>Delete</Text>
+                </TouchableOpacity>
               </View>
             )}
             keyExtractor={(item) => item.vehicleID.toString()}
@@ -157,15 +152,15 @@ const ManageVehicles = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f2f4f7',
   },
   lowerBox: {
-    width: '90%',
+    width: '100%',
     alignItems: 'center',
     alignSelf: 'center',
-    marginTop: 20,
+    marginTop: 10,
     flex: 1,
-    marginBottom: 100,
+    marginBottom: 80,
   },
   noHistoryContainer: {
     height: '100%',
@@ -178,12 +173,13 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
   vehicleContainer: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#fff',
     borderRadius: 10,
     minHeight: 80,
     padding: 10,
     marginBottom: 10,
-    width: '100%',
+    width: '90%',
+    alignSelf: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -192,6 +188,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  firstChild: {
+    marginTop: 10,
   },
   carDetailsContainer: {
     flexDirection: 'row',
@@ -207,16 +206,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 5,
-    alignSelf: 'flex-end',
-    marginTop: 10,
-  },
   button: {
     width: 70,
     padding: 5,
     borderRadius: 5,
+    alignSelf: 'flex-end',
+    marginTop: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -383,7 +383,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#f2f4f7',
   },
   upperBox: {
     backgroundColor: '#000B58',
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
     width: '90%',
     alignSelf: 'center',
     marginTop: 20,
-    marginBottom: 100,
+    marginBottom: 80,
   },
   repShopUpperContainer: {
     flexDirection: 'row',
