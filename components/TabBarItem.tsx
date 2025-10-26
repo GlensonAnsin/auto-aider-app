@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 type Props = {
@@ -8,9 +8,10 @@ type Props = {
   onPress: () => void;
   onLongPress: () => void;
   icon: React.ReactNode;
+  badgeCount?: number;
 };
 
-export default function TabBarItem({ label, isFocused, onPress, onLongPress, icon }: Props) {
+export default function TabBarItem({ label, isFocused, onPress, onLongPress, icon, badgeCount }: Props) {
   const scale = useSharedValue(0);
 
   useEffect(() => {
@@ -38,7 +39,16 @@ export default function TabBarItem({ label, isFocused, onPress, onLongPress, ico
 
   return (
     <TouchableOpacity onPress={onPress} onLongPress={onLongPress} style={styles.tabBarItem}>
-      <Animated.View style={animatedIconStyle}>{icon}</Animated.View>
+      <View style={{ position: 'relative' }}>
+        <Animated.View style={animatedIconStyle}>{icon}</Animated.View>
+
+        {badgeCount !== undefined && badgeCount !== 0 && (
+          <View style={styles.badgeContainer}>
+            <Text style={styles.badgeText}>{badgeCount > 99 ? '99+' : badgeCount}</Text>
+          </View>
+        )}
+      </View>
+
       <Animated.Text style={[styles.tabLabel, animatedTextStyle, { color: isFocused ? '#FFF' : '#FFF' }]}>
         {label}
       </Animated.Text>
@@ -56,5 +66,22 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontFamily: 'BodyRegular',
     fontSize: 11,
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: -3,
+    right: -10,
+    backgroundColor: '#FF4D4D',
+    borderRadius: 10,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: '600',
   },
 });

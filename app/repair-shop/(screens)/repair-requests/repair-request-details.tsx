@@ -67,11 +67,13 @@ const RepairRequestDetails = () => {
       possibleCauses: string | null;
       recommendedRepair: string | null;
       scanReference: string;
-      vehicleIssue: string;
+      vehicleIssue: string | null;
       repairProcedure: string | null;
       reasonRejected: string | null;
       isRated: boolean;
       score: number | null;
+      requestType: string;
+      serviceType: string;
     }[]
   >([]);
   const [customerRegion, setCustomerRegion] = useState<Region | undefined>(undefined);
@@ -138,13 +140,15 @@ const RepairRequestDetails = () => {
           reasonRejected: string | null;
           isRated: boolean;
           score: number | null;
+          requestType: string;
+          serviceType: string;
         }[] = [];
 
         if (res1) {
           if (res1.mechanic_requests) {
             res1.mechanic_requests.forEach((request: any) => {
               if (request) {
-                const requestID = request.mechanic_request;
+                const requestID = request.mechanic_request_id;
                 const datetime = dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
                 const completedOn = dayjs(request.completed_on).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
                 const longitude = parseFloat(request.longitude);
@@ -154,6 +158,8 @@ const RepairRequestDetails = () => {
                 const reasonRejected = request.reason_rejected;
                 const isRated = request.is_rated;
                 const score = request.score;
+                const requestType = request.request_type;
+                const serviceType = request.service_type;
                 if (request.vehicle_diagnostic) {
                   const diagnostics = Array.isArray(request.vehicle_diagnostic)
                     ? request.vehicle_diagnostic
@@ -206,6 +212,8 @@ const RepairRequestDetails = () => {
                                     reasonRejected: reasonRejected,
                                     isRated: isRated,
                                     score: score,
+                                    requestType: requestType,
+                                    serviceType: serviceType,
                                   });
 
                                   setCustomerRegion({
@@ -320,6 +328,8 @@ const RepairRequestDetails = () => {
             reasonRejected: item.reasonRejected,
             isRated: item.isRated,
             score: item.score,
+            requestType: item.requestType,
+            serviceType: item.serviceType,
           };
         } else {
           acc[ref].requestID.push(item.requestID);
@@ -362,6 +372,8 @@ const RepairRequestDetails = () => {
           reasonRejected: string | null;
           isRated: boolean;
           score: number | null;
+          requestType: string;
+          serviceType: string;
         }
       >
     )
@@ -440,7 +452,7 @@ const RepairRequestDetails = () => {
 
     try {
       if (selectedReason === 'Others') {
-        await rejectRequest(IDs, otherReason, scanReference, year, make, model, userID);
+        await rejectRequest(IDs, otherReason, year, make, model, userID);
         showMessage({
           message: 'Request rejected',
           type: 'success',
@@ -451,7 +463,7 @@ const RepairRequestDetails = () => {
         return;
       }
 
-      await rejectRequest(IDs, selectedReason, scanReference, year, make, model, userID);
+      await rejectRequest(IDs, selectedReason, year, make, model, userID);
       showMessage({
         message: 'Request rejected',
         type: 'success',
@@ -479,7 +491,7 @@ const RepairRequestDetails = () => {
     userID: number
   ) => {
     try {
-      await acceptRequest(IDs, scanReference, year, make, model, userID);
+      await acceptRequest(IDs, year, make, model, userID);
       showMessage({
         message: 'Request accepted',
         type: 'success',
@@ -519,7 +531,7 @@ const RepairRequestDetails = () => {
 
     try {
       if (selectedOptCompleted === 'Repair unsuccessful') {
-        await requestCompleted(IDs, 'Repair unsuccessful', dayjs().format(), scanReference, year, make, model, userID);
+        await requestCompleted(IDs, 'Repair unsuccessful', dayjs().format(), year, make, model, userID);
         showMessage({
           message: 'Request completed',
           type: 'success',
@@ -531,7 +543,7 @@ const RepairRequestDetails = () => {
       }
 
       if (selectedOptCompleted === 'Prefer not to say') {
-        await requestCompleted(IDs, null, dayjs().format(), scanReference, year, make, model, userID);
+        await requestCompleted(IDs, null, dayjs().format(), year, make, model, userID);
         showMessage({
           message: 'Request completed',
           type: 'success',
@@ -543,7 +555,7 @@ const RepairRequestDetails = () => {
       }
 
       if (!selectedOptCompleted) {
-        await requestCompleted(IDs, repairProcedure, dayjs().format(), scanReference, year, make, model, userID);
+        await requestCompleted(IDs, repairProcedure, dayjs().format(), year, make, model, userID);
         showMessage({
           message: 'Request completed',
           type: 'success',
@@ -681,6 +693,14 @@ const RepairRequestDetails = () => {
                 <Text style={styles.text}>
                   <Text style={styles.nestedText}>Year: </Text>
                   {item.year}
+                </Text>
+                <Text style={styles.text}>
+                  <Text style={styles.nestedText}>Request Type: </Text>
+                  {item.requestType}
+                </Text>
+                <Text style={styles.text}>
+                  <Text style={styles.nestedText}>Service Type: </Text>
+                  {item.serviceType}
                 </Text>
                 {item.isRated && (
                   <Text style={styles.text}>

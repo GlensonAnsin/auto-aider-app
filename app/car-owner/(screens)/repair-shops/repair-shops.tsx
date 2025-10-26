@@ -114,6 +114,8 @@ const RepairShops = () => {
   const [error, setError] = useState<string>('');
   const [animateToCurrReg, setAnimateToCurrReg] = useState<boolean>(true);
   const [withinTenKM, setWithinTenKM] = useState<boolean>(true);
+  const [requestType, setRequestType] = useState<string>('');
+  const [serviceType, setServiceType] = useState<string>('');
 
   const vehicleID: number | null = useSelector((state: RootState) => state.scan.vehicleID);
   const scanReference: string | null = useSelector((state: RootState) => state.scan.scanReference);
@@ -310,12 +312,17 @@ const RepairShops = () => {
     setModalVisible(true);
   };
 
-  const handleSubmitRequest = async (repairShopID: number, vehicleDiagID: number | null, requestType: string) => {
+  const handleSubmitRequest = async (repairShopID: number, vehicleDiagID: number | null, type: string) => {
+    if (!serviceType) {
+      setError('Please fill out all fields.');
+      return;
+    }
+
     setError('');
 
     try {
       setRequestLoading(true);
-      switch (requestType) {
+      switch (type) {
         case 'with-obd2':
           const datetimeWithObd2 = dayjs().format();
 
@@ -333,6 +340,9 @@ const RepairShops = () => {
               rejected_reason: null,
               longitude: currentLocation?.longitude.toString() ?? '',
               latitude: currentLocation?.latitude.toString() ?? '',
+              is_rated: false,
+              request_type: 'Vehicle Repair',
+              service_type: serviceType,
             };
 
             await addRequest(requestData);
@@ -362,6 +372,9 @@ const RepairShops = () => {
             rejected_reason: null,
             longitude: currentLocation?.longitude.toString() ?? '',
             latitude: currentLocation?.latitude.toString() ?? '',
+            is_rated: false,
+            request_type: requestType,
+            service_type: serviceType,
           };
 
           await addRequest(requestData);
@@ -400,7 +413,7 @@ const RepairShops = () => {
         recommended_repair: null,
         date: dayjs().format(),
         scan_reference: scanReference2,
-        vehicle_issue_description: vehicleIssue,
+        vehicle_issue_description: requestType === 'Vehicle Repair' ? vehicleIssue : '-',
         is_deleted: false,
       };
 
@@ -424,9 +437,16 @@ const RepairShops = () => {
   };
 
   const handleSubmitRequestWithoutOBD2 = async (repairShopID: number) => {
-    if (!selectedVehicle || !vehicleIssue) {
-      setError('Please fill in all fields.');
-      return;
+    if (requestType === 'Vehicle Repair') {
+      if (!selectedVehicle || !requestType || !serviceType || !vehicleIssue) {
+        setError('Please fill out all fields.');
+        return;
+      }
+    } else {
+      if (!selectedVehicle || !requestType || !serviceType) {
+        setError('Please fill out all fields.');
+        return;
+      }
     }
 
     setError('');
@@ -452,13 +472,6 @@ const RepairShops = () => {
       <GestureHandlerRootView>
         <Header headerTitle="Repair Shops" />
         <View style={styles.lowerBox}>
-          <TouchableOpacity
-            style={[styles.tenKMButton, { backgroundColor: withinTenKM ? '#000B58BF' : '#FFFFFFBF' }]}
-            onPress={() => toggleWithinTenKM()}
-          >
-            <Text style={[styles.tenKMButtonText, { color: withinTenKM ? '#fff' : '#333' }]}>Within 10KM</Text>
-          </TouchableOpacity>
-
           <MapView
             ref={mapRef}
             mapType="hybrid"
@@ -534,13 +547,14 @@ const RepairShops = () => {
             )}
           </MapView>
 
-          <BottomSheet
-            ref={bottomSheetRef}
-            onChange={handleSheetChanges}
-            index={-1}
-            snapPoints={snapPoints}
-            style={{ zIndex: 3 }}
+          <TouchableOpacity
+            style={[styles.tenKMButton, { backgroundColor: withinTenKM ? '#000B58BF' : '#FFFFFFBF' }]}
+            onPress={() => toggleWithinTenKM()}
           >
+            <Text style={[styles.tenKMButtonText, { color: withinTenKM ? '#fff' : '#333' }]}>Within 10KM</Text>
+          </TouchableOpacity>
+
+          <BottomSheet ref={bottomSheetRef} onChange={handleSheetChanges} index={-1} snapPoints={snapPoints}>
             <BottomSheetScrollView style={styles.contentContainer}>
               <View style={styles.repShopInfoContainer}>
                 {withinTenKM ? (
@@ -689,12 +703,18 @@ const RepairShops = () => {
                           visible={modalVisible}
                           onRequestClose={() => {
                             setModalVisible(false);
+                            setRequestType('');
+                            setServiceType('');
+                            setVehicleIssue('');
                             setError('');
                           }}
                         >
                           <TouchableWithoutFeedback
                             onPress={() => {
                               setModalVisible(false);
+                              setRequestType('');
+                              setServiceType('');
+                              setVehicleIssue('');
                               setError('');
                             }}
                           >
@@ -738,6 +758,39 @@ const RepairShops = () => {
                                     </View>
 
                                     <View style={styles.textInputContainer}>
+                                      <Text style={styles.textInputLabel}>Service Type</Text>
+                                      <SelectDropdown
+                                        data={['In-Shop Service', 'On-Site Service', 'Home Service']}
+                                        onSelect={(selectedItem) => setServiceType(selectedItem)}
+                                        renderButton={(selectedItem, isOpen) => (
+                                          <View style={styles.dropdownButtonStyle}>
+                                            <Text style={styles.dropdownButtonTxtStyle}>
+                                              {(selectedItem && `${selectedItem}`) || 'Select service type'}
+                                            </Text>
+                                            <MaterialCommunityIcons
+                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                              style={styles.dropdownButtonArrowStyle}
+                                            />
+                                          </View>
+                                        )}
+                                        renderItem={(item, _index, isSelected) => (
+                                          <View
+                                            style={{
+                                              ...styles.dropdownItemStyle,
+                                              ...(isSelected && {
+                                                backgroundColor: '#D2D9DF',
+                                              }),
+                                            }}
+                                          >
+                                            <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
+                                          </View>
+                                        )}
+                                        showsVerticalScrollIndicator={false}
+                                        dropdownStyle={styles.dropdownMenuStyle}
+                                      />
+                                    </View>
+
+                                    <View style={styles.textInputContainer}>
                                       <Text style={styles.textInputLabel}>Vehicle Issue</Text>
                                       <ScrollView style={{ maxHeight: 200 }}>
                                         <View onStartShouldSetResponder={() => true}>
@@ -766,6 +819,9 @@ const RepairShops = () => {
                                         style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
                                         onPress={() => {
                                           setModalVisible(false);
+                                          setRequestType('');
+                                          setServiceType('');
+                                          setVehicleIssue('');
                                           setError('');
                                         }}
                                       >
@@ -828,18 +884,86 @@ const RepairShops = () => {
                                     </View>
 
                                     <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Vehicle Issue Description</Text>
-                                      <TextInput
-                                        style={styles.textArea}
-                                        placeholder="Describe vehicle issue"
-                                        placeholderTextColor="#555"
-                                        multiline={true}
-                                        numberOfLines={5}
-                                        value={vehicleIssue}
-                                        onChangeText={setVehicleIssue}
-                                        textAlignVertical="top"
+                                      <Text style={styles.textInputLabel}>Request Type</Text>
+                                      <SelectDropdown
+                                        data={['Preventive Maintenance Service', 'Vehicle Repair']}
+                                        onSelect={(selectedItem) => setRequestType(selectedItem)}
+                                        renderButton={(selectedItem, isOpen) => (
+                                          <View style={styles.dropdownButtonStyle}>
+                                            <Text style={styles.dropdownButtonTxtStyle}>
+                                              {(selectedItem && `${selectedItem}`) || 'Select request type'}
+                                            </Text>
+                                            <MaterialCommunityIcons
+                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                              style={styles.dropdownButtonArrowStyle}
+                                            />
+                                          </View>
+                                        )}
+                                        renderItem={(item, _index, isSelected) => (
+                                          <View
+                                            style={{
+                                              ...styles.dropdownItemStyle,
+                                              ...(isSelected && {
+                                                backgroundColor: '#D2D9DF',
+                                              }),
+                                            }}
+                                          >
+                                            <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
+                                          </View>
+                                        )}
+                                        showsVerticalScrollIndicator={false}
+                                        dropdownStyle={styles.dropdownMenuStyle}
                                       />
                                     </View>
+
+                                    <View style={styles.textInputContainer}>
+                                      <Text style={styles.textInputLabel}>Service Type</Text>
+                                      <SelectDropdown
+                                        data={['In-Shop Service', 'On-Site Service', 'Home Service']}
+                                        onSelect={(selectedItem) => setServiceType(selectedItem)}
+                                        renderButton={(selectedItem, isOpen) => (
+                                          <View style={styles.dropdownButtonStyle}>
+                                            <Text style={styles.dropdownButtonTxtStyle}>
+                                              {(selectedItem && `${selectedItem}`) || 'Select service type'}
+                                            </Text>
+                                            <MaterialCommunityIcons
+                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                              style={styles.dropdownButtonArrowStyle}
+                                            />
+                                          </View>
+                                        )}
+                                        renderItem={(item, _index, isSelected) => (
+                                          <View
+                                            style={{
+                                              ...styles.dropdownItemStyle,
+                                              ...(isSelected && {
+                                                backgroundColor: '#D2D9DF',
+                                              }),
+                                            }}
+                                          >
+                                            <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
+                                          </View>
+                                        )}
+                                        showsVerticalScrollIndicator={false}
+                                        dropdownStyle={styles.dropdownMenuStyle}
+                                      />
+                                    </View>
+
+                                    {requestType === 'Vehicle Repair' && (
+                                      <View style={styles.textInputContainer}>
+                                        <Text style={styles.textInputLabel}>Vehicle Issue Description</Text>
+                                        <TextInput
+                                          style={styles.textArea}
+                                          placeholder="Describe vehicle issue"
+                                          placeholderTextColor="#555"
+                                          multiline={true}
+                                          numberOfLines={5}
+                                          value={vehicleIssue}
+                                          onChangeText={setVehicleIssue}
+                                          textAlignVertical="top"
+                                        />
+                                      </View>
+                                    )}
 
                                     {error.length > 0 && (
                                       <View style={styles.errorContainer}>
@@ -856,6 +980,9 @@ const RepairShops = () => {
                                         style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
                                         onPress={() => {
                                           setModalVisible(false);
+                                          setRequestType('');
+                                          setServiceType('');
+                                          setVehicleIssue('');
                                           setError('');
                                         }}
                                       >
@@ -1025,12 +1152,18 @@ const RepairShops = () => {
                           visible={modalVisible}
                           onRequestClose={() => {
                             setModalVisible(false);
+                            setRequestType('');
+                            setServiceType('');
+                            setVehicleIssue('');
                             setError('');
                           }}
                         >
                           <TouchableWithoutFeedback
                             onPress={() => {
                               setModalVisible(false);
+                              setRequestType('');
+                              setServiceType('');
+                              setVehicleIssue('');
                               setError('');
                             }}
                           >
@@ -1102,6 +1235,9 @@ const RepairShops = () => {
                                         style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
                                         onPress={() => {
                                           setModalVisible(false);
+                                          setRequestType('');
+                                          setServiceType('');
+                                          setVehicleIssue('');
                                           setError('');
                                         }}
                                       >
@@ -1160,18 +1296,86 @@ const RepairShops = () => {
                                     </View>
 
                                     <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Vehicle Issue Description</Text>
-                                      <TextInput
-                                        style={styles.textArea}
-                                        placeholder="Describe vehicle issue"
-                                        placeholderTextColor="#555"
-                                        multiline={true}
-                                        numberOfLines={5}
-                                        value={vehicleIssue}
-                                        onChangeText={setVehicleIssue}
-                                        textAlignVertical="top"
+                                      <Text style={styles.textInputLabel}>Request Type</Text>
+                                      <SelectDropdown
+                                        data={['Preventive Maintenance Service', 'Vehicle Repair']}
+                                        onSelect={(selectedItem) => setRequestType(selectedItem)}
+                                        renderButton={(selectedItem, isOpen) => (
+                                          <View style={styles.dropdownButtonStyle}>
+                                            <Text style={styles.dropdownButtonTxtStyle}>
+                                              {(selectedItem && `${selectedItem}`) || 'Select request type'}
+                                            </Text>
+                                            <MaterialCommunityIcons
+                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                              style={styles.dropdownButtonArrowStyle}
+                                            />
+                                          </View>
+                                        )}
+                                        renderItem={(item, _index, isSelected) => (
+                                          <View
+                                            style={{
+                                              ...styles.dropdownItemStyle,
+                                              ...(isSelected && {
+                                                backgroundColor: '#D2D9DF',
+                                              }),
+                                            }}
+                                          >
+                                            <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
+                                          </View>
+                                        )}
+                                        showsVerticalScrollIndicator={false}
+                                        dropdownStyle={styles.dropdownMenuStyle}
                                       />
                                     </View>
+
+                                    <View style={styles.textInputContainer}>
+                                      <Text style={styles.textInputLabel}>Service Type</Text>
+                                      <SelectDropdown
+                                        data={['In-Shop Service', 'On-Site Service', 'Home Service']}
+                                        onSelect={(selectedItem) => setServiceType(selectedItem)}
+                                        renderButton={(selectedItem, isOpen) => (
+                                          <View style={styles.dropdownButtonStyle}>
+                                            <Text style={styles.dropdownButtonTxtStyle}>
+                                              {(selectedItem && `${selectedItem}`) || 'Select service type'}
+                                            </Text>
+                                            <MaterialCommunityIcons
+                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                              style={styles.dropdownButtonArrowStyle}
+                                            />
+                                          </View>
+                                        )}
+                                        renderItem={(item, _index, isSelected) => (
+                                          <View
+                                            style={{
+                                              ...styles.dropdownItemStyle,
+                                              ...(isSelected && {
+                                                backgroundColor: '#D2D9DF',
+                                              }),
+                                            }}
+                                          >
+                                            <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
+                                          </View>
+                                        )}
+                                        showsVerticalScrollIndicator={false}
+                                        dropdownStyle={styles.dropdownMenuStyle}
+                                      />
+                                    </View>
+
+                                    {requestType === 'Vehicle Repair' && (
+                                      <View style={styles.textInputContainer}>
+                                        <Text style={styles.textInputLabel}>Vehicle Issue Description</Text>
+                                        <TextInput
+                                          style={styles.textArea}
+                                          placeholder="Describe vehicle issue"
+                                          placeholderTextColor="#555"
+                                          multiline={true}
+                                          numberOfLines={5}
+                                          value={vehicleIssue}
+                                          onChangeText={setVehicleIssue}
+                                          textAlignVertical="top"
+                                        />
+                                      </View>
+                                    )}
 
                                     {error.length > 0 && (
                                       <View style={styles.errorContainer}>
@@ -1188,6 +1392,9 @@ const RepairShops = () => {
                                         style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
                                         onPress={() => {
                                           setModalVisible(false);
+                                          setRequestType('');
+                                          setServiceType('');
+                                          setVehicleIssue('');
                                           setError('');
                                         }}
                                       >
@@ -1234,7 +1441,6 @@ const styles = StyleSheet.create({
   tenKMButton: {
     position: 'absolute',
     padding: 10,
-    zIndex: 2,
     borderRadius: 5,
     alignSelf: 'center',
     top: 12,
@@ -1249,7 +1455,6 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     width: '100%',
-    zIndex: 3,
   },
   repShopInfoContainer: {
     width: '90%',

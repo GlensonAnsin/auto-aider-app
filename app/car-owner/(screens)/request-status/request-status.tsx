@@ -347,9 +347,10 @@ const RequestStatus = () => {
             {filterPending.length !== 0 && (
               <FlatList
                 data={filterPending}
-                renderItem={({ item }) => (
+                style={{ width: '100%' }}
+                renderItem={({ item, index }) => (
                   <TouchableOpacity
-                    style={styles.requestButton}
+                    style={[styles.requestButton, index === 0 && styles.firstChild]}
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
@@ -393,9 +394,10 @@ const RequestStatus = () => {
             {filterRejected.length !== 0 && (
               <FlatList
                 data={filterRejected}
-                renderItem={({ item }) => (
+                style={{ width: '100%' }}
+                renderItem={({ item, index }) => (
                   <TouchableOpacity
-                    style={styles.requestButton}
+                    style={[styles.requestButton, index === 0 && styles.firstChild]}
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
@@ -439,9 +441,10 @@ const RequestStatus = () => {
             {filterOngoing.length !== 0 && (
               <FlatList
                 data={filterOngoing}
-                renderItem={({ item }) => (
+                style={{ width: '100%' }}
+                renderItem={({ item, index }) => (
                   <TouchableOpacity
-                    style={styles.requestButton}
+                    style={[styles.requestButton, index === 0 && styles.firstChild]}
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
@@ -485,9 +488,10 @@ const RequestStatus = () => {
             {filterCompleted.length !== 0 && (
               <FlatList
                 data={filterCompleted}
-                renderItem={({ item }) => (
+                style={{ width: '100%' }}
+                renderItem={({ item, index }) => (
                   <TouchableOpacity
-                    style={styles.requestButton}
+                    style={[styles.requestButton, index === 0 && styles.firstChild]}
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));

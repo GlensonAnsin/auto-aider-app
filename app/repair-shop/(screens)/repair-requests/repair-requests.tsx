@@ -286,9 +286,10 @@ const RepairRequests = () => {
             {grouped.length !== 0 && (
               <FlatList
                 data={grouped}
-                renderItem={({ item }) => (
+                style={{ width: '100%' }}
+                renderItem={({ item, index }) => (
                   <TouchableOpacity
-                    style={styles.requestButton}
+                    style={[styles.requestButton, index === 0 && styles.firstChild]}
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
@@ -414,9 +415,10 @@ const RepairRequests = () => {
             {filterRejected.length !== 0 && (
               <FlatList
                 data={filterRejected}
-                renderItem={({ item }) => (
+                style={{ width: '100%' }}
+                renderItem={({ item, index }) => (
                   <TouchableOpacity
-                    style={styles.requestButton}
+                    style={[styles.requestButton, index === 0 && styles.firstChild]}
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
@@ -460,9 +462,10 @@ const RepairRequests = () => {
             {filterOngoing.length !== 0 && (
               <FlatList
                 data={filterOngoing}
-                renderItem={({ item }) => (
+                style={{ width: '100%' }}
+                renderItem={({ item, index }) => (
                   <TouchableOpacity
-                    style={styles.requestButton}
+                    style={[styles.requestButton, index === 0 && styles.firstChild]}
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
@@ -506,9 +509,10 @@ const RepairRequests = () => {
             {filterCompleted.length !== 0 && (
               <FlatList
                 data={filterCompleted}
-                renderItem={({ item }) => (
+                style={{ width: '100%' }}
+                renderItem={({ item, index }) => (
                   <TouchableOpacity
-                    style={styles.requestButton}
+                    style={[styles.requestButton, index === 0 && styles.firstChild]}
                     onPress={() => {
                       backRoute();
                       dispatch(setScanReferenceState(item.scanReference));
@@ -563,7 +567,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 10,
-    marginBottom: 10,
     borderWidth: 1,
     borderColor: '#EAEAEA',
   },

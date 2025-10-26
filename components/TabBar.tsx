@@ -1,24 +1,67 @@
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { RootState } from '@/redux/store';
+import { getNotificationsCO } from '@/services/backendApi';
+import socket from '@/services/socket';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import TabBarItem from './TabBarItem';
 
 const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
+  const [notification, setNotification] = useState<{ notificationID: number; isRead: boolean }[]>([]);
+
   const icons = {
     '(tabs)/index': (color: string) => <Entypo name="home" size={22} color={color} />,
     '(tabs)/inbox': (color: string) => <Entypo name="chat" size={22} color={color} />,
     '(tabs)/notifications': (color: string) => <Ionicons name="notifications" size={22} color={color} />,
   };
 
+  const userID = useSelector((state: RootState) => state.role.ID);
   const tabVisible = useSelector((state: RootState) => state.tab.tabVisible);
   const role = useSelector((state: RootState) => state.role.role);
 
   const backRoute = useBackRoute(`/${role}`);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const notificationData: {
+          notificationID: number;
+          isRead: boolean;
+        }[] = [];
+
+        const res = await getNotificationsCO();
+
+        res.forEach((item: any) => {
+          notificationData.push({
+            notificationID: item.notification_id,
+            isRead: item.is_read,
+          });
+        });
+
+        setNotification(notificationData);
+      } catch {}
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on(`newNotif-CO-${userID}`, ({ newNotif }) => {
+      const newNotifData = {
+        notificationID: newNotif.notification_id,
+        isRead: newNotif.is_read,
+      };
+      setNotification((prev) => [...prev, newNotifData]);
+    });
+
+    return () => {
+      socket.off(`newNotif-CO-${userID}`);
+    };
+  }, [userID]);
 
   return (
     <>
@@ -60,6 +103,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
                 onPress={onPress}
                 onLongPress={onLongPress}
                 icon={icons[route.name as keyof typeof icons](isFocused ? '#FFF' : '#FFF')}
+                badgeCount={route.name === '(tabs)/notifications' ? notification.filter((n) => !n.isRead).length : 0}
               />
             );
           })}

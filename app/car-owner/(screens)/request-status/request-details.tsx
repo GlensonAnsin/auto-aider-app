@@ -55,12 +55,14 @@ const RequestDetails = () => {
       possibleCauses: string | null;
       recommendedRepair: string | null;
       scanReference: string;
-      vehicleIssue: string;
+      vehicleIssue: string | null;
       repairProcedure: string | null;
       completedOn: string | null;
       reasonRejected: string | null;
       isRated: boolean;
       score: number | null;
+      requestType: string;
+      serviceType: string;
     }[]
   >([]);
   const mapRef = useRef<MapView | null>(null);
@@ -110,6 +112,8 @@ const RequestDetails = () => {
           reasonRejected: string | null;
           isRated: boolean;
           score: number | null;
+          requestType: string;
+          serviceType: string;
         }[] = [];
 
         if (res1) {
@@ -168,6 +172,8 @@ const RequestDetails = () => {
                               reasonRejected: request.reason_rejected,
                               isRated: request.is_rated,
                               score: request.score,
+                              requestType: request.request_type,
+                              serviceType: request.service_type,
                             });
 
                             setCustomerRegion({
@@ -278,6 +284,8 @@ const RequestDetails = () => {
             reasonRejected: item.reasonRejected,
             isRated: item.isRated,
             score: item.score,
+            requestType: item.requestType,
+            serviceType: item.serviceType,
           };
         } else {
           acc[ref].requestID.push(item.requestID);
@@ -318,6 +326,8 @@ const RequestDetails = () => {
           reasonRejected: string | null;
           isRated: boolean;
           score: number | null;
+          requestType: string;
+          serviceType: string;
         }
       >
     )
@@ -530,6 +540,14 @@ const RequestDetails = () => {
                 <Text style={styles.text}>
                   <Text style={styles.nestedText}>Year: </Text>
                   {item.year}
+                </Text>
+                <Text style={styles.text}>
+                  <Text style={styles.nestedText}>Request Type: </Text>
+                  {item.requestType}
+                </Text>
+                <Text style={styles.text}>
+                  <Text style={styles.nestedText}>Service Type: </Text>
+                  {item.serviceType}
                 </Text>
                 {item.isRated && (
                   <Text style={styles.text}>
