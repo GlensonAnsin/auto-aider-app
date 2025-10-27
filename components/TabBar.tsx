@@ -1,17 +1,21 @@
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { RootState } from '@/redux/store';
-import { getNotificationsCO } from '@/services/backendApi';
+import { countUnreadChatCO, countUnreadChatRS, countUnreadNotifCO, countUnreadNotifRS } from '@/services/backendApi';
 import socket from '@/services/socket';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { memo, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import TabBarItem from './TabBarItem';
 
 const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
-  const [notification, setNotification] = useState<{ notificationID: number; isRead: boolean }[]>([]);
+  const insets = useSafeAreaInsets();
+
+  const [unreadNotifs, setUnreadNotifs] = useState<number | null>(null);
+  const [unreadChats, setUnreadChats] = useState<number | null>(null);
 
   const icons = {
     '(tabs)/index': (color: string) => <Entypo name="home" size={22} color={color} />,
@@ -26,47 +30,48 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const backRoute = useBackRoute(`/${role}`);
 
   useEffect(() => {
+    if (!userID || !role) return;
+
     (async () => {
       try {
-        const notificationData: {
-          notificationID: number;
-          isRead: boolean;
-        }[] = [];
-
-        const res = await getNotificationsCO();
-
-        res.forEach((item: any) => {
-          notificationData.push({
-            notificationID: item.notification_id,
-            isRead: item.is_read,
-          });
-        });
-
-        setNotification(notificationData);
+        if (role === 'car-owner') {
+          const res1 = await countUnreadNotifCO();
+          const res2 = await countUnreadChatCO();
+          setUnreadNotifs(res1);
+          setUnreadChats(res2);
+        } else {
+          const res1 = await countUnreadNotifRS();
+          const res2 = await countUnreadChatRS();
+          setUnreadNotifs(res1);
+          setUnreadChats(res2);
+        }
       } catch {}
     })();
-  }, []);
+  }, [role, userID]);
 
   useEffect(() => {
     if (!socket) return;
 
-    socket.on(`newNotif-CO-${userID}`, ({ newNotif }) => {
-      const newNotifData = {
-        notificationID: newNotif.notification_id,
-        isRead: newNotif.is_read,
-      };
-      setNotification((prev) => [...prev, newNotifData]);
-    });
+    if (role === 'car-owner') {
+      socket.on(`newUnreadNotif-CO-${userID}`, ({ unreadNotifs }) => setUnreadNotifs(unreadNotifs));
+      socket.on(`newUnreadChat-CO-${userID}`, ({ unreadChatsCO }) => setUnreadChats(unreadChatsCO));
+    } else {
+      socket.on(`newUnreadNotif-RS-${userID}`, ({ unreadNotifs }) => setUnreadNotifs(unreadNotifs));
+      socket.on(`newUnreadChat-RS-${userID}`, ({ unreadChatsRS }) => setUnreadChats(unreadChatsRS));
+    }
 
     return () => {
-      socket.off(`newNotif-CO-${userID}`);
+      socket.off(`newUnreadNotif-CO-${userID}`);
+      socket.off(`newUnreadChat-CO-${userID}`);
+      socket.off(`newUnreadNotif-RS-${userID}`);
+      socket.off(`newUnreadChat-RS-${userID}`);
     };
-  }, [userID]);
+  }, [role, userID]);
 
   return (
     <>
       {tabVisible && (
-        <View style={styles.tabBar}>
+        <View style={[styles.tabBar, { marginBottom: insets.bottom + 10 }]}>
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
             const label = options.tabBarLabel ?? options.title ?? route.name;
@@ -95,6 +100,13 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
               });
             };
 
+            let badgeCount = 0;
+            if (route.name === '(tabs)/notifications') {
+              badgeCount = unreadNotifs ?? 0;
+            } else if (route.name === '(tabs)/inbox') {
+              badgeCount = unreadChats ?? 0;
+            }
+
             return (
               <TabBarItem
                 key={route.key}
@@ -103,7 +115,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
                 onPress={onPress}
                 onLongPress={onLongPress}
                 icon={icons[route.name as keyof typeof icons](isFocused ? '#FFF' : '#FFF')}
-                badgeCount={route.name === '(tabs)/notifications' ? notification.filter((n) => !n.isRead).length : 0}
+                badgeCount={badgeCount}
               />
             );
           })}
@@ -116,7 +128,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
 const styles = StyleSheet.create({
   tabBar: {
     position: 'absolute',
-    bottom: 50,
+    bottom: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -126,10 +138,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     borderCurve: 'continuous',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,

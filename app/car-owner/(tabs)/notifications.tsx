@@ -1,7 +1,7 @@
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { RootState } from '@/redux/store';
-import { getNotificationsCO, updateNotificationStatusCO } from '@/services/backendApi';
+import { deleteNotificationCO, getNotificationsCO, updateNotificationStatusCO } from '@/services/backendApi';
 import socket from '@/services/socket';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -13,7 +13,7 @@ import dayOfYear from 'dayjs/plugin/dayOfYear';
 import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -161,6 +161,36 @@ export default function NotificationsTab() {
     }
   };
 
+  const deleteNotifAlert = (notifID: number) => {
+    Alert.alert('Delete Notifcation', 'Delete this notification?', [
+      {
+        text: 'Cancel',
+        onPress: () => {},
+        style: 'cancel',
+      },
+      {
+        text: 'Yes',
+        onPress: () => handleDeleteNotif(notifID),
+      },
+    ]);
+  };
+
+  const handleDeleteNotif = async (notifID: number) => {
+    try {
+      await deleteNotificationCO(notifID);
+      const deletedNotif = notification.filter((n) => n.notificationID !== notifID);
+      setNotification(deletedNotif);
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    }
+  };
+
   if (isLoading) {
     return <Loading />;
   }
@@ -189,6 +219,7 @@ export default function NotificationsTab() {
             <TouchableOpacity
               style={[styles.notifButton, { backgroundColor: item.isRead ? '#fff' : 'rgba(0, 11, 88, 0.1)' }]}
               onPress={() => handleNotificationPress(item.title, item.notificationID)}
+              onLongPress={() => deleteNotifAlert(item.notificationID)}
             >
               <View style={styles.iconTextContainer}>
                 <View>{identifyIcon(item.title)}</View>

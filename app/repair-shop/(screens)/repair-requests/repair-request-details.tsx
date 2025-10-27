@@ -56,6 +56,7 @@ const RepairRequestDetails = () => {
       status: string;
       datetime: string;
       completedOn: string | null;
+      vehicleID: number;
       make: string;
       model: string;
       year: string;
@@ -124,6 +125,7 @@ const RepairRequestDetails = () => {
           status: string;
           datetime: string;
           completedOn: string | null;
+          vehicleID: number;
           make: string;
           model: string;
           year: string;
@@ -177,6 +179,8 @@ const RepairRequestDetails = () => {
                         const vehicles = Array.isArray(diagnostic.vehicle) ? diagnostic.vehicle : [diagnostic.vehicle];
                         vehicles.forEach((vehicle: any) => {
                           if (vehicle) {
+                            console.log(vehicle.vehicle_id);
+                            const vehicleID = vehicle.vehicle_id;
                             const make = vehicle.make;
                             const model = vehicle.model;
                             const year = vehicle.year;
@@ -196,6 +200,7 @@ const RepairRequestDetails = () => {
                                     status: status,
                                     datetime: datetime,
                                     completedOn: completedOn,
+                                    vehicleID: vehicleID,
                                     make: make,
                                     model: model,
                                     year: year,
@@ -312,6 +317,7 @@ const RepairRequestDetails = () => {
             status: item.status,
             datetime: item.datetime,
             completedOn: item.completedOn,
+            vehicleID: item.vehicleID,
             make: item.make,
             model: item.model,
             year: item.year,
@@ -356,6 +362,7 @@ const RepairRequestDetails = () => {
           status: string;
           datetime: string;
           completedOn: string | null;
+          vehicleID: number;
           make: string;
           model: string;
           year: string;
@@ -431,14 +438,7 @@ const RepairRequestDetails = () => {
     return (R * c).toFixed(2);
   };
 
-  const handleRejectRequest = async (
-    IDs: number[],
-    scanReference: string,
-    year: string,
-    make: string,
-    model: string,
-    userID: number
-  ) => {
+  const handleRejectRequest = async (IDs: number[], year: string, make: string, model: string, userID: number) => {
     if (!selectedReason) {
       showMessage({
         message: 'Please select reason for rejection.',
@@ -482,14 +482,7 @@ const RepairRequestDetails = () => {
     }
   };
 
-  const handleAcceptRequest = async (
-    IDs: number[],
-    scanReference: string,
-    year: string,
-    make: string,
-    model: string,
-    userID: number
-  ) => {
+  const handleAcceptRequest = async (IDs: number[], year: string, make: string, model: string, userID: number) => {
     try {
       await acceptRequest(IDs, year, make, model, userID);
       showMessage({
@@ -512,11 +505,12 @@ const RepairRequestDetails = () => {
 
   const handleRequestCompleted = async (
     IDs: number[],
-    scanReference: string,
+    vehicleID: number,
     year: string,
     make: string,
     model: string,
-    userID: number
+    userID: number,
+    requestType: string
   ) => {
     if (!selectedOptCompleted && !repairProcedure) {
       showMessage({
@@ -531,7 +525,17 @@ const RepairRequestDetails = () => {
 
     try {
       if (selectedOptCompleted === 'Repair unsuccessful') {
-        await requestCompleted(IDs, 'Repair unsuccessful', dayjs().format(), year, make, model, userID);
+        await requestCompleted(
+          IDs,
+          'Repair unsuccessful',
+          dayjs().format(),
+          vehicleID,
+          year,
+          make,
+          model,
+          userID,
+          requestType
+        );
         showMessage({
           message: 'Request completed',
           type: 'success',
@@ -543,7 +547,7 @@ const RepairRequestDetails = () => {
       }
 
       if (selectedOptCompleted === 'Prefer not to say') {
-        await requestCompleted(IDs, null, dayjs().format(), year, make, model, userID);
+        await requestCompleted(IDs, null, dayjs().format(), vehicleID, year, make, model, userID, requestType);
         showMessage({
           message: 'Request completed',
           type: 'success',
@@ -555,7 +559,17 @@ const RepairRequestDetails = () => {
       }
 
       if (!selectedOptCompleted) {
-        await requestCompleted(IDs, repairProcedure, dayjs().format(), year, make, model, userID);
+        await requestCompleted(
+          IDs,
+          repairProcedure,
+          dayjs().format(),
+          vehicleID,
+          year,
+          make,
+          model,
+          userID,
+          requestType
+        );
         showMessage({
           message: 'Request completed',
           type: 'success',
@@ -883,16 +897,7 @@ const RepairRequestDetails = () => {
 
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: '#000B58' }]}
-                    onPress={() =>
-                      handleAcceptRequest(
-                        item.requestID,
-                        item.scanReference,
-                        item.year,
-                        item.make,
-                        item.model,
-                        item.userID
-                      )
-                    }
+                    onPress={() => handleAcceptRequest(item.requestID, item.year, item.make, item.model, item.userID)}
                   >
                     <Text style={styles.buttonText}>Accept</Text>
                   </TouchableOpacity>
@@ -946,14 +951,7 @@ const RepairRequestDetails = () => {
                           <TouchableOpacity
                             style={[styles.button, { backgroundColor: '#000B58' }]}
                             onPress={() =>
-                              handleRejectRequest(
-                                item.requestID,
-                                item.scanReference,
-                                item.year,
-                                item.make,
-                                item.model,
-                                item.userID
-                              )
+                              handleRejectRequest(item.requestID, item.year, item.make, item.model, item.userID)
                             }
                           >
                             <Text style={styles.buttonText}>Proceed</Text>
@@ -1049,11 +1047,12 @@ const RepairRequestDetails = () => {
                             onPress={() =>
                               handleRequestCompleted(
                                 item.requestID,
-                                item.scanReference,
+                                item.vehicleID,
                                 item.year,
                                 item.make,
                                 item.model,
-                                item.userID
+                                item.userID,
+                                item.requestType
                               )
                             }
                           >

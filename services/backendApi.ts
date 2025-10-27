@@ -330,6 +330,23 @@ export const getScannedVehicle = async (vehicleID: number) => {
   }
 };
 
+// DISMISS PMS
+export const dismissPms = async (vehicleID: number) => {
+  try {
+    const token = await getAccessToken();
+    await axios.patch(`${apiURL}/vehicle/dismiss-pms`,
+      { vehicleID },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+      },
+    );
+  } catch (e) {
+    console.error('Dismiss PMS Error:', e);
+  }
+};
+
 // DELETE VEHICLE
 export const deleteVehicle = async (vehicleID: number) => {
   try {
@@ -532,7 +549,7 @@ export const acceptRequest = async (requestIDs: number[], year: string, make: st
 };
 
 // REQUEST COMPLETED
-export const requestCompleted = async (requestIDs: number[], repair_procedure: string | null, completed_on: string, year: string, make: string, model: string, userID: number) => {
+export const requestCompleted = async (requestIDs: number[], repair_procedure: string | null, completed_on: string, vehicleID: number, year: string, make: string, model: string, userID: number, requestType: string) => {
   try {
     const token = await getAccessToken();
     await axios.patch(
@@ -541,10 +558,12 @@ export const requestCompleted = async (requestIDs: number[], repair_procedure: s
         requestIDs,
         repair_procedure,
         completed_on,
+        vehicleID,
         year,
         make,
         model,
         userID,
+        requestType,
       },
       {
         headers: {
@@ -704,14 +723,12 @@ export const updateNotificationStatusRS = async (notificationID: number) => {
 export const deleteNotificationCO = async (notificationID: number) => {
   try {
     const token = await getAccessToken();
-    await axios.delete(`${apiURL}/notifications/delete-notification-co`,
-      {
-        data: { notificationID },
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
+    await axios.delete(`${apiURL}/notifications/delete-notification-co`, {
+      data: { notificationID },
+      headers: {
+        Authorization: `Bearer ${token}`
       },
-    );
+    });
   } catch (e) {
     console.error('Delete Notification For Car Owner Error: ', e);
   }
@@ -749,5 +766,65 @@ export const generateOtp = async (number: string, email: string, authType: strin
     return res.data;
   } catch (e) {
     console.error('Generate OTP Error:', e);
+  }
+};
+
+// COUNT ALL UNREAD NOTIFICATION FROM CAR OWNER
+export const countUnreadNotifCO = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/notifications/count-unread-notifs-co`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+    });
+    return res.data;
+  } catch (e) {
+    console.error('Count Car Owner Unread Notifications Error:', e);
+  }
+};
+
+// COUNT ALL UNREAD NOTIFICATION FROM REPAIR SHOP
+export const countUnreadNotifRS = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/notifications/count-unread-notifs-rs`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+    });
+    return res.data;
+  } catch (e) {
+    console.error('Count Shop Unread Notifications Error:', e);
+  }
+};
+
+// COUNT ALL UNREAD CHATS FROM CAR OWNER
+export const countUnreadChatCO = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/messages/count-unread-chats-co`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+    });
+    return res.data;
+  } catch (e) {
+    console.error('Count Car Owner Unread Chats Error:', e);
+  }
+};
+
+// COUNT ALL UNREAD CHATS FROM REPAIR SHOP
+export const countUnreadChatRS = async () => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/messages/count-unread-chats-rs`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+    });
+    return res.data;
+  } catch (e) {
+    console.error('Count Shop Unread Chats Error:', e);
   }
 };

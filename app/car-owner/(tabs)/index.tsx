@@ -2,7 +2,7 @@ import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setRoleState } from '@/redux/slices/roleSlice';
 import { clearRouteState } from '@/redux/slices/routeSlice';
-import { addVehicle, getUserInfo, getVehicle } from '@/services/backendApi';
+import { addVehicle, dismissPms, getUserInfo, getVehicle } from '@/services/backendApi';
 import { verifyCar } from '@/services/geminiApi';
 import { registerForPushNotificationsAsync } from '@/services/notifications';
 import socket from '@/services/socket';
@@ -143,6 +143,19 @@ export default function Home() {
 
   useEffect(() => {
     (async () => {
+      await Notifications.setNotificationCategoryAsync('pmsReminder', [
+        {
+          identifier: 'DISMISS',
+          buttonTitle: 'Dismiss',
+          options: { opensAppToForeground: false },
+        },
+        {
+          identifier: 'SCHEDULE',
+          buttonTitle: 'Schedule PMS',
+          options: { opensAppToForeground: true },
+        },
+      ]);
+
       try {
         const notificationToken = await registerForPushNotificationsAsync();
         if (notificationToken) {
@@ -160,12 +173,23 @@ export default function Home() {
           }
         }
 
-        const notificationListener = Notifications.addNotificationReceivedListener((notif) => {
-          console.log(notif);
-        });
+        const notificationListener = Notifications.addNotificationReceivedListener(async (notif) => {});
 
-        const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
-          console.log(response);
+        const responseListener = Notifications.addNotificationResponseReceivedListener(async (response) => {
+          const actionId = response.actionIdentifier;
+          const notifId = response.notification.request.identifier;
+          const { vehicleId } = response.notification.request.content.data;
+
+          if (actionId === 'DISMISS') {
+            Notifications.dismissNotificationAsync(notifId);
+            await dismissPms(Number(vehicleId));
+          }
+
+          if (actionId === 'SCHEDULE') {
+            Notifications.dismissNotificationAsync(notifId);
+            router.replace('/car-owner/(screens)/repair-shops/repair-shops');
+            backRoute();
+          }
         });
 
         return () => {
@@ -176,7 +200,7 @@ export default function Home() {
         console.error('Notification error:', e);
       }
     })();
-  }, [userID]);
+  }, [backRoute, router, userID]);
 
   const handleCarVerification = async () => {
     if (!selectedMake || !model || !year) {
