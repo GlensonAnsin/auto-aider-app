@@ -13,6 +13,8 @@ export default function RootLayout() {
       <Stack.Screen name="run-diagnostics/detailed-report" />
       <Stack.Screen name="repair-shops/repair-shops" />
       <Stack.Screen name="request-status/request-status" />
+      <Stack.Screen name="profile/settings-screens/terms-of-service" />
+      <Stack.Screen name="profile/settings-screens/privacy-policy" />
     </Stack>
   );
 }

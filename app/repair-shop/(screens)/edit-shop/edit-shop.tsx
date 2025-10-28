@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { RootState } from '@/redux/store';
 import { generateOtp, getRepairShopInfo, getRepairShops, updateRepairShopInfo } from '@/services/backendApi';
 import socket from '@/services/socket';
 import { AutoRepairShop, UpdateRepairShopInfo } from '@/types/autoRepairShop';
@@ -31,6 +32,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
+import { useSelector } from 'react-redux';
 
 const EditShop = () => {
   const mapRef = useRef<MapView>(null);
@@ -82,6 +84,7 @@ const EditShop = () => {
   const [confirmCodeLoading, setConfirmCodeLoading] = useState<boolean>(false);
   const [buttonDisable, setButtonDisable] = useState<boolean>(false);
   const prefix = '09';
+  const mapType = useSelector((state: RootState) => state.settings.mapType);
 
   const genders = ['Male', 'Female'];
 
@@ -1344,7 +1347,7 @@ const EditShop = () => {
                 <MapView
                   style={styles.map2}
                   ref={mapRef}
-                  mapType="hybrid"
+                  mapType={mapType as any}
                   region={localRegion}
                   provider={PROVIDER_GOOGLE}
                 >
@@ -1472,7 +1475,7 @@ const EditShop = () => {
                 <MapView
                   style={styles.map}
                   ref={mapRef}
-                  mapType="hybrid"
+                  mapType={mapType as any}
                   provider={PROVIDER_GOOGLE}
                   initialRegion={localRegion}
                   onRegionChangeComplete={(newRegion) => setLocalRegion(newRegion)}

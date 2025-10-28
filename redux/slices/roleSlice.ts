@@ -10,7 +10,7 @@ const initialState: RoleState = {
   role: null,
 };
 
-const RoleSlice = createSlice({
+const roleSlice = createSlice({
   name: 'role',
   initialState,
   reducers: {
@@ -25,5 +25,5 @@ const RoleSlice = createSlice({
   },
 });
 
-export const { setRoleState, clearRoleState } = RoleSlice.actions;
-export default RoleSlice.reducer;
+export const { setRoleState, clearRoleState } = roleSlice.actions;
+export default roleSlice.reducer;

@@ -5,6 +5,7 @@ import { clearRouteState } from '@/redux/slices/routeSlice';
 import { clearScanReferenceState } from '@/redux/slices/scanReferenceSlice';
 import { clearScanState } from '@/redux/slices/scanSlice';
 import { clearSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
+import { setSettingsState } from '@/redux/slices/settingsSlice';
 import { clearVehicleDiagIDArrState } from '@/redux/slices/vehicleDiagIDArrSlice';
 import { clearVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { getRepairShopInfo, updateAvailability } from '@/services/backendApi';
@@ -65,12 +66,14 @@ export default function Home() {
     (async () => {
       try {
         setIsLoading(true);
+
         dispatch(
           setRoleState({
             ID: Number(shopID),
             role: 'repair-shop',
           })
         );
+
         dispatch(clearRouteState());
         const res = await getRepairShopInfo();
 
@@ -90,6 +93,13 @@ export default function Home() {
         setShopImages(res.shop_images);
         setProfileBG(res.profile_bg);
         setIsAvailable(res.availability === 'open' ? true : false);
+
+        dispatch(
+          setSettingsState({
+            mapType: res.settings_map_type,
+            pushNotif: res.settings_push_notif,
+          })
+        );
       } catch (e) {
         console.log('Error: ', e);
       } finally {

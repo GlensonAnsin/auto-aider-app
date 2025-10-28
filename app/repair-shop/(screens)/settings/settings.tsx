@@ -1,10 +1,14 @@
 import { Header } from '@/components/Header';
+import { useBackRoute } from '@/hooks/useBackRoute';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Settings = () => {
+  const backRoute = useBackRoute('/repair-shop/(screens)/settings/settings');
+  const router = useRouter();
   const [isOn, setIsOn] = useState<boolean>(false);
 
   const toggleSwitch = async () => {
@@ -69,11 +73,23 @@ const Settings = () => {
             <Text style={styles.settingsButtonText}>App Version</Text>
             <Text style={styles.settingsButtonText}>1.0.0</Text>
           </View>
-          <TouchableOpacity style={styles.settingsButton}>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => {
+              router.replace('/repair-shop/(screens)/settings/settings-screens/terms-of-service');
+              backRoute();
+            }}
+          >
             <Text style={styles.settingsButtonText}>Terms of Service</Text>
             <MaterialIcons name="keyboard-arrow-right" size={24} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingsButton}>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => {
+              router.replace('/repair-shop/(screens)/settings/settings-screens/privacy-policy');
+              backRoute();
+            }}
+          >
             <Text style={styles.settingsButtonText}>Privacy Policy</Text>
             <MaterialIcons name="keyboard-arrow-right" size={24} color="#333" />
           </TouchableOpacity>

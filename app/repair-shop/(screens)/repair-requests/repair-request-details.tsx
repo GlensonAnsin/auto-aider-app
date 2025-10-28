@@ -92,6 +92,7 @@ const RepairRequestDetails = () => {
   const [selectedOptCompleted, setSelectedOptCompleted] = useState<string>('');
   const scanReference: string | null = useSelector((state: RootState) => state.scanReference.scanReference);
   const shopID = useSelector((state: RootState) => state.role.ID);
+  const mapType = useSelector((state: RootState) => state.settings.mapType);
 
   const reasons = [
     'Overbooked / No Available Slot',
@@ -179,7 +180,6 @@ const RepairRequestDetails = () => {
                         const vehicles = Array.isArray(diagnostic.vehicle) ? diagnostic.vehicle : [diagnostic.vehicle];
                         vehicles.forEach((vehicle: any) => {
                           if (vehicle) {
-                            console.log(vehicle.vehicle_id);
                             const vehicleID = vehicle.vehicle_id;
                             const make = vehicle.make;
                             const model = vehicle.model;
@@ -729,7 +729,12 @@ const RepairRequestDetails = () => {
               <Text style={styles.subHeader}>Location</Text>
               <View style={styles.mapButtonContainer}>
                 <View style={styles.mapView}>
-                  <MapView style={styles.map} mapType="hybrid" region={customerRegion} provider={PROVIDER_GOOGLE}>
+                  <MapView
+                    style={styles.map}
+                    mapType={mapType as any}
+                    region={customerRegion}
+                    provider={PROVIDER_GOOGLE}
+                  >
                     {customerRegion && (
                       <Marker
                         coordinate={{
@@ -755,7 +760,7 @@ const RepairRequestDetails = () => {
                     <MapView
                       style={styles.map2}
                       ref={mapRef}
-                      mapType="hybrid"
+                      mapType={mapType as any}
                       initialRegion={customerRegion}
                       provider={PROVIDER_GOOGLE}
                     >

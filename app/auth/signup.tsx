@@ -1,3 +1,5 @@
+import PrivacyPolicyComp from '@/components/PrivacyPolicyComp';
+import TermsOfServiceComp from '@/components/TermsOfServiceComp';
 import { popRouteState } from '@/redux/slices/routeSlice';
 import { RootState } from '@/redux/store';
 import { createRepairShop, createUser, generateOtp, getRepairShops, getUsers } from '@/services/backendApi';
@@ -14,6 +16,7 @@ import {
   Image,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -59,6 +62,8 @@ const Signup = () => {
   const [verificationModalVisible, setVerificationModalVisible] = useState<boolean>(false);
   const inputs = useRef<(TextInput | null)[]>([]);
   const prefix = '09';
+  const [termsModalVisible, setTermsModalVisible] = useState<boolean>(false);
+  const [privacyModalVisible, setPrivacyModalVisible] = useState<boolean>(false);
 
   const roles = [
     { title: 'Car Owner', icon: 'car-outline' },
@@ -500,6 +505,8 @@ const Signup = () => {
             role: role.trim(),
             user_initials_bg: getRandomHexColor(),
             is_deleted: false,
+            settings_map_type: 'standard',
+            settings_push_notif: true,
           };
 
           await createUser(newUser);
@@ -532,6 +539,8 @@ const Signup = () => {
             profile_bg: getRandomHexColor(),
             availability: 'close',
             is_deleted: false,
+            settings_map_type: 'standard',
+            settings_push_notif: true,
           };
 
           await createRepairShop(newRepairShop);
@@ -751,19 +760,11 @@ const Signup = () => {
 
               <View style={styles.termsContainer}>
                 <Text style={styles.termsText}>By clicking Sign Up, you agree to our </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    /* navigate to Terms screen */
-                  }}
-                >
+                <TouchableOpacity onPress={() => setTermsModalVisible(true)}>
                   <Text style={[styles.termsText, { color: '#007BFF' }]}>Terms of Service</Text>
                 </TouchableOpacity>
                 <Text> and </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    /* navigate to Privacy screen */
-                  }}
-                >
+                <TouchableOpacity onPress={() => setPrivacyModalVisible(true)}>
                   <Text style={[styles.termsText, { color: '#007BFF' }]}>Privacy Policy</Text>
                 </TouchableOpacity>
                 <Text style={styles.termsText}>.</Text>
@@ -772,6 +773,44 @@ const Signup = () => {
               <TouchableOpacity style={styles.button} onPress={() => handleAddUser()}>
                 <Text style={styles.buttonTxt}>Sign Up</Text>
               </TouchableOpacity>
+
+              <Modal
+                animationType="fade"
+                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                visible={termsModalVisible}
+                onRequestClose={() => setTermsModalVisible(false)}
+              >
+                <TouchableWithoutFeedback onPress={() => setTermsModalVisible(false)}>
+                  <View style={styles.centeredView}>
+                    <Pressable style={styles.termsPrivacyModalView} onPress={() => {}}>
+                      <ScrollView>
+                        <View onStartShouldSetResponder={() => true}>
+                          <TermsOfServiceComp />
+                        </View>
+                      </ScrollView>
+                    </Pressable>
+                  </View>
+                </TouchableWithoutFeedback>
+              </Modal>
+
+              <Modal
+                animationType="fade"
+                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                visible={privacyModalVisible}
+                onRequestClose={() => setPrivacyModalVisible(false)}
+              >
+                <TouchableWithoutFeedback onPress={() => setPrivacyModalVisible(false)}>
+                  <View style={styles.centeredView}>
+                    <Pressable style={styles.termsPrivacyModalView} onPress={() => {}}>
+                      <ScrollView>
+                        <View onStartShouldSetResponder={() => true}>
+                          <PrivacyPolicyComp />
+                        </View>
+                      </ScrollView>
+                    </Pressable>
+                  </View>
+                </TouchableWithoutFeedback>
+              </Modal>
 
               <Modal
                 animationType="fade"
@@ -990,19 +1029,11 @@ const Signup = () => {
 
               <View style={[styles.termsContainer, { marginTop: 20 }]}>
                 <Text style={styles.termsText}>By clicking Sign Up, you agree to our </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    /* navigate to Terms screen */
-                  }}
-                >
+                <TouchableOpacity onPress={() => setTermsModalVisible(true)}>
                   <Text style={[styles.termsText, { color: '#007BFF' }]}>Terms of Service</Text>
                 </TouchableOpacity>
                 <Text> and </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    /* navigate to Privacy screen */
-                  }}
-                >
+                <TouchableOpacity onPress={() => setPrivacyModalVisible(true)}>
                   <Text style={[styles.termsText, { color: '#007BFF' }]}>Privacy Policy</Text>
                 </TouchableOpacity>
                 <Text style={styles.termsText}>.</Text>
@@ -1011,6 +1042,44 @@ const Signup = () => {
               <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
                 <Text style={styles.buttonTxt}>Sign Up</Text>
               </TouchableOpacity>
+
+              <Modal
+                animationType="fade"
+                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                visible={termsModalVisible}
+                onRequestClose={() => setTermsModalVisible(false)}
+              >
+                <TouchableWithoutFeedback onPress={() => setTermsModalVisible(false)}>
+                  <View style={styles.centeredView}>
+                    <Pressable style={styles.termsPrivacyModalView} onPress={() => {}}>
+                      <ScrollView>
+                        <View onStartShouldSetResponder={() => true}>
+                          <TermsOfServiceComp />
+                        </View>
+                      </ScrollView>
+                    </Pressable>
+                  </View>
+                </TouchableWithoutFeedback>
+              </Modal>
+
+              <Modal
+                animationType="fade"
+                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                visible={privacyModalVisible}
+                onRequestClose={() => setPrivacyModalVisible(false)}
+              >
+                <TouchableWithoutFeedback onPress={() => setPrivacyModalVisible(false)}>
+                  <View style={styles.centeredView}>
+                    <Pressable style={styles.termsPrivacyModalView} onPress={() => {}}>
+                      <ScrollView>
+                        <View onStartShouldSetResponder={() => true}>
+                          <PrivacyPolicyComp />
+                        </View>
+                      </ScrollView>
+                    </Pressable>
+                  </View>
+                </TouchableWithoutFeedback>
+              </Modal>
 
               <Modal
                 animationType="fade"
@@ -1443,6 +1512,22 @@ const styles = StyleSheet.create({
     left: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 10,
+  },
+  termsPrivacyModalView: {
+    backgroundColor: '#FFF',
+    width: '90%',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    maxHeight: 500,
   },
 });
 

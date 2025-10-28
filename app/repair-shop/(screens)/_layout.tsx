@@ -6,6 +6,8 @@ export default function RootLayout() {
       <Stack.Screen name="edit-shop/edit-shop" />
       <Stack.Screen name="repair-requests/repair-requests" />
       <Stack.Screen name="settings/settings" />
+      <Stack.Screen name="settings/settings-screens/terms-of-service" />
+      <Stack.Screen name="settings/settings-screens/privacy-policy" />
     </Stack>
   );
 }

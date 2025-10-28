@@ -2,6 +2,7 @@ import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setRoleState } from '@/redux/slices/roleSlice';
 import { clearRouteState } from '@/redux/slices/routeSlice';
+import { setSettingsState } from '@/redux/slices/settingsSlice';
 import { addVehicle, dismissPms, getUserInfo, getVehicle } from '@/services/backendApi';
 import { verifyCar } from '@/services/geminiApi';
 import { registerForPushNotificationsAsync } from '@/services/notifications';
@@ -86,12 +87,14 @@ export default function Home() {
     (async () => {
       try {
         setIsLoading(true);
+
         dispatch(
           setRoleState({
             ID: Number(userID),
             role: 'car-owner',
           })
         );
+
         dispatch(clearRouteState());
         const res1 = await getUserInfo();
         const res2 = await getVehicle();
@@ -103,6 +106,13 @@ export default function Home() {
         setLastname(res1.lastname);
         setProfilePic(res1.profile_pic);
         setUserInitialsBG(res1.user_initials_bg);
+
+        dispatch(
+          setSettingsState({
+            mapType: res1.settings_map_type,
+            pushNotif: res1.settings_push_notif,
+          })
+        );
 
         if (res2.length === 0) {
           setIsVehicles(false);

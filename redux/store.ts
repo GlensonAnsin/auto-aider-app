@@ -5,6 +5,7 @@ import routeReducer from './slices/routeSlice';
 import scanReferenceReducer from './slices/scanReferenceSlice';
 import scanReducer from './slices/scanSlice';
 import senderReceiverReducer from './slices/senderReceiverSlice';
+import settingsReducer from './slices/settingsSlice';
 import tabReducer from './slices/tabBarSlice';
 import vehicleDiagIDArrReducer from './slices/vehicleDiagIDArrSlice';
 import vehicleDiagIDReducer from './slices/vehicleDiagIDSlice';
@@ -20,6 +21,7 @@ export const store = configureStore({
     senderReceiver: senderReceiverReducer,
     role: roleReducer,
     device: deviceReducer,
+    settings: settingsReducer,
   },
   middleware: (getDefaultMiddleware) => {
     return getDefaultMiddleware({

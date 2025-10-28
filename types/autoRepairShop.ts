@@ -20,6 +20,8 @@ export interface AutoRepairShop {
   profile_bg: string;
   availability: string;
   is_deleted: boolean;
+  settings_map_type: string,
+  settings_push_notif: boolean,
 }
 
 export interface UpdateRepairShopInfo {

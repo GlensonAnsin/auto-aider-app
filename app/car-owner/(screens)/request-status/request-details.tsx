@@ -78,6 +78,7 @@ const RequestDetails = () => {
   const [rating, setRating] = useState<number>(0);
   const scanReference: string | null = useSelector((state: RootState) => state.scanReference.scanReference);
   const userID = useSelector((state: RootState) => state.role.ID);
+  const mapType = useSelector((state: RootState) => state.settings.mapType);
 
   useEffect(() => {
     (async () => {
@@ -562,7 +563,7 @@ const RequestDetails = () => {
               <Text style={styles.subHeader}>Location</Text>
               <View style={styles.mapButtonContainer}>
                 <View style={styles.mapView}>
-                  <MapView style={styles.map} mapType="hybrid" region={shopRegion} provider={PROVIDER_GOOGLE}>
+                  <MapView style={styles.map} mapType={mapType as any} region={shopRegion} provider={PROVIDER_GOOGLE}>
                     {shopRegion && (
                       <Marker
                         coordinate={{
@@ -588,7 +589,7 @@ const RequestDetails = () => {
                     <MapView
                       style={styles.map2}
                       ref={mapRef}
-                      mapType="hybrid"
+                      mapType={mapType as any}
                       initialRegion={customerRegion}
                       provider={PROVIDER_GOOGLE}
                     >

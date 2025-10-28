@@ -10,6 +10,8 @@ export interface User {
   role: string;
   user_initials_bg: string;
   is_deleted: boolean;
+  settings_map_type: string,
+  settings_push_notif: boolean,
 }
 
 export interface UserWithID {

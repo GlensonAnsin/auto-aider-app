@@ -120,6 +120,7 @@ const RepairShops = () => {
   const vehicleID: number | null = useSelector((state: RootState) => state.scan.vehicleID);
   const scanReference: string | null = useSelector((state: RootState) => state.scan.scanReference);
   const userID = useSelector((state: RootState) => state.role.ID);
+  const mapType = useSelector((state: RootState) => state.settings.mapType);
 
   useFocusEffect(
     useCallback(() => {
@@ -474,7 +475,7 @@ const RepairShops = () => {
         <View style={styles.lowerBox}>
           <MapView
             ref={mapRef}
-            mapType="hybrid"
+            mapType={mapType as any}
             style={styles.map}
             initialRegion={currentLocation}
             provider={PROVIDER_GOOGLE}
