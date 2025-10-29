@@ -7,6 +7,7 @@ import { addVehicle, dismissPms, getUserInfo, getVehicle } from '@/services/back
 import { verifyCar } from '@/services/geminiApi';
 import { registerForPushNotificationsAsync } from '@/services/notifications';
 import socket from '@/services/socket';
+import { storeRole } from '@/services/tokenStorage';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -94,6 +95,8 @@ export default function Home() {
             role: 'car-owner',
           })
         );
+
+        await storeRole('car-owner');
 
         dispatch(clearRouteState());
         const res1 = await getUserInfo();

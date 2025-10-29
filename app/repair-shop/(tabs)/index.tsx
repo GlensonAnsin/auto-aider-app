@@ -11,7 +11,7 @@ import { clearVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { getRepairShopInfo, updateAvailability } from '@/services/backendApi';
 import { registerForPushNotificationsAsync } from '@/services/notifications';
 import socket from '@/services/socket';
-import { clearTokens } from '@/services/tokenStorage';
+import { clearRole, clearTokens, storeRole } from '@/services/tokenStorage';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -73,6 +73,8 @@ export default function Home() {
             role: 'repair-shop',
           })
         );
+
+        await storeRole('repair-shop');
 
         dispatch(clearRouteState());
         const res = await getRepairShopInfo();
@@ -170,6 +172,7 @@ export default function Home() {
   const handleLogout = async () => {
     try {
       await clearTokens();
+      await clearRole();
       dispatch(clearRoleState());
       dispatch(clearRouteState());
       dispatch(clearScanState());

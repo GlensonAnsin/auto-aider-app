@@ -17,3 +17,15 @@ export const clearTokens = async (): Promise<void> => {
   await AsyncStorage.removeItem('accessToken');
   await AsyncStorage.removeItem('refreshToken');
 };
+
+export const storeRole = async (userRole: string): Promise<void> => {
+  await AsyncStorage.setItem('userRole', userRole);
+};
+
+export const getRole = async (): Promise<string | null> => {
+  return await AsyncStorage.getItem('userRole');
+};
+
+export const clearRole = async (): Promise<void> => {
+  await AsyncStorage.removeItem('userRole');
+};

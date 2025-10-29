@@ -9,7 +9,7 @@ import { clearSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
 import { clearVehicleDiagIDArrState } from '@/redux/slices/vehicleDiagIDArrSlice';
 import { clearVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { changePass, getUserInfo } from '@/services/backendApi';
-import { clearTokens } from '@/services/tokenStorage';
+import { clearRole, clearTokens } from '@/services/tokenStorage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -69,6 +69,7 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       await clearTokens();
+      await clearRole();
       dispatch(clearRoleState());
       dispatch(clearRouteState());
       dispatch(clearScanState());

@@ -11,7 +11,7 @@ import { clearVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { RootState } from '@/redux/store';
 import { deleteAccountRS, updateMapTypeRS, updatePushNotifRS } from '@/services/backendApi';
 import socket from '@/services/socket';
-import { clearTokens } from '@/services/tokenStorage';
+import { clearRole, clearTokens } from '@/services/tokenStorage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -152,6 +152,7 @@ const Settings = () => {
     try {
       await deleteAccountRS();
       await clearTokens();
+      await clearRole();
       dispatch(clearRoleState());
       dispatch(clearRouteState());
       dispatch(clearScanState());
