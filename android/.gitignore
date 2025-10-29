@@ -16,3 +16,4 @@ build/
 *.jsbundle
 
 /app/google-services.json
+gradle.properties

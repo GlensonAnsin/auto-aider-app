@@ -235,7 +235,7 @@ export const updateRatings = async (shopID: number, requestID: number[], score: 
       {
         headers: {
           Authorization: `Bearer ${token}`
-        }
+        },
       },
     );
   } catch (e) {
@@ -826,5 +826,101 @@ export const countUnreadChatRS = async () => {
     return res.data;
   } catch (e) {
     console.error('Count Shop Unread Chats Error:', e);
+  }
+};
+
+// UPDATE SETTINGS MAP TYPE FOR CAR OWNER
+export const updateMapTypeCO = async (mapType: string) => {
+  try {
+    const token = await getAccessToken();
+    await axios.post(`${apiURL}/user/update-map-type`,
+      { mapType },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+      },
+    );
+  } catch (e) {
+    console.error('Update Map Type For Car Owner Error:', e);
+  }
+};
+
+// UPDATE SETTINGS MAP TYPE SHOP
+export const updateMapTypeRS = async (mapType: string) => {
+  try {
+    const token = await getAccessToken();
+    await axios.post(`${apiURL}/auto_repair_shop/update-map-type`,
+      { mapType },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+      },
+    );
+  } catch (e) {
+    console.error('Update Map Type For Shop Error:', e);
+  }
+};
+
+// UPDATE SETTINGS PUSH NOTIF FOR CAR OWNER
+export const updatePushNotifCO = async (pushNotif: boolean) => {
+  try {
+    const token = await getAccessToken();
+    await axios.post(`${apiURL}/user/update-push-notif`,
+      { pushNotif },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+      },
+    );
+  } catch (e) {
+    console.error('Update Push Notif For Car Owner Error:', e);
+  }
+};
+
+// UPDATE SETTINGS PUSH NOTIF FOR SHOP
+export const updatePushNotifRS = async (pushNotif: boolean) => {
+  try {
+    const token = await getAccessToken();
+    await axios.post(`${apiURL}/auto_repair_shop/update-push-notif`,
+      { pushNotif },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+      },
+    );
+  } catch (e) {
+    console.error('Update Push Notif For Shop Error:', e);
+  }
+};
+
+// DELETE CAR OWNER ACCOUNT
+export const deleteAccountCO = async () => {
+  try {
+    const token = await getAccessToken();
+    await axios.get(`${apiURL}/user/delete-account`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+    });
+  } catch (e) {
+    console.error('Delete Car Owner Account Error:', e);
+  }
+};
+
+// DELETE SHOP ACCOUNT
+export const deleteAccountRS = async () => {
+  try {
+    const token = await getAccessToken();
+    await axios.get(`${apiURL}/auto_repair_shop/delete-account`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+    });
+  } catch (e) {
+    console.error('Delete Shop Account Error:', e);
   }
 };

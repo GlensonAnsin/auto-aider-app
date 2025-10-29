@@ -69,17 +69,6 @@ export default {
         }
       ],
       [
-        "with-rn-bluetooth-classic",
-        {
-          "peripheralUsageDescription": "Allow myDevice to check bluetooth peripheral info",
-          "alwaysUsageDescription": "Allow myDevice to always use bluetooth info",
-          "protocols": [
-            "com.myCompany.p1",
-            "com.myCompany.p2"
-          ]
-        }
-      ],
-      [
         "@react-native-firebase/app",
         "@react-native-firebase/auth"
       ],

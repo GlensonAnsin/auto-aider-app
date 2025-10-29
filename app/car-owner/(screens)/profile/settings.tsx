@@ -1,10 +1,22 @@
 import { Header } from '@/components/Header';
 import { useBackRoute } from '@/hooks/useBackRoute';
+import { clearRoleState } from '@/redux/slices/roleSlice';
+import { clearRouteState } from '@/redux/slices/routeSlice';
+import { clearScanReferenceState } from '@/redux/slices/scanReferenceSlice';
+import { clearScanState } from '@/redux/slices/scanSlice';
+import { clearSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
+import { setSettingsState } from '@/redux/slices/settingsSlice';
+import { clearVehicleDiagIDArrState } from '@/redux/slices/vehicleDiagIDArrSlice';
+import { clearVehicleDiagIDState } from '@/redux/slices/vehicleDiagIDSlice';
 import { RootState } from '@/redux/store';
+import { deleteAccountCO, updateMapTypeCO, updatePushNotifCO } from '@/services/backendApi';
+import socket from '@/services/socket';
+import { clearTokens } from '@/services/tokenStorage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Image,
   Modal,
   Pressable,
@@ -12,22 +24,154 @@ import {
   StyleSheet,
   Switch,
   Text,
+  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Settings = () => {
+  const dispatch = useDispatch();
   const backRoute = useBackRoute('/car-owner/profile/settings');
   const router = useRouter();
   const [isOn, setIsOn] = useState<boolean>(false);
   const [mapTypeModalVisible, setMapTypeModalVisible] = useState<boolean>(false);
+  const [updateLoadingStandard, setUpdateLoadingStandard] = useState<boolean>(false);
+  const [updateLoadingTerrain, setUpdateLoadingTerrain] = useState<boolean>(false);
+  const [updateLoadingHybrid, setUpdateLoadingHybrid] = useState<boolean>(false);
+  const [deleteAccModalVisible, setDeleteAccModalVisible] = useState<boolean>(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<string>('');
   const mapType = useSelector((state: RootState) => state.settings.mapType);
+  const pushNotif = useSelector((state: RootState) => state.settings.pushNotif);
+  const userID = useSelector((state: RootState) => state.role.ID);
+  const deleteAcc = 'deletemyaccount';
+
+  useEffect(() => {
+    setIsOn(pushNotif ?? true);
+  }, [pushNotif]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on(`updatedMapType-CO-${userID}`, ({ mapType }) => {
+      dispatch(
+        setSettingsState({
+          mapType: mapType,
+          pushNotif: pushNotif ?? true,
+        })
+      );
+    });
+
+    socket.on(`updatedPushNotif-CO-${userID}`, ({ updatedPushNotif }) => {
+      dispatch(
+        setSettingsState({
+          mapType: mapType ?? 'standard',
+          pushNotif: updatedPushNotif,
+        })
+      );
+    });
+
+    return () => {
+      socket.off(`updatedMapType-CO-${userID}`);
+      socket.off(`updatedPushNotif-CO-${userID}`);
+    };
+  }, [dispatch, mapType, pushNotif, userID]);
 
   const toggleSwitch = async () => {
     setIsOn((previousState) => !previousState);
+
+    try {
+      await updatePushNotifCO(isOn);
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    }
+  };
+
+  const handleUpdateMapType = async (type: string) => {
+    if (mapType === type) return;
+
+    try {
+      if (type === 'standard') {
+        setUpdateLoadingStandard(true);
+      } else if (type === 'terrain') {
+        setUpdateLoadingTerrain(true);
+      } else {
+        setUpdateLoadingHybrid(true);
+      }
+
+      await updateMapTypeCO(type);
+      showMessage({
+        message: 'Map type changed!',
+        type: 'success',
+        floating: true,
+        color: '#FFF',
+        icon: 'success',
+      });
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    } finally {
+      if (type === 'standard') {
+        setUpdateLoadingStandard(false);
+      } else if (type === 'terrain') {
+        setUpdateLoadingTerrain(false);
+      } else {
+        setUpdateLoadingHybrid(false);
+      }
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== deleteAcc) {
+      showMessage({
+        message: 'Confirmation did not match.',
+        type: 'warning',
+        floating: true,
+        color: '#FFF',
+        icon: 'warning',
+      });
+      setDeleteAccModalVisible(false);
+      setDeleteConfirmation('');
+      return;
+    }
+
+    try {
+      await deleteAccountCO();
+      await clearTokens();
+      dispatch(clearRoleState());
+      dispatch(clearRouteState());
+      dispatch(clearScanState());
+      dispatch(clearScanReferenceState());
+      dispatch(clearSenderReceiverState());
+      dispatch(clearVehicleDiagIDArrState());
+      dispatch(clearVehicleDiagIDState());
+      router.replace('/auth/login');
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+    } finally {
+      setDeleteAccModalVisible(false);
+      setDeleteConfirmation('');
+    }
   };
 
   return (
@@ -58,35 +202,11 @@ const Settings = () => {
           </View>
 
           <View style={styles.labelContainer}>
-            <Text style={styles.label}>Support & Feedback</Text>
-          </View>
-          <TouchableOpacity style={styles.settingsButton}>
-            <Text style={styles.settingsButtonText}>Help/FAQs</Text>
-            <MaterialIcons name="keyboard-arrow-right" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.settingsButton}>
-            <Text style={styles.settingsButtonText}>Contact Support</Text>
-            <MaterialIcons name="keyboard-arrow-right" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.settingsButton}>
-            <Text style={styles.settingsButtonText}>Report a Bug</Text>
-            <MaterialIcons name="keyboard-arrow-right" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.settingsButton}>
-            <Text style={styles.settingsButtonText}>Rate the App</Text>
-            <MaterialIcons name="keyboard-arrow-right" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.settingsButton}>
-            <Text style={styles.settingsButtonText}>Feedback</Text>
-            <MaterialIcons name="keyboard-arrow-right" size={24} color="#333" />
-          </TouchableOpacity>
-
-          <View style={styles.labelContainer}>
             <Text style={styles.label}>About</Text>
           </View>
           <View style={styles.settingsButton}>
             <Text style={styles.settingsButtonText}>App Version</Text>
-            <Text style={styles.settingsButtonText}>1.0.0</Text>
+            <Text style={styles.settingsButtonText}>1.0.0-beta.1</Text>
           </View>
           <TouchableOpacity
             style={styles.settingsButton}
@@ -112,7 +232,7 @@ const Settings = () => {
           <View style={styles.labelContainer}>
             <Text style={styles.label}>Account</Text>
           </View>
-          <TouchableOpacity style={styles.settingsButton}>
+          <TouchableOpacity style={styles.settingsButton} onPress={() => setDeleteAccModalVisible(true)}>
             <Text style={[styles.settingsButtonText, { color: '#780606' }]}>Delete Account</Text>
             <MaterialIcons name="keyboard-arrow-right" size={24} color="#780606" />
           </TouchableOpacity>
@@ -128,83 +248,133 @@ const Settings = () => {
         <TouchableWithoutFeedback onPress={() => setMapTypeModalVisible(false)}>
           <View style={styles.centeredView}>
             <Pressable style={styles.modalView} onPress={() => {}}>
-              <View style={styles.mapTypeContainer}>
-                <View style={styles.mapTypeView}>
-                  <Image
-                    source={require('../../../../assets/images/standard.jpg')}
+              <Text style={styles.modalHeader}>Map Type</Text>
+              <View
+                style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 10 }}
+              >
+                <View style={styles.mapTypeContainer}>
+                  <View style={styles.mapTypeView}>
+                    <Image
+                      source={require('../../../../assets/images/standard.jpg')}
+                      style={[
+                        styles.mapTypeImage,
+                        { width: mapType === 'standard' ? 100 : 80, height: mapType === 'standard' ? 100 : 80 },
+                      ]}
+                    />
+                  </View>
+
+                  <TouchableOpacity
                     style={[
-                      styles.mapTypeImage,
-                      { width: mapType === 'standard' ? 170 : 150, height: mapType === 'standard' ? 170 : 150 },
+                      styles.mapTypeButton,
+                      {
+                        width: mapType === 'standard' ? 100 : 80,
+                        height: mapType === 'standard' ? 100 : 80,
+                        borderWidth: mapType === 'standard' ? 2 : 0,
+                        borderColor: mapType === 'standard' ? '#000B58' : '',
+                      },
                     ]}
-                  />
+                    onPress={() => handleUpdateMapType('standard')}
+                  >
+                    <Text style={styles.mapTypeText}>
+                      {updateLoadingStandard ? (
+                        <ActivityIndicator size="small" color="#000B58" />
+                      ) : (
+                        <Text>Standard</Text>
+                      )}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity
-                  style={[
-                    styles.mapTypeButton,
-                    {
-                      width: mapType === 'standard' ? 170 : 150,
-                      height: mapType === 'standard' ? 170 : 150,
-                      borderWidth: mapType === 'standard' ? 2 : 0,
-                      borderColor: mapType === 'standard' ? '#000B58' : '',
-                    },
-                  ]}
-                >
-                  <Text style={styles.mapTypeText}>Standard</Text>
-                </TouchableOpacity>
-              </View>
+                <View style={styles.mapTypeContainer}>
+                  <View style={styles.mapTypeView}>
+                    <Image
+                      source={require('../../../../assets/images/terrain.jpg')}
+                      style={[
+                        styles.mapTypeImage,
+                        { width: mapType === 'terrain' ? 100 : 80, height: mapType === 'terrain' ? 100 : 80 },
+                      ]}
+                    />
+                  </View>
 
-              <View style={styles.mapTypeContainer}>
-                <View style={styles.mapTypeView}>
-                  <Image
-                    source={require('../../../../assets/images/terrain.jpg')}
+                  <TouchableOpacity
                     style={[
-                      styles.mapTypeImage,
-                      { width: mapType === 'terrain' ? 170 : 150, height: mapType === 'terrain' ? 170 : 150 },
+                      styles.mapTypeButton,
+                      {
+                        width: mapType === 'terrain' ? 100 : 80,
+                        height: mapType === 'terrain' ? 100 : 80,
+                        borderWidth: mapType === 'terrain' ? 2 : 0,
+                        borderColor: mapType === 'terrain' ? '#000B58' : '',
+                      },
                     ]}
-                  />
+                    onPress={() => handleUpdateMapType('terrain')}
+                  >
+                    <Text style={styles.mapTypeText}>
+                      {updateLoadingTerrain ? <ActivityIndicator size="small" color="#000B58" /> : <Text>Terrain</Text>}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity
-                  style={[
-                    styles.mapTypeButton,
-                    {
-                      width: mapType === 'terrain' ? 170 : 150,
-                      height: mapType === 'terrain' ? 170 : 150,
-                      borderWidth: mapType === 'terrain' ? 2 : 0,
-                      borderColor: mapType === 'terrain' ? '#000B58' : '',
-                    },
-                  ]}
-                >
-                  <Text style={styles.mapTypeText}>Terrain</Text>
-                </TouchableOpacity>
-              </View>
+                <View style={styles.mapTypeContainer}>
+                  <View style={styles.mapTypeView}>
+                    <Image
+                      source={require('../../../../assets/images/hybrid.jpg')}
+                      style={[
+                        styles.mapTypeImage,
+                        { width: mapType === 'hybrid' ? 100 : 80, height: mapType === 'hybrid' ? 100 : 80 },
+                      ]}
+                    />
+                  </View>
 
-              <View style={styles.mapTypeContainer}>
-                <View style={styles.mapTypeView}>
-                  <Image
-                    source={require('../../../../assets/images/hybrid.jpg')}
+                  <TouchableOpacity
                     style={[
-                      styles.mapTypeImage,
-                      { width: mapType === 'hybrid' ? 170 : 150, height: mapType === 'hybrid' ? 170 : 150 },
+                      styles.mapTypeButton,
+                      {
+                        width: mapType === 'hybrid' ? 100 : 80,
+                        height: mapType === 'hybrid' ? 100 : 80,
+                        borderWidth: mapType === 'hybrid' ? 2 : 0,
+                        borderColor: mapType === 'hybrid' ? '#000B58' : '',
+                      },
                     ]}
-                  />
+                    onPress={() => handleUpdateMapType('hybrid')}
+                  >
+                    <Text style={styles.mapTypeText}>
+                      {updateLoadingHybrid ? <ActivityIndicator size="small" color="#000B58" /> : <Text>Hybrid</Text>}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-
-                <TouchableOpacity
-                  style={[
-                    styles.mapTypeButton,
-                    {
-                      width: mapType === 'hybrid' ? 170 : 150,
-                      height: mapType === 'hybrid' ? 170 : 150,
-                      borderWidth: mapType === 'hybrid' ? 2 : 0,
-                      borderColor: mapType === 'hybrid' ? '#000B58' : '',
-                    },
-                  ]}
-                >
-                  <Text style={styles.mapTypeText}>Hybrid</Text>
-                </TouchableOpacity>
               </View>
+            </Pressable>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      <Modal
+        animationType="fade"
+        backdropColor={'rgba(0, 0, 0, 0.5)'}
+        visible={deleteAccModalVisible}
+        onRequestClose={() => {
+          setDeleteAccModalVisible(false);
+          setDeleteConfirmation('');
+        }}
+      >
+        <TouchableWithoutFeedback
+          onPress={() => {
+            setDeleteAccModalVisible(false);
+            setDeleteConfirmation('');
+          }}
+        >
+          <View style={styles.centeredView}>
+            <Pressable style={[styles.modalView, { width: '90%' }]} onPress={() => {}}>
+              <Text style={styles.modalHeader}>Delete Account</Text>
+              <Text style={styles.text}>To confirm, type &quot;deletemyaccount&quot; in the box below</Text>
+              <TextInput
+                value={deleteConfirmation}
+                onChangeText={setDeleteConfirmation}
+                style={styles.deleteAccInput}
+              />
+              <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteAccount()}>
+                <Text style={[styles.settingsButtonText, { color: '#fff' }]}>Delete</Text>
+              </TouchableOpacity>
             </Pressable>
           </View>
         </TouchableWithoutFeedback>
@@ -259,9 +429,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    gap: 10,
+  },
+  modalHeader: {
+    fontSize: 20,
+    fontFamily: 'HeaderBold',
+    color: '#333',
   },
   mapTypeContainer: {
     position: 'relative',
@@ -294,6 +466,27 @@ const styles = StyleSheet.create({
     padding: 5,
     width: '100%',
     textAlign: 'center',
+  },
+  deleteButton: {
+    backgroundColor: '#780606',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    width: 100,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  deleteAccInput: {
+    backgroundColor: '#fff',
+    width: '100%',
+    borderRadius: 10,
+    fontFamily: 'BodyRegular',
+    color: '#333',
+    marginTop: 10,
+  },
+  text: {
+    fontFamily: 'BodyRegular',
+    color: '#333',
   },
 });
 
