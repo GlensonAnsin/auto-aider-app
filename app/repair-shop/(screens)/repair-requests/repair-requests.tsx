@@ -54,7 +54,7 @@ const RepairRequests = () => {
           res.mechanic_requests.forEach((request: any) => {
             if (request) {
               const requestID = request.request_id;
-              const datetime = dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
+              const datetime = dayjs(request.request_datetime).utc(true).format('ddd MMM DD YYYY, h:mm A');
               const status = request.status;
               if (request.vehicle_diagnostic) {
                 const diagnostics = Array.isArray(request.vehicle_diagnostic)
@@ -119,7 +119,7 @@ const RepairRequests = () => {
         shopRequest.mechanic_requests.forEach((request: any) => {
           if (request) {
             const requestID = request.request_id;
-            const datetime = dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
+            const datetime = dayjs(request.request_datetime).utc(true).format('ddd MMM DD YYYY, h:mm A');
             const status = request.status;
             if (request.vehicle_diagnostic) {
               const diagnostics = Array.isArray(request.vehicle_diagnostic)

@@ -498,10 +498,6 @@ export default function Home() {
                     </View>
                   )}
 
-                  {isAddCarLoading === true && (
-                    <ActivityIndicator style={{ marginTop: 20 }} size="small" color="#000B58" />
-                  )}
-
                   <View style={styles.cancelSaveContainer}>
                     <TouchableOpacity
                       style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
@@ -511,10 +507,18 @@ export default function Home() {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={[styles.modalButton, { backgroundColor: '#000B58' }]}
+                      style={[
+                        styles.modalButton,
+                        { backgroundColor: '#000B58' },
+                        isAddCarLoading && styles.modalButtonDisabled,
+                      ]}
                       onPress={() => handleCarVerification()}
+                      disabled={isAddCarLoading}
                     >
-                      <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Add</Text>
+                      <View style={styles.modalButtonContent}>
+                        {isAddCarLoading && <ActivityIndicator size="small" color="#FFF" style={{ marginRight: 8 }} />}
+                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Add</Text>
+                      </View>
                     </TouchableOpacity>
                   </View>
                 </Pressable>
@@ -748,6 +752,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
+  },
+  modalButtonDisabled: {
+    opacity: 0.6,
+    backgroundColor: '#cccccc',
+  },
+  modalButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalButtonText: {
     fontFamily: 'HeaderBold',

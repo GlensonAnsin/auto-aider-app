@@ -152,8 +152,8 @@ const RepairRequestDetails = () => {
             res1.mechanic_requests.forEach((request: any) => {
               if (request) {
                 const requestID = request.mechanic_request_id;
-                const datetime = dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
-                const completedOn = dayjs(request.completed_on).utc(true).local().format('ddd MMM DD YYYY, h:mm A');
+                const datetime = dayjs(request.request_datetime).utc(true).format('ddd MMM DD YYYY, h:mm A');
+                const completedOn = dayjs(request.completed_on).utc(true).format('ddd MMM DD YYYY, h:mm A');
                 const longitude = parseFloat(request.longitude);
                 const latitude = parseFloat(request.latitude);
                 const status = request.status;
@@ -770,7 +770,7 @@ const RepairRequestDetails = () => {
                             latitude: shopRegion.latitude,
                             longitude: shopRegion.longitude,
                           }}
-                          image={require('../../../../assets/images/circle-marker.png')}
+                          image={require('../../../../assets/images/you-marker.png')}
                           title="You"
                         />
                       )}

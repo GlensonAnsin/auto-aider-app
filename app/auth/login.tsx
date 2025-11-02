@@ -2,7 +2,7 @@ import { useBackRoute } from '@/hooks/useBackRoute';
 import { loginRepairShop, loginUser } from '@/services/backendApi';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +15,7 @@ export default function Login() {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [role, setRole] = useState<string>('');
+  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
   const roles = [
     { title: 'Car Owner', icon: 'car-outline' },
@@ -22,6 +23,8 @@ export default function Login() {
   ];
 
   const handleLogin = async () => {
+    if (isLoggingIn) return; // Prevent multiple clicks
+
     if (!username || !password || !role) {
       showMessage({
         message: 'Please fill out all fields.',
@@ -32,6 +35,8 @@ export default function Login() {
       });
       return;
     }
+
+    setIsLoggingIn(true);
 
     if (role === 'Car Owner') {
       const userData = {
@@ -50,6 +55,7 @@ export default function Login() {
             color: '#FFF',
             icon: 'warning',
           });
+          setIsLoggingIn(false);
           return;
         }
 
@@ -67,6 +73,7 @@ export default function Login() {
           setUsername('');
           setPassword('');
           setRole('');
+          setIsLoggingIn(false);
         }, 1000);
       } catch {
         showMessage({
@@ -76,6 +83,7 @@ export default function Login() {
           color: '#FFF',
           icon: 'danger',
         });
+        setIsLoggingIn(false);
       }
     } else {
       const userData = {
@@ -94,6 +102,7 @@ export default function Login() {
             color: '#FFF',
             icon: 'warning',
           });
+          setIsLoggingIn(false);
           return;
         }
 
@@ -111,6 +120,7 @@ export default function Login() {
           setUsername('');
           setPassword('');
           setRole('');
+          setIsLoggingIn(false);
         }, 1000);
       } catch {
         showMessage({
@@ -120,6 +130,7 @@ export default function Login() {
           color: '#FFF',
           icon: 'danger',
         });
+        setIsLoggingIn(false);
       }
     }
   };
@@ -199,8 +210,16 @@ export default function Login() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={() => handleLogin()}>
-            <Text style={styles.buttonTxt}>Log In</Text>
+          <TouchableOpacity
+            style={[styles.button, isLoggingIn && styles.buttonDisabled]}
+            onPress={() => handleLogin()}
+            disabled={isLoggingIn}
+          >
+            {isLoggingIn ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Text style={styles.buttonTxt}>Log In</Text>
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
@@ -323,6 +342,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginTop: 20,
     marginBottom: 20,
+  },
+  buttonDisabled: {
+    backgroundColor: '#999999',
+    opacity: 0.6,
   },
   buttonTxt: {
     color: '#333',

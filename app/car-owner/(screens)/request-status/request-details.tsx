@@ -151,10 +151,7 @@ const RequestDetails = () => {
                               repairShopProfile: repairShop.profile_pic,
                               repairShopProfileBG: repairShop.profile_bg,
                               status: request.status,
-                              datetime: dayjs(request.request_datetime)
-                                .utc(true)
-                                .local()
-                                .format('ddd MMM DD YYYY, h:mm A'),
+                              datetime: dayjs(request.request_datetime).utc(true).format('ddd MMM DD YYYY, h:mm A'),
                               make: make,
                               model: model,
                               year: year,
@@ -166,10 +163,7 @@ const RequestDetails = () => {
                               scanReference: scanReference,
                               vehicleIssue: vehicleIssue,
                               repairProcedure: request.repair_procedure,
-                              completedOn: dayjs(request.completed_on)
-                                .utc(true)
-                                .local()
-                                .format('ddd MMM DD YYYY, h:mm A'),
+                              completedOn: dayjs(request.completed_on).utc(true).format('ddd MMM DD YYYY, h:mm A'),
                               reasonRejected: request.reason_rejected,
                               isRated: request.is_rated,
                               score: request.score,
@@ -599,7 +593,7 @@ const RequestDetails = () => {
                             latitude: customerRegion.latitude,
                             longitude: customerRegion.longitude,
                           }}
-                          image={require('../../../../assets/images/circle-marker.png')}
+                          image={require('../../../../assets/images/you-marker.png')}
                           title="You"
                         />
                       )}

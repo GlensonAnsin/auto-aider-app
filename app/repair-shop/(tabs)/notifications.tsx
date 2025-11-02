@@ -91,7 +91,7 @@ export default function NotificationsTab() {
   }, [shopID]);
 
   const transformDate = (date: string) => {
-    const notificationDate = dayjs(date).utc(true).local();
+    const notificationDate = dayjs(date).utc(true);
     const notificationTime = notificationDate.format('HH:mm');
     const notificationDay = notificationDate.date();
     const notificationWeek = Math.ceil(notificationDate.dayOfYear() / 7);

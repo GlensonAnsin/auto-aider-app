@@ -25,5 +25,5 @@ export default function Index() {
 
   if (!redirectTo) return null;
 
-  return <Redirect href={redirectTo} />;
+  return <Redirect href={redirectTo as any} />;
 }

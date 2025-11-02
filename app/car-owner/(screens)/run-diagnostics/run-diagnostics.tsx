@@ -675,8 +675,16 @@ const RunDiagnostics = () => {
                     style={styles.devicesContainer}
                     nestedScrollEnabled={true}
                     renderItem={({ item }) => (
-                      <TouchableOpacity style={styles.selectDeviceButton} onPress={() => connectToDevice(item)}>
-                        <Text style={styles.selectDeviceButtonText}>{item.name}</Text>
+                      <TouchableOpacity
+                        style={[styles.selectDeviceButton, connectLoading && styles.selectDeviceButtonDisabled]}
+                        onPress={() => connectToDevice(item)}
+                        disabled={connectLoading}
+                      >
+                        {connectLoading ? (
+                          <ActivityIndicator size="small" color="#FFF" />
+                        ) : (
+                          <Text style={styles.selectDeviceButtonText}>{item.name}</Text>
+                        )}
                       </TouchableOpacity>
                     )}
                     ListEmptyComponent={() => (
@@ -725,9 +733,14 @@ const RunDiagnostics = () => {
           />
 
           <View style={styles.buttonContainer}>
-            <TouchableHighlight style={styles.scanButton} onPress={() => readCodes()}>
+            <TouchableHighlight
+              style={[styles.scanButton, scanLoading && styles.scanButtonDisabled]}
+              onPress={() => readCodes()}
+              disabled={scanLoading}
+            >
               <View style={styles.innerContainer}>
-                <Text style={styles.buttonTxt}>Scan</Text>
+                {scanLoading && <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />}
+                <Text style={styles.buttonTxt}>{scanLoading ? 'Scanning...' : 'Scan'}</Text>
               </View>
             </TouchableHighlight>
 
@@ -824,6 +837,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 5,
   },
+  selectDeviceButtonDisabled: {
+    opacity: 0.6,
+    backgroundColor: '#cccccc',
+  },
   selectDeviceButtonText: {
     fontFamily: 'BodyRegular',
     color: '#333',
@@ -886,6 +903,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'absolute',
     zIndex: 2,
+  },
+  scanButtonDisabled: {
+    opacity: 0.6,
   },
   innerContainer: {
     backgroundColor: '#000B58',

@@ -53,7 +53,7 @@ const DiagnosticHistory = () => {
             vehicleID: item.vehicle_id,
             vehicle: `${item.year} ${item.make} ${item.model}`,
             dtc: item.dtc,
-            date: dayjs(item.date).utc(true).local().format('ddd MMM DD YYYY'),
+            date: dayjs(item.date).utc(true).format('ddd MMM DD YYYY'),
             scanReference: item.scan_reference,
           });
         });

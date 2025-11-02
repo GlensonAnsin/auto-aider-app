@@ -488,7 +488,7 @@ const RepairShops = () => {
                     latitude: currentLocation.latitude,
                     longitude: currentLocation.longitude,
                   }}
-                  image={require('../../../../assets/images/circle-marker.png')}
+                  image={require('../../../../assets/images/you-marker.png')}
                   title="You"
                   tracksViewChanges={false}
                 />
@@ -811,10 +811,6 @@ const RepairShops = () => {
                                       </View>
                                     )}
 
-                                    {requestLoading === true && (
-                                      <ActivityIndicator style={{ marginTop: 20 }} size="small" color="#000B58" />
-                                    )}
-
                                     <View style={styles.cancelSaveContainer}>
                                       <TouchableOpacity
                                         style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
@@ -830,7 +826,11 @@ const RepairShops = () => {
                                       </TouchableOpacity>
 
                                       <TouchableOpacity
-                                        style={[styles.modalButton, { backgroundColor: '#000B58' }]}
+                                        style={[
+                                          styles.modalButton,
+                                          { backgroundColor: '#000B58' },
+                                          requestLoading && styles.modalButtonDisabled,
+                                        ]}
                                         onPress={() =>
                                           handleSubmitRequest(
                                             nearbyRepShop[selectedRepShop].repairShopID,
@@ -838,8 +838,13 @@ const RepairShops = () => {
                                             'with-obd2'
                                           )
                                         }
+                                        disabled={requestLoading}
                                       >
-                                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                        {requestLoading ? (
+                                          <ActivityIndicator size="small" color="#FFF" />
+                                        ) : (
+                                          <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                        )}
                                       </TouchableOpacity>
                                     </View>
                                   </>
@@ -972,10 +977,6 @@ const RepairShops = () => {
                                       </View>
                                     )}
 
-                                    {requestLoading === true && (
-                                      <ActivityIndicator style={{ marginTop: 20 }} size="small" color="#000B58" />
-                                    )}
-
                                     <View style={styles.cancelSaveContainer}>
                                       <TouchableOpacity
                                         style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
@@ -991,12 +992,21 @@ const RepairShops = () => {
                                       </TouchableOpacity>
 
                                       <TouchableOpacity
-                                        style={[styles.modalButton, { backgroundColor: '#000B58' }]}
+                                        style={[
+                                          styles.modalButton,
+                                          { backgroundColor: '#000B58' },
+                                          requestLoading && styles.modalButtonDisabled,
+                                        ]}
                                         onPress={() =>
                                           handleSubmitRequestWithoutOBD2(nearbyRepShop[selectedRepShop].repairShopID)
                                         }
+                                        disabled={requestLoading}
                                       >
-                                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                        {requestLoading ? (
+                                          <ActivityIndicator size="small" color="#FFF" />
+                                        ) : (
+                                          <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                        )}
                                       </TouchableOpacity>
                                     </View>
                                   </>
@@ -1227,10 +1237,6 @@ const RepairShops = () => {
                                       </View>
                                     )}
 
-                                    {requestLoading === true && (
-                                      <ActivityIndicator style={{ marginTop: 20 }} size="small" color="#000B58" />
-                                    )}
-
                                     <View style={styles.cancelSaveContainer}>
                                       <TouchableOpacity
                                         style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
@@ -1246,12 +1252,21 @@ const RepairShops = () => {
                                       </TouchableOpacity>
 
                                       <TouchableOpacity
-                                        style={[styles.modalButton, { backgroundColor: '#000B58' }]}
+                                        style={[
+                                          styles.modalButton,
+                                          { backgroundColor: '#000B58' },
+                                          requestLoading && styles.modalButtonDisabled,
+                                        ]}
                                         onPress={() =>
                                           handleSubmitRequest(regions[selectedRepShop].repairShopID, null, 'with-obd2')
                                         }
+                                        disabled={requestLoading}
                                       >
-                                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                        {requestLoading ? (
+                                          <ActivityIndicator size="small" color="#FFF" />
+                                        ) : (
+                                          <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                        )}
                                       </TouchableOpacity>
                                     </View>
                                   </>
@@ -1384,10 +1399,6 @@ const RepairShops = () => {
                                       </View>
                                     )}
 
-                                    {requestLoading === true && (
-                                      <ActivityIndicator style={{ marginTop: 20 }} size="small" color="#000B58" />
-                                    )}
-
                                     <View style={styles.cancelSaveContainer}>
                                       <TouchableOpacity
                                         style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
@@ -1403,12 +1414,21 @@ const RepairShops = () => {
                                       </TouchableOpacity>
 
                                       <TouchableOpacity
-                                        style={[styles.modalButton, { backgroundColor: '#000B58' }]}
+                                        style={[
+                                          styles.modalButton,
+                                          { backgroundColor: '#000B58' },
+                                          requestLoading && styles.modalButtonDisabled,
+                                        ]}
                                         onPress={() =>
                                           handleSubmitRequestWithoutOBD2(regions[selectedRepShop].repairShopID)
                                         }
+                                        disabled={requestLoading}
                                       >
-                                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                        {requestLoading ? (
+                                          <ActivityIndicator size="small" color="#FFF" />
+                                        ) : (
+                                          <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                        )}
                                       </TouchableOpacity>
                                     </View>
                                   </>
@@ -1671,6 +1691,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
+  },
+  modalButtonDisabled: {
+    backgroundColor: '#666666',
+    opacity: 0.6,
   },
   modalButtonText: {
     fontFamily: 'HeaderBold',

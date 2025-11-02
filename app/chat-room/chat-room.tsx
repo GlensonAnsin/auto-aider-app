@@ -15,7 +15,7 @@ import utc from 'dayjs/plugin/utc';
 import { Audio } from 'expo-av';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -34,6 +34,7 @@ const ChatRoom = () => {
   const role: string | null = useSelector((state: RootState) => state.senderReceiver.role);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSending, setIsSending] = useState<boolean>(false);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [conversation, setConversation] = useState<
     {
@@ -85,7 +86,7 @@ const ChatRoom = () => {
               receiverUserID: item.receiver_user_id,
               receiverShopID: item.receiver_repair_shop_id,
               message: item.message,
-              sentAt: dayjs(item.sent_at).utc(true).local().format('HH:mm'),
+              sentAt: dayjs(item.sent_at).utc(true).format('HH:mm'),
               status: item.status,
               fromYou: Number(item.sender_user_id) === senderID ? true : false,
             });
@@ -110,7 +111,7 @@ const ChatRoom = () => {
               receiverUserID: item.receiver_user_id,
               receiverShopID: item.receiver_repair_shop_id,
               message: item.message,
-              sentAt: dayjs(item.sent_at).utc(true).local().format('HH:mm'),
+              sentAt: dayjs(item.sent_at).utc(true).format('HH:mm'),
               status: item.status,
               fromYou: Number(item.sender_repair_shop_id) === senderID ? true : false,
             });
@@ -166,7 +167,7 @@ const ChatRoom = () => {
         ) {
           const formattedConversation = {
             ...newChatCO,
-            sentAt: dayjs(newChatCO.sentAt).utc(true).local().format('HH:mm'),
+            sentAt: dayjs(newChatCO.sentAt).utc(true).format('HH:mm'),
           };
 
           setConversation((prev) => [...prev, formattedConversation]);
@@ -203,7 +204,7 @@ const ChatRoom = () => {
         ) {
           const formattedConversation = {
             ...newChatRS,
-            sentAt: dayjs(newChatRS.sentAt).utc(true).local().format('HH:mm'),
+            sentAt: dayjs(newChatRS.sentAt).utc(true).format('HH:mm'),
           };
 
           setConversation((prev) => [...prev, formattedConversation]);
@@ -247,7 +248,9 @@ const ChatRoom = () => {
   }, [sound]);
 
   const sendMessage = async () => {
-    if (!socket) return;
+    if (!socket || isSending) return;
+
+    setIsSending(true);
 
     socket.emit('sendMessage', {
       senderID: Number(senderID),
@@ -257,12 +260,18 @@ const ChatRoom = () => {
       sentAt: dayjs().format(),
     });
 
+    Keyboard.dismiss();
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
 
     const { sound } = await Audio.Sound.createAsync(require('../../assets/sounds/bubble-pop.mp3'));
     setSound(sound);
     await sound.playAsync();
     setMessage('');
+
+    // Brief delay to prevent rapid multiple sends
+    setTimeout(() => {
+      setIsSending(false);
+    }, 500);
   };
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
@@ -404,8 +413,8 @@ const ChatRoom = () => {
           numberOfLines={6}
           style={styles.messageInput}
         />
-        <TouchableOpacity style={styles.sendButton} disabled={message ? false : true} onPress={() => sendMessage()}>
-          <Ionicons name="send" size={24} color={message ? '#FFF' : '#E1E1E1'} />
+        <TouchableOpacity style={styles.sendButton} disabled={!message || isSending} onPress={() => sendMessage()}>
+          <Ionicons name="send" size={24} color={!message || isSending ? '#E1E1E1' : '#FFF'} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>

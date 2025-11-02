@@ -106,7 +106,7 @@ export default function ChatsTab() {
   }, [userID]);
 
   const transformDate = (date: string) => {
-    const messageDate = dayjs(date).utc(true).local();
+    const messageDate = dayjs(date).utc(true);
     const messageTime = messageDate.format('HH:mm');
     const messageDay = messageDate.date();
     const messageWeek = Math.ceil(messageDate.dayOfYear() / 7);

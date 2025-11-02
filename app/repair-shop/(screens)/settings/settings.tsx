@@ -42,6 +42,7 @@ const Settings = () => {
   const [updateLoadingStandard, setUpdateLoadingStandard] = useState<boolean>(false);
   const [updateLoadingTerrain, setUpdateLoadingTerrain] = useState<boolean>(false);
   const [updateLoadingHybrid, setUpdateLoadingHybrid] = useState<boolean>(false);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
   const [deleteAccModalVisible, setDeleteAccModalVisible] = useState<boolean>(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState<string>('');
   const mapType = useSelector((state: RootState) => state.settings.mapType);
@@ -136,6 +137,8 @@ const Settings = () => {
   };
 
   const handleDeleteAccount = async () => {
+    if (deleteLoading) return; // Prevent multiple clicks
+
     if (deleteConfirmation !== deleteAcc) {
       showMessage({
         message: 'Confirmation did not match.',
@@ -149,6 +152,7 @@ const Settings = () => {
       return;
     }
 
+    setDeleteLoading(true);
     try {
       await deleteAccountRS();
       await clearTokens();
@@ -170,6 +174,7 @@ const Settings = () => {
         icon: 'danger',
       });
     } finally {
+      setDeleteLoading(false);
       setDeleteAccModalVisible(false);
       setDeleteConfirmation('');
     }
@@ -373,8 +378,17 @@ const Settings = () => {
                 onChangeText={setDeleteConfirmation}
                 style={styles.deleteAccInput}
               />
-              <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteAccount()}>
-                <Text style={[styles.settingsButtonText, { color: '#fff' }]}>Delete</Text>
+              <TouchableOpacity
+                style={[styles.deleteButton, deleteLoading && styles.deleteButtonDisabled]}
+                onPress={() => handleDeleteAccount()}
+                disabled={deleteLoading}
+              >
+                <View style={styles.deleteButtonContent}>
+                  {deleteLoading && <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />}
+                  <Text style={[styles.settingsButtonText, { color: '#fff' }]}>
+                    {deleteLoading ? 'Deleting...' : 'Delete'}
+                  </Text>
+                </View>
               </TouchableOpacity>
             </Pressable>
           </View>
@@ -476,6 +490,15 @@ const styles = StyleSheet.create({
     width: 100,
     borderRadius: 10,
     marginTop: 10,
+  },
+  deleteButtonDisabled: {
+    opacity: 0.6,
+    backgroundColor: '#cccccc',
+  },
+  deleteButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   deleteAccInput: {
     backgroundColor: '#fff',

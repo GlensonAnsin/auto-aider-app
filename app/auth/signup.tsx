@@ -59,6 +59,7 @@ const Signup = () => {
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
   const [sendCodeLoading, setSendCodeLoading] = useState<boolean>(false);
   const [confirmCodeLoading, setConfirmCodeLoading] = useState<boolean>(false);
+  const [signupLoading, setSignupLoading] = useState<boolean>(false);
   const [verificationModalVisible, setVerificationModalVisible] = useState<boolean>(false);
   const inputs = useRef<(TextInput | null)[]>([]);
   const prefix = '09';
@@ -270,6 +271,8 @@ const Signup = () => {
   };
 
   const handleAddUser = async () => {
+    if (signupLoading) return; // Prevent multiple clicks
+
     if (!firstname || !lastname || !gender || !mobileNum || !password || !confirmPassword || !role) {
       showMessage({
         message: 'Please fill in all fields.',
@@ -303,6 +306,8 @@ const Signup = () => {
       return;
     }
 
+    setSignupLoading(true);
+
     try {
       const fetchedUsers: User[] = await getUsers();
       const mobileNumExists = fetchedUsers.some((user) => user.mobile_num === mobileNum.trim());
@@ -315,6 +320,7 @@ const Signup = () => {
           color: '#FFF',
           icon: 'warning',
         });
+        setSignupLoading(false);
         return;
       }
       handleSendCode();
@@ -326,11 +332,14 @@ const Signup = () => {
         color: '#FFF',
         icon: 'danger',
       });
+      setSignupLoading(false);
       return;
     }
   };
 
   const handleAddRepairShop = async () => {
+    if (signupLoading) return; // Prevent multiple clicks
+
     if (page === 'Repair Shop') {
       if (!firstname || !lastname || !gender || !mobileNum || !password || !confirmPassword || !shopName || !role) {
         showMessage({
@@ -365,6 +374,8 @@ const Signup = () => {
         return;
       }
 
+      setSignupLoading(true);
+
       try {
         const fetchedAutoRepairShops: AutoRepairShop[] = await getRepairShops();
         const mobileNumExists = fetchedAutoRepairShops.some((repairShop) => repairShop.mobile_num === mobileNum.trim());
@@ -377,6 +388,7 @@ const Signup = () => {
             color: '#FFF',
             icon: 'warning',
           });
+          setSignupLoading(false);
           return;
         }
       } catch {
@@ -387,8 +399,11 @@ const Signup = () => {
           color: '#FFF',
           icon: 'danger',
         });
+        setSignupLoading(false);
+        return;
       }
 
+      setSignupLoading(false);
       setPage('Location');
     } else if (page === 'Location') {
       setPage('Services Offered');
@@ -446,6 +461,7 @@ const Signup = () => {
       });
     } finally {
       setSendCodeLoading(false);
+      setSignupLoading(false);
     }
   };
 
@@ -770,8 +786,16 @@ const Signup = () => {
                 <Text style={styles.termsText}>.</Text>
               </View>
 
-              <TouchableOpacity style={styles.button} onPress={() => handleAddUser()}>
-                <Text style={styles.buttonTxt}>Sign Up</Text>
+              <TouchableOpacity
+                style={[styles.button, signupLoading && styles.buttonDisabled]}
+                onPress={() => handleAddUser()}
+                disabled={signupLoading}
+              >
+                {signupLoading ? (
+                  <ActivityIndicator size="small" color="#333" />
+                ) : (
+                  <Text style={styles.buttonTxt}>Sign Up</Text>
+                )}
               </TouchableOpacity>
 
               <Modal
@@ -963,8 +987,16 @@ const Signup = () => {
                 />
               </View>
 
-              <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
-                <Text style={styles.buttonTxt}>Next</Text>
+              <TouchableOpacity
+                style={[styles.button, signupLoading && styles.buttonDisabled]}
+                onPress={() => handleAddRepairShop()}
+                disabled={signupLoading}
+              >
+                {signupLoading ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Text style={styles.buttonTxt}>Next</Text>
+                )}
               </TouchableOpacity>
             </>
           )}
@@ -999,8 +1031,16 @@ const Signup = () => {
                 )}
               </MapView>
 
-              <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
-                <Text style={styles.buttonTxt}>Next</Text>
+              <TouchableOpacity
+                style={[styles.button, signupLoading && styles.buttonDisabled]}
+                onPress={() => handleAddRepairShop()}
+                disabled={signupLoading}
+              >
+                {signupLoading ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Text style={styles.buttonTxt}>Next</Text>
+                )}
               </TouchableOpacity>
             </>
           )}
@@ -1039,8 +1079,16 @@ const Signup = () => {
                 <Text style={styles.termsText}>.</Text>
               </View>
 
-              <TouchableOpacity style={styles.button} onPress={() => handleAddRepairShop()}>
-                <Text style={styles.buttonTxt}>Sign Up</Text>
+              <TouchableOpacity
+                style={[styles.button, signupLoading && styles.buttonDisabled]}
+                onPress={() => handleAddRepairShop()}
+                disabled={signupLoading}
+              >
+                {signupLoading ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Text style={styles.buttonTxt}>Sign Up</Text>
+                )}
               </TouchableOpacity>
 
               <Modal
@@ -1366,6 +1414,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginTop: 20,
     marginBottom: 20,
+  },
+  buttonDisabled: {
+    backgroundColor: '#666666',
+    opacity: 0.6,
   },
   buttonTxt: {
     color: '#FFF',

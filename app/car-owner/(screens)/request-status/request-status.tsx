@@ -64,14 +64,11 @@ const RequestStatus = () => {
                         const repairShop = res2.find((shop: any) => shop.repair_shop_id === request.repair_shop_id);
                         if (repairShop) {
                           statusData.push({
-                            requestID: request.request_id,
+                            requestID: request.mechanic_request,
                             vehicleName,
                             repairShop: repairShop.shop_name,
                             scanReference,
-                            datetime: dayjs(request.request_datetime)
-                              .utc(true)
-                              .local()
-                              .format('ddd MMM DD YYYY, h:mm A'),
+                            datetime: dayjs(request.request_datetime).utc(true).format('ddd MMM DD YYYY, h:mm A'),
                             status: request.status,
                           });
                         }
@@ -125,7 +122,7 @@ const RequestStatus = () => {
                           vehicleName,
                           repairShop: repairShop.shop_name,
                           scanReference,
-                          datetime: dayjs(request.request_datetime).utc(true).local().format('ddd MMM DD YYYY, h:mm A'),
+                          datetime: dayjs(request.request_datetime).utc(true).format('ddd MMM DD YYYY, h:mm A'),
                           status: request.status,
                         });
                       }

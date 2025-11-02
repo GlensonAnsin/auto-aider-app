@@ -46,7 +46,7 @@ const ManageVehicles = () => {
             make: item.make,
             model: item.model,
             year: item.year,
-            dateAdded: dayjs(item.date_added).utc(true).local().format('ddd MMM DD YYYY'),
+            dateAdded: dayjs(item.date_added).utc(true).format('ddd MMM DD YYYY'),
           });
         });
 
@@ -124,7 +124,7 @@ const ManageVehicles = () => {
 
         {vehicles.length !== 0 && (
           <FlatList
-            data={vehicles}
+            data={vehicles.sort((a, b) => b.vehicleID - a.vehicleID)}
             style={{ width: '100%' }}
             renderItem={({ item, index }) => (
               <View style={[styles.vehicleContainer, index === 0 && styles.firstChild]}>

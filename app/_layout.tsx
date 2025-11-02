@@ -1,4 +1,5 @@
 import { BackHandlerManager } from '@/components/BackHandlerManager';
+import { NetworkProvider } from '@/components/NetworkProvider';
 import { store } from '@/redux/store';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -34,21 +35,24 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
-      <StatusBar style="dark" />
+      <NetworkProvider>
+        <StatusBar style="dark" />
 
-      <FlashMessage position="top" style={{ marginTop: 40 }} />
+        <FlashMessage position="top" style={{ marginTop: 40 }} />
 
-      <BackHandlerManager />
+        <BackHandlerManager />
 
-      <Stack initialRouteName="index" screenOptions={{ headerShown: false, animation: 'none' }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="auth/login" />
-        <Stack.Screen name="auth/signup" />
-        <Stack.Screen name="car-owner" />
-        <Stack.Screen name="repair-shop" />
-        <Stack.Screen name="chat-room/chat-room" />
-        <Stack.Screen name="forgot-pass/forgot-pass" />
-      </Stack>
+        <Stack initialRouteName="index" screenOptions={{ headerShown: false, animation: 'none' }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="auth/login" />
+          <Stack.Screen name="auth/signup" />
+          <Stack.Screen name="car-owner" />
+          <Stack.Screen name="repair-shop" />
+          <Stack.Screen name="chat-room/chat-room" />
+          <Stack.Screen name="forgot-pass/forgot-pass" />
+          <Stack.Screen name="error/offline" />
+        </Stack>
+      </NetworkProvider>
     </Provider>
   );
 }

@@ -450,8 +450,16 @@ const ForgotPass = () => {
               style={[styles.input, { backgroundColor: selectedAuthType === 'email' ? '#f2f4f7' : '#eaeaea' }]}
             />
 
-            <TouchableOpacity style={styles.sendButton} onPress={() => handleSendCode()}>
-              <Text style={styles.sendButtonText}>Send Code</Text>
+            <TouchableOpacity
+              style={[styles.sendButton, sendCodeLoading && styles.sendButtonDisabled]}
+              onPress={() => handleSendCode()}
+              disabled={sendCodeLoading}
+            >
+              {sendCodeLoading ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <Text style={styles.sendButtonText}>Send Code</Text>
+              )}
             </TouchableOpacity>
 
             <Modal
@@ -526,8 +534,16 @@ const ForgotPass = () => {
                     )}
 
                     {isTimerActivate && (
-                      <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => verifyCode()}>
-                        <Text style={styles.sendButtonText}>Verify Code</Text>
+                      <TouchableOpacity
+                        style={[styles.sendButton, { marginTop: 0 }, confirmCodeLoading && styles.sendButtonDisabled]}
+                        onPress={() => verifyCode()}
+                        disabled={confirmCodeLoading}
+                      >
+                        {confirmCodeLoading ? (
+                          <ActivityIndicator size="small" color="#FFF" />
+                        ) : (
+                          <Text style={styles.sendButtonText}>Verify Code</Text>
+                        )}
                       </TouchableOpacity>
                     )}
                   </Pressable>
@@ -574,10 +590,19 @@ const ForgotPass = () => {
                     )}
 
                     <TouchableOpacity
-                      style={[styles.sendButton, { marginTop: 0, width: 100 }]}
+                      style={[
+                        styles.sendButton,
+                        { marginTop: 0, width: 100 },
+                        resetPassLoading && styles.sendButtonDisabled,
+                      ]}
                       onPress={() => handleResetPass()}
+                      disabled={resetPassLoading}
                     >
-                      <Text style={styles.sendButtonText}>Reset</Text>
+                      {resetPassLoading ? (
+                        <ActivityIndicator size="small" color="#FFF" />
+                      ) : (
+                        <Text style={styles.sendButtonText}>Reset</Text>
+                      )}
                     </TouchableOpacity>
                   </Pressable>
                 </View>
@@ -667,6 +692,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     marginTop: 20,
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#666666',
+    opacity: 0.6,
   },
   sendButtonText: {
     fontFamily: 'BodyRegular',
