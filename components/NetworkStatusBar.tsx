@@ -19,6 +19,8 @@ export const NetworkStatusBar: React.FC<NetworkStatusBarProps> = ({ onRetry }) =
         message: 'Checking connection...',
         type: 'info',
         icon: 'info',
+        color: '#fff',
+        floating: true,
         duration: 1500,
       });
     }

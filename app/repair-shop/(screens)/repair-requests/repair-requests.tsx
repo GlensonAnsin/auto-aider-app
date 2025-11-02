@@ -207,6 +207,7 @@ const RepairRequests = () => {
 
         if (!acc[ref]) {
           acc[ref] = {
+            requestID: item.requestID,
             vehicleName: item.vehicleName,
             customer: item.customer,
             scanReference: ref,
@@ -220,6 +221,7 @@ const RepairRequests = () => {
       {} as Record<
         string,
         {
+          requestID: number;
           vehicleName: string;
           customer: string;
           scanReference: string;
@@ -285,7 +287,7 @@ const RepairRequests = () => {
 
             {grouped.length !== 0 && (
               <FlatList
-                data={grouped}
+                data={grouped.sort((a, b) => b.requestID - a.requestID)}
                 style={{ width: '100%' }}
                 renderItem={({ item, index }) => (
                   <TouchableOpacity
@@ -367,7 +369,7 @@ const RepairRequests = () => {
 
             {filterPending.length !== 0 && (
               <FlatList
-                data={filterPending}
+                data={filterPending.sort((a, b) => b.requestID - a.requestID)}
                 style={{ width: '100%' }}
                 renderItem={({ item, index }) => (
                   <TouchableOpacity
@@ -414,7 +416,7 @@ const RepairRequests = () => {
 
             {filterRejected.length !== 0 && (
               <FlatList
-                data={filterRejected}
+                data={filterRejected.sort((a, b) => b.requestID - a.requestID)}
                 style={{ width: '100%' }}
                 renderItem={({ item, index }) => (
                   <TouchableOpacity
@@ -461,7 +463,7 @@ const RepairRequests = () => {
 
             {filterOngoing.length !== 0 && (
               <FlatList
-                data={filterOngoing}
+                data={filterOngoing.sort((a, b) => b.requestID - a.requestID)}
                 style={{ width: '100%' }}
                 renderItem={({ item, index }) => (
                   <TouchableOpacity
@@ -508,7 +510,7 @@ const RepairRequests = () => {
 
             {filterCompleted.length !== 0 && (
               <FlatList
-                data={filterCompleted}
+                data={filterCompleted.sort((a, b) => b.requestID - a.requestID)}
                 style={{ width: '100%' }}
                 renderItem={({ item, index }) => (
                   <TouchableOpacity

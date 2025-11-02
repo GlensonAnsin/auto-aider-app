@@ -46,6 +46,8 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
         description: 'Checking your internet connection...',
         type: 'warning',
         icon: 'warning',
+        color: '#fff',
+        floating: true,
         duration: 2000,
       });
 
@@ -62,6 +64,8 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
         description: 'You are back online!',
         type: 'success',
         icon: 'success',
+        color: '#fff',
+        floating: true,
         duration: 2000,
       });
     }

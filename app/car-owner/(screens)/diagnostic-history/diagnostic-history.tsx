@@ -23,6 +23,7 @@ const DiagnosticHistory = () => {
   const backRoute = useBackRoute('/car-owner/(screens)/diagnostic-history/diagnostic-history');
   const [history, setHistory] = useState<
     {
+      vehicleDiagID: number;
       vehicleID: number;
       vehicle: string;
       dtc: string;
@@ -41,6 +42,7 @@ const DiagnosticHistory = () => {
         const res = await getVehicleDiagnostics();
 
         const historyData: {
+          vehicleDiagID: number;
           vehicleID: number;
           vehicle: string;
           dtc: string;
@@ -50,6 +52,7 @@ const DiagnosticHistory = () => {
 
         res?.forEach((item: any) => {
           historyData.push({
+            vehicleDiagID: item.vehicle_diagnostic_id,
             vehicleID: item.vehicle_id,
             vehicle: `${item.year} ${item.make} ${item.model}`,
             dtc: item.dtc,
@@ -91,6 +94,7 @@ const DiagnosticHistory = () => {
 
         if (!acc[ref]) {
           acc[ref] = {
+            vehicleDiagID: item.vehicleDiagID,
             vehicleID: item.vehicleID,
             vehicle: item.vehicle,
             scanReference: ref,
@@ -106,6 +110,7 @@ const DiagnosticHistory = () => {
       {} as Record<
         string,
         {
+          vehicleDiagID: number;
           vehicleID: number;
           vehicle: string;
           scanReference: string;
@@ -214,7 +219,7 @@ const DiagnosticHistory = () => {
 
         {grouped.length !== 0 && (
           <FlatList
-            data={grouped}
+            data={grouped.sort((a, b) => b.vehicleDiagID - a.vehicleDiagID)}
             style={{ width: '100%' }}
             renderItem={({ item, index }) => (
               <TouchableOpacity
