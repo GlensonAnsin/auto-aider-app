@@ -150,7 +150,13 @@ export default function Login() {
           <Text style={styles.header}>Log In</Text>
           <View style={styles.textInputContainer}>
             <Text style={styles.textInputLbl}>Username</Text>
-            <TextInput value={username} onChangeText={setUsername} style={styles.input} />
+            <TextInput
+              value={username}
+              placeholder="Mobile number"
+              placeholderTextColor="#9CA3AF"
+              onChangeText={setUsername}
+              style={styles.input}
+            />
           </View>
 
           <View style={styles.textInputContainer}>
@@ -158,6 +164,8 @@ export default function Login() {
             <View style={styles.passwordInputContainer}>
               <TextInput
                 value={password}
+                placeholder="Password"
+                placeholderTextColor="#9CA3AF"
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
                 style={styles.passwordInput}
