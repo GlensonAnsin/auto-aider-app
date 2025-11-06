@@ -21,7 +21,6 @@ import {
   ActivityIndicator,
   Image,
   Modal,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -122,13 +121,22 @@ export default function Home() {
         } else {
           setIsVehicles(true);
         }
-      } catch (e) {
-        console.error('Error: ', e);
+      } catch {
+        showMessage({
+          message: 'Something went wrong. Please try again.',
+          type: 'danger',
+          floating: true,
+          color: '#FFF',
+          icon: 'danger',
+        });
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [dispatch, userID]);
+  }, [dispatch, router, userID]);
 
   useEffect(() => {
     if (!socket) return;
@@ -217,7 +225,7 @@ export default function Home() {
 
   const handleCarVerification = async () => {
     if (!selectedMake || !model || !year) {
-      setError('Please fill in all fields.');
+      setError('Please fill out all fields.');
       return;
     }
 
@@ -300,20 +308,30 @@ export default function Home() {
           {profilePic === null && (
             <TouchableOpacity
               style={[styles.profileWrapper, { backgroundColor: userInitialsBG }]}
-              onPress={() => router.replace('./profile/profile')}
+              onPress={() => {
+                backRoute();
+                router.replace('./profile/profile');
+              }}
             >
               <Text style={styles.userInitials}>{`${firstname[0]}${lastname[0]}`}</Text>
             </TouchableOpacity>
           )}
 
           {profilePic !== null && (
-            <TouchableOpacity style={styles.profileWrapper} onPress={() => router.replace('./profile/profile')}>
+            <TouchableOpacity
+              style={styles.profileWrapper}
+              onPress={() => {
+                backRoute();
+                router.replace('./profile/profile');
+              }}
+            >
               <Image style={styles.profilePic} source={{ uri: profilePic }} width={100} height={100} />
             </TouchableOpacity>
           )}
         </View>
 
         <View style={styles.introTxtContainer}>
+          <MaterialCommunityIcons name="hand-wave" size={24} color="#F59E0B" style={styles.waveIcon} />
           <Text style={styles.introHeader}>Let&apos;s get started</Text>
           <Text style={styles.introBody}>Start your experience to easier vehicle maintenance.</Text>
         </View>
@@ -327,7 +345,9 @@ export default function Home() {
                 router.replace('./diagnostic-history/diagnostic-history');
               }}
             >
-              <MaterialIcons name="history" size={35} color="#FFF" />
+              <View style={styles.featureIconWrapper}>
+                <MaterialIcons name="history" size={35} color="#FFF" />
+              </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Diagnostic History</Text>
                 <Text style={styles.featureDescription}>View past diagnostic checks</Text>
@@ -351,7 +371,9 @@ export default function Home() {
                 }
               }}
             >
-              <Ionicons name="scan" size={35} color="#FFF" />
+              <View style={styles.featureIconWrapper}>
+                <Ionicons name="scan" size={35} color="#FFF" />
+              </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Scan Car</Text>
                 <Text style={styles.featureDescription}>Perform a quick system diagnostic</Text>
@@ -365,7 +387,9 @@ export default function Home() {
                 router.replace('./repair-shops/repair-shops');
               }}
             >
-              <Entypo name="location" size={35} color="#FFF" />
+              <View style={styles.featureIconWrapper}>
+                <Entypo name="location" size={35} color="#FFF" />
+              </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Repair Shops</Text>
                 <Text style={styles.featureDescription}>Locate nearby repair shops</Text>
@@ -375,7 +399,9 @@ export default function Home() {
 
           <View style={styles.column}>
             <TouchableOpacity style={styles.feature} onPress={() => isAddVehicleModalVisible(true)}>
-              <Ionicons name="add-circle" size={35} color="#FFF" />
+              <View style={styles.featureIconWrapper}>
+                <Ionicons name="add-circle" size={35} color="#FFF" />
+              </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Add Vehicle</Text>
                 <Text style={styles.featureDescription}>Register or add a new vehicle</Text>
@@ -389,7 +415,9 @@ export default function Home() {
                 router.replace('./profile/profile');
               }}
             >
-              <MaterialCommunityIcons name="account" size={35} color="#FFF" />
+              <View style={styles.featureIconWrapper}>
+                <MaterialCommunityIcons name="account" size={35} color="#FFF" />
+              </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>My Profile</Text>
                 <Text style={styles.featureDescription}>Manage your account details</Text>
@@ -403,7 +431,9 @@ export default function Home() {
                 router.replace('./request-status/request-status');
               }}
             >
-              <MaterialCommunityIcons name="clipboard-edit" size={35} color="#FFF" />
+              <View style={styles.featureIconWrapper}>
+                <MaterialCommunityIcons name="clipboard-edit" size={35} color="#FFF" />
+              </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Request Status</Text>
                 <Text style={styles.featureDescription}>Status of your repair request</Text>
@@ -413,7 +443,7 @@ export default function Home() {
 
           <Modal
             animationType="fade"
-            backdropColor={'rgba(0, 0, 0, 0.5)'}
+            transparent={true}
             visible={addVehicleModalVisible}
             onRequestClose={() => {
               isAddVehicleModalVisible(false);
@@ -423,26 +453,40 @@ export default function Home() {
               setError('');
             }}
           >
-            <TouchableWithoutFeedback
-              onPress={() => {
-                isAddVehicleModalVisible(false);
-                setSelectedMake('');
-                setModel('');
-                setYear('');
-                setError('');
-              }}
-            >
-              <View style={styles.centeredView}>
-                <Pressable style={styles.addCarModalView} onPress={() => {}}>
-                  <Text style={styles.modalHeader}>Add Vehicle</Text>
-                  <View style={styles.textInputContainer}>
-                    <Text style={styles.textInputLbl}>Manufacturer</Text>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  isAddVehicleModalVisible(false);
+                  setSelectedMake('');
+                  setModel('');
+                  setYear('');
+                  setError('');
+                }}
+              >
+                <View style={styles.modalBackground} />
+              </TouchableWithoutFeedback>
+
+              <View style={styles.vehicleModalContent}>
+                <View style={styles.vehicleModalHeader}>
+                  <MaterialCommunityIcons name="car" size={24} color="#000B58" />
+                  <Text style={styles.vehicleModalTitle}>Add Vehicle</Text>
+                  <TouchableOpacity style={styles.modalCloseButton} onPress={() => handleCancelAddCar()}>
+                    <MaterialCommunityIcons name="close" size={24} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.vehicleModalBody}>
+                  <View style={styles.vehicleInputGroup}>
+                    <Text style={styles.vehicleInputLabel}>Manufacturer</Text>
                     <SelectDropdown
                       data={targetMakes}
                       onSelect={(selectedItem) => setSelectedMake(selectedItem)}
                       renderButton={(selectedItem, isOpen) => (
                         <View style={styles.dropdownButtonStyle}>
-                          <Text style={[styles.dropdownButtonTxtStyle, { color: selectedItem ? '#333' : '#555' }]}>
+                          <MaterialCommunityIcons name="factory" size={18} color="#6B7280" style={{ marginRight: 8 }} />
+                          <Text
+                            style={[styles.dropdownButtonTxtStyle, { color: selectedItem ? '#111827' : '#9CA3AF' }]}
+                          >
                             {selectedItem || 'Select manufacturer'}
                           </Text>
                           <MaterialCommunityIcons
@@ -455,7 +499,7 @@ export default function Home() {
                         <View
                           style={{
                             ...styles.dropdownItemStyle,
-                            ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                            ...(isSelected && { backgroundColor: '#EEF2FF' }),
                           }}
                         >
                           <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
@@ -466,64 +510,75 @@ export default function Home() {
                     />
                   </View>
 
-                  <View style={styles.textInputContainer}>
-                    <Text style={styles.textInputLbl}>Model</Text>
-                    <TextInput
-                      value={model}
-                      onChangeText={setModel}
-                      style={styles.input}
-                      placeholder="Model"
-                      placeholderTextColor="#555"
-                      editable={!selectedMake ? false : true}
-                    />
+                  <View style={styles.vehicleInputGroup}>
+                    <Text style={styles.vehicleInputLabel}>Model</Text>
+                    <View style={styles.vehicleInputWrapper}>
+                      <MaterialCommunityIcons name="card-text" size={18} color="#6B7280" style={{ marginLeft: 12 }} />
+                      <TextInput
+                        value={model}
+                        onChangeText={setModel}
+                        style={styles.vehicleInput}
+                        placeholder="Enter model"
+                        placeholderTextColor="#9CA3AF"
+                        editable={!selectedMake ? false : true}
+                      />
+                    </View>
                   </View>
 
-                  <View style={styles.textInputContainer}>
-                    <Text style={styles.textInputLbl}>Year</Text>
-                    <TextInput
-                      value={year}
-                      onChangeText={setYear}
-                      style={styles.input}
-                      keyboardType="numeric"
-                      placeholder="Year"
-                      placeholderTextColor="#555"
-                      maxLength={4}
-                      editable={!model ? false : true}
-                    />
+                  <View style={styles.vehicleInputGroup}>
+                    <Text style={styles.vehicleInputLabel}>Year</Text>
+                    <View style={styles.vehicleInputWrapper}>
+                      <MaterialCommunityIcons name="calendar" size={18} color="#6B7280" style={{ marginLeft: 12 }} />
+                      <TextInput
+                        value={year}
+                        onChangeText={setYear}
+                        style={styles.vehicleInput}
+                        keyboardType="numeric"
+                        placeholder="Enter year (1996 or newer)"
+                        placeholderTextColor="#9CA3AF"
+                        maxLength={4}
+                        editable={!model ? false : true}
+                      />
+                    </View>
+                    <Text style={styles.vehicleHint}>
+                      <MaterialCommunityIcons name="information-outline" size={12} color="#6B7280" /> OBD2 scanners
+                      support vehicles from 1996 onwards
+                    </Text>
                   </View>
 
                   {error.length > 0 && (
                     <View style={styles.errorContainer}>
+                      <MaterialCommunityIcons name="alert-circle" size={18} color="#DC2626" />
                       <Text style={styles.errorMessage}>{error}</Text>
                     </View>
                   )}
+                </View>
 
-                  <View style={styles.cancelSaveContainer}>
-                    <TouchableOpacity
-                      style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                      onPress={() => handleCancelAddCar()}
-                    >
-                      <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                    </TouchableOpacity>
+                <View style={styles.vehicleModalActions}>
+                  <TouchableOpacity
+                    style={[styles.vehicleButton, styles.vehicleCancelButton]}
+                    onPress={() => handleCancelAddCar()}
+                  >
+                    <MaterialCommunityIcons name="close" size={18} color="#6B7280" />
+                    <Text style={styles.vehicleCancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
 
-                    <TouchableOpacity
-                      style={[
-                        styles.modalButton,
-                        { backgroundColor: '#000B58' },
-                        isAddCarLoading && styles.modalButtonDisabled,
-                      ]}
-                      onPress={() => handleCarVerification()}
-                      disabled={isAddCarLoading}
-                    >
-                      <View style={styles.modalButtonContent}>
-                        {isAddCarLoading && <ActivityIndicator size="small" color="#FFF" style={{ marginRight: 8 }} />}
-                        <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Add</Text>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                </Pressable>
+                  <TouchableOpacity
+                    style={[
+                      styles.vehicleButton,
+                      styles.vehicleAddButton,
+                      isAddCarLoading && styles.vehicleButtonDisabled,
+                    ]}
+                    onPress={() => handleCarVerification()}
+                    disabled={isAddCarLoading}
+                  >
+                    {isAddCarLoading && <ActivityIndicator size="small" color="#FFF" />}
+                    <MaterialCommunityIcons name="check" size={18} color="#FFF" />
+                    <Text style={styles.vehicleAddButtonText}>{isAddCarLoading ? 'Verifying...' : 'Add Vehicle'}</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </TouchableWithoutFeedback>
+            </View>
           </Modal>
         </View>
       </ScrollView>
@@ -541,6 +596,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
     height: 63,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 4,
   },
   logo: {
     width: 60,
@@ -551,7 +614,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 24,
     width: '90%',
     alignSelf: 'center',
   },
@@ -561,13 +624,13 @@ const styles = StyleSheet.create({
   },
   header: {
     fontFamily: 'BodyBold',
-    fontSize: 28,
-    color: '#333',
+    fontSize: 30,
+    color: '#111827',
   },
   userName: {
     fontFamily: 'BodyRegular',
     fontSize: 22,
-    color: '#333',
+    color: '#6B7280',
   },
   profileWrapper: {
     width: 80,
@@ -575,6 +638,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 80,
+    borderWidth: 3,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   userInitials: {
     fontFamily: 'HeaderBold',
@@ -585,197 +658,296 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   introTxtContainer: {
-    borderWidth: 2,
-    borderColor: '#003161',
-    width: '94%',
-    borderRadius: 10,
-    padding: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 0,
+    borderLeftWidth: 4,
+    borderLeftColor: '#000B58',
+    width: '90%',
+    borderRadius: 12,
+    padding: 16,
     marginTop: 20,
     alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  waveIcon: {
+    marginBottom: 8,
   },
   introHeader: {
-    fontFamily: 'BodyRegular',
-    fontSize: 16,
-    textAlign: 'center',
+    fontFamily: 'BodyBold',
+    fontSize: 18,
+    color: '#111827',
+    marginBottom: 4,
   },
   introBody: {
     fontFamily: 'BodyRegular',
+    fontSize: 14,
+    color: '#6B7280',
+    lineHeight: 20,
     textAlign: 'center',
   },
   featuresContainer: {
-    backgroundColor: '#fff',
-    width: '94%',
+    backgroundColor: 'transparent',
+    width: '90%',
     flexDirection: 'row',
     alignSelf: 'center',
-    borderRadius: 8,
-    marginTop: 20,
+    borderRadius: 0,
+    marginTop: 24,
     marginBottom: 80,
-    gap: 5,
-    paddingTop: 5,
-    paddingBottom: 5,
+    gap: 10,
+    paddingTop: 0,
+    paddingBottom: 0,
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: 'transparent',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 0,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
   },
   column: {
-    width: '47%',
-    gap: 5,
+    width: '48%',
+    gap: 10,
   },
   feature: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     backgroundColor: '#000B58',
     width: '100%',
-    height: 85,
-    borderRadius: 8,
+    minHeight: 110,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 5,
+    gap: 8,
+    padding: 10,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 3,
     },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 5,
+  },
+  featureIconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   featureTxtWrapper: {
     flexDirection: 'column',
-    width: '60%',
+    width: '100%',
+    alignItems: 'center',
   },
   featureHeader: {
     color: '#FFF',
     fontFamily: 'BodyBold',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 4,
   },
   featureDescription: {
-    color: '#FFF',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontFamily: 'BodyRegular',
-    fontSize: 10,
+    fontSize: 11,
+    textAlign: 'center',
+    lineHeight: 16,
   },
-  centeredView: {
+  modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  addCarModalView: {
-    backgroundColor: '#f2f4f7',
-    width: '85%',
-    borderRadius: 10,
-    padding: 20,
+  modalBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  vehicleModalContent: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    width: '90%',
+    maxWidth: 450,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  vehicleModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+    gap: 12,
+  },
+  vehicleModalTitle: {
+    fontFamily: 'HeadingBold',
+    fontSize: 18,
+    color: '#000B58',
+    flex: 1,
+  },
+  modalCloseButton: {
+    padding: 4,
+    borderRadius: 8,
+  },
+  vehicleModalBody: {
+    padding: 20,
+    gap: 16,
+  },
+  vehicleInputGroup: {
+    gap: 8,
+  },
+  vehicleInputLabel: {
+    fontFamily: 'HeaderBold',
+    fontSize: 14,
+    color: '#374151',
+  },
+  vehicleInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    backgroundColor: '#F9FAFB',
+  },
+  vehicleInput: {
+    flex: 1,
+    height: 44,
+    paddingHorizontal: 12,
+    fontFamily: 'BodyRegular',
+    fontSize: 15,
+    color: '#111827',
+  },
+  vehicleHint: {
+    fontFamily: 'BodyRegular',
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  vehicleModalActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+  },
+  vehicleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 6,
+    minWidth: 140,
+  },
+  vehicleCancelButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#D1D5DB',
+  },
+  vehicleAddButton: {
+    backgroundColor: '#000B58',
+  },
+  vehicleButtonDisabled: {
+    opacity: 0.6,
+    backgroundColor: '#9CA3AF',
+  },
+  vehicleCancelButtonText: {
+    fontFamily: 'BodyBold',
+    color: '#6B7280',
+    fontSize: 14,
+  },
+  vehicleAddButtonText: {
+    fontFamily: 'BodyBold',
+    color: '#FFF',
+    fontSize: 14,
+  },
+  dropdownButtonStyle: {
+    width: '100%',
+    height: 44,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+  dropdownButtonTxtStyle: {
+    flex: 1,
+    fontFamily: 'BodyRegular',
+    fontSize: 15,
+  },
+  dropdownButtonArrowStyle: {
+    fontSize: 20,
+    color: '#6B7280',
+  },
+  dropdownMenuStyle: {
+    backgroundColor: '#FFF',
+    borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 5,
-  },
-  modalHeader: {
-    fontSize: 20,
-    fontFamily: 'HeaderBold',
-    color: '#333',
-  },
-  textInputContainer: {
-    gap: 10,
-    marginTop: 10,
-    width: '100%',
-  },
-  textInputLbl: {
-    fontFamily: 'BodyRegular',
-    color: '#333',
-  },
-  dropdownButtonStyle: {
-    width: '100%',
-    height: 45,
-    backgroundColor: '#fff',
-    borderRadius: 5,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-  },
-  dropdownButtonTxtStyle: {
-    flex: 1,
-    color: '#333',
-    fontFamily: 'BodyRegular',
-  },
-  dropdownButtonArrowStyle: {
-    fontSize: 24,
-    color: '#333',
-  },
-  dropdownMenuStyle: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    elevation: 4,
   },
   dropdownItemStyle: {
     width: '100%',
     flexDirection: 'row',
-    paddingHorizontal: 10,
-    justifyContent: 'center',
+    paddingHorizontal: 12,
     alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingVertical: 12,
   },
   dropdownItemTxtStyle: {
     flex: 1,
     color: '#333',
     fontFamily: 'BodyRegular',
-  },
-  input: {
-    backgroundColor: '#fff',
-    width: '100%',
-    height: 45,
-    borderRadius: 5,
-    padding: 10,
-    color: '#333',
-    fontFamily: 'BodyRegular',
-  },
-  cancelSaveContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    gap: 10,
-    marginTop: 10,
-  },
-  modalButton: {
-    width: '30%',
-    height: 45,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  modalButtonDisabled: {
-    opacity: 0.6,
-    backgroundColor: '#cccccc',
-  },
-  modalButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalButtonText: {
-    fontFamily: 'HeaderBold',
+    fontSize: 15,
   },
   errorContainer: {
-    backgroundColor: '#EAEAEA',
-    borderRadius: 5,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DC2626',
     width: '100%',
-    padding: 10,
-    marginTop: 20,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   errorMessage: {
     fontFamily: 'BodyRegular',
-    color: 'red',
-    textAlign: 'center',
-    fontSize: 12,
+    color: '#DC2626',
+    fontSize: 13,
+    flex: 1,
   },
 });

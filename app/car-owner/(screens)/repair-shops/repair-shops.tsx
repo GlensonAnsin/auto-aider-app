@@ -27,7 +27,6 @@ import {
   Dimensions,
   Image,
   Modal,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -181,8 +180,17 @@ const RepairShops = () => {
 
           const scanReference2 = generateReference();
           setScanReference2(scanReference2);
-        } catch (e) {
-          console.error('Error:', e);
+        } catch {
+          showMessage({
+            message: 'Something went wrong. Please try again.',
+            type: 'danger',
+            floating: true,
+            color: '#FFF',
+            icon: 'danger',
+          });
+          setTimeout(() => {
+            router.push('/error/server-error');
+          }, 2000);
         } finally {
           if (isActive) setIsLoading(false);
         }
@@ -196,7 +204,7 @@ const RepairShops = () => {
         stopBackgroundLocation();
         setAnimateToCurrReg(true);
       };
-    }, [dispatch, scanReference, vehicleID])
+    }, [dispatch, router, scanReference, vehicleID])
   );
 
   useFocusEffect(
@@ -395,8 +403,17 @@ const RepairShops = () => {
         default:
           throw new Error('Unsupported type');
       }
-    } catch (e) {
-      console.error('Error: ', e);
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     } finally {
       setRequestLoading(false);
     }
@@ -419,8 +436,17 @@ const RepairShops = () => {
       };
 
       await addVehicleDiagnostic(vehicleDiagnosticData);
-    } catch (e) {
-      console.error('Error: ', e);
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     }
   };
 
@@ -431,8 +457,17 @@ const RepairShops = () => {
         const id = res.map((item: any) => item.vehicle_diagnostic_id);
         return id[0];
       }
-    } catch (e) {
-      console.error('Error: ', e);
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
       return null;
     }
   };
@@ -549,10 +584,15 @@ const RepairShops = () => {
           </MapView>
 
           <TouchableOpacity
-            style={[styles.tenKMButton, { backgroundColor: withinTenKM ? '#000B58BF' : '#FFFFFFBF' }]}
+            style={[styles.tenKMButton, { backgroundColor: withinTenKM ? '#000B58' : '#FFFFFF' }]}
             onPress={() => toggleWithinTenKM()}
           >
-            <Text style={[styles.tenKMButtonText, { color: withinTenKM ? '#fff' : '#333' }]}>Within 10KM</Text>
+            <MaterialCommunityIcons
+              name={withinTenKM ? 'map-marker-radius' : 'map-marker-radius-outline'}
+              size={18}
+              color={withinTenKM ? '#fff' : '#000B58'}
+            />
+            <Text style={[styles.tenKMButtonText, { color: withinTenKM ? '#fff' : '#000B58' }]}>Within 10KM</Text>
           </TouchableOpacity>
 
           <BottomSheet ref={bottomSheetRef} onChange={handleSheetChanges} index={-1} snapPoints={snapPoints}>
@@ -562,81 +602,116 @@ const RepairShops = () => {
                   <>
                     {nearbyRepShop && selectedRepShop !== null && nearbyRepShop[selectedRepShop] && (
                       <>
-                        <View style={styles.picRepNameContainer}>
-                          {nearbyRepShop[selectedRepShop].profilePic === null && (
-                            <View
-                              style={[
-                                styles.profilePicWrapper,
-                                {
-                                  backgroundColor: nearbyRepShop[selectedRepShop].profileBG,
-                                },
-                              ]}
-                            >
-                              <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
-                            </View>
-                          )}
-
-                          {nearbyRepShop[selectedRepShop].profilePic !== null && (
-                            <View style={styles.profilePicWrapper}>
-                              <Image
-                                style={styles.profilePic}
-                                source={{
-                                  uri: nearbyRepShop[selectedRepShop].profilePic,
-                                }}
-                                width={100}
-                                height={100}
-                              />
-                            </View>
-                          )}
-
-                          <View style={styles.repShopNameContainer}>
-                            <Text style={styles.repShopName}>{nearbyRepShop[selectedRepShop].shopName}</Text>
-                            <View style={styles.genderNameContainer}>
-                              {nearbyRepShop[selectedRepShop].gender === 'Male' && (
-                                <>
-                                  <Fontisto name="male" size={16} color="#555" />
-                                </>
-                              )}
-
-                              {nearbyRepShop[selectedRepShop].gender === 'Female' && (
-                                <>
-                                  <Fontisto name="female" size={16} color="#555" />
-                                </>
-                              )}
-                              <Text
-                                style={styles.contactText}
-                              >{`${nearbyRepShop[selectedRepShop].ownerFirstname} ${nearbyRepShop[selectedRepShop].ownerLastname}`}</Text>
-                            </View>
-
-                            <Text style={styles.contactText}>{nearbyRepShop[selectedRepShop].mobileNum}</Text>
-
-                            {nearbyRepShop[selectedRepShop].email !== null && (
-                              <Text style={styles.contactText}>{nearbyRepShop[selectedRepShop].email}</Text>
-                            )}
-
-                            <View style={styles.ratingContainer}>
-                              <Fontisto name="persons" size={16} color="#555" />
-                              <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].ratingsNum}</Text>
-                              <MaterialIcons name="star-rate" size={16} color="#FDCC0D" />
-                              <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].averageRating}</Text>
-                              <Text
+                        <View style={styles.shopHeaderCard}>
+                          <View style={styles.picRepNameContainer}>
+                            {nearbyRepShop[selectedRepShop].profilePic === null && (
+                              <View
                                 style={[
-                                  styles.contactText,
+                                  styles.profilePicWrapper,
                                   {
-                                    color:
-                                      nearbyRepShop[selectedRepShop].availability === 'open' ? '#17B978' : '#780606',
-                                    marginLeft: 10,
+                                    backgroundColor: nearbyRepShop[selectedRepShop].profileBG,
                                   },
                                 ]}
                               >
-                                {nearbyRepShop[selectedRepShop].availability.toUpperCase()}
-                              </Text>
+                                <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
+                              </View>
+                            )}
+
+                            {nearbyRepShop[selectedRepShop].profilePic !== null && (
+                              <View style={styles.profilePicWrapper}>
+                                <Image
+                                  style={styles.profilePic}
+                                  source={{
+                                    uri: nearbyRepShop[selectedRepShop].profilePic,
+                                  }}
+                                  width={100}
+                                  height={100}
+                                />
+                              </View>
+                            )}
+
+                            <View style={styles.repShopNameContainer}>
+                              <Text style={styles.repShopName}>{nearbyRepShop[selectedRepShop].shopName}</Text>
+
+                              <View style={styles.contactInfoRow}>
+                                <View style={styles.genderNameContainer}>
+                                  {nearbyRepShop[selectedRepShop].gender === 'Male' && (
+                                    <Fontisto name="male" size={14} color="#555" />
+                                  )}
+                                  {nearbyRepShop[selectedRepShop].gender === 'Female' && (
+                                    <Fontisto name="female" size={14} color="#555" />
+                                  )}
+                                  <Text
+                                    style={styles.contactText}
+                                  >{`${nearbyRepShop[selectedRepShop].ownerFirstname} ${nearbyRepShop[selectedRepShop].ownerLastname}`}</Text>
+                                </View>
+                              </View>
+
+                              <View style={styles.contactInfoRow}>
+                                <MaterialCommunityIcons name="phone" size={14} color="#000B58" />
+                                <Text style={styles.contactText}>{nearbyRepShop[selectedRepShop].mobileNum}</Text>
+                              </View>
+
+                              {nearbyRepShop[selectedRepShop].email !== null && (
+                                <View style={styles.contactInfoRow}>
+                                  <MaterialCommunityIcons name="email" size={14} color="#000B58" />
+                                  <Text style={styles.contactText}>{nearbyRepShop[selectedRepShop].email}</Text>
+                                </View>
+                              )}
+
+                              <View style={styles.ratingContainer}>
+                                <View style={styles.ratingItem}>
+                                  <Fontisto name="persons" size={14} color="#555" />
+                                  <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].ratingsNum}</Text>
+                                </View>
+                                <View style={styles.ratingItem}>
+                                  <MaterialIcons name="star-rate" size={16} color="#FDCC0D" />
+                                  <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].averageRating}</Text>
+                                </View>
+                                <View
+                                  style={[
+                                    styles.availabilityBadge,
+                                    {
+                                      backgroundColor:
+                                        nearbyRepShop[selectedRepShop].availability === 'open' ? '#D1FAE5' : '#FEE2E2',
+                                    },
+                                  ]}
+                                >
+                                  <MaterialCommunityIcons
+                                    name={
+                                      nearbyRepShop[selectedRepShop].availability === 'open'
+                                        ? 'clock-check'
+                                        : 'clock-alert'
+                                    }
+                                    size={14}
+                                    color={
+                                      nearbyRepShop[selectedRepShop].availability === 'open' ? '#17B978' : '#DC2626'
+                                    }
+                                  />
+                                  <Text
+                                    style={[
+                                      styles.availabilityText,
+                                      {
+                                        color:
+                                          nearbyRepShop[selectedRepShop].availability === 'open'
+                                            ? '#17B978'
+                                            : '#DC2626',
+                                      },
+                                    ]}
+                                  >
+                                    {nearbyRepShop[selectedRepShop].availability === 'open'
+                                      ? nearbyRepShop[selectedRepShop].availability.toUpperCase()
+                                      : `${nearbyRepShop[selectedRepShop].availability.toUpperCase()}D`}
+                                  </Text>
+                                </View>
+                              </View>
                             </View>
                           </View>
                         </View>
 
                         <View style={styles.buttonContainer}>
                           <TouchableOpacity style={styles.button} onPress={() => handleMakeRequest()}>
+                            <MaterialCommunityIcons name="wrench" size={16} color="#FFF" />
                             <Text style={styles.buttonText}>Request Repair</Text>
                           </TouchableOpacity>
 
@@ -654,6 +729,7 @@ const RepairShops = () => {
                               router.replace('/chat-room/chat-room');
                             }}
                           >
+                            <MaterialCommunityIcons name="chat" size={16} color="#FFF" />
                             <Text style={styles.buttonText}>Chat Shop</Text>
                           </TouchableOpacity>
                         </View>
@@ -661,10 +737,14 @@ const RepairShops = () => {
                         {currentSnapPointIndex === 2 && (
                           <>
                             <View style={styles.shopImages}>
-                              <Text style={styles.subHeader}>Shop Images</Text>
+                              <View style={styles.sectionHeaderRow}>
+                                <MaterialCommunityIcons name="image-multiple" size={20} color="#000B58" />
+                                <Text style={styles.subHeader}>Shop Images</Text>
+                              </View>
 
                               {nearbyRepShop[selectedRepShop].shopImages.length === 0 && (
                                 <View style={styles.noImagesView}>
+                                  <MaterialCommunityIcons name="image-off" size={48} color="#999" />
                                   <Text style={styles.noImagesText}>No Images</Text>
                                 </View>
                               )}
@@ -687,10 +767,13 @@ const RepairShops = () => {
                             </View>
 
                             <View style={styles.servicesOffered}>
-                              <Text style={styles.subHeader}>Services Offered</Text>
+                              <View style={styles.sectionHeaderRow}>
+                                <MaterialCommunityIcons name="tools" size={20} color="#000B58" />
+                                <Text style={styles.subHeader}>Services Offered</Text>
+                              </View>
                               {nearbyRepShop[selectedRepShop].servicesOffered.map((item) => (
                                 <View key={item} style={styles.services}>
-                                  <Text style={styles.bullet}>{'\u2022'}</Text>
+                                  <MaterialCommunityIcons name="check-circle" size={16} color="#10B981" />
                                   <Text style={styles.servicesText}>{item}</Text>
                                 </View>
                               ))}
@@ -700,7 +783,7 @@ const RepairShops = () => {
 
                         <Modal
                           animationType="fade"
-                          backdropColor={'rgba(0, 0, 0, 0.5)'}
+                          transparent={true}
                           visible={modalVisible}
                           onRequestClose={() => {
                             setModalVisible(false);
@@ -710,91 +793,112 @@ const RepairShops = () => {
                             setError('');
                           }}
                         >
-                          <TouchableWithoutFeedback
-                            onPress={() => {
-                              setModalVisible(false);
-                              setRequestType('');
-                              setServiceType('');
-                              setVehicleIssue('');
-                              setError('');
-                            }}
-                          >
-                            <View style={styles.centeredView}>
-                              <Pressable style={styles.modalView} onPress={() => {}}>
-                                <View style={styles.profileNameContainer}>
-                                  {nearbyRepShop[selectedRepShop].profilePic === null && (
-                                    <View
-                                      style={[
-                                        styles.profilePicWrapper,
-                                        {
-                                          backgroundColor: nearbyRepShop[selectedRepShop].profileBG,
-                                        },
-                                      ]}
-                                    >
-                                      <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
-                                    </View>
-                                  )}
+                          <View style={styles.modalOverlay}>
+                            <TouchableWithoutFeedback
+                              onPress={() => {
+                                setModalVisible(false);
+                                setRequestType('');
+                                setServiceType('');
+                                setVehicleIssue('');
+                                setError('');
+                              }}
+                            >
+                              <View style={styles.modalBackground} />
+                            </TouchableWithoutFeedback>
 
-                                  {nearbyRepShop[selectedRepShop].profilePic !== null && (
-                                    <View style={styles.profilePicWrapper}>
-                                      <Image
-                                        style={styles.profilePic}
-                                        source={{
-                                          uri: nearbyRepShop[selectedRepShop].profilePic,
-                                        }}
-                                        width={100}
-                                        height={100}
-                                      />
-                                    </View>
-                                  )}
+                            <View style={styles.modalView}>
+                              <View style={styles.modalHeader}>
+                                <MaterialCommunityIcons name="wrench" size={24} color="#000B58" />
+                                <Text style={styles.modalTitle}>Request Repair Service</Text>
+                                <TouchableOpacity
+                                  style={styles.modalCloseButton}
+                                  onPress={() => {
+                                    setModalVisible(false);
+                                    setRequestType('');
+                                    setServiceType('');
+                                    setVehicleIssue('');
+                                    setError('');
+                                  }}
+                                >
+                                  <MaterialCommunityIcons name="close" size={24} color="#666" />
+                                </TouchableOpacity>
+                              </View>
 
-                                  <Text style={styles.repShopName}>{nearbyRepShop[selectedRepShop].shopName}</Text>
-                                </View>
+                              <View style={styles.modalBody}>
+                                <ScrollView>
+                                  <View style={styles.profileNameContainer}>
+                                    {nearbyRepShop[selectedRepShop].profilePic === null && (
+                                      <View
+                                        style={[
+                                          styles.profilePicWrapper,
+                                          {
+                                            backgroundColor: nearbyRepShop[selectedRepShop].profileBG,
+                                          },
+                                        ]}
+                                      >
+                                        <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
+                                      </View>
+                                    )}
 
-                                {vehicleID !== null && scanReference !== null && (
-                                  <>
-                                    <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Vehicle</Text>
-                                      <TextInput style={styles.input} value={scannedVehicle} readOnly />
-                                    </View>
+                                    {nearbyRepShop[selectedRepShop].profilePic !== null && (
+                                      <View style={styles.profilePicWrapper}>
+                                        <Image
+                                          style={styles.profilePic}
+                                          source={{
+                                            uri: nearbyRepShop[selectedRepShop].profilePic,
+                                          }}
+                                          width={100}
+                                          height={100}
+                                        />
+                                      </View>
+                                    )}
 
-                                    <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Service Type</Text>
-                                      <SelectDropdown
-                                        data={['In-Shop Service', 'On-Site Service', 'Home Service']}
-                                        onSelect={(selectedItem) => setServiceType(selectedItem)}
-                                        renderButton={(selectedItem, isOpen) => (
-                                          <View style={styles.dropdownButtonStyle}>
-                                            <Text style={styles.dropdownButtonTxtStyle}>
-                                              {(selectedItem && `${selectedItem}`) || 'Select service type'}
-                                            </Text>
-                                            <MaterialCommunityIcons
-                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
-                                              style={styles.dropdownButtonArrowStyle}
-                                            />
-                                          </View>
-                                        )}
-                                        renderItem={(item, _index, isSelected) => (
-                                          <View
-                                            style={{
-                                              ...styles.dropdownItemStyle,
-                                              ...(isSelected && {
-                                                backgroundColor: '#D2D9DF',
-                                              }),
-                                            }}
-                                          >
-                                            <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
-                                          </View>
-                                        )}
-                                        showsVerticalScrollIndicator={false}
-                                        dropdownStyle={styles.dropdownMenuStyle}
-                                      />
-                                    </View>
+                                    <Text style={styles.repShopName}>{nearbyRepShop[selectedRepShop].shopName}</Text>
+                                  </View>
 
-                                    <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Vehicle Issue</Text>
-                                      <ScrollView style={{ maxHeight: 200 }}>
-                                        <View onStartShouldSetResponder={() => true}>
+                                  {vehicleID !== null && scanReference !== null && (
+                                    <>
+                                      <View style={{ paddingHorizontal: 20, paddingVertical: 16 }}>
+                                        <View style={styles.textInputContainer}>
+                                          <Text style={styles.textInputLabel}>Vehicle</Text>
+                                          <TextInput style={styles.input} value={scannedVehicle} readOnly />
+                                        </View>
+
+                                        <View style={styles.textInputContainer}>
+                                          <Text style={styles.textInputLabel}>Service Type</Text>
+                                          <SelectDropdown
+                                            data={['In-Shop Service', 'On-Site Service', 'Home Service']}
+                                            onSelect={(selectedItem) => setServiceType(selectedItem)}
+                                            renderButton={(selectedItem, isOpen) => (
+                                              <View style={styles.dropdownButtonStyle}>
+                                                <Text style={styles.dropdownButtonTxtStyle}>
+                                                  {(selectedItem && `${selectedItem}`) || 'Select service type'}
+                                                </Text>
+                                                <MaterialCommunityIcons
+                                                  name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                                  style={styles.dropdownButtonArrowStyle}
+                                                />
+                                              </View>
+                                            )}
+                                            renderItem={(item, _index, isSelected) => (
+                                              <View
+                                                style={{
+                                                  ...styles.dropdownItemStyle,
+                                                  ...(isSelected && {
+                                                    backgroundColor: '#D2D9DF',
+                                                  }),
+                                                }}
+                                              >
+                                                <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
+                                              </View>
+                                            )}
+                                            showsVerticalScrollIndicator={false}
+                                            dropdownStyle={styles.dropdownMenuStyle}
+                                          />
+                                        </View>
+
+                                        <View style={styles.textInputContainer}>
+                                          <Text style={styles.textInputLabel}>Vehicle Issue</Text>
                                           {codeInterpretation.map((item) => (
                                             <View key={item.vehicleDiagnosticID} style={styles.troubleCodeContainer}>
                                               <Text style={styles.troubleCodeText}>{item.dtc}</Text>
@@ -802,218 +906,191 @@ const RepairShops = () => {
                                             </View>
                                           ))}
                                         </View>
-                                      </ScrollView>
-                                    </View>
 
-                                    {error.length > 0 && (
-                                      <View style={styles.errorContainer}>
-                                        <Text style={styles.errorMessage}>{error}</Text>
-                                      </View>
-                                    )}
-
-                                    <View style={styles.cancelSaveContainer}>
-                                      <TouchableOpacity
-                                        style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                                        onPress={() => {
-                                          setModalVisible(false);
-                                          setRequestType('');
-                                          setServiceType('');
-                                          setVehicleIssue('');
-                                          setError('');
-                                        }}
-                                      >
-                                        <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                      </TouchableOpacity>
-
-                                      <TouchableOpacity
-                                        style={[
-                                          styles.modalButton,
-                                          { backgroundColor: '#000B58' },
-                                          requestLoading && styles.modalButtonDisabled,
-                                        ]}
-                                        onPress={() =>
-                                          handleSubmitRequest(
-                                            nearbyRepShop[selectedRepShop].repairShopID,
-                                            null,
-                                            'with-obd2'
-                                          )
-                                        }
-                                        disabled={requestLoading}
-                                      >
-                                        {requestLoading ? (
-                                          <ActivityIndicator size="small" color="#FFF" />
-                                        ) : (
-                                          <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                        {error.length > 0 && (
+                                          <View style={styles.errorContainer}>
+                                            <Text style={styles.errorMessage}>{error}</Text>
+                                          </View>
                                         )}
-                                      </TouchableOpacity>
-                                    </View>
-                                  </>
-                                )}
+                                      </View>
+                                    </>
+                                  )}
 
-                                {vehicleID === null && scanReference === null && (
-                                  <>
-                                    <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Vehicle</Text>
-                                      <SelectDropdown
-                                        data={vehicles}
-                                        onSelect={(selectedItem) => setSelectedVehicle(selectedItem.id)}
-                                        renderButton={(selectedItem, isOpen) => (
-                                          <View style={styles.dropdownButtonStyle}>
-                                            <Text style={styles.dropdownButtonTxtStyle}>
-                                              {(selectedItem &&
-                                                `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) ||
-                                                'Select vehicle'}
-                                            </Text>
-                                            <MaterialCommunityIcons
-                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
-                                              style={styles.dropdownButtonArrowStyle}
+                                  {vehicleID === null && scanReference === null && (
+                                    <>
+                                      <View style={{ paddingHorizontal: 20, paddingVertical: 16 }}>
+                                        <View style={styles.textInputContainer}>
+                                          <Text style={styles.textInputLabel}>Vehicle</Text>
+                                          <SelectDropdown
+                                            data={vehicles}
+                                            onSelect={(selectedItem) => setSelectedVehicle(selectedItem.id)}
+                                            renderButton={(selectedItem, isOpen) => (
+                                              <View style={styles.dropdownButtonStyle}>
+                                                <Text style={styles.dropdownButtonTxtStyle}>
+                                                  {(selectedItem &&
+                                                    `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) ||
+                                                    'Select vehicle'}
+                                                </Text>
+                                                <MaterialCommunityIcons
+                                                  name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                                  style={styles.dropdownButtonArrowStyle}
+                                                />
+                                              </View>
+                                            )}
+                                            renderItem={(item, _index, isSelected) => (
+                                              <View
+                                                style={{
+                                                  ...styles.dropdownItemStyle,
+                                                  ...(isSelected && {
+                                                    backgroundColor: '#D2D9DF',
+                                                  }),
+                                                }}
+                                              >
+                                                <Text
+                                                  style={styles.dropdownItemTxtStyle}
+                                                >{`${item.year} ${item.make} ${item.model}`}</Text>
+                                              </View>
+                                            )}
+                                            showsVerticalScrollIndicator={false}
+                                            dropdownStyle={styles.dropdownMenuStyle}
+                                          />
+                                        </View>
+
+                                        <View style={styles.textInputContainer}>
+                                          <Text style={styles.textInputLabel}>Request Type</Text>
+                                          <SelectDropdown
+                                            data={['Preventive Maintenance Service', 'Vehicle Repair']}
+                                            onSelect={(selectedItem) => setRequestType(selectedItem)}
+                                            renderButton={(selectedItem, isOpen) => (
+                                              <View style={styles.dropdownButtonStyle}>
+                                                <Text style={styles.dropdownButtonTxtStyle}>
+                                                  {(selectedItem && `${selectedItem}`) || 'Select request type'}
+                                                </Text>
+                                                <MaterialCommunityIcons
+                                                  name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                                  style={styles.dropdownButtonArrowStyle}
+                                                />
+                                              </View>
+                                            )}
+                                            renderItem={(item, _index, isSelected) => (
+                                              <View
+                                                style={{
+                                                  ...styles.dropdownItemStyle,
+                                                  ...(isSelected && {
+                                                    backgroundColor: '#D2D9DF',
+                                                  }),
+                                                }}
+                                              >
+                                                <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
+                                              </View>
+                                            )}
+                                            showsVerticalScrollIndicator={false}
+                                            dropdownStyle={styles.dropdownMenuStyle}
+                                          />
+                                        </View>
+
+                                        <View style={styles.textInputContainer}>
+                                          <Text style={styles.textInputLabel}>Service Type</Text>
+                                          <SelectDropdown
+                                            data={['In-Shop Service', 'On-Site Service', 'Home Service']}
+                                            onSelect={(selectedItem) => setServiceType(selectedItem)}
+                                            renderButton={(selectedItem, isOpen) => (
+                                              <View style={styles.dropdownButtonStyle}>
+                                                <Text style={styles.dropdownButtonTxtStyle}>
+                                                  {(selectedItem && `${selectedItem}`) || 'Select service type'}
+                                                </Text>
+                                                <MaterialCommunityIcons
+                                                  name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                                  style={styles.dropdownButtonArrowStyle}
+                                                />
+                                              </View>
+                                            )}
+                                            renderItem={(item, _index, isSelected) => (
+                                              <View
+                                                style={{
+                                                  ...styles.dropdownItemStyle,
+                                                  ...(isSelected && {
+                                                    backgroundColor: '#D2D9DF',
+                                                  }),
+                                                }}
+                                              >
+                                                <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
+                                              </View>
+                                            )}
+                                            showsVerticalScrollIndicator={false}
+                                            dropdownStyle={styles.dropdownMenuStyle}
+                                          />
+                                        </View>
+
+                                        {requestType === 'Vehicle Repair' && (
+                                          <View style={styles.textInputContainer}>
+                                            <Text style={styles.textInputLabel}>Vehicle Issue Description</Text>
+                                            <TextInput
+                                              style={styles.textArea}
+                                              placeholder="Describe vehicle issue"
+                                              placeholderTextColor="#555"
+                                              multiline={true}
+                                              numberOfLines={5}
+                                              value={vehicleIssue}
+                                              onChangeText={setVehicleIssue}
+                                              textAlignVertical="top"
                                             />
                                           </View>
                                         )}
-                                        renderItem={(item, _index, isSelected) => (
-                                          <View
-                                            style={{
-                                              ...styles.dropdownItemStyle,
-                                              ...(isSelected && {
-                                                backgroundColor: '#D2D9DF',
-                                              }),
-                                            }}
-                                          >
-                                            <Text
-                                              style={styles.dropdownItemTxtStyle}
-                                            >{`${item.year} ${item.make} ${item.model}`}</Text>
-                                          </View>
-                                        )}
-                                        showsVerticalScrollIndicator={false}
-                                        dropdownStyle={styles.dropdownMenuStyle}
-                                      />
-                                    </View>
 
-                                    <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Request Type</Text>
-                                      <SelectDropdown
-                                        data={['Preventive Maintenance Service', 'Vehicle Repair']}
-                                        onSelect={(selectedItem) => setRequestType(selectedItem)}
-                                        renderButton={(selectedItem, isOpen) => (
-                                          <View style={styles.dropdownButtonStyle}>
-                                            <Text style={styles.dropdownButtonTxtStyle}>
-                                              {(selectedItem && `${selectedItem}`) || 'Select request type'}
-                                            </Text>
-                                            <MaterialCommunityIcons
-                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
-                                              style={styles.dropdownButtonArrowStyle}
-                                            />
+                                        {error.length > 0 && (
+                                          <View style={styles.errorContainer}>
+                                            <Text style={styles.errorMessage}>{error}</Text>
                                           </View>
                                         )}
-                                        renderItem={(item, _index, isSelected) => (
-                                          <View
-                                            style={{
-                                              ...styles.dropdownItemStyle,
-                                              ...(isSelected && {
-                                                backgroundColor: '#D2D9DF',
-                                              }),
-                                            }}
-                                          >
-                                            <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
-                                          </View>
-                                        )}
-                                        showsVerticalScrollIndicator={false}
-                                        dropdownStyle={styles.dropdownMenuStyle}
-                                      />
-                                    </View>
-
-                                    <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Service Type</Text>
-                                      <SelectDropdown
-                                        data={['In-Shop Service', 'On-Site Service', 'Home Service']}
-                                        onSelect={(selectedItem) => setServiceType(selectedItem)}
-                                        renderButton={(selectedItem, isOpen) => (
-                                          <View style={styles.dropdownButtonStyle}>
-                                            <Text style={styles.dropdownButtonTxtStyle}>
-                                              {(selectedItem && `${selectedItem}`) || 'Select service type'}
-                                            </Text>
-                                            <MaterialCommunityIcons
-                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
-                                              style={styles.dropdownButtonArrowStyle}
-                                            />
-                                          </View>
-                                        )}
-                                        renderItem={(item, _index, isSelected) => (
-                                          <View
-                                            style={{
-                                              ...styles.dropdownItemStyle,
-                                              ...(isSelected && {
-                                                backgroundColor: '#D2D9DF',
-                                              }),
-                                            }}
-                                          >
-                                            <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
-                                          </View>
-                                        )}
-                                        showsVerticalScrollIndicator={false}
-                                        dropdownStyle={styles.dropdownMenuStyle}
-                                      />
-                                    </View>
-
-                                    {requestType === 'Vehicle Repair' && (
-                                      <View style={styles.textInputContainer}>
-                                        <Text style={styles.textInputLabel}>Vehicle Issue Description</Text>
-                                        <TextInput
-                                          style={styles.textArea}
-                                          placeholder="Describe vehicle issue"
-                                          placeholderTextColor="#555"
-                                          multiline={true}
-                                          numberOfLines={5}
-                                          value={vehicleIssue}
-                                          onChangeText={setVehicleIssue}
-                                          textAlignVertical="top"
-                                        />
                                       </View>
+                                    </>
+                                  )}
+                                </ScrollView>
+
+                                <View style={styles.cancelSaveContainer}>
+                                  <TouchableOpacity
+                                    style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
+                                    onPress={() => {
+                                      setModalVisible(false);
+                                      setRequestType('');
+                                      setServiceType('');
+                                      setVehicleIssue('');
+                                      setError('');
+                                    }}
+                                  >
+                                    <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                  </TouchableOpacity>
+
+                                  <TouchableOpacity
+                                    style={[
+                                      styles.modalButton,
+                                      { backgroundColor: '#000B58' },
+                                      requestLoading && styles.modalButtonDisabled,
+                                    ]}
+                                    onPress={() => {
+                                      if (vehicleID !== null && scanReference !== null) {
+                                        handleSubmitRequest(
+                                          nearbyRepShop[selectedRepShop].repairShopID,
+                                          null,
+                                          'with-obd2'
+                                        );
+                                      } else {
+                                        handleSubmitRequestWithoutOBD2(nearbyRepShop[selectedRepShop].repairShopID);
+                                      }
+                                    }}
+                                    disabled={requestLoading}
+                                  >
+                                    {requestLoading ? (
+                                      <ActivityIndicator size="small" color="#FFF" />
+                                    ) : (
+                                      <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
                                     )}
-
-                                    {error.length > 0 && (
-                                      <View style={styles.errorContainer}>
-                                        <Text style={styles.errorMessage}>{error}</Text>
-                                      </View>
-                                    )}
-
-                                    <View style={styles.cancelSaveContainer}>
-                                      <TouchableOpacity
-                                        style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                                        onPress={() => {
-                                          setModalVisible(false);
-                                          setRequestType('');
-                                          setServiceType('');
-                                          setVehicleIssue('');
-                                          setError('');
-                                        }}
-                                      >
-                                        <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                      </TouchableOpacity>
-
-                                      <TouchableOpacity
-                                        style={[
-                                          styles.modalButton,
-                                          { backgroundColor: '#000B58' },
-                                          requestLoading && styles.modalButtonDisabled,
-                                        ]}
-                                        onPress={() =>
-                                          handleSubmitRequestWithoutOBD2(nearbyRepShop[selectedRepShop].repairShopID)
-                                        }
-                                        disabled={requestLoading}
-                                      >
-                                        {requestLoading ? (
-                                          <ActivityIndicator size="small" color="#FFF" />
-                                        ) : (
-                                          <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
-                                        )}
-                                      </TouchableOpacity>
-                                    </View>
-                                  </>
-                                )}
-                              </Pressable>
+                                  </TouchableOpacity>
+                                </View>
+                              </View>
                             </View>
-                          </TouchableWithoutFeedback>
+                          </View>
                         </Modal>
                       </>
                     )}
@@ -1022,80 +1099,109 @@ const RepairShops = () => {
                   <>
                     {regions && selectedRepShop !== null && regions[selectedRepShop] && (
                       <>
-                        <View style={styles.picRepNameContainer}>
-                          {regions[selectedRepShop].profilePic === null && (
-                            <View
-                              style={[
-                                styles.profilePicWrapper,
-                                {
-                                  backgroundColor: regions[selectedRepShop].profileBG,
-                                },
-                              ]}
-                            >
-                              <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
-                            </View>
-                          )}
-
-                          {regions[selectedRepShop].profilePic !== null && (
-                            <View style={styles.profilePicWrapper}>
-                              <Image
-                                style={styles.profilePic}
-                                source={{
-                                  uri: regions[selectedRepShop].profilePic,
-                                }}
-                                width={100}
-                                height={100}
-                              />
-                            </View>
-                          )}
-
-                          <View style={styles.repShopNameContainer}>
-                            <Text style={styles.repShopName}>{regions[selectedRepShop].shopName}</Text>
-                            <View style={styles.genderNameContainer}>
-                              {regions[selectedRepShop].gender === 'Male' && (
-                                <>
-                                  <Fontisto name="male" size={16} color="#555" />
-                                </>
-                              )}
-
-                              {regions[selectedRepShop].gender === 'Female' && (
-                                <>
-                                  <Fontisto name="female" size={16} color="#555" />
-                                </>
-                              )}
-                              <Text
-                                style={styles.contactText}
-                              >{`${regions[selectedRepShop].ownerFirstname} ${regions[selectedRepShop].ownerLastname}`}</Text>
-                            </View>
-
-                            <Text style={styles.contactText}>{regions[selectedRepShop].mobileNum}</Text>
-
-                            {regions[selectedRepShop].email !== null && (
-                              <Text style={styles.contactText}>{regions[selectedRepShop].email}</Text>
-                            )}
-
-                            <View style={styles.ratingContainer}>
-                              <Fontisto name="persons" size={16} color="#555" />
-                              <Text style={styles.rating}>{regions[selectedRepShop].ratingsNum}</Text>
-                              <MaterialIcons name="star-rate" size={16} color="#FDCC0D" />
-                              <Text style={styles.rating}>{regions[selectedRepShop].averageRating}</Text>
-                              <Text
+                        <View style={styles.shopHeaderCard}>
+                          <View style={styles.picRepNameContainer}>
+                            {regions[selectedRepShop].profilePic === null && (
+                              <View
                                 style={[
-                                  styles.contactText,
+                                  styles.profilePicWrapper,
                                   {
-                                    color: regions[selectedRepShop].availability === 'open' ? '#17B978' : '#780606',
-                                    marginLeft: 10,
+                                    backgroundColor: regions[selectedRepShop].profileBG,
                                   },
                                 ]}
                               >
-                                {regions[selectedRepShop].availability.toUpperCase()}
-                              </Text>
+                                <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
+                              </View>
+                            )}
+
+                            {regions[selectedRepShop].profilePic !== null && (
+                              <View style={styles.profilePicWrapper}>
+                                <Image
+                                  style={styles.profilePic}
+                                  source={{
+                                    uri: regions[selectedRepShop].profilePic,
+                                  }}
+                                  width={100}
+                                  height={100}
+                                />
+                              </View>
+                            )}
+
+                            <View style={styles.repShopNameContainer}>
+                              <Text style={styles.repShopName}>{regions[selectedRepShop].shopName}</Text>
+
+                              <View style={styles.contactInfoRow}>
+                                <View style={styles.genderNameContainer}>
+                                  {regions[selectedRepShop].gender === 'Male' && (
+                                    <Fontisto name="male" size={14} color="#555" />
+                                  )}
+                                  {regions[selectedRepShop].gender === 'Female' && (
+                                    <Fontisto name="female" size={14} color="#555" />
+                                  )}
+                                  <Text
+                                    style={styles.contactText}
+                                  >{`${regions[selectedRepShop].ownerFirstname} ${regions[selectedRepShop].ownerLastname}`}</Text>
+                                </View>
+                              </View>
+
+                              <View style={styles.contactInfoRow}>
+                                <MaterialCommunityIcons name="phone" size={14} color="#000B58" />
+                                <Text style={styles.contactText}>{regions[selectedRepShop].mobileNum}</Text>
+                              </View>
+
+                              {regions[selectedRepShop].email !== null && (
+                                <View style={styles.contactInfoRow}>
+                                  <MaterialCommunityIcons name="email" size={14} color="#000B58" />
+                                  <Text style={styles.contactText}>{regions[selectedRepShop].email}</Text>
+                                </View>
+                              )}
+
+                              <View style={styles.ratingContainer}>
+                                <View style={styles.ratingItem}>
+                                  <Fontisto name="persons" size={14} color="#555" />
+                                  <Text style={styles.rating}>{regions[selectedRepShop].ratingsNum}</Text>
+                                </View>
+                                <View style={styles.ratingItem}>
+                                  <MaterialIcons name="star-rate" size={16} color="#FDCC0D" />
+                                  <Text style={styles.rating}>{regions[selectedRepShop].averageRating}</Text>
+                                </View>
+                                <View
+                                  style={[
+                                    styles.availabilityBadge,
+                                    {
+                                      backgroundColor:
+                                        regions[selectedRepShop].availability === 'open' ? '#D1FAE5' : '#FEE2E2',
+                                    },
+                                  ]}
+                                >
+                                  <MaterialCommunityIcons
+                                    name={
+                                      regions[selectedRepShop].availability === 'open' ? 'clock-check' : 'clock-alert'
+                                    }
+                                    size={14}
+                                    color={regions[selectedRepShop].availability === 'open' ? '#17B978' : '#DC2626'}
+                                  />
+                                  <Text
+                                    style={[
+                                      styles.availabilityText,
+                                      {
+                                        color: regions[selectedRepShop].availability === 'open' ? '#17B978' : '#DC2626',
+                                      },
+                                    ]}
+                                  >
+                                    {regions[selectedRepShop].availability === 'open'
+                                      ? regions[selectedRepShop].availability.toUpperCase()
+                                      : `${regions[selectedRepShop].availability.toUpperCase()}D`}
+                                  </Text>
+                                </View>
+                              </View>
                             </View>
                           </View>
                         </View>
 
                         <View style={styles.buttonContainer}>
                           <TouchableOpacity style={styles.button} onPress={() => handleMakeRequest()}>
+                            <MaterialCommunityIcons name="wrench" size={16} color="#FFF" />
                             <Text style={styles.buttonText}>Request Repair</Text>
                           </TouchableOpacity>
 
@@ -1113,6 +1219,7 @@ const RepairShops = () => {
                               router.replace('/chat-room/chat-room');
                             }}
                           >
+                            <MaterialCommunityIcons name="chat" size={16} color="#FFF" />
                             <Text style={styles.buttonText}>Chat Shop</Text>
                           </TouchableOpacity>
                         </View>
@@ -1120,10 +1227,14 @@ const RepairShops = () => {
                         {currentSnapPointIndex === 2 && (
                           <>
                             <View style={styles.shopImages}>
-                              <Text style={styles.subHeader}>Shop Images</Text>
+                              <View style={styles.sectionHeaderRow}>
+                                <MaterialCommunityIcons name="image-multiple" size={20} color="#000B58" />
+                                <Text style={styles.subHeader}>Shop Images</Text>
+                              </View>
 
                               {regions[selectedRepShop].shopImages.length === 0 && (
                                 <View style={styles.noImagesView}>
+                                  <MaterialCommunityIcons name="image-off" size={48} color="#999" />
                                   <Text style={styles.noImagesText}>No Images</Text>
                                 </View>
                               )}
@@ -1146,10 +1257,13 @@ const RepairShops = () => {
                             </View>
 
                             <View style={styles.servicesOffered}>
-                              <Text style={styles.subHeader}>Services Offered</Text>
+                              <View style={styles.sectionHeaderRow}>
+                                <MaterialCommunityIcons name="tools" size={20} color="#000B58" />
+                                <Text style={styles.subHeader}>Services Offered</Text>
+                              </View>
                               {regions[selectedRepShop].servicesOffered.map((item) => (
                                 <View key={item} style={styles.services}>
-                                  <Text style={styles.bullet}>{'\u2022'}</Text>
+                                  <MaterialCommunityIcons name="check-circle" size={16} color="#10B981" />
                                   <Text style={styles.servicesText}>{item}</Text>
                                 </View>
                               ))}
@@ -1159,7 +1273,7 @@ const RepairShops = () => {
 
                         <Modal
                           animationType="fade"
-                          backdropColor={'rgba(0, 0, 0, 0.5)'}
+                          transparent={true}
                           visible={modalVisible}
                           onRequestClose={() => {
                             setModalVisible(false);
@@ -1169,58 +1283,79 @@ const RepairShops = () => {
                             setError('');
                           }}
                         >
-                          <TouchableWithoutFeedback
-                            onPress={() => {
-                              setModalVisible(false);
-                              setRequestType('');
-                              setServiceType('');
-                              setVehicleIssue('');
-                              setError('');
-                            }}
-                          >
-                            <View style={styles.centeredView}>
-                              <Pressable style={styles.modalView} onPress={() => {}}>
-                                <View style={styles.profileNameContainer}>
-                                  {regions[selectedRepShop].profilePic === null && (
-                                    <View
-                                      style={[
-                                        styles.profilePicWrapper,
-                                        {
-                                          backgroundColor: regions[selectedRepShop].profileBG,
-                                        },
-                                      ]}
-                                    >
-                                      <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
-                                    </View>
-                                  )}
+                          <View style={styles.modalOverlay}>
+                            <TouchableWithoutFeedback
+                              onPress={() => {
+                                setModalVisible(false);
+                                setRequestType('');
+                                setServiceType('');
+                                setVehicleIssue('');
+                                setError('');
+                              }}
+                            >
+                              <View style={styles.modalBackground} />
+                            </TouchableWithoutFeedback>
 
-                                  {regions[selectedRepShop].profilePic !== null && (
-                                    <View style={styles.profilePicWrapper}>
-                                      <Image
-                                        style={styles.profilePic}
-                                        source={{
-                                          uri: regions[selectedRepShop].profilePic,
-                                        }}
-                                        width={100}
-                                        height={100}
-                                      />
-                                    </View>
-                                  )}
+                            <View style={styles.modalView}>
+                              <View style={styles.modalHeader}>
+                                <MaterialCommunityIcons name="wrench" size={24} color="#000B58" />
+                                <Text style={styles.modalTitle}>Request Repair Service</Text>
+                                <TouchableOpacity
+                                  style={styles.modalCloseButton}
+                                  onPress={() => {
+                                    setModalVisible(false);
+                                    setRequestType('');
+                                    setServiceType('');
+                                    setVehicleIssue('');
+                                    setError('');
+                                  }}
+                                >
+                                  <MaterialCommunityIcons name="close" size={24} color="#666" />
+                                </TouchableOpacity>
+                              </View>
 
-                                  <Text style={styles.repShopName}>{regions[selectedRepShop].shopName}</Text>
-                                </View>
+                              <View style={styles.modalBody}>
+                                <ScrollView>
+                                  <View style={styles.profileNameContainer}>
+                                    {regions[selectedRepShop].profilePic === null && (
+                                      <View
+                                        style={[
+                                          styles.profilePicWrapper,
+                                          {
+                                            backgroundColor: regions[selectedRepShop].profileBG,
+                                          },
+                                        ]}
+                                      >
+                                        <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
+                                      </View>
+                                    )}
 
-                                {vehicleID !== null && scanReference !== null && (
-                                  <>
-                                    <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Vehicle</Text>
-                                      <TextInput style={styles.input} value={scannedVehicle} readOnly />
-                                    </View>
+                                    {regions[selectedRepShop].profilePic !== null && (
+                                      <View style={styles.profilePicWrapper}>
+                                        <Image
+                                          style={styles.profilePic}
+                                          source={{
+                                            uri: regions[selectedRepShop].profilePic,
+                                          }}
+                                          width={100}
+                                          height={100}
+                                        />
+                                      </View>
+                                    )}
 
-                                    <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Vehicle Issue</Text>
-                                      <ScrollView style={{ maxHeight: 200 }}>
-                                        <View onStartShouldSetResponder={() => true}>
+                                    <Text style={styles.repShopName}>{regions[selectedRepShop].shopName}</Text>
+                                  </View>
+
+                                  {vehicleID !== null && scanReference !== null && (
+                                    <>
+                                      <View style={{ paddingHorizontal: 20, paddingVertical: 16 }}>
+                                        <View style={styles.textInputContainer}>
+                                          <Text style={styles.textInputLabel}>Vehicle</Text>
+                                          <TextInput style={styles.input} value={scannedVehicle} readOnly />
+                                        </View>
+
+                                        <View style={styles.textInputContainer}>
+                                          <Text style={styles.textInputLabel}>Vehicle Issue</Text>
                                           {codeInterpretation.map((item) => (
                                             <View key={item.vehicleDiagnosticID} style={styles.troubleCodeContainer}>
                                               <Text style={styles.troubleCodeText}>{item.dtc}</Text>
@@ -1228,214 +1363,187 @@ const RepairShops = () => {
                                             </View>
                                           ))}
                                         </View>
-                                      </ScrollView>
-                                    </View>
 
-                                    {error.length > 0 && (
-                                      <View style={styles.errorContainer}>
-                                        <Text style={styles.errorMessage}>{error}</Text>
-                                      </View>
-                                    )}
-
-                                    <View style={styles.cancelSaveContainer}>
-                                      <TouchableOpacity
-                                        style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                                        onPress={() => {
-                                          setModalVisible(false);
-                                          setRequestType('');
-                                          setServiceType('');
-                                          setVehicleIssue('');
-                                          setError('');
-                                        }}
-                                      >
-                                        <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                      </TouchableOpacity>
-
-                                      <TouchableOpacity
-                                        style={[
-                                          styles.modalButton,
-                                          { backgroundColor: '#000B58' },
-                                          requestLoading && styles.modalButtonDisabled,
-                                        ]}
-                                        onPress={() =>
-                                          handleSubmitRequest(regions[selectedRepShop].repairShopID, null, 'with-obd2')
-                                        }
-                                        disabled={requestLoading}
-                                      >
-                                        {requestLoading ? (
-                                          <ActivityIndicator size="small" color="#FFF" />
-                                        ) : (
-                                          <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
+                                        {error.length > 0 && (
+                                          <View style={styles.errorContainer}>
+                                            <Text style={styles.errorMessage}>{error}</Text>
+                                          </View>
                                         )}
-                                      </TouchableOpacity>
-                                    </View>
-                                  </>
-                                )}
+                                      </View>
+                                    </>
+                                  )}
 
-                                {vehicleID === null && scanReference === null && (
-                                  <>
-                                    <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Vehicle</Text>
-                                      <SelectDropdown
-                                        data={vehicles}
-                                        onSelect={(selectedItem) => setSelectedVehicle(selectedItem.id)}
-                                        renderButton={(selectedItem, isOpen) => (
-                                          <View style={styles.dropdownButtonStyle}>
-                                            <Text style={styles.dropdownButtonTxtStyle}>
-                                              {(selectedItem &&
-                                                `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) ||
-                                                'Select vehicle'}
-                                            </Text>
-                                            <MaterialCommunityIcons
-                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
-                                              style={styles.dropdownButtonArrowStyle}
+                                  {vehicleID === null && scanReference === null && (
+                                    <>
+                                      <View style={{ paddingHorizontal: 20, paddingVertical: 16 }}>
+                                        <View style={styles.textInputContainer}>
+                                          <Text style={styles.textInputLabel}>Vehicle</Text>
+                                          <SelectDropdown
+                                            data={vehicles}
+                                            onSelect={(selectedItem) => setSelectedVehicle(selectedItem.id)}
+                                            renderButton={(selectedItem, isOpen) => (
+                                              <View style={styles.dropdownButtonStyle}>
+                                                <Text style={styles.dropdownButtonTxtStyle}>
+                                                  {(selectedItem &&
+                                                    `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) ||
+                                                    'Select vehicle'}
+                                                </Text>
+                                                <MaterialCommunityIcons
+                                                  name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                                  style={styles.dropdownButtonArrowStyle}
+                                                />
+                                              </View>
+                                            )}
+                                            renderItem={(item, _index, isSelected) => (
+                                              <View
+                                                style={{
+                                                  ...styles.dropdownItemStyle,
+                                                  ...(isSelected && {
+                                                    backgroundColor: '#D2D9DF',
+                                                  }),
+                                                }}
+                                              >
+                                                <Text
+                                                  style={styles.dropdownItemTxtStyle}
+                                                >{`${item.year} ${item.make} ${item.model}`}</Text>
+                                              </View>
+                                            )}
+                                            showsVerticalScrollIndicator={false}
+                                            dropdownStyle={styles.dropdownMenuStyle}
+                                          />
+                                        </View>
+
+                                        <View style={styles.textInputContainer}>
+                                          <Text style={styles.textInputLabel}>Request Type</Text>
+                                          <SelectDropdown
+                                            data={['Preventive Maintenance Service', 'Vehicle Repair']}
+                                            onSelect={(selectedItem) => setRequestType(selectedItem)}
+                                            renderButton={(selectedItem, isOpen) => (
+                                              <View style={styles.dropdownButtonStyle}>
+                                                <Text style={styles.dropdownButtonTxtStyle}>
+                                                  {(selectedItem && `${selectedItem}`) || 'Select request type'}
+                                                </Text>
+                                                <MaterialCommunityIcons
+                                                  name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                                  style={styles.dropdownButtonArrowStyle}
+                                                />
+                                              </View>
+                                            )}
+                                            renderItem={(item, _index, isSelected) => (
+                                              <View
+                                                style={{
+                                                  ...styles.dropdownItemStyle,
+                                                  ...(isSelected && {
+                                                    backgroundColor: '#D2D9DF',
+                                                  }),
+                                                }}
+                                              >
+                                                <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
+                                              </View>
+                                            )}
+                                            showsVerticalScrollIndicator={false}
+                                            dropdownStyle={styles.dropdownMenuStyle}
+                                          />
+                                        </View>
+
+                                        <View style={styles.textInputContainer}>
+                                          <Text style={styles.textInputLabel}>Service Type</Text>
+                                          <SelectDropdown
+                                            data={['In-Shop Service', 'On-Site Service', 'Home Service']}
+                                            onSelect={(selectedItem) => setServiceType(selectedItem)}
+                                            renderButton={(selectedItem, isOpen) => (
+                                              <View style={styles.dropdownButtonStyle}>
+                                                <Text style={styles.dropdownButtonTxtStyle}>
+                                                  {(selectedItem && `${selectedItem}`) || 'Select service type'}
+                                                </Text>
+                                                <MaterialCommunityIcons
+                                                  name={isOpen ? 'chevron-up' : 'chevron-down'}
+                                                  style={styles.dropdownButtonArrowStyle}
+                                                />
+                                              </View>
+                                            )}
+                                            renderItem={(item, _index, isSelected) => (
+                                              <View
+                                                style={{
+                                                  ...styles.dropdownItemStyle,
+                                                  ...(isSelected && {
+                                                    backgroundColor: '#D2D9DF',
+                                                  }),
+                                                }}
+                                              >
+                                                <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
+                                              </View>
+                                            )}
+                                            showsVerticalScrollIndicator={false}
+                                            dropdownStyle={styles.dropdownMenuStyle}
+                                          />
+                                        </View>
+
+                                        {requestType === 'Vehicle Repair' && (
+                                          <View style={styles.textInputContainer}>
+                                            <Text style={styles.textInputLabel}>Vehicle Issue Description</Text>
+                                            <TextInput
+                                              style={styles.textArea}
+                                              placeholder="Describe vehicle issue"
+                                              placeholderTextColor="#555"
+                                              multiline={true}
+                                              numberOfLines={5}
+                                              value={vehicleIssue}
+                                              onChangeText={setVehicleIssue}
+                                              textAlignVertical="top"
                                             />
                                           </View>
                                         )}
-                                        renderItem={(item, _index, isSelected) => (
-                                          <View
-                                            style={{
-                                              ...styles.dropdownItemStyle,
-                                              ...(isSelected && {
-                                                backgroundColor: '#D2D9DF',
-                                              }),
-                                            }}
-                                          >
-                                            <Text
-                                              style={styles.dropdownItemTxtStyle}
-                                            >{`${item.year} ${item.make} ${item.model}`}</Text>
-                                          </View>
-                                        )}
-                                        showsVerticalScrollIndicator={false}
-                                        dropdownStyle={styles.dropdownMenuStyle}
-                                      />
-                                    </View>
 
-                                    <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Request Type</Text>
-                                      <SelectDropdown
-                                        data={['Preventive Maintenance Service', 'Vehicle Repair']}
-                                        onSelect={(selectedItem) => setRequestType(selectedItem)}
-                                        renderButton={(selectedItem, isOpen) => (
-                                          <View style={styles.dropdownButtonStyle}>
-                                            <Text style={styles.dropdownButtonTxtStyle}>
-                                              {(selectedItem && `${selectedItem}`) || 'Select request type'}
-                                            </Text>
-                                            <MaterialCommunityIcons
-                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
-                                              style={styles.dropdownButtonArrowStyle}
-                                            />
+                                        {error.length > 0 && (
+                                          <View style={styles.errorContainer}>
+                                            <Text style={styles.errorMessage}>{error}</Text>
                                           </View>
                                         )}
-                                        renderItem={(item, _index, isSelected) => (
-                                          <View
-                                            style={{
-                                              ...styles.dropdownItemStyle,
-                                              ...(isSelected && {
-                                                backgroundColor: '#D2D9DF',
-                                              }),
-                                            }}
-                                          >
-                                            <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
-                                          </View>
-                                        )}
-                                        showsVerticalScrollIndicator={false}
-                                        dropdownStyle={styles.dropdownMenuStyle}
-                                      />
-                                    </View>
-
-                                    <View style={styles.textInputContainer}>
-                                      <Text style={styles.textInputLabel}>Service Type</Text>
-                                      <SelectDropdown
-                                        data={['In-Shop Service', 'On-Site Service', 'Home Service']}
-                                        onSelect={(selectedItem) => setServiceType(selectedItem)}
-                                        renderButton={(selectedItem, isOpen) => (
-                                          <View style={styles.dropdownButtonStyle}>
-                                            <Text style={styles.dropdownButtonTxtStyle}>
-                                              {(selectedItem && `${selectedItem}`) || 'Select service type'}
-                                            </Text>
-                                            <MaterialCommunityIcons
-                                              name={isOpen ? 'chevron-up' : 'chevron-down'}
-                                              style={styles.dropdownButtonArrowStyle}
-                                            />
-                                          </View>
-                                        )}
-                                        renderItem={(item, _index, isSelected) => (
-                                          <View
-                                            style={{
-                                              ...styles.dropdownItemStyle,
-                                              ...(isSelected && {
-                                                backgroundColor: '#D2D9DF',
-                                              }),
-                                            }}
-                                          >
-                                            <Text style={styles.dropdownItemTxtStyle}>{`${item}`}</Text>
-                                          </View>
-                                        )}
-                                        showsVerticalScrollIndicator={false}
-                                        dropdownStyle={styles.dropdownMenuStyle}
-                                      />
-                                    </View>
-
-                                    {requestType === 'Vehicle Repair' && (
-                                      <View style={styles.textInputContainer}>
-                                        <Text style={styles.textInputLabel}>Vehicle Issue Description</Text>
-                                        <TextInput
-                                          style={styles.textArea}
-                                          placeholder="Describe vehicle issue"
-                                          placeholderTextColor="#555"
-                                          multiline={true}
-                                          numberOfLines={5}
-                                          value={vehicleIssue}
-                                          onChangeText={setVehicleIssue}
-                                          textAlignVertical="top"
-                                        />
                                       </View>
+                                    </>
+                                  )}
+                                </ScrollView>
+
+                                <View style={styles.cancelSaveContainer}>
+                                  <TouchableOpacity
+                                    style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
+                                    onPress={() => {
+                                      setModalVisible(false);
+                                      setRequestType('');
+                                      setServiceType('');
+                                      setVehicleIssue('');
+                                      setError('');
+                                    }}
+                                  >
+                                    <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                                  </TouchableOpacity>
+
+                                  <TouchableOpacity
+                                    style={[
+                                      styles.modalButton,
+                                      { backgroundColor: '#000B58' },
+                                      requestLoading && styles.modalButtonDisabled,
+                                    ]}
+                                    onPress={() => {
+                                      if (vehicleID !== null && scanReference !== null) {
+                                        handleSubmitRequest(regions[selectedRepShop].repairShopID, null, 'with-obd2');
+                                      } else {
+                                        handleSubmitRequestWithoutOBD2(regions[selectedRepShop].repairShopID);
+                                      }
+                                    }}
+                                    disabled={requestLoading}
+                                  >
+                                    {requestLoading ? (
+                                      <ActivityIndicator size="small" color="#FFF" />
+                                    ) : (
+                                      <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
                                     )}
-
-                                    {error.length > 0 && (
-                                      <View style={styles.errorContainer}>
-                                        <Text style={styles.errorMessage}>{error}</Text>
-                                      </View>
-                                    )}
-
-                                    <View style={styles.cancelSaveContainer}>
-                                      <TouchableOpacity
-                                        style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                                        onPress={() => {
-                                          setModalVisible(false);
-                                          setRequestType('');
-                                          setServiceType('');
-                                          setVehicleIssue('');
-                                          setError('');
-                                        }}
-                                      >
-                                        <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                                      </TouchableOpacity>
-
-                                      <TouchableOpacity
-                                        style={[
-                                          styles.modalButton,
-                                          { backgroundColor: '#000B58' },
-                                          requestLoading && styles.modalButtonDisabled,
-                                        ]}
-                                        onPress={() =>
-                                          handleSubmitRequestWithoutOBD2(regions[selectedRepShop].repairShopID)
-                                        }
-                                        disabled={requestLoading}
-                                      >
-                                        {requestLoading ? (
-                                          <ActivityIndicator size="small" color="#FFF" />
-                                        ) : (
-                                          <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Request</Text>
-                                        )}
-                                      </TouchableOpacity>
-                                    </View>
-                                  </>
-                                )}
-                              </Pressable>
+                                  </TouchableOpacity>
+                                </View>
+                              </View>
                             </View>
-                          </TouchableWithoutFeedback>
+                          </View>
                         </Modal>
                       </>
                     )}
@@ -1461,14 +1569,26 @@ const styles = StyleSheet.create({
   },
   tenKMButton: {
     position: 'absolute',
-    padding: 10,
-    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
     alignSelf: 'center',
     top: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 4,
   },
   tenKMButtonText: {
-    fontFamily: 'BodyRegular',
-    fontSize: 16,
+    fontFamily: 'BodyBold',
+    fontSize: 14,
   },
   map: {
     width: '100%',
@@ -1481,6 +1601,20 @@ const styles = StyleSheet.create({
     width: '90%',
     alignSelf: 'center',
     marginBottom: 100,
+  },
+  shopHeaderCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   picRepNameContainer: {
     flexDirection: 'row',
@@ -1499,22 +1633,37 @@ const styles = StyleSheet.create({
   },
   repShopNameContainer: {
     width: '63%',
+    gap: 4,
   },
   repShopName: {
     fontFamily: 'BodyBold',
     color: '#333',
     fontSize: 20,
+    marginBottom: 4,
+  },
+  contactInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   genderNameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 5,
   },
   contactText: {
     fontFamily: 'BodyRegular',
     color: '#555',
+    fontSize: 13,
   },
   ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+    flexWrap: 'wrap',
+  },
+  ratingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
@@ -1522,28 +1671,44 @@ const styles = StyleSheet.create({
   rating: {
     fontFamily: 'BodyRegular',
     color: '#555',
+    fontSize: 13,
+  },
+  availabilityBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  availabilityText: {
+    fontFamily: 'BodyBold',
+    fontSize: 11,
   },
   buttonContainer: {
     justifyContent: 'space-evenly',
     width: '100%',
-    marginTop: 10,
+    marginTop: 0,
     flexDirection: 'row',
     flexWrap: 'wrap',
     borderBottomWidth: 1,
     borderColor: '#EAEAEA',
     paddingBottom: 20,
+    gap: 10,
   },
   button: {
     backgroundColor: '#000B58',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 110,
-    padding: 5,
-    borderRadius: 5,
+    width: 140,
+    padding: 10,
+    borderRadius: 8,
+    gap: 6,
   },
   buttonText: {
     fontFamily: 'BodyRegular',
-    fontSize: 12,
+    fontSize: 13,
     color: '#FFF',
   },
   shopImages: {
@@ -1551,26 +1716,33 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingBottom: 20,
   },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
   subHeader: {
     fontFamily: 'BodyBold',
     color: '#333',
     fontSize: 18,
-    marginBottom: 10,
   },
   image: {
     flex: 1,
     borderRadius: 8,
   },
   noImagesView: {
-    backgroundColor: '#D9D9D9',
+    backgroundColor: '#F3F4F6',
     minHeight: 200,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
+    gap: 12,
   },
   noImagesText: {
     fontFamily: 'BodyRegular',
-    color: '#555',
+    color: '#999',
+    fontSize: 15,
   },
   servicesOffered: {
     width: '100%',
@@ -1578,40 +1750,71 @@ const styles = StyleSheet.create({
   services: {
     width: '100%',
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
     paddingLeft: 5,
-  },
-  bullet: {
-    fontFamily: 'BodyRegular',
-    color: '#333',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   servicesText: {
     fontFamily: 'BodyRegular',
     color: '#333',
   },
-  centeredView: {
+  modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   modalView: {
-    backgroundColor: '#f2f4f7',
-    width: '85%',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    width: '90%',
+    maxWidth: 600,
+    maxHeight: '90%',
+    borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+    gap: 12,
+  },
+  modalTitle: {
+    fontFamily: 'HeadingBold',
+    fontSize: 18,
+    color: '#000B58',
+    flex: 1,
+  },
+  modalCloseButton: {
+    padding: 4,
+    borderRadius: 8,
+  },
+  modalBody: {
+    maxHeight: '85%',
   },
   profileNameContainer: {
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 10,
   },
   textInputContainer: {
     gap: 10,
@@ -1619,71 +1822,110 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   textInputLabel: {
-    fontFamily: 'BodyRegular',
-    color: '#333',
+    fontFamily: 'BodyBold',
+    fontSize: 13,
+    color: '#000B58',
+    marginBottom: 4,
   },
   dropdownButtonStyle: {
     width: '100%',
-    height: 45,
-    backgroundColor: '#fff',
-    borderRadius: 5,
+    height: 50,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   dropdownButtonTxtStyle: {
     flex: 1,
-    color: '#333',
+    color: '#1F2937',
+    fontSize: 15,
     fontFamily: 'BodyRegular',
   },
   dropdownButtonArrowStyle: {
-    fontSize: 24,
-    color: '#333',
+    fontSize: 22,
+    color: '#6B7280',
   },
   dropdownMenuStyle: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   dropdownItemStyle: {
     width: '100%',
     flexDirection: 'row',
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingVertical: 12,
+    borderRadius: 8,
   },
   dropdownItemTxtStyle: {
     flex: 1,
-    color: '#333',
+    color: '#1F2937',
+    fontSize: 15,
     fontFamily: 'BodyRegular',
   },
   textArea: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     width: '100%',
-    minHeight: 100,
-    borderRadius: 5,
-    padding: 10,
-    color: '#333',
+    minHeight: 120,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    padding: 14,
+    color: '#1F2937',
+    fontSize: 15,
     fontFamily: 'BodyRegular',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   input: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#F9FAFB',
     width: '100%',
-    height: 45,
-    borderRadius: 5,
-    padding: 10,
-    color: '#333',
+    height: 50,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 16,
+    color: '#6B7280',
+    fontSize: 15,
     fontFamily: 'BodyRegular',
   },
   cancelSaveContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    gap: 10,
-    marginTop: 10,
+    padding: 16,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
   },
   modalButton: {
     width: '30%',
@@ -1700,33 +1942,56 @@ const styles = StyleSheet.create({
     fontFamily: 'HeaderBold',
   },
   troubleCodeContainer: {
-    backgroundColor: '#fff',
-    marginBottom: 10,
+    backgroundColor: '#FEF2F2',
+    marginBottom: 5,
     width: '100%',
-    borderRadius: 5,
-    padding: 10,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#DC2626',
+    padding: 14,
+    shadowColor: '#DC2626',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   troubleCodeText: {
     fontFamily: 'BodyBold',
-    color: '#780606',
+    fontSize: 16,
+    color: '#DC2626',
+    marginBottom: 6,
   },
   troubleCodeText2: {
     fontFamily: 'BodyRegular',
-    color: '#555',
-    fontSize: 12,
+    color: '#6B7280',
+    fontSize: 14,
+    lineHeight: 20,
   },
   errorContainer: {
-    backgroundColor: '#EAEAEA',
-    borderRadius: 5,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#DC2626',
     width: '100%',
-    padding: 10,
-    marginTop: 20,
+    padding: 14,
+    marginTop: 12,
+    shadowColor: '#DC2626',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   errorMessage: {
-    fontFamily: 'BodyRegular',
-    color: 'red',
+    fontFamily: 'BodyBold',
+    color: '#DC2626',
     textAlign: 'center',
-    fontSize: 12,
+    fontSize: 13,
   },
 });
 

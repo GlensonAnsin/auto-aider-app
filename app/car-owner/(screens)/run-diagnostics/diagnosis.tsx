@@ -47,13 +47,22 @@ const Diagnosis = () => {
             }))
           );
         }
-      } catch (e) {
-        console.error('Error: ', e);
+      } catch {
+        showMessage({
+          message: 'Something went wrong. Please try again.',
+          type: 'danger',
+          floating: true,
+          color: '#FFF',
+          icon: 'danger',
+        });
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [vehicleID, scanReference]);
+  }, [vehicleID, scanReference, router]);
 
   const disconnectToDevice = async () => {
     try {
@@ -86,33 +95,43 @@ const Diagnosis = () => {
       <Header headerTitle="Diagnosis" />
       <ScrollView>
         <View style={styles.lowerBox}>
+          <View style={styles.vehicleInfoCard}>
+            <Icon name="car" size={32} color="#000B58" />
+            <View style={styles.vehicleInfoTextContainer}>
+              <Text style={styles.vehicleLabel}>Scanned Vehicle</Text>
+              <Text style={styles.car}>{scannedVehicle}</Text>
+            </View>
+          </View>
+
           <View style={styles.buttonContainer}>
-            <Text style={styles.car}>{scannedVehicle}</Text>
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: '#780606' }]}
-              onPress={() => disconnectToDevice()}
-            >
+            <TouchableOpacity style={[styles.button, styles.disconnectButton]} onPress={() => disconnectToDevice()}>
               <Icon name="close-circle-outline" style={styles.buttonIcon} />
               <Text style={styles.buttonText}>Disconnect</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: '#000B58' }]}
+              style={[styles.button, styles.primaryButton]}
               onPress={() => {
                 router.replace(routes[routes.length - 1]);
                 dispatch(popRouteState());
               }}
             >
-              <Icon name="radiobox-marked" style={styles.buttonIcon} />
+              <Icon name="radar" style={styles.buttonIcon} />
               <Text style={styles.buttonText}>Start another diagnosis</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.troubleCodesContainer}>
-            <Text style={styles.troubleCodesLbl}>Detected Trouble Codes</Text>
+            <View style={styles.troubleCodesHeader}>
+              <Icon name="alert-circle" size={24} color="#DC2626" />
+              <Text style={styles.troubleCodesLbl}>Detected Trouble Codes</Text>
+              <View style={styles.troubleCodeBadge}>
+                <Text style={styles.troubleCodeCount}>{codeInterpretation.length}</Text>
+              </View>
+            </View>
 
             {[...codeInterpretation]
               .sort((a, b) => a.vehicleDiagnosticID - b.vehicleDiagnosticID)
-              .map((item) => (
+              .map((item, index) => (
                 <TouchableOpacity
                   key={item.vehicleDiagnosticID}
                   style={styles.troubleCodeButton}
@@ -122,7 +141,13 @@ const Diagnosis = () => {
                     router.replace('./detailed-report');
                   }}
                 >
-                  <Text style={styles.troubleCodeText}>{item.dtc}</Text>
+                  <View style={styles.troubleCodeHeader}>
+                    <View style={styles.troubleCodeNumberBadge}>
+                      <Text style={styles.troubleCodeNumber}>{index + 1}</Text>
+                    </View>
+                    <Text style={styles.troubleCodeText}>{item.dtc}</Text>
+                    <Icon name="chevron-right" size={20} color="#9CA3AF" style={styles.chevronIcon} />
+                  </View>
                   <Text style={styles.troubleCodeText2}>{item.technicalDescription}</Text>
                 </TouchableOpacity>
               ))}
@@ -135,6 +160,7 @@ const Diagnosis = () => {
               router.replace('/car-owner/(screens)/repair-shops/repair-shops');
             }}
           >
+            <Icon name="store-search" size={20} color="#FFF" />
             <Text style={styles.findShopButtonText}>Find Repair Shop</Text>
           </TouchableOpacity>
         </View>
@@ -150,27 +176,35 @@ const styles = StyleSheet.create({
   },
   lowerBox: {
     alignItems: 'center',
-    marginTop: 30,
+    marginTop: 20,
     flex: 1,
     marginBottom: 80,
   },
   buttonContainer: {
     width: '90%',
     gap: 10,
+    marginTop: 16,
   },
   car: {
     fontFamily: 'BodyBold',
-    fontSize: 20,
-    color: '#333',
-    textAlign: 'center',
+    fontSize: 18,
+    color: '#1F2937',
   },
   button: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    padding: 20,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   buttonIcon: {
     fontSize: 30,
@@ -183,64 +217,140 @@ const styles = StyleSheet.create({
   },
   troubleCodesContainer: {
     width: '90%',
-    marginTop: 40,
-  },
-  labelContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
+    marginTop: 24,
   },
   troubleCodesLbl: {
     fontFamily: 'BodyBold',
-    fontSize: 16,
-    color: '#333',
-  },
-  clearButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  clearButtonText: {
-    fontFamily: 'BodyRegular',
-    color: '#000B58',
-    fontSize: 16,
+    fontSize: 18,
+    color: '#1F2937',
   },
   troubleCodeButton: {
     backgroundColor: '#fff',
     width: '100%',
     marginBottom: 10,
+    marginTop: 10,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
-    elevation: 5,
-    borderRadius: 5,
-    padding: 10,
+    elevation: 3,
+    borderRadius: 10,
+    padding: 14,
+    borderLeftWidth: 4,
+    borderLeftColor: '#DC2626',
   },
   troubleCodeText: {
     fontFamily: 'BodyBold',
-    color: '#780606',
+    color: '#DC2626',
+    fontSize: 15,
   },
   troubleCodeText2: {
     fontFamily: 'BodyRegular',
-    color: '#555',
+    color: '#6B7280',
+    fontSize: 14,
+    marginTop: 6,
+    lineHeight: 20,
   },
   findShopButton: {
-    width: 150,
-    padding: 10,
+    width: 180,
+    flexDirection: 'row',
+    padding: 12,
     backgroundColor: '#000B58',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
-    marginTop: 10,
+    gap: 8,
+    borderRadius: 25,
+    marginTop: 20,
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
   },
   findShopButtonText: {
     fontFamily: 'HeaderBold',
     color: '#FFF',
+    fontSize: 15,
+  },
+  vehicleInfoCard: {
+    width: '90%',
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  vehicleInfoTextContainer: {
+    flex: 1,
+  },
+  vehicleLabel: {
+    fontFamily: 'BodyRegular',
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  disconnectButton: {
+    backgroundColor: '#DC2626',
+  },
+  primaryButton: {
+    backgroundColor: '#000B58',
+  },
+  troubleCodesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  troubleCodeBadge: {
+    backgroundColor: '#FEE2E2',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginLeft: 'auto',
+  },
+  troubleCodeCount: {
+    fontFamily: 'BodyBold',
+    fontSize: 12,
+    color: '#DC2626',
+  },
+  troubleCodeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 6,
+  },
+  troubleCodeNumberBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  troubleCodeNumber: {
+    fontFamily: 'BodyBold',
+    fontSize: 12,
+    color: '#DC2626',
+  },
+  chevronIcon: {
+    marginLeft: 'auto',
   },
 });
 

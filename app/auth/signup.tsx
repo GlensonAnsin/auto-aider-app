@@ -5,8 +5,8 @@ import { RootState } from '@/redux/store';
 import { createRepairShop, createUser, generateOtp, getRepairShops, getUsers } from '@/services/backendApi';
 import { AutoRepairShop } from '@/types/autoRepairShop';
 import { User } from '@/types/user';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
-import { Checkbox } from 'expo-checkbox';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -15,7 +15,6 @@ import {
   AppState,
   Image,
   Modal,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -61,6 +60,10 @@ const Signup = () => {
   const [confirmCodeLoading, setConfirmCodeLoading] = useState<boolean>(false);
   const [signupLoading, setSignupLoading] = useState<boolean>(false);
   const [verificationModalVisible, setVerificationModalVisible] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [showShopPassword, setShowShopPassword] = useState<boolean>(false);
+  const [showShopConfirmPassword, setShowShopConfirmPassword] = useState<boolean>(false);
   const inputs = useRef<(TextInput | null)[]>([]);
   const prefix = '09';
   const [termsModalVisible, setTermsModalVisible] = useState<boolean>(false);
@@ -234,14 +237,33 @@ const Signup = () => {
     newOtp[index] = text;
     setOtp(newOtp);
 
+    // Move to next field if text is entered and not the last field
     if (text && index < 5) {
       inputs.current[index + 1]?.focus();
+    }
+    // Move to previous field if text is deleted and not the first field
+    else if (!text && index > 0) {
+      inputs.current[index - 1]?.focus();
     }
   };
 
   const handleKeyPress = (e: any, index: number) => {
+    // Handle backspace when current field is empty
     if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
       inputs.current[index - 1]?.focus();
+    }
+    // Handle backspace when current field has a digit - clear it and move to previous
+    else if (e.nativeEvent.key === 'Backspace' && otp[index] && index > 0) {
+      let newOtp = [...otp];
+      newOtp[index] = '';
+      setOtp(newOtp);
+      inputs.current[index - 1]?.focus();
+    }
+    // Handle backspace on first field - just clear it
+    else if (e.nativeEvent.key === 'Backspace' && otp[index] && index === 0) {
+      let newOtp = [...otp];
+      newOtp[index] = '';
+      setOtp(newOtp);
     }
   };
 
@@ -275,7 +297,7 @@ const Signup = () => {
 
     if (!firstname || !lastname || !gender || !mobileNum || !password || !confirmPassword || !role) {
       showMessage({
-        message: 'Please fill in all fields.',
+        message: 'Please fill out all fields.',
         type: 'warning',
         floating: true,
         color: '#FFF',
@@ -325,6 +347,7 @@ const Signup = () => {
       }
       handleSendCode();
     } catch {
+      setSignupLoading(false);
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -332,8 +355,9 @@ const Signup = () => {
         color: '#FFF',
         icon: 'danger',
       });
-      setSignupLoading(false);
-      return;
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     }
   };
 
@@ -392,6 +416,7 @@ const Signup = () => {
           return;
         }
       } catch {
+        setSignupLoading(false);
         showMessage({
           message: 'Something went wrong. Please try again.',
           type: 'danger',
@@ -399,8 +424,9 @@ const Signup = () => {
           color: '#FFF',
           icon: 'danger',
         });
-        setSignupLoading(false);
-        return;
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
       }
 
       setSignupLoading(false);
@@ -459,6 +485,9 @@ const Signup = () => {
         color: '#FFF',
         icon: 'danger',
       });
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     } finally {
       setSendCodeLoading(false);
       setSignupLoading(false);
@@ -578,6 +607,9 @@ const Signup = () => {
           color: '#FFF',
           icon: 'danger',
         });
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
         return;
       }
 
@@ -744,26 +776,39 @@ const Signup = () => {
               <View style={styles.row}>
                 <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Password</Text>
-                  <TextInput
-                    value={password}
-                    onChangeText={setPassword}
-                    style={styles.input}
-                    secureTextEntry
-                    placeholder="********"
-                    placeholderTextColor="#555"
-                  />
+                  <View style={styles.passwordInputContainer}>
+                    <TextInput
+                      value={password}
+                      onChangeText={setPassword}
+                      style={styles.passwordInput}
+                      secureTextEntry={!showPassword}
+                      placeholder="********"
+                      placeholderTextColor="#555"
+                    />
+                    <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
+                      <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color="#555" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
                 <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Confirm Password</Text>
-                  <TextInput
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    style={styles.input}
-                    secureTextEntry
-                    placeholder="********"
-                    placeholderTextColor="#555"
-                  />
+                  <View style={styles.passwordInputContainer}>
+                    <TextInput
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      style={styles.passwordInput}
+                      secureTextEntry={!showConfirmPassword}
+                      placeholder="********"
+                      placeholderTextColor="#555"
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeIcon}
+                      onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      <Icon name={showConfirmPassword ? 'eye-off' : 'eye'} size={20} color="#555" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
 
@@ -800,45 +845,83 @@ const Signup = () => {
 
               <Modal
                 animationType="fade"
-                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                transparent={true}
                 visible={termsModalVisible}
                 onRequestClose={() => setTermsModalVisible(false)}
               >
-                <TouchableWithoutFeedback onPress={() => setTermsModalVisible(false)}>
-                  <View style={styles.centeredView}>
-                    <Pressable style={styles.termsPrivacyModalView} onPress={() => {}}>
-                      <ScrollView>
-                        <View onStartShouldSetResponder={() => true}>
-                          <TermsOfServiceComp />
+                <View style={styles.modalOverlay}>
+                  <TouchableWithoutFeedback onPress={() => setTermsModalVisible(false)}>
+                    <View style={styles.modalBackground} />
+                  </TouchableWithoutFeedback>
+
+                  <View style={styles.termsPrivacyModalView}>
+                    <View style={styles.modalHeaderSection}>
+                      <Icon name="file-document-outline" size={24} color="#000B58" />
+                      <Text style={styles.modalHeaderText}>Terms of Service</Text>
+                    </View>
+                    <ScrollView>
+                      <View style={styles.modalScrollContent}>
+                        <View style={styles.introCard}>
+                          <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="file-document-outline" size={32} color="#000B58" />
+                          </View>
+                          <Text style={styles.introTitle}>Legal Agreement</Text>
+                          <Text style={styles.introText}>
+                            Please read these terms and conditions carefully before using the Auto AIDER application
+                          </Text>
                         </View>
-                      </ScrollView>
-                    </Pressable>
+
+                        <TermsOfServiceComp />
+                      </View>
+                    </ScrollView>
+                    <TouchableOpacity style={styles.modalCloseButton} onPress={() => setTermsModalVisible(false)}>
+                      <Text style={styles.modalCloseButtonText}>Close</Text>
+                    </TouchableOpacity>
                   </View>
-                </TouchableWithoutFeedback>
+                </View>
               </Modal>
 
               <Modal
                 animationType="fade"
-                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                transparent={true}
                 visible={privacyModalVisible}
                 onRequestClose={() => setPrivacyModalVisible(false)}
               >
-                <TouchableWithoutFeedback onPress={() => setPrivacyModalVisible(false)}>
-                  <View style={styles.centeredView}>
-                    <Pressable style={styles.termsPrivacyModalView} onPress={() => {}}>
-                      <ScrollView>
-                        <View onStartShouldSetResponder={() => true}>
-                          <PrivacyPolicyComp />
+                <View style={styles.modalOverlay}>
+                  <TouchableWithoutFeedback onPress={() => setPrivacyModalVisible(false)}>
+                    <View style={styles.modalBackground} />
+                  </TouchableWithoutFeedback>
+
+                  <View style={styles.termsPrivacyModalView}>
+                    <View style={styles.modalHeaderSection}>
+                      <Icon name="shield-lock-outline" size={24} color="#000B58" />
+                      <Text style={styles.modalHeaderText}>Privacy Policy</Text>
+                    </View>
+                    <ScrollView>
+                      <View style={styles.modalScrollContent}>
+                        <View style={styles.introCard}>
+                          <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="shield-lock-outline" size={32} color="#000B58" />
+                          </View>
+                          <Text style={styles.introTitle}>Your Privacy Matters</Text>
+                          <Text style={styles.introText}>
+                            We are committed to protecting your personal information and your right to privacy
+                          </Text>
                         </View>
-                      </ScrollView>
-                    </Pressable>
+
+                        <PrivacyPolicyComp />
+                      </View>
+                    </ScrollView>
+                    <TouchableOpacity style={styles.modalCloseButton} onPress={() => setPrivacyModalVisible(false)}>
+                      <Text style={styles.modalCloseButtonText}>Close</Text>
+                    </TouchableOpacity>
                   </View>
-                </TouchableWithoutFeedback>
+                </View>
               </Modal>
 
               <Modal
                 animationType="fade"
-                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                transparent={true}
                 visible={carOwnerModalVisible}
                 onRequestClose={() => {
                   isCarOwnerModalVisible(!carOwnerModalVisible);
@@ -846,8 +929,21 @@ const Signup = () => {
                   setPage('');
                 }}
               >
-                <View style={styles.centeredView}>
+                <View style={styles.modalOverlay}>
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      isCarOwnerModalVisible(!carOwnerModalVisible);
+                      router.replace('/auth/login');
+                      setPage('');
+                    }}
+                  >
+                    <View style={styles.modalBackground} />
+                  </TouchableWithoutFeedback>
+
                   <View style={styles.modalView}>
+                    <View style={styles.successIconContainer}>
+                      <Icon name="check-circle" size={64} color="#10B981" />
+                    </View>
                     <Text style={styles.modalTxt}>Account created successfully. Thank you for registering!</Text>
                     <TouchableOpacity
                       style={styles.modalButton}
@@ -953,26 +1049,39 @@ const Signup = () => {
               <View style={styles.row}>
                 <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Password</Text>
-                  <TextInput
-                    value={password}
-                    onChangeText={setPassword}
-                    style={styles.input}
-                    secureTextEntry
-                    placeholder="********"
-                    placeholderTextColor="#555"
-                  />
+                  <View style={styles.passwordInputContainer}>
+                    <TextInput
+                      value={password}
+                      onChangeText={setPassword}
+                      style={styles.passwordInput}
+                      secureTextEntry={!showShopPassword}
+                      placeholder="********"
+                      placeholderTextColor="#555"
+                    />
+                    <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowShopPassword(!showShopPassword)}>
+                      <Icon name={showShopPassword ? 'eye-off' : 'eye'} size={20} color="#555" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
                 <View style={styles.textInputContainer2}>
                   <Text style={styles.textInputLbl}>Confirm Password</Text>
-                  <TextInput
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    style={styles.input}
-                    secureTextEntry
-                    placeholder="********"
-                    placeholderTextColor="#555"
-                  />
+                  <View style={styles.passwordInputContainer}>
+                    <TextInput
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      style={styles.passwordInput}
+                      secureTextEntry={!showShopConfirmPassword}
+                      placeholder="********"
+                      placeholderTextColor="#555"
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeIcon}
+                      onPress={() => setShowShopConfirmPassword(!showShopConfirmPassword)}
+                    >
+                      <Icon name={showShopConfirmPassword ? 'eye-off' : 'eye'} size={20} color="#555" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
 
@@ -1010,7 +1119,12 @@ const Signup = () => {
                 <Text style={styles.header}>Location</Text>
               </View>
 
-              <Text style={styles.textInputLbl}>Please set up your shop location on the map.</Text>
+              <View style={styles.locationInstructions}>
+                <Icon name="map-marker-radius" size={24} color="#000B58" />
+                <Text style={styles.locationInstructionsText}>
+                  Drag the marker to set your shop&apos;s exact location on the map
+                </Text>
+              </View>
 
               <MapView
                 style={styles.map}
@@ -1054,18 +1168,30 @@ const Signup = () => {
                 <Text style={styles.header}>Services Offered</Text>
               </View>
 
-              <View style={styles.servicesList}>
-                {services.map((item) => (
-                  <View key={item.id} style={styles.checkboxContainer}>
-                    <Checkbox
-                      value={selectedServices.includes(item.label)}
-                      onValueChange={() => toggleCheckbox(item.label)}
-                      color={selectedServices.includes(item.label) ? '#000B58' : undefined}
-                    />
-                    <Text style={styles.checkboxTxt}>{item.label}</Text>
-                  </View>
-                ))}
-              </View>
+              <Text style={[styles.textInputLbl, { width: '95%', marginTop: 10, marginBottom: 16 }]}>
+                Select the services your shop provides
+              </Text>
+
+              <ScrollView style={styles.servicesList} showsVerticalScrollIndicator={false}>
+                {services.map((item) => {
+                  const isSelected = selectedServices.includes(item.label);
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[styles.serviceCard, isSelected && styles.serviceCardSelected]}
+                      onPress={() => toggleCheckbox(item.label)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.serviceCardContent}>
+                        <View style={[styles.serviceCheckbox, isSelected && styles.serviceCheckboxSelected]}>
+                          {isSelected && <Icon name="check" size={18} color="#FFF" />}
+                        </View>
+                        <Text style={[styles.checkboxTxt, isSelected && styles.checkboxTxtSelected]}>{item.label}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
 
               <View style={[styles.termsContainer, { marginTop: 20 }]}>
                 <Text style={styles.termsText}>By clicking Sign Up, you agree to our </Text>
@@ -1093,45 +1219,83 @@ const Signup = () => {
 
               <Modal
                 animationType="fade"
-                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                transparent={true}
                 visible={termsModalVisible}
                 onRequestClose={() => setTermsModalVisible(false)}
               >
-                <TouchableWithoutFeedback onPress={() => setTermsModalVisible(false)}>
-                  <View style={styles.centeredView}>
-                    <Pressable style={styles.termsPrivacyModalView} onPress={() => {}}>
-                      <ScrollView>
-                        <View onStartShouldSetResponder={() => true}>
-                          <TermsOfServiceComp />
+                <View style={styles.modalOverlay}>
+                  <TouchableWithoutFeedback onPress={() => setTermsModalVisible(false)}>
+                    <View style={styles.modalBackground} />
+                  </TouchableWithoutFeedback>
+
+                  <View style={styles.termsPrivacyModalView}>
+                    <View style={styles.modalHeaderSection}>
+                      <Icon name="file-document-outline" size={24} color="#000B58" />
+                      <Text style={styles.modalHeaderText}>Terms of Service</Text>
+                    </View>
+                    <ScrollView>
+                      <View style={styles.modalScrollContent}>
+                        <View style={styles.introCard}>
+                          <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="file-document-outline" size={32} color="#000B58" />
+                          </View>
+                          <Text style={styles.introTitle}>Legal Agreement</Text>
+                          <Text style={styles.introText}>
+                            Please read these terms and conditions carefully before using the Auto AIDER application
+                          </Text>
                         </View>
-                      </ScrollView>
-                    </Pressable>
+
+                        <TermsOfServiceComp />
+                      </View>
+                    </ScrollView>
+                    <TouchableOpacity style={styles.modalCloseButton} onPress={() => setTermsModalVisible(false)}>
+                      <Text style={styles.modalCloseButtonText}>Close</Text>
+                    </TouchableOpacity>
                   </View>
-                </TouchableWithoutFeedback>
+                </View>
               </Modal>
 
               <Modal
                 animationType="fade"
-                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                transparent={true}
                 visible={privacyModalVisible}
                 onRequestClose={() => setPrivacyModalVisible(false)}
               >
-                <TouchableWithoutFeedback onPress={() => setPrivacyModalVisible(false)}>
-                  <View style={styles.centeredView}>
-                    <Pressable style={styles.termsPrivacyModalView} onPress={() => {}}>
-                      <ScrollView>
-                        <View onStartShouldSetResponder={() => true}>
-                          <PrivacyPolicyComp />
+                <View style={styles.modalOverlay}>
+                  <TouchableWithoutFeedback onPress={() => setPrivacyModalVisible(false)}>
+                    <View style={styles.modalBackground} />
+                  </TouchableWithoutFeedback>
+
+                  <View style={styles.termsPrivacyModalView}>
+                    <View style={styles.modalHeaderSection}>
+                      <Icon name="shield-lock-outline" size={24} color="#000B58" />
+                      <Text style={styles.modalHeaderText}>Privacy Policy</Text>
+                    </View>
+                    <ScrollView>
+                      <View style={styles.modalScrollContent}>
+                        <View style={styles.introCard}>
+                          <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons name="shield-lock-outline" size={32} color="#000B58" />
+                          </View>
+                          <Text style={styles.introTitle}>Your Privacy Matters</Text>
+                          <Text style={styles.introText}>
+                            We are committed to protecting your personal information and your right to privacy
+                          </Text>
                         </View>
-                      </ScrollView>
-                    </Pressable>
+
+                        <PrivacyPolicyComp />
+                      </View>
+                    </ScrollView>
+                    <TouchableOpacity style={styles.modalCloseButton} onPress={() => setPrivacyModalVisible(false)}>
+                      <Text style={styles.modalCloseButtonText}>Close</Text>
+                    </TouchableOpacity>
                   </View>
-                </TouchableWithoutFeedback>
+                </View>
               </Modal>
 
               <Modal
                 animationType="fade"
-                backdropColor={'rgba(0, 0, 0, 0.5)'}
+                transparent={true}
                 visible={repairShopModalVisible}
                 onRequestClose={() => {
                   isRepairShopModalVisible(!repairShopModalVisible);
@@ -1139,8 +1303,21 @@ const Signup = () => {
                   setPage('');
                 }}
               >
-                <View style={styles.centeredView}>
+                <View style={styles.modalOverlay}>
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      isRepairShopModalVisible(!repairShopModalVisible);
+                      router.replace('/auth/login');
+                      setPage('');
+                    }}
+                  >
+                    <View style={styles.modalBackground} />
+                  </TouchableWithoutFeedback>
+
                   <View style={styles.modalView}>
+                    <View style={styles.successIconContainer}>
+                      <Icon name="clock-check-outline" size={64} color="#F59E0B" />
+                    </View>
                     <Text style={styles.modalTxt}>
                       Thank you for registering! Please wait for admin approval. An update will be sent via SMS.
                     </Text>
@@ -1162,7 +1339,7 @@ const Signup = () => {
 
           <Modal
             animationType="fade"
-            backdropColor={'rgba(0, 0, 0, 0.5)'}
+            transparent={true}
             visible={verificationModalVisible}
             onRequestClose={() => {
               setVerificationModalVisible(false);
@@ -1174,65 +1351,104 @@ const Signup = () => {
               setTimer(45);
             }}
           >
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setVerificationModalVisible(false);
-                clearTimer();
-                setIsTimerActivate(false);
-                setConfirm(null);
-                setError('');
-                setOtp(Array(6).fill(''));
-                setTimer(45);
-              }}
-            >
-              <View style={styles.centeredView}>
-                <Pressable style={styles.verificationModalView} onPress={() => {}}>
-                  <Text style={styles.modalHeader}>Verification</Text>
-                  <Text style={styles.modalText}>We have sent the verification code to your number.</Text>
-                  <View style={styles.codeInputContainer}>
-                    {otp.map((digit, index) => (
-                      <TextInput
-                        key={index}
-                        style={[styles.input, { width: 30 }]}
-                        value={digit}
-                        onChangeText={(text) => handleOtpInputChange(text.replace(/[^0-9]/g, ''), index)}
-                        onKeyPress={(e) => handleKeyPress(e, index)}
-                        keyboardType="number-pad"
-                        maxLength={1}
-                        readOnly={isTimerActivate ? false : true}
-                        ref={(ref) => {
-                          inputs.current[index] = ref;
-                        }}
-                      />
-                    ))}
-                  </View>
-                  <Text style={[styles.modalText, { fontSize: 12 }]}>
-                    {isTimerActivate ? `Resend code in ${timer}s` : 'You can resend the code now'}
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setVerificationModalVisible(false);
+                  clearTimer();
+                  setIsTimerActivate(false);
+                  setConfirm(null);
+                  setError('');
+                  setOtp(Array(6).fill(''));
+                  setTimer(45);
+                }}
+              >
+                <View style={styles.modalBackground} />
+              </TouchableWithoutFeedback>
+
+              <View style={styles.verificationModalView}>
+                <View style={styles.modalIconContainer}>
+                  <MaterialCommunityIcons name="cellphone-message" size={48} color="#000B58" />
+                </View>
+
+                <Text style={styles.modalHeader}>Verification Required</Text>
+                <Text style={styles.modalText}>We have sent a 6-digit verification code to your phone number</Text>
+
+                <View style={styles.codeInputContainer}>
+                  {otp.map((digit, index) => (
+                    <TextInput
+                      key={index}
+                      style={[
+                        styles.otpInput,
+                        digit && styles.otpInputFilled,
+                        !isTimerActivate && styles.otpInputDisabled,
+                      ]}
+                      value={digit}
+                      onChangeText={(text) => {
+                        // Only allow single digit
+                        const cleanText = text.replace(/[^0-9]/g, '').slice(-1);
+                        handleOtpInputChange(cleanText, index);
+                      }}
+                      onKeyPress={(e) => handleKeyPress(e, index)}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      readOnly={!isTimerActivate}
+                      selectTextOnFocus={true}
+                      ref={(ref) => {
+                        inputs.current[index] = ref;
+                      }}
+                    />
+                  ))}
+                </View>
+
+                <View style={styles.timerInfoContainer}>
+                  <MaterialCommunityIcons
+                    name={isTimerActivate ? 'timer-sand' : 'check-circle'}
+                    size={18}
+                    color={isTimerActivate ? '#000B58' : '#10B981'}
+                  />
+                  <Text style={[styles.timerInfoText, !isTimerActivate && styles.timerInfoTextReady]}>
+                    {isTimerActivate ? `Resend available in ${timer}s` : 'Ready to resend code'}
                   </Text>
-                  {error.length > 0 && (
-                    <View style={styles.errorContainer}>
-                      <Text style={styles.errorMessage}>{error}</Text>
-                    </View>
-                  )}
+                </View>
 
-                  {confirmCodeLoading && (
-                    <ActivityIndicator style={{ marginBottom: 10 }} size="small" color="#000B58" />
-                  )}
+                {error.length > 0 && (
+                  <View style={styles.errorContainer}>
+                    <MaterialCommunityIcons name="alert-circle" size={18} color="#DC2626" />
+                    <Text style={styles.errorMessage}>{error}</Text>
+                  </View>
+                )}
 
-                  {!isTimerActivate && (
-                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => handleResendCode()}>
-                      <Text style={styles.sendButtonText}>Resend Code</Text>
+                {confirmCodeLoading && (
+                  <View style={styles.modalLoadingContainer}>
+                    <ActivityIndicator size="small" color="#000B58" />
+                    <Text style={styles.modalLoadingText}>Verifying...</Text>
+                  </View>
+                )}
+
+                <View style={styles.modalButtonContainer}>
+                  {!isTimerActivate ? (
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalButtonPrimary]}
+                      onPress={() => handleResendCode()}
+                      disabled={confirmCodeLoading}
+                    >
+                      <MaterialCommunityIcons name="refresh" size={20} color="#FFF" />
+                      <Text style={styles.modalButtonText}>Resend Code</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalButtonPrimary]}
+                      onPress={() => verifyCode()}
+                      disabled={confirmCodeLoading}
+                    >
+                      <MaterialCommunityIcons name="check-circle-outline" size={20} color="#FFF" />
+                      <Text style={styles.modalButtonText}>Verify Code</Text>
                     </TouchableOpacity>
                   )}
-
-                  {isTimerActivate && (
-                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => verifyCode()}>
-                      <Text style={styles.sendButtonText}>Verify Code</Text>
-                    </TouchableOpacity>
-                  )}
-                </Pressable>
+                </View>
               </View>
-            </TouchableWithoutFeedback>
+            </View>
           </Modal>
         </View>
       </KeyboardAwareScrollView>
@@ -1248,47 +1464,66 @@ const Signup = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f4f7',
+    backgroundColor: '#F3F4F6',
   },
   upperBox: {
     backgroundColor: '#000B58',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 10,
-    padding: 10,
+    gap: 16,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
   },
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 8,
   },
   logo: {
-    width: 85,
-    height: 70,
+    width: 100,
+    height: 85,
   },
   upperTextInputLbl: {
     color: '#FFF',
-    fontFamily: 'BodyRegular',
+    fontSize: 15,
+    fontFamily: 'BodyBold',
+    marginBottom: 4,
   },
   upperDropdownButtonStyle: {
     width: '100%',
-    height: 45,
+    height: 48,
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 14,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   lowerBox: {
     alignItems: 'center',
     flex: 1,
+    paddingTop: 8,
   },
   header: {
     color: '#000B58',
     fontSize: 22,
     fontFamily: 'HeaderBold',
-    position: 'absolute',
-    textAlign: 'center',
     width: '100%',
     zIndex: 1,
   },
@@ -1316,242 +1551,318 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
   },
   textInputLbl: {
-    color: '#333',
-    fontFamily: 'BodyRegular',
+    color: '#374151',
+    fontSize: 14,
+    fontFamily: 'BodyBold',
+    marginBottom: 4,
   },
   input: {
     backgroundColor: '#fff',
     width: '100%',
     height: 45,
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 12,
     color: '#333',
+    fontSize: 14,
     fontFamily: 'BodyRegular',
     marginBottom: 20,
+  },
+  passwordInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    width: '100%',
+    height: 45,
+    marginBottom: 20,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingLeft: 12,
+    paddingRight: 8,
+    color: '#333',
+    fontSize: 14,
+    fontFamily: 'BodyRegular',
+  },
+  eyeIcon: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   dropdownButtonStyle: {
     width: '100%',
     height: 45,
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
   },
   dropdownButtonTxtStyle: {
     flex: 1,
+    fontSize: 14,
     color: '#333',
     fontFamily: 'BodyRegular',
   },
   dropdownButtonArrowStyle: {
     fontSize: 24,
-    color: '#333',
+    color: '#6B7280',
   },
   dropdownButtonIconStyle: {
-    fontSize: 24,
-    color: '#333',
-    marginRight: 8,
+    fontSize: 22,
+    color: '#000B58',
+    marginRight: 10,
   },
   dropdownMenuStyle: {
-    backgroundColor: '#EAEAEA',
-    borderRadius: 10,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   dropdownItemStyle: {
     width: '100%',
     flexDirection: 'row',
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
   dropdownItemTxtStyle: {
     flex: 1,
+    fontSize: 14,
     color: '#333',
     fontFamily: 'BodyRegular',
   },
   dropdownItemIconStyle: {
-    fontSize: 24,
-    color: '#333',
-    marginRight: 8,
+    fontSize: 22,
+    color: '#000B58',
+    marginRight: 10,
   },
   questionLbl: {
-    color: '#333',
+    color: '#6B7280',
+    fontSize: 14,
     fontFamily: 'BodyRegular',
   },
   loginLbl: {
-    fontSize: 12,
-    color: '#333',
+    fontSize: 14,
+    color: '#000B58',
     fontFamily: 'BodyBold',
     textDecorationLine: 'underline',
   },
   loginContainer: {
-    flexDirection: 'column',
-    gap: 5,
+    flexDirection: 'row',
+    gap: 6,
     alignItems: 'center',
-    marginTop: 10,
+    justifyContent: 'center',
+    marginTop: 12,
   },
   termsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
+    alignItems: 'center',
     width: '90%',
-    padding: 5,
-    borderRadius: 5,
-    marginTop: 10,
+    backgroundColor: '#F9FAFB',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   termsText: {
     fontFamily: 'BodyRegular',
-    color: '#333',
+    color: '#6B7280',
     fontSize: 13,
+    lineHeight: 18,
   },
   button: {
-    width: 120,
-    padding: 10,
+    minWidth: 140,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
     backgroundColor: '#000B58',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
+    borderRadius: 12,
     marginTop: 20,
     marginBottom: 20,
+    shadowColor: '#000B58',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buttonDisabled: {
-    backgroundColor: '#666666',
-    opacity: 0.6,
+    backgroundColor: '#9CA3AF',
+    shadowOpacity: 0.1,
   },
   buttonTxt: {
     color: '#FFF',
+    fontSize: 16,
     fontFamily: 'HeaderBold',
   },
   shopNameInput: {
     backgroundColor: '#fff',
     width: '100%',
     height: 45,
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 12,
+    fontSize: 14,
+    color: '#333',
     fontFamily: 'BodyRegular',
   },
   map: {
-    width: '100%',
+    width: '95%',
     flex: 1,
+    borderRadius: 16,
+    marginTop: 16,
+    marginBottom: 16,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+  },
+  locationInstructions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#EEF2FF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginTop: 8,
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+  },
+  locationInstructionsText: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: 'BodyRegular',
+    color: '#374151',
+    lineHeight: 20,
   },
   arrowHeaderContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    position: 'relative',
-    paddingVertical: 10,
-    width: '95%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    width: '100%',
+    gap: 5,
   },
   arrowWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 2,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F9FAFB',
   },
   arrowBack: {
     color: '#000B58',
   },
   servicesList: {
     width: '95%',
+    flex: 1,
+    marginBottom: 16,
   },
-  checkboxContainer: {
+  serviceCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    padding: 14,
+    marginBottom: 12,
+  },
+  serviceCardSelected: {
+    backgroundColor: '#EEF2FF',
+    borderColor: '#000B58',
+  },
+  serviceCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
-    gap: 10,
+    gap: 12,
+  },
+  serviceCheckbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  serviceCheckboxSelected: {
+    backgroundColor: '#000B58',
+    borderColor: '#000B58',
   },
   checkboxTxt: {
     fontFamily: 'BodyRegular',
-    width: '90%',
-  },
-  centeredView: {
+    fontSize: 14,
+    color: '#374151',
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    lineHeight: 20,
+  },
+  checkboxTxtSelected: {
+    fontFamily: 'BodyBold',
+    color: '#000B58',
   },
   modalView: {
     backgroundColor: '#FFF',
-    width: '70%',
-    borderRadius: 10,
-    padding: 20,
+    width: '80%',
+    borderRadius: 16,
+    padding: 24,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 8,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
   },
   modalTxt: {
     textAlign: 'center',
+    fontSize: 15,
+    lineHeight: 22,
     fontFamily: 'BodyRegular',
-    color: '#333',
+    color: '#374151',
+    marginVertical: 16,
   },
-  modalButton: {
-    width: '50%',
-    height: 45,
-    backgroundColor: '#000B58',
+  modalOverlay: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
-    marginTop: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  sendButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000B58',
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 20,
-  },
-  sendButtonText: {
-    fontFamily: 'BodyRegular',
-    color: '#fff',
-  },
-  verificationModalView: {
-    backgroundColor: '#FFF',
-    width: '85%',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  modalHeader: {
-    fontSize: 20,
-    fontFamily: 'HeaderBold',
-    color: '#333',
-    marginBottom: 10,
-  },
-  modalText: {
-    fontFamily: 'BodyRegular',
-    color: '#333',
-    marginBottom: 10,
-  },
-  codeInputContainer: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  errorContainer: {
-    backgroundColor: '#EAEAEA',
-    borderRadius: 5,
-    width: '100%',
-    padding: 10,
-    marginBottom: 10,
-  },
-  errorMessage: {
-    fontFamily: 'BodyRegular',
-    color: 'red',
-    textAlign: 'center',
-    fontSize: 12,
+  modalBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   sendCodeLoadingContainer: {
     flex: 1,
@@ -1568,18 +1879,241 @@ const styles = StyleSheet.create({
   termsPrivacyModalView: {
     backgroundColor: '#FFF',
     width: '90%',
-    borderRadius: 10,
-    padding: 20,
+    maxHeight: '90%',
+    borderRadius: 16,
+    padding: 0,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  modalHeaderSection: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  modalHeaderText: {
+    fontSize: 18,
+    fontFamily: 'HeaderBold',
+    color: '#000B58',
+    flex: 1,
+  },
+  modalScrollContent: {
+    height: '85%',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  modalCloseButton: {
+    backgroundColor: '#000B58',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginVertical: 16,
+    alignItems: 'center',
+    shadowColor: '#000B58',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  modalCloseButtonText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontFamily: 'BodyBold',
+  },
+  successIconContainer: {
+    marginBottom: 16,
+  },
+  introCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    maxHeight: 500,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#E0E7FF',
+  },
+  iconContainer: {
+    backgroundColor: '#E0E7FF',
+    borderRadius: 50,
+    width: 70,
+    height: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  introTitle: {
+    fontFamily: 'HeaderBold',
+    fontSize: 20,
+    color: '#111827',
+    marginBottom: 8,
+  },
+  introText: {
+    fontFamily: 'BodyRegular',
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  verificationModalView: {
+    backgroundColor: '#FFF',
+    width: '90%',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalIconContainer: {
+    backgroundColor: '#E0E7FF',
+    borderRadius: 60,
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalHeader: {
+    fontSize: 22,
+    fontFamily: 'HeaderBold',
+    color: '#333',
+    marginBottom: 12,
+  },
+  modalText: {
+    fontFamily: 'BodyRegular',
+    color: '#555',
+    marginBottom: 16,
+    textAlign: 'center',
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  codeInputContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  otpInput: {
+    width: 45,
+    height: 55,
+    borderRadius: 12,
+    padding: 10,
+    color: '#333',
+    fontFamily: 'HeaderBold',
+    fontSize: 20,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    textAlign: 'center',
+  },
+  otpInputFilled: {
+    backgroundColor: '#E0E7FF',
+    borderColor: '#000B58',
+  },
+  otpInputDisabled: {
+    backgroundColor: '#F3F4F6',
+    borderColor: '#D1D5DB',
+    opacity: 0.6,
+  },
+  timerInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  timerInfoText: {
+    fontFamily: 'BodyRegular',
+    fontSize: 13,
+    color: '#000B58',
+  },
+  timerInfoTextReady: {
+    color: '#10B981',
+  },
+  modalLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+    paddingVertical: 12,
+  },
+  modalLoadingText: {
+    fontFamily: 'BodyRegular',
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  modalButtonContainer: {
+    width: '100%',
+    gap: 10,
+  },
+  modalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    gap: 8,
+  },
+  modalButtonPrimary: {
+    backgroundColor: '#000B58',
+  },
+  modalButtonText: {
+    fontFamily: 'BodyBold',
+    color: '#FFF',
+    fontSize: 15,
+  },
+  errorContainer: {
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DC2626',
+    width: '100%',
+    padding: 12,
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  errorMessage: {
+    fontFamily: 'BodyRegular',
+    color: '#DC2626',
+    fontSize: 13,
+    flex: 1,
   },
 });
 

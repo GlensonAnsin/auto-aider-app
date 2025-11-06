@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 import { useDispatch, useSelector } from 'react-redux';
@@ -94,13 +95,22 @@ const RepairRequests = () => {
         }
 
         setRequestStatus(statusData);
-      } catch (e) {
-        console.error('Error: ', e);
+      } catch {
+        showMessage({
+          message: 'Something went wrong. Please try again.',
+          type: 'danger',
+          floating: true,
+          color: '#FFF',
+          icon: 'danger',
+        });
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!socket) return;
@@ -246,7 +256,11 @@ const RepairRequests = () => {
       <Header headerTitle="Repair Requests" />
 
       <View style={styles.lowerBox}>
-        <View style={{ width: '90%', alignSelf: 'center' }}>
+        <View style={styles.filterContainer}>
+          <View style={styles.filterLabelContainer}>
+            <MaterialCommunityIcons name="filter-variant" size={18} color="#000B58" />
+            <Text style={styles.filterLabel}>Filter by Status</Text>
+          </View>
           <SelectDropdown
             data={buttons}
             defaultValue={activeButton}
@@ -254,6 +268,7 @@ const RepairRequests = () => {
             onSelect={(selectedItem) => setActiveButton(selectedItem)}
             renderButton={(selectedItem, isOpen) => (
               <View style={styles.dropdownButtonStyle}>
+                <MaterialCommunityIcons name="format-list-bulleted" size={18} color="#000B58" />
                 <Text style={styles.dropdownButtonTxtStyle}>{selectedItem}</Text>
                 <MaterialCommunityIcons
                   name={isOpen ? 'chevron-up' : 'chevron-down'}
@@ -265,10 +280,11 @@ const RepairRequests = () => {
               <View
                 style={{
                   ...styles.dropdownItemStyle,
-                  ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                  ...(isSelected && { backgroundColor: '#E0E7FF' }),
                 }}
               >
                 <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
+                {isSelected && <MaterialCommunityIcons name="check" size={18} color="#000B58" />}
               </View>
             )}
             showsVerticalScrollIndicator={false}
@@ -280,8 +296,11 @@ const RepairRequests = () => {
           <>
             {grouped.length === 0 && (
               <View style={styles.noHistoryContainer}>
-                <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
-                <Text style={styles.emptyText}>Empty</Text>
+                <View style={styles.emptyIconContainer}>
+                  <MaterialCommunityIcons name="clipboard-text-off-outline" size={80} color="#9CA3AF" />
+                </View>
+                <Text style={styles.emptyText}>No Requests</Text>
+                <Text style={styles.emptySubtext}>No repair requests have been received yet</Text>
               </View>
             )}
 
@@ -298,57 +317,79 @@ const RepairRequests = () => {
                       router.replace('./repair-request-details');
                     }}
                   >
-                    <View style={styles.vehicleCustomerContainer}>
-                      <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                      <Text style={styles.requestText}>{item.customer}</Text>
-                      <Text style={styles.requestText}>{item.datetime}</Text>
+                    <View style={styles.requestContent}>
+                      <View style={styles.requestIconWrapper}>
+                        <MaterialCommunityIcons name="account-wrench" size={24} color="#000B58" />
+                      </View>
+                      <View style={styles.vehicleCustomerContainer}>
+                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                        <View style={styles.requestInfoRow}>
+                          <MaterialCommunityIcons name="account" size={14} color="#6B7280" />
+                          <Text style={styles.requestText}>{item.customer}</Text>
+                        </View>
+                        <View style={styles.requestInfoRow}>
+                          <MaterialCommunityIcons name="clock-outline" size={14} color="#6B7280" />
+                          <Text style={styles.requestText}>{item.datetime}</Text>
+                        </View>
+                      </View>
                     </View>
                     <View style={styles.statusContainer}>
-                      <Text style={styles.statusText}>{item.status}</Text>
-                      {item.status === 'Pending' && (
-                        <LottieView
-                          source={require('@/assets/images/pending.json')}
-                          autoPlay
-                          loop
-                          style={{
-                            width: 26,
-                            height: 26,
-                          }}
-                        />
-                      )}
-                      {item.status === 'Rejected' && (
-                        <LottieView
-                          source={require('@/assets/images/rejected.json')}
-                          autoPlay
-                          loop
-                          style={{
-                            width: 26,
-                            height: 26,
-                          }}
-                        />
-                      )}
-                      {item.status === 'Ongoing' && (
-                        <LottieView
-                          source={require('@/assets/images/ongoing.json')}
-                          autoPlay
-                          loop
-                          style={{
-                            width: 26,
-                            height: 26,
-                          }}
-                        />
-                      )}
-                      {item.status === 'Completed' && (
-                        <LottieView
-                          source={require('@/assets/images/completed.json')}
-                          autoPlay
-                          loop
-                          style={{
-                            width: 26,
-                            height: 26,
-                          }}
-                        />
-                      )}
+                      <View
+                        style={[
+                          styles.statusBadge,
+                          item.status === 'Pending' && styles.statusPending,
+                          item.status === 'Rejected' && styles.statusRejected,
+                          item.status === 'Ongoing' && styles.statusOngoing,
+                          item.status === 'Completed' && styles.statusCompleted,
+                        ]}
+                      >
+                        <Text style={styles.statusText}>{item.status}</Text>
+                        {item.status === 'Pending' && (
+                          <LottieView
+                            source={require('@/assets/images/pending.json')}
+                            autoPlay
+                            loop
+                            style={{
+                              width: 20,
+                              height: 20,
+                            }}
+                          />
+                        )}
+                        {item.status === 'Rejected' && (
+                          <LottieView
+                            source={require('@/assets/images/rejected.json')}
+                            autoPlay
+                            loop
+                            style={{
+                              width: 20,
+                              height: 20,
+                            }}
+                          />
+                        )}
+                        {item.status === 'Ongoing' && (
+                          <LottieView
+                            source={require('@/assets/images/ongoing.json')}
+                            autoPlay
+                            loop
+                            style={{
+                              width: 20,
+                              height: 20,
+                            }}
+                          />
+                        )}
+                        {item.status === 'Completed' && (
+                          <LottieView
+                            source={require('@/assets/images/completed.json')}
+                            autoPlay
+                            loop
+                            style={{
+                              width: 20,
+                              height: 20,
+                            }}
+                          />
+                        )}
+                      </View>
+                      <MaterialCommunityIcons name="chevron-right" size={20} color="#9CA3AF" />
                     </View>
                   </TouchableOpacity>
                 )}
@@ -362,8 +403,11 @@ const RepairRequests = () => {
           <>
             {filterPending.length === 0 && (
               <View style={styles.noHistoryContainer}>
-                <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
-                <Text style={styles.emptyText}>Empty</Text>
+                <View style={styles.emptyIconContainer}>
+                  <MaterialCommunityIcons name="clock-alert-outline" size={80} color="#FEF3C7" />
+                </View>
+                <Text style={styles.noRequestText}>No Pending Requests</Text>
+                <Text style={styles.emptySubtext}>No pending requests at the moment</Text>
               </View>
             )}
 
@@ -380,22 +424,36 @@ const RepairRequests = () => {
                       router.replace('./repair-request-details');
                     }}
                   >
-                    <View style={styles.vehicleCustomerContainer}>
-                      <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                      <Text style={styles.requestText}>{item.customer}</Text>
-                      <Text style={styles.requestText}>{item.datetime}</Text>
+                    <View style={styles.requestContent}>
+                      <View style={styles.requestIconWrapper}>
+                        <MaterialCommunityIcons name="account-wrench" size={24} color="#000B58" />
+                      </View>
+                      <View style={styles.vehicleCustomerContainer}>
+                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                        <View style={styles.requestInfoRow}>
+                          <MaterialCommunityIcons name="account" size={14} color="#6B7280" />
+                          <Text style={styles.requestText}>{item.customer}</Text>
+                        </View>
+                        <View style={styles.requestInfoRow}>
+                          <MaterialCommunityIcons name="clock-outline" size={14} color="#6B7280" />
+                          <Text style={styles.requestText}>{item.datetime}</Text>
+                        </View>
+                      </View>
                     </View>
                     <View style={styles.statusContainer}>
-                      <Text style={styles.statusText}>{item.status}</Text>
-                      <LottieView
-                        source={require('@/assets/images/pending.json')}
-                        autoPlay
-                        loop
-                        style={{
-                          width: 26,
-                          height: 26,
-                        }}
-                      />
+                      <View style={[styles.statusBadge, styles.statusPending]}>
+                        <Text style={styles.statusText}>{item.status}</Text>
+                        <LottieView
+                          source={require('@/assets/images/pending.json')}
+                          autoPlay
+                          loop
+                          style={{
+                            width: 20,
+                            height: 20,
+                          }}
+                        />
+                      </View>
+                      <MaterialCommunityIcons name="chevron-right" size={20} color="#9CA3AF" />
                     </View>
                   </TouchableOpacity>
                 )}
@@ -409,8 +467,11 @@ const RepairRequests = () => {
           <>
             {filterRejected.length === 0 && (
               <View style={styles.noHistoryContainer}>
-                <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
-                <Text style={styles.emptyText}>Empty</Text>
+                <View style={styles.emptyIconContainer}>
+                  <MaterialCommunityIcons name="close-circle-outline" size={80} color="#FECACA" />
+                </View>
+                <Text style={styles.noRequestText}>No Rejected Requests</Text>
+                <Text style={styles.emptySubtext}>No rejected requests</Text>
               </View>
             )}
 
@@ -427,22 +488,36 @@ const RepairRequests = () => {
                       router.replace('./repair-request-details');
                     }}
                   >
-                    <View style={styles.vehicleCustomerContainer}>
-                      <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                      <Text style={styles.requestText}>{item.customer}</Text>
-                      <Text style={styles.requestText}>{item.datetime}</Text>
+                    <View style={styles.requestContent}>
+                      <View style={styles.requestIconWrapper}>
+                        <MaterialCommunityIcons name="account-wrench" size={24} color="#000B58" />
+                      </View>
+                      <View style={styles.vehicleCustomerContainer}>
+                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                        <View style={styles.requestInfoRow}>
+                          <MaterialCommunityIcons name="account" size={14} color="#6B7280" />
+                          <Text style={styles.requestText}>{item.customer}</Text>
+                        </View>
+                        <View style={styles.requestInfoRow}>
+                          <MaterialCommunityIcons name="clock-outline" size={14} color="#6B7280" />
+                          <Text style={styles.requestText}>{item.datetime}</Text>
+                        </View>
+                      </View>
                     </View>
                     <View style={styles.statusContainer}>
-                      <Text style={styles.statusText}>{item.status}</Text>
-                      <LottieView
-                        source={require('@/assets/images/rejected.json')}
-                        autoPlay
-                        loop
-                        style={{
-                          width: 26,
-                          height: 26,
-                        }}
-                      />
+                      <View style={[styles.statusBadge, styles.statusRejected]}>
+                        <Text style={styles.statusText}>{item.status}</Text>
+                        <LottieView
+                          source={require('@/assets/images/rejected.json')}
+                          autoPlay
+                          loop
+                          style={{
+                            width: 20,
+                            height: 20,
+                          }}
+                        />
+                      </View>
+                      <MaterialCommunityIcons name="chevron-right" size={20} color="#9CA3AF" />
                     </View>
                   </TouchableOpacity>
                 )}
@@ -456,8 +531,11 @@ const RepairRequests = () => {
           <>
             {filterOngoing.length === 0 && (
               <View style={styles.noHistoryContainer}>
-                <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
-                <Text style={styles.emptyText}>Empty</Text>
+                <View style={styles.emptyIconContainer}>
+                  <MaterialCommunityIcons name="progress-wrench" size={80} color="#DBEAFE" />
+                </View>
+                <Text style={styles.noRequestText}>No Ongoing Requests</Text>
+                <Text style={styles.emptySubtext}>No ongoing requests</Text>
               </View>
             )}
 
@@ -474,22 +552,36 @@ const RepairRequests = () => {
                       router.replace('./repair-request-details');
                     }}
                   >
-                    <View style={styles.vehicleCustomerContainer}>
-                      <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                      <Text style={styles.requestText}>{item.customer}</Text>
-                      <Text style={styles.requestText}>{item.datetime}</Text>
+                    <View style={styles.requestContent}>
+                      <View style={styles.requestIconWrapper}>
+                        <MaterialCommunityIcons name="account-wrench" size={24} color="#000B58" />
+                      </View>
+                      <View style={styles.vehicleCustomerContainer}>
+                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                        <View style={styles.requestInfoRow}>
+                          <MaterialCommunityIcons name="account" size={14} color="#6B7280" />
+                          <Text style={styles.requestText}>{item.customer}</Text>
+                        </View>
+                        <View style={styles.requestInfoRow}>
+                          <MaterialCommunityIcons name="clock-outline" size={14} color="#6B7280" />
+                          <Text style={styles.requestText}>{item.datetime}</Text>
+                        </View>
+                      </View>
                     </View>
                     <View style={styles.statusContainer}>
-                      <Text style={styles.statusText}>{item.status}</Text>
-                      <LottieView
-                        source={require('@/assets/images/ongoing.json')}
-                        autoPlay
-                        loop
-                        style={{
-                          width: 26,
-                          height: 26,
-                        }}
-                      />
+                      <View style={[styles.statusBadge, styles.statusOngoing]}>
+                        <Text style={styles.statusText}>{item.status}</Text>
+                        <LottieView
+                          source={require('@/assets/images/ongoing.json')}
+                          autoPlay
+                          loop
+                          style={{
+                            width: 20,
+                            height: 20,
+                          }}
+                        />
+                      </View>
+                      <MaterialCommunityIcons name="chevron-right" size={20} color="#9CA3AF" />
                     </View>
                   </TouchableOpacity>
                 )}
@@ -503,8 +595,11 @@ const RepairRequests = () => {
           <>
             {filterCompleted.length === 0 && (
               <View style={styles.noHistoryContainer}>
-                <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
-                <Text style={styles.emptyText}>Empty</Text>
+                <View style={styles.emptyIconContainer}>
+                  <MaterialCommunityIcons name="check-circle-outline" size={80} color="#BBF7D0" />
+                </View>
+                <Text style={styles.noRequestText}>No Completed Requests</Text>
+                <Text style={styles.emptySubtext}>No completed requests yet</Text>
               </View>
             )}
 
@@ -521,22 +616,36 @@ const RepairRequests = () => {
                       router.replace('./repair-request-details');
                     }}
                   >
-                    <View style={styles.vehicleCustomerContainer}>
-                      <Text style={styles.vehicleName}>{item.vehicleName}</Text>
-                      <Text style={styles.requestText}>{item.customer}</Text>
-                      <Text style={styles.requestText}>{item.datetime}</Text>
+                    <View style={styles.requestContent}>
+                      <View style={styles.requestIconWrapper}>
+                        <MaterialCommunityIcons name="account-wrench" size={24} color="#000B58" />
+                      </View>
+                      <View style={styles.vehicleCustomerContainer}>
+                        <Text style={styles.vehicleName}>{item.vehicleName}</Text>
+                        <View style={styles.requestInfoRow}>
+                          <MaterialCommunityIcons name="account" size={14} color="#6B7280" />
+                          <Text style={styles.requestText}>{item.customer}</Text>
+                        </View>
+                        <View style={styles.requestInfoRow}>
+                          <MaterialCommunityIcons name="clock-outline" size={14} color="#6B7280" />
+                          <Text style={styles.requestText}>{item.datetime}</Text>
+                        </View>
+                      </View>
                     </View>
                     <View style={styles.statusContainer}>
-                      <Text style={styles.statusText}>{item.status}</Text>
-                      <LottieView
-                        source={require('@/assets/images/completed.json')}
-                        autoPlay
-                        loop
-                        style={{
-                          width: 26,
-                          height: 26,
-                        }}
-                      />
+                      <View style={[styles.statusBadge, styles.statusCompleted]}>
+                        <Text style={styles.statusText}>{item.status}</Text>
+                        <LottieView
+                          source={require('@/assets/images/completed.json')}
+                          autoPlay
+                          loop
+                          style={{
+                            width: 20,
+                            height: 20,
+                          }}
+                        />
+                      </View>
+                      <MaterialCommunityIcons name="chevron-right" size={20} color="#9CA3AF" />
                     </View>
                   </TouchableOpacity>
                 )}
@@ -562,7 +671,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   dropdownButtonStyle: {
-    width: 120,
+    width: 150,
     height: 45,
     borderRadius: 10,
     flexDirection: 'row',
@@ -582,7 +691,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   dropdownItemStyle: {
-    width: 120,
+    width: 150,
     flexDirection: 'row',
     paddingHorizontal: 10,
     justifyContent: 'center',
@@ -614,7 +723,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 10,
+    alignItems: 'center',
+    padding: 12,
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: {
@@ -629,7 +739,9 @@ const styles = StyleSheet.create({
   firstChild: {
     marginTop: 10,
   },
-  vehicleCustomerContainer: {},
+  vehicleCustomerContainer: {
+    flex: 1,
+  },
   vehicleName: {
     fontFamily: 'BodyBold',
     color: '#333',
@@ -638,21 +750,99 @@ const styles = StyleSheet.create({
   requestText: {
     fontFamily: 'BodyRegular',
     color: '#555',
+    fontSize: 14,
   },
   statusContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10,
+    alignItems: 'flex-end',
+    gap: 8,
   },
   statusText: {
     fontFamily: 'BodyBold',
     color: '#555',
+    fontSize: 12,
   },
   noRequestText: {
     fontFamily: 'BodyRegular',
     color: '#555',
     textAlign: 'center',
+    fontSize: 16,
+  },
+  // Filter section styles
+  filterContainer: {
+    width: '90%',
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  filterLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 6,
+  },
+  filterLabel: {
+    fontFamily: 'BodyBold',
+    fontSize: 14,
+    color: '#333',
+  },
+  // Empty state styles
+  emptyIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  emptySubtext: {
+    fontFamily: 'BodyRegular',
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  // Request card styles
+  requestContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+    marginRight: 8,
+  },
+  requestIconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F0F4FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  requestInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  // Status badge styles
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+    gap: 4,
+    flexShrink: 0,
+  },
+  statusPending: {
+    backgroundColor: '#FEF3C7',
+  },
+  statusRejected: {
+    backgroundColor: '#FECACA',
+  },
+  statusOngoing: {
+    backgroundColor: '#DBEAFE',
+  },
+  statusCompleted: {
+    backgroundColor: '#BBF7D0',
   },
 });
 

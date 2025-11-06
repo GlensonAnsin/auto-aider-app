@@ -123,10 +123,9 @@ const ChatRoom = () => {
           setReceiverLastname(res2.lastname);
           setReceiverShopName(null);
           setReceiverProfile(res2.profile_pic);
-          setReceiverProfileBG(res2.profile_bg);
+          setReceiverProfileBG(res2.user_initials_bg);
         }
-      } catch (e) {
-        console.error(e);
+      } catch {
         showMessage({
           message: 'Something went wrong. Please try again.',
           type: 'danger',
@@ -134,11 +133,14 @@ const ChatRoom = () => {
           color: '#FFF',
           icon: 'danger',
         });
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [senderID, receiverID, role]);
+  }, [senderID, receiverID, role, router]);
 
   useEffect(() => {
     if (!socket) return;
@@ -310,38 +312,46 @@ const ChatRoom = () => {
           <MaterialCommunityIcons name="arrow-left" style={styles.arrowBack} />
         </TouchableOpacity>
         <View style={styles.receiverInfo}>
-          {receiverProfile === null && (
-            <View style={[styles.profileWrapper, { backgroundColor: receiverProfileBG }]}>
-              {role === 'car-owner' && <MaterialCommunityIcons name="car-wrench" size={30} color="#FFF" />}
+          <View style={styles.profileSection}>
+            {receiverProfile === null && (
+              <View style={[styles.profileWrapper, { backgroundColor: receiverProfileBG }]}>
+                {role === 'car-owner' && <MaterialCommunityIcons name="car-wrench" size={30} color="#FFF" />}
 
-              {role === 'repair-shop' && (
-                <Text style={styles.userInitials}>{`${receiverFirstname?.[0]}${receiverLastname?.[0]}`}</Text>
-              )}
-            </View>
-          )}
+                {role === 'repair-shop' && (
+                  <Text style={styles.userInitials}>{`${receiverFirstname?.[0]}${receiverLastname?.[0]}`}</Text>
+                )}
+              </View>
+            )}
 
-          {receiverProfile !== null && (
-            <View style={styles.profileWrapper}>
-              <Image style={styles.profilePic} source={{ uri: receiverProfile }} width={50} height={50} />
-            </View>
-          )}
+            {receiverProfile !== null && (
+              <View style={styles.profileWrapper}>
+                <Image style={styles.profilePic} source={{ uri: receiverProfile }} width={50} height={50} />
+              </View>
+            )}
 
-          <View>
+            {isReceiverOnline && <View style={styles.onlineIndicator} />}
+          </View>
+
+          <View style={styles.nameStatusContainer}>
             {role === 'car-owner' && (
               <>
                 <Text numberOfLines={1} style={styles.name}>
                   {receiverShopName}
                 </Text>
-                {isReceiverOnline && <Text style={styles.onlineStatus}>Online</Text>}
-                {!isReceiverOnline && <Text style={styles.onlineStatus}>Away</Text>}
+                <View style={styles.statusRow}>
+                  <View style={[styles.statusDot, { backgroundColor: isReceiverOnline ? '#10B981' : '#9CA3AF' }]} />
+                  <Text style={styles.onlineStatus}>{isReceiverOnline ? 'Online' : 'Away'}</Text>
+                </View>
               </>
             )}
 
             {role === 'repair-shop' && (
               <>
                 <Text numberOfLines={1} style={styles.name}>{`${receiverFirstname} ${receiverLastname}`}</Text>
-                {isReceiverOnline && <Text style={styles.onlineStatus}>Online</Text>}
-                {!isReceiverOnline && <Text style={styles.onlineStatus}>Away</Text>}
+                <View style={styles.statusRow}>
+                  <View style={[styles.statusDot, { backgroundColor: isReceiverOnline ? '#10B981' : '#9CA3AF' }]} />
+                  <Text style={styles.onlineStatus}>{isReceiverOnline ? 'Online' : 'Away'}</Text>
+                </View>
               </>
             )}
           </View>
@@ -366,7 +376,9 @@ const ChatRoom = () => {
               styles.messageContainer,
               {
                 alignSelf: item.fromYou ? 'flex-end' : 'flex-start',
-                backgroundColor: item.fromYou ? '#1E3A8A' : '#E5E7EB',
+                backgroundColor: item.fromYou ? '#000B58' : '#FFFFFF',
+                borderBottomRightRadius: item.fromYou ? 4 : 20,
+                borderBottomLeftRadius: item.fromYou ? 20 : 4,
               },
             ]}
           >
@@ -374,7 +386,7 @@ const ChatRoom = () => {
               style={[
                 styles.messageText,
                 {
-                  color: item.fromYou ? '#FFF' : '#333',
+                  color: item.fromYou ? '#FFF' : '#1F2937',
                 },
               ]}
             >
@@ -385,7 +397,7 @@ const ChatRoom = () => {
                 style={[
                   styles.dateText,
                   {
-                    color: item.fromYou ? '#FFF' : '#333',
+                    color: item.fromYou ? '#E0E7FF' : '#9CA3AF',
                   },
                 ]}
               >
@@ -393,8 +405,8 @@ const ChatRoom = () => {
               </Text>
               {item.fromYou && (
                 <>
-                  {item.status === 'seen' && <Ionicons name="checkmark-done-sharp" size={12} color="#FFF" />}
-                  {item.status === 'unread' && <Ionicons name="checkmark-sharp" size={12} color="#FFF" />}
+                  {item.status === 'seen' && <Ionicons name="checkmark-done-sharp" size={14} color="#10B981" />}
+                  {item.status === 'unread' && <Ionicons name="checkmark-sharp" size={14} color="#E0E7FF" />}
                 </>
               )}
             </View>
@@ -407,14 +419,16 @@ const ChatRoom = () => {
         <TextInput
           value={message}
           onChangeText={setMessage}
-          placeholder="Message"
-          placeholderTextColor="#555"
+          placeholder="Type a message..."
+          placeholderTextColor="#9CA3AF"
           multiline={true}
           numberOfLines={6}
           style={styles.messageInput}
         />
         <TouchableOpacity style={styles.sendButton} disabled={!message || isSending} onPress={() => sendMessage()}>
-          <Ionicons name="send" size={24} color={!message || isSending ? '#E1E1E1' : '#FFF'} />
+          <View style={[styles.sendIconWrapper, { opacity: !message || isSending ? 0.4 : 1 }]}>
+            <Ionicons name="send" size={20} color="#FFF" />
+          </View>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -424,7 +438,7 @@ const ChatRoom = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f4f7',
+    backgroundColor: '#F3F4F6',
   },
   header: {
     backgroundColor: '#000B58',
@@ -433,19 +447,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 63,
     gap: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 4,
   },
   arrowWrapper: {
     marginLeft: 10,
+    padding: 8,
+    borderRadius: 20,
   },
   arrowBack: {
-    fontSize: 22,
+    fontSize: 24,
     color: '#FFF',
   },
   receiverInfo: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
+  },
+  profileSection: {
+    position: 'relative',
   },
   profileWrapper: {
     width: 50,
@@ -453,39 +480,75 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 50,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  onlineIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#10B981',
+    borderWidth: 2,
+    borderColor: '#000B58',
   },
   userInitials: {
     fontFamily: 'HeaderBold',
-    fontSize: 20,
+    fontSize: 18,
     color: '#FFF',
   },
   profilePic: {
     borderRadius: 50,
   },
+  nameStatusContainer: {
+    gap: 2,
+  },
   name: {
-    fontFamily: 'HeaderRegular',
-    fontSize: 18,
+    fontFamily: 'HeaderBold',
+    fontSize: 17,
     color: '#FFF',
-    width: 230,
+    width: 220,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   onlineStatus: {
-    fontFamily: 'HeaderRegular',
-    color: '#FFF',
-    fontSize: 12,
+    fontFamily: 'BodyRegular',
+    color: '#E5E7EB',
+    fontSize: 13,
   },
   messageContainer: {
-    padding: 10,
-    marginHorizontal: 10,
-    marginVertical: 5,
+    padding: 12,
+    marginHorizontal: 12,
+    marginVertical: 4,
     borderRadius: 20,
     maxWidth: '75%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   messageText: {
     fontFamily: 'BodyRegular',
+    fontSize: 15,
+    lineHeight: 20,
   },
   dateText: {
     fontFamily: 'BodyRegular',
-    fontSize: 10,
+    fontSize: 11,
     marginTop: 4,
     alignSelf: 'flex-end',
   },
@@ -493,28 +556,60 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    gap: 2,
+    gap: 4,
+    marginTop: 2,
   },
   messageInputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: '#000B58',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    gap: 10,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 8,
   },
   messageInput: {
-    borderRadius: 20,
-    padding: 10,
-    backgroundColor: '#fff',
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: '#F3F4F6',
     fontFamily: 'BodyRegular',
-    color: '#333',
+    color: '#1F2937',
+    fontSize: 15,
     flex: 1,
+    maxHeight: 120,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   sendButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingBottom: 4,
+  },
+  sendIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#000B58',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000B58',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 4,
   },
 });
 

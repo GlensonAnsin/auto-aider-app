@@ -67,11 +67,14 @@ export default function NotificationsTab() {
           color: '#FFF',
           icon: 'danger',
         });
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!socket) return;
@@ -100,6 +103,7 @@ export default function NotificationsTab() {
     const notificationMonth = notificationDate.month() + 1;
     const notificationYear = notificationDate.year();
 
+    // Same day
     if (
       notificationDay === currentDay &&
       notificationWeek === currentWeek &&
@@ -109,17 +113,23 @@ export default function NotificationsTab() {
       return notificationTime;
     }
 
+    // Same week, same month, same year
     if (notificationWeek === currentWeek && notificationMonth === currentMonth && notificationYear === currentYear) {
       return notificationDate.format('ddd');
     }
 
+    // Different year
+    if (notificationYear !== currentYear) {
+      return notificationDate.format('DD/MM/YY');
+    }
+
+    // Different month, same year
     if (notificationMonth !== currentMonth && notificationYear === currentYear) {
       return notificationDate.format('DD/MM');
     }
 
-    if (notificationYear !== currentYear) {
-      return notificationDate.format('DD/MM/YY');
-    }
+    // Default case: different day, same month, same year
+    return notificationDate.format('DD/MM');
   };
 
   const identifyIcon = (title: string) => {
@@ -188,6 +198,9 @@ export default function NotificationsTab() {
         color: '#FFF',
         icon: 'danger',
       });
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     }
   };
 
@@ -209,26 +222,34 @@ export default function NotificationsTab() {
       <View style={styles.lowerBox}>
         {notification.length === 0 && (
           <View style={styles.noHistoryContainer}>
-            <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
-            <Text style={styles.emptyText}>Empty</Text>
+            <MaterialCommunityIcons name="bell-outline" size={120} color="#D1D5DB" />
+            <Text style={styles.emptyText}>No Notifications</Text>
+            <Text style={styles.emptySubText}>You&apos;ll see updates here when they arrive</Text>
           </View>
         )}
         <FlatList
           data={notification.sort((a, b) => b.notificationID - a.notificationID)}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={[styles.notifButton, { backgroundColor: item.isRead ? '#fff' : 'rgba(0, 11, 88, 0.1)' }]}
+              style={[styles.notifButton, { backgroundColor: item.isRead ? '#FFFFFF' : '#EEF2FF' }]}
               onPress={() => handleNotificationPress(item.title, item.notificationID)}
               onLongPress={() => deleteNotifAlert(item.notificationID)}
             >
-              <View style={styles.iconTextContainer}>
-                <View>{identifyIcon(item.title)}</View>
-                <View>
-                  <Text style={styles.notifButtonText1}>{item.title}</Text>
-                  <Text style={styles.notifButtonText2}>{item.message}</Text>
+              <View style={styles.notifContent}>
+                <View style={styles.iconTextContainer}>
+                  <View style={styles.iconWrapper}>{identifyIcon(item.title)}</View>
+                  <View style={styles.textContainer}>
+                    <View style={styles.titleRow}>
+                      <Text style={styles.notifButtonText1}>{item.title}</Text>
+                      {!item.isRead && <View style={styles.unreadDot} />}
+                    </View>
+                    <Text style={styles.notifButtonText2} numberOfLines={2}>
+                      {item.message}
+                    </Text>
+                    <Text style={styles.notifButtonText3}>{transformDate(item.createdAt)}</Text>
+                  </View>
                 </View>
               </View>
-              <Text style={styles.notifButtonText3}>{transformDate(item.createdAt)}</Text>
             </TouchableOpacity>
           )}
           keyExtractor={(item) => item.notificationID.toString()}
@@ -248,6 +269,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     height: 63,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 4,
   },
   arrowHeaderContainer: {
     flexDirection: 'row',
@@ -258,11 +287,14 @@ const styles = StyleSheet.create({
   arrowWrapper: {
     justifyContent: 'center',
     alignItems: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   headerText: {
     color: '#FFF',
     fontFamily: 'HeaderBold',
-    fontSize: 18,
+    fontSize: 20,
   },
   lowerBox: {
     flex: 1,
@@ -272,36 +304,83 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 40,
   },
   emptyText: {
+    fontFamily: 'BodyBold',
+    color: '#9CA3AF',
+    fontSize: 22,
+    textAlign: 'center',
+  },
+  emptySubText: {
     fontFamily: 'BodyRegular',
-    color: '#EAEAEA',
-    fontSize: 30,
+    color: '#D1D5DB',
+    fontSize: 14,
+    textAlign: 'center',
   },
   notifButton: {
-    borderBottomWidth: 1,
-    borderColor: '#fff',
-    paddingVertical: 10,
-    paddingHorizontal: 30,
+    marginHorizontal: 10,
+    marginVertical: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  notifContent: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
   },
   iconTextContainer: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  iconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 10,
+  },
+  textContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   notifButtonText1: {
     fontFamily: 'BodyBold',
     fontSize: 16,
-    color: '#333',
+    color: '#111827',
+    flex: 1,
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#3B82F6',
   },
   notifButtonText2: {
     fontFamily: 'BodyRegular',
-    color: '#555',
+    fontSize: 14,
+    color: '#6B7280',
+    lineHeight: 20,
   },
   notifButtonText3: {
     fontFamily: 'BodyRegular',
-    color: '#555',
-    textAlign: 'right',
+    fontSize: 12,
+    color: '#9CA3AF',
+    marginTop: 4,
   },
 });

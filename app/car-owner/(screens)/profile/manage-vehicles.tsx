@@ -6,6 +6,7 @@ import socket from '@/services/socket';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
@@ -13,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
 const ManageVehicles = () => {
+  const router = useRouter();
   dayjs.extend(utc);
   const [vehicles, setVehicles] = useState<
     {
@@ -51,13 +53,22 @@ const ManageVehicles = () => {
         });
 
         setVehicles(vehicleData);
-      } catch (e) {
-        console.error('Error: ', e);
+      } catch {
+        showMessage({
+          message: 'Something went wrong. Please try again.',
+          type: 'danger',
+          floating: true,
+          color: '#FFF',
+          icon: 'danger',
+        });
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!socket) return;
@@ -117,32 +128,61 @@ const ManageVehicles = () => {
       <View style={styles.lowerBox}>
         {vehicles.length === 0 && (
           <View style={styles.noHistoryContainer}>
-            <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
-            <Text style={styles.emptyText}>Empty</Text>
+            <View style={styles.emptyIconContainer}>
+              <MaterialCommunityIcons name="car-off" size={80} color="#9CA3AF" />
+            </View>
+            <Text style={styles.emptyText}>No Vehicles</Text>
+            <Text style={styles.emptySubtext}>You haven&apos;t added any vehicles yet</Text>
           </View>
         )}
 
         {vehicles.length !== 0 && (
-          <FlatList
-            data={vehicles.sort((a, b) => b.vehicleID - a.vehicleID)}
-            style={{ width: '100%' }}
-            renderItem={({ item, index }) => (
-              <View style={[styles.vehicleContainer, index === 0 && styles.firstChild]}>
-                <View style={styles.carDetailsContainer}>
-                  <Text style={styles.carDetail}>{`${item.year} ${item.make} ${item.model}`} </Text>
-                  <Text style={styles.dateAdded}>{`Date added: ${item.dateAdded}`}</Text>
-                </View>
+          <>
+            <View style={styles.headerInfoContainer}>
+              <MaterialCommunityIcons name="information-outline" size={18} color="#6B7280" />
+              <Text style={styles.headerInfoText}>
+                {vehicles.length} {vehicles.length === 1 ? 'vehicle' : 'vehicles'} registered
+              </Text>
+            </View>
 
-                <TouchableOpacity
-                  style={[styles.button, { backgroundColor: '#780606' }]}
-                  onPress={() => deleteVehicleAlert(item.vehicleID)}
-                >
-                  <Text style={styles.buttonTxt}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            keyExtractor={(item) => item.vehicleID.toString()}
-          />
+            <FlatList
+              data={vehicles.sort((a, b) => b.vehicleID - a.vehicleID)}
+              style={{ width: '100%' }}
+              renderItem={({ item, index }) => (
+                <View style={[styles.vehicleContainer, index === 0 && styles.firstChild]}>
+                  <View style={styles.vehicleHeader}>
+                    <View style={styles.vehicleIconWrapper}>
+                      <MaterialCommunityIcons name="car" size={24} color="#000B58" />
+                    </View>
+                    <View style={styles.vehicleHeaderInfo}>
+                      <Text style={styles.vehicleTitle}>
+                        {item.year} {item.make}
+                      </Text>
+                      <Text style={styles.vehicleModel}>{item.model}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.carDetailsContainer}>
+                    <View style={styles.detailRow}>
+                      <MaterialCommunityIcons name="calendar-check" size={16} color="#6B7280" />
+                      <Text style={styles.dateAdded}>Added on {item.dateAdded}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.actionContainer}>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: '#DC2626' }]}
+                      onPress={() => deleteVehicleAlert(item.vehicleID)}
+                    >
+                      <MaterialCommunityIcons name="delete-outline" size={18} color="#FFF" />
+                      <Text style={styles.buttonTxt}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+              keyExtractor={(item) => item.vehicleID.toString()}
+            />
+          </>
         )}
       </View>
     </SafeAreaView>
@@ -166,18 +206,51 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyIconContainer: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 80,
+    width: 140,
+    height: 140,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   emptyText: {
+    fontFamily: 'HeaderBold',
+    color: '#6B7280',
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  emptySubtext: {
     fontFamily: 'BodyRegular',
-    color: '#EAEAEA',
-    fontSize: 30,
+    color: '#9CA3AF',
+    fontSize: 15,
+    textAlign: 'center',
+  },
+  headerInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#E0E7FF',
+    borderRadius: 10,
+    marginBottom: 12,
+    alignSelf: 'center',
+  },
+  headerInfoText: {
+    fontFamily: 'BodyBold',
+    fontSize: 14,
+    color: '#000B58',
   },
   vehicleContainer: {
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 16,
     minHeight: 80,
-    padding: 10,
-    marginBottom: 10,
+    padding: 16,
+    marginBottom: 12,
     width: '90%',
     alignSelf: 'center',
     shadowColor: '#000',
@@ -185,39 +258,81 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
   },
   firstChild: {
     marginTop: 10,
   },
-  carDetailsContainer: {
+  vehicleHeader: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
-  carDetail: {
-    fontFamily: 'BodyBold',
-    fontSize: 16,
-    color: '#333',
+  vehicleIconWrapper: {
+    backgroundColor: '#E0E7FF',
+    borderRadius: 12,
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  vehicleHeaderInfo: {
+    flex: 1,
+  },
+  vehicleTitle: {
+    fontFamily: 'HeaderBold',
+    fontSize: 18,
+    color: '#111827',
+    marginBottom: 2,
+  },
+  vehicleModel: {
+    fontFamily: 'BodyRegular',
+    fontSize: 15,
+    color: '#6B7280',
+  },
+  carDetailsContainer: {
+    marginBottom: 12,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 6,
   },
   dateAdded: {
     fontFamily: 'BodyRegular',
     fontSize: 14,
-    color: '#555',
+    color: '#6B7280',
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
   },
   button: {
-    width: 70,
-    padding: 5,
-    borderRadius: 5,
-    alignSelf: 'flex-end',
-    marginTop: 10,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 6,
+    minWidth: 100,
   },
   buttonTxt: {
-    fontFamily: 'HeaderRegular',
+    fontFamily: 'BodyBold',
     color: '#fff',
+    fontSize: 14,
   },
 });
 

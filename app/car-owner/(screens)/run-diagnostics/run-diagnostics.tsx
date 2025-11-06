@@ -78,13 +78,22 @@ const RunDiagnostics = () => {
           year: v.year,
         }));
         setVehicles(vehicleInfo);
-      } catch (e) {
-        console.error('Error: ', e);
+      } catch {
+        showMessage({
+          message: 'Something went wrong. Please try again.',
+          type: 'danger',
+          floating: true,
+          color: '#FFF',
+          icon: 'danger',
+        });
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!socket) return;
@@ -215,8 +224,17 @@ const RunDiagnostics = () => {
       setInterpretLoading(false);
       backRoute();
       router.replace('./diagnosis');
-    } catch (e) {
-      console.error('Error: ', e);
+    } catch {
+      showMessage({
+        message: 'Something went wrong. Please try again.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     } finally {
       setInterpretLoading(false);
       dispatch(setTabState(true));
@@ -639,24 +657,44 @@ const RunDiagnostics = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Header headerTitle="Diagnostic" />
-      <View style={[styles.connectionStatus, { backgroundColor: connectedDevice ? '#17B978' : '#780606' }]}>
-        {connectLoading && <ActivityIndicator size="small" color="#fff" />}
+      <View style={[styles.connectionStatus, { backgroundColor: connectedDevice ? '#10B981' : '#DC2626' }]}>
+        {connectLoading && (
+          <View style={styles.connectionLoadingRow}>
+            <ActivityIndicator size="small" color="#fff" />
+            <Text style={styles.connectionStatusText}>Connecting...</Text>
+          </View>
+        )}
 
         {!connectLoading && (
-          <Text style={styles.connectionStatusText}>{connectedDevice ? 'Connected' : 'Not Connected'}</Text>
+          <View style={styles.connectionLoadingRow}>
+            <MaterialCommunityIcons name={connectedDevice ? 'check-circle' : 'alert-circle'} size={16} color="#FFF" />
+            <Text style={styles.connectionStatusText}>{connectedDevice ? 'Connected' : 'Not Connected'}</Text>
+          </View>
         )}
       </View>
 
       <ScrollView>
         <View style={styles.lowerBox}>
           <View style={styles.obd2Container}>
+            <View style={styles.obd2Header}>
+              <MaterialCommunityIcons name="bluetooth" size={20} color="#000B58" />
+              <Text style={styles.obd2HeaderText}>OBD2 Device Connection</Text>
+            </View>
+
             {connectedDevice && (
-              <TouchableOpacity
-                style={[styles.scanDevButton, { backgroundColor: '#780606' }]}
-                onPress={() => disconnectToDevice()}
-              >
-                <Text style={styles.scanDevButtonText}>Disconnect</Text>
-              </TouchableOpacity>
+              <View style={styles.connectedDeviceCard}>
+                <View style={styles.deviceInfoRow}>
+                  <MaterialCommunityIcons name="bluetooth-connect" size={24} color="#10B981" />
+                  <Text style={styles.connectedDeviceName}>{connectedDevice.name || connectedDevice.id}</Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.scanDevButton, styles.disconnectButton]}
+                  onPress={() => disconnectToDevice()}
+                >
+                  <MaterialCommunityIcons name="bluetooth-off" size={16} color="#FFF" />
+                  <Text style={styles.scanDevButtonText}>Disconnect</Text>
+                </TouchableOpacity>
+              </View>
             )}
 
             {!connectedDevice && (
@@ -666,71 +704,91 @@ const RunDiagnostics = () => {
                   onPress={() => discoverDevices()}
                   disabled={discoveringDevices}
                 >
-                  <Text style={styles.scanDevButtonText}>Discover Devices</Text>
+                  <MaterialCommunityIcons name="radar" size={16} color="#FFF" />
+                  <Text style={styles.scanDevButtonText}>
+                    {discoveringDevices ? 'Discovering...' : 'Discover Devices'}
+                  </Text>
                 </TouchableOpacity>
 
                 {scannedDevicesVisibile && (
-                  <FlatList
-                    data={devices}
-                    style={styles.devicesContainer}
-                    nestedScrollEnabled={true}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity
-                        style={[styles.selectDeviceButton, connectLoading && styles.selectDeviceButtonDisabled]}
-                        onPress={() => connectToDevice(item)}
-                        disabled={connectLoading}
-                      >
-                        {connectLoading ? (
-                          <ActivityIndicator size="small" color="#FFF" />
-                        ) : (
-                          <Text style={styles.selectDeviceButtonText}>{item.name}</Text>
-                        )}
-                      </TouchableOpacity>
-                    )}
-                    ListEmptyComponent={() => (
-                      <View style={styles.noDevicesContainer}>
-                        <Text style={styles.noDevicesText}>No devices</Text>
-                      </View>
-                    )}
-                    keyExtractor={(item) => item.id}
-                  />
+                  <View style={styles.devicesListWrapper}>
+                    <Text style={styles.devicesListLabel}>Available Devices</Text>
+                    <FlatList
+                      data={devices}
+                      style={styles.devicesContainer}
+                      nestedScrollEnabled={true}
+                      renderItem={({ item }) => (
+                        <TouchableOpacity
+                          style={[styles.selectDeviceButton, connectLoading && styles.selectDeviceButtonDisabled]}
+                          onPress={() => connectToDevice(item)}
+                          disabled={connectLoading}
+                        >
+                          {connectLoading ? (
+                            <ActivityIndicator size="small" color="#000B58" />
+                          ) : (
+                            <>
+                              <MaterialCommunityIcons name="bluetooth" size={20} color="#000B58" />
+                              <Text style={styles.selectDeviceButtonText}>{item.name}</Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      )}
+                      ListEmptyComponent={() => (
+                        <View style={styles.noDevicesContainer}>
+                          <MaterialCommunityIcons name="bluetooth-off" size={48} color="#D1D5DB" />
+                          <Text style={styles.noDevicesText}>No devices found</Text>
+                          <Text style={styles.noDevicesSubtext}>Make sure your OBD2 device is powered on</Text>
+                        </View>
+                      )}
+                      keyExtractor={(item) => item.id}
+                    />
+                  </View>
                 )}
               </>
             )}
           </View>
 
-          <SelectDropdown
-            data={vehicles}
-            statusBarTranslucent={true}
-            onSelect={(selectedItem) => {
-              setSelectedCar(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`);
-              setSelectedCarID(selectedItem.id);
-            }}
-            renderButton={(selectedItem, isOpen) => (
-              <View style={styles.dropdownButtonStyle}>
-                <Text style={styles.dropdownButtonTxtStyle}>
-                  {(selectedItem && `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) ||
-                    'Select vehicle'}
-                </Text>
-                <MaterialCommunityIcons
-                  name={isOpen ? 'chevron-up' : 'chevron-down'}
-                  style={styles.dropdownButtonArrowStyle}
-                />
-              </View>
-            )}
-            renderItem={(item, _index, isSelected) => (
-              <View
-                style={{
-                  ...styles.dropdownItemStyle,
-                  ...(isSelected && { backgroundColor: '#D2D9DF' }),
-                }}
-              >
-                <Text style={styles.dropdownItemTxtStyle}>{`${item.year} ${item.make} ${item.model}`}</Text>
-              </View>
-            )}
-            showsVerticalScrollIndicator={false}
-            dropdownStyle={styles.dropdownMenuStyle}
-          />
+          <View style={styles.vehicleSelectWrapper}>
+            <View style={styles.vehicleSelectHeader}>
+              <MaterialCommunityIcons name="car" size={20} color="#000B58" />
+              <Text style={styles.vehicleSelectLabel}>Select Vehicle</Text>
+            </View>
+            <SelectDropdown
+              data={vehicles}
+              statusBarTranslucent={true}
+              onSelect={(selectedItem) => {
+                setSelectedCar(`${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`);
+                setSelectedCarID(selectedItem.id);
+              }}
+              renderButton={(selectedItem, isOpen) => (
+                <View style={styles.dropdownButtonStyle}>
+                  <MaterialCommunityIcons name="car-side" size={20} color="#6B7280" />
+                  <Text style={styles.dropdownButtonTxtStyle}>
+                    {(selectedItem && `${selectedItem.year} ${selectedItem.make} ${selectedItem.model}`) ||
+                      'Select vehicle'}
+                  </Text>
+                  <MaterialCommunityIcons
+                    name={isOpen ? 'chevron-up' : 'chevron-down'}
+                    style={styles.dropdownButtonArrowStyle}
+                  />
+                </View>
+              )}
+              renderItem={(item, _index, isSelected) => (
+                <View
+                  style={{
+                    ...styles.dropdownItemStyle,
+                    ...(isSelected && { backgroundColor: '#E0E7FF' }),
+                  }}
+                >
+                  <MaterialCommunityIcons name="car" size={16} color="#000B58" />
+                  <Text style={styles.dropdownItemTxtStyle}>{`${item.year} ${item.make} ${item.model}`}</Text>
+                  {isSelected && <MaterialCommunityIcons name="check" size={20} color="#000B58" />}
+                </View>
+              )}
+              showsVerticalScrollIndicator={false}
+              dropdownStyle={styles.dropdownMenuStyle}
+            />
+          </View>
 
           <View style={styles.buttonContainer}>
             <TouchableHighlight
@@ -757,31 +815,47 @@ const RunDiagnostics = () => {
           </View>
 
           <View style={styles.infoContainer}>
-            <Feather name="info" size={24} color="#333" style={styles.infoIcon} />
-            <View style={styles.bulletView}>
-              <Text style={styles.bullet}>{'\u2022'}</Text>
-              <Text style={styles.bulletedText}>
-                A BLE OBD-II device is required to use this feature. We recommend using the Veepeak OBDCheck BLE.
-              </Text>
+            <View style={styles.infoHeaderRow}>
+              <Feather name="info" size={24} color="#000B58" style={styles.infoIcon} />
+              <Text style={styles.infoHeaderText}>Instructions</Text>
             </View>
-            <View style={styles.bulletView}>
-              <Text style={styles.bullet}>{'\u2022'}</Text>
-              <Text style={styles.bulletedText}>Plugin in the device. Turn on car ignition.</Text>
-            </View>
-            <View style={styles.bulletView}>
-              <Text style={styles.bullet}>{'\u2022'}</Text>
-              <Text style={styles.bulletedText}>Turn on Bluetooth and pair the device.</Text>
-            </View>
-            <View style={styles.bulletView}>
-              <Text style={styles.bullet}>{'\u2022'}</Text>
-              <Text style={styles.bulletedText}>You may also refer to the device&apos;s manual.</Text>
-            </View>
-            <View style={styles.bulletView}>
-              <Text style={styles.bullet}>{'\u2022'}</Text>
-              <Text style={styles.bulletedText}>
-                Select a car to scan. Make sure that the car details are correct as this will affect result&apos;s the
-                accuracy.
-              </Text>
+            <View style={styles.infoCard}>
+              <View style={styles.bulletView}>
+                <View style={styles.bulletIconWrapper}>
+                  <MaterialCommunityIcons name="numeric-1-circle" size={20} color="#000B58" />
+                </View>
+                <Text style={styles.bulletedText}>
+                  A BLE OBD-II device is required to use this feature. We recommend using the{' '}
+                  <Text style={{ fontFamily: 'BodyBold' }}>Veepeak OBDCheck BLE</Text>.
+                </Text>
+              </View>
+              <View style={styles.bulletView}>
+                <View style={styles.bulletIconWrapper}>
+                  <MaterialCommunityIcons name="numeric-2-circle" size={20} color="#000B58" />
+                </View>
+                <Text style={styles.bulletedText}>Plugin in the device. Turn on car ignition.</Text>
+              </View>
+              <View style={styles.bulletView}>
+                <View style={styles.bulletIconWrapper}>
+                  <MaterialCommunityIcons name="numeric-3-circle" size={20} color="#000B58" />
+                </View>
+                <Text style={styles.bulletedText}>Turn on Bluetooth and pair the device.</Text>
+              </View>
+              <View style={styles.bulletView}>
+                <View style={styles.bulletIconWrapper}>
+                  <MaterialCommunityIcons name="numeric-4-circle" size={20} color="#000B58" />
+                </View>
+                <Text style={styles.bulletedText}>You may also refer to the device&apos;s manual.</Text>
+              </View>
+              <View style={styles.bulletView}>
+                <View style={styles.bulletIconWrapper}>
+                  <MaterialCommunityIcons name="numeric-5-circle" size={20} color="#000B58" />
+                </View>
+                <Text style={styles.bulletedText}>
+                  Select a car to scan. Make sure that the car details are correct as this will affect result&apos;s the
+                  accuracy.
+                </Text>
+              </View>
             </View>
           </View>
         </View>
@@ -798,11 +872,12 @@ const styles = StyleSheet.create({
   connectionStatus: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 2,
+    paddingVertical: 6,
   },
   connectionStatusText: {
     fontFamily: 'BodyRegular',
     color: '#FFF',
+    fontSize: 13,
   },
   lowerBox: {
     width: '90%',
@@ -812,12 +887,15 @@ const styles = StyleSheet.create({
   },
   obd2Container: {
     width: '100%',
+    marginBottom: 16,
   },
   scanDevButton: {
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 8,
     backgroundColor: '#000B58',
-    padding: 8,
+    padding: 10,
     borderRadius: 10,
     alignSelf: 'center',
     marginBottom: 10,
@@ -828,14 +906,17 @@ const styles = StyleSheet.create({
   },
   devicesContainer: {
     backgroundColor: '#fff',
-    marginBottom: 10,
-    borderRadius: 5,
+    borderRadius: 10,
     height: 120,
   },
   selectDeviceButton: {
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 5,
+    gap: 8,
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
   selectDeviceButtonDisabled: {
     opacity: 0.6,
@@ -850,20 +931,31 @@ const styles = StyleSheet.create({
     height: 120,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 8,
   },
   noDevicesText: {
-    fontFamily: 'BodyRegular',
-    color: '#555',
+    fontFamily: 'BodyBold',
+    color: '#6B7280',
+    fontSize: 14,
   },
   dropdownButtonStyle: {
     width: '100%',
-    height: 45,
+    height: 50,
     backgroundColor: '#fff',
     borderRadius: 10,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   dropdownButtonTxtStyle: {
     flex: 1,
@@ -875,10 +967,11 @@ const styles = StyleSheet.create({
   dropdownItemStyle: {
     width: '100%',
     flexDirection: 'row',
-    paddingHorizontal: 10,
-    justifyContent: 'center',
+    paddingHorizontal: 12,
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
+    gap: 10,
   },
   dropdownItemTxtStyle: {
     flex: 1,
@@ -950,17 +1043,16 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     marginTop: 10,
-    padding: 20,
   },
   infoIcon: {
-    alignSelf: 'center',
-    marginBottom: 10,
+    marginRight: 8,
   },
   bulletView: {
     width: '100%',
     flexDirection: 'row',
-    gap: 10,
-    paddingLeft: 5,
+    gap: 12,
+    marginBottom: 12,
+    alignItems: 'flex-start',
   },
   bullet: {
     fontFamily: 'BodyRegular',
@@ -968,7 +1060,112 @@ const styles = StyleSheet.create({
   },
   bulletedText: {
     fontFamily: 'BodyRegular',
-    color: '#333',
+    color: '#4B5563',
+    flex: 1,
+    lineHeight: 20,
+  },
+  connectionLoadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  obd2Header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  obd2HeaderText: {
+    fontFamily: 'BodyBold',
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  connectedDeviceCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  deviceInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  connectedDeviceName: {
+    fontFamily: 'BodyBold',
+    fontSize: 16,
+    color: '#1F2937',
+    flex: 1,
+  },
+  disconnectButton: {
+    backgroundColor: '#DC2626',
+    alignSelf: 'stretch',
+  },
+  devicesListWrapper: {
+    marginTop: 8,
+  },
+  devicesListLabel: {
+    fontFamily: 'BodyBold',
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  noDevicesSubtext: {
+    fontFamily: 'BodyRegular',
+    fontSize: 12,
+    color: '#9CA3AF',
+    textAlign: 'center',
+  },
+  vehicleSelectWrapper: {
+    marginBottom: 16,
+  },
+  vehicleSelectHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  vehicleSelectLabel: {
+    fontFamily: 'BodyBold',
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  infoHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 20,
+  },
+  infoHeaderText: {
+    fontFamily: 'BodyBold',
+    fontSize: 18,
+    color: '#1F2937',
+  },
+  infoCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 16,
+    marginHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  bulletIconWrapper: {
+    marginTop: 2,
   },
 });
 

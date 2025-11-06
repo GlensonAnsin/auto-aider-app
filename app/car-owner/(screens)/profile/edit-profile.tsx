@@ -3,12 +3,10 @@ import { Loading } from '@/components/Loading';
 import { generateOtp, getUserInfo, getUsers, updateUserInfo } from '@/services/backendApi';
 import socket from '@/services/socket';
 import { UpdateUserInfo, UserWithID } from '@/types/user';
-import Entypo from '@expo/vector-icons/Entypo';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -16,7 +14,6 @@ import {
   AppState,
   Image,
   Modal,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -30,6 +27,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectDropdown from 'react-native-select-dropdown';
 
 const EditProfile = () => {
+  const router = useRouter();
   const [userID, setUserID] = useState<number>(0);
   const [firstname, setFirstname] = useState<string>('');
   const [lastname, setLastname] = useState<string>('');
@@ -88,13 +86,22 @@ const EditProfile = () => {
         setLocalMobileNum(res.mobile_num);
         setLocalEmail(res.email);
         setLocalProfilePic(res.profile_pic);
-      } catch (e) {
-        console.error('Error: ', e);
+      } catch {
+        showMessage({
+          message: 'Something went wrong. Please try again.',
+          type: 'danger',
+          floating: true,
+          color: '#FFF',
+          icon: 'danger',
+        });
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!socket) return;
@@ -281,6 +288,9 @@ const EditProfile = () => {
         color: '#FFF',
         icon: 'danger',
       });
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     } finally {
       setUpdateLoading(false);
     }
@@ -316,8 +326,7 @@ const EditProfile = () => {
       const uploadedUrl = uploadRes.data.secure_url;
       setPickedImage(false);
       handleUpdateUserInfo('profile', uploadedUrl);
-    } catch (e: any) {
-      console.error('Upload Error: ', e);
+    } catch {
       Alert.alert('Upload failed', 'An error occured during upload.');
     }
   };
@@ -375,14 +384,33 @@ const EditProfile = () => {
     newOtp[index] = text;
     setOtp(newOtp);
 
+    // Move to next field if text is entered and not the last field
     if (text && index < 5) {
       inputs.current[index + 1]?.focus();
+    }
+    // Move to previous field if text is deleted and not the first field
+    else if (!text && index > 0) {
+      inputs.current[index - 1]?.focus();
     }
   };
 
   const handleKeyPress = (e: any, index: number) => {
+    // Handle backspace when current field is empty
     if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
       inputs.current[index - 1]?.focus();
+    }
+    // Handle backspace when current field has a digit - clear it and move to previous
+    else if (e.nativeEvent.key === 'Backspace' && otp[index] && index > 0) {
+      let newOtp = [...otp];
+      newOtp[index] = '';
+      setOtp(newOtp);
+      inputs.current[index - 1]?.focus();
+    }
+    // Handle backspace on first field - just clear it
+    else if (e.nativeEvent.key === 'Backspace' && otp[index] && index === 0) {
+      let newOtp = [...otp];
+      newOtp[index] = '';
+      setOtp(newOtp);
     }
   };
 
@@ -494,12 +522,15 @@ const EditProfile = () => {
       }, 2000);
     } catch {
       showMessage({
-        message: 'Failed to send verification.',
+        message: 'Something went wrong. Please try again.',
         type: 'danger',
         floating: true,
         color: '#FFF',
         icon: 'danger',
       });
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     } finally {
       setUpdateLoading(false);
     }
@@ -588,45 +619,48 @@ const EditProfile = () => {
       <Header headerTitle="Edit Profile" />
       <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <View style={styles.lowerBox}>
-          <View style={styles.editPicContainer}>
-            {localProfilePic === null && (
-              <View style={[styles.profilePicWrapper, { backgroundColor: userInitialsBG }]}>
-                <Text style={styles.userInitials}>{userInitials}</Text>
-              </View>
-            )}
+          <View style={styles.profileHeaderContainer}>
+            <View style={styles.editPicContainer}>
+              {localProfilePic === null && (
+                <View style={[styles.profilePicWrapper, { backgroundColor: userInitialsBG }]}>
+                  <Text style={styles.userInitials}>{userInitials}</Text>
+                </View>
+              )}
 
-            {localProfilePic !== null && (
-              <View style={styles.profilePicWrapper}>
-                <Image style={styles.profilePic} source={{ uri: localProfilePic }} width={120} height={120} />
-              </View>
-            )}
+              {localProfilePic !== null && (
+                <View style={styles.profilePicWrapper}>
+                  <Image style={styles.profilePic} source={{ uri: localProfilePic }} width={120} height={120} />
+                </View>
+              )}
 
-            <TouchableOpacity style={styles.editPicWrapper} onPress={() => pickImage()} disabled={buttonDisable}>
-              <MaterialCommunityIcons name="pencil" style={styles.editIcon} />
-            </TouchableOpacity>
+              <TouchableOpacity style={styles.editPicWrapper} onPress={() => pickImage()} disabled={buttonDisable}>
+                <View style={styles.editIconContainer}>
+                  <MaterialCommunityIcons name="camera-plus" size={28} color="#FFF" />
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.profileActions}>
+              <Text style={styles.profileActionText}>Tap to change profile picture</Text>
+              <View style={styles.profileActionHint}>
+                <MaterialCommunityIcons name="information-outline" size={14} color="#6B7280" />
+                <Text style={styles.profileActionHintText}>Square images work best</Text>
+              </View>
+            </View>
           </View>
 
           {localProfilePic !== null && !pickedImage && (
             <View style={styles.profileButtonContainer}>
               <TouchableOpacity
-                style={[
-                  styles.profileButton,
-                  {
-                    backgroundColor: '#780606',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: 5,
-                  },
-                ]}
+                style={[styles.profileButton, styles.removeButton]}
                 onPress={() => {
                   deleteImage();
                   handleUpdateUserInfo('profile', null);
                 }}
                 disabled={buttonDisable}
               >
-                <MaterialCommunityIcons name="image-remove" size={20} color="#FFF" />
-                <Text style={styles.profileButtonText}>Remove</Text>
+                <MaterialCommunityIcons name="image-remove" size={18} color="#FFF" />
+                <Text style={styles.profileButtonText}>Remove Photo</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -634,15 +668,16 @@ const EditProfile = () => {
           {localProfilePic !== null && pickedImage && (
             <View style={styles.profileButtonContainer}>
               <TouchableOpacity
-                style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]}
+                style={[styles.profileButton, styles.cancelButton]}
                 onPress={() => handleRestoreInfo('profile')}
                 disabled={buttonDisable}
               >
+                <MaterialCommunityIcons name="close" size={18} color="#555" />
                 <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.profileButton, { backgroundColor: '#000B58' }]}
+                style={[styles.profileButton, styles.saveButton]}
                 onPress={() => {
                   if (profilePic !== null) {
                     deleteImage();
@@ -651,38 +686,52 @@ const EditProfile = () => {
                 }}
                 disabled={buttonDisable}
               >
-                <Text style={styles.profileButtonText}>Save</Text>
+                <MaterialCommunityIcons name="check" size={18} color="#FFF" />
+                <Text style={styles.profileButtonText}>Save Photo</Text>
               </TouchableOpacity>
             </View>
           )}
 
           <View style={styles.editInfoContainer}>
-            <Text style={styles.subHeader}>User Details</Text>
+            <View style={styles.subHeaderContainer}>
+              <MaterialCommunityIcons name="account-details" size={24} color="#000B58" />
+              <Text style={styles.subHeader}>Personal Information</Text>
+            </View>
+
             <View style={styles.row}>
-              <Text style={styles.infoLabel}>First Name:</Text>
+              <View style={styles.labelContainer}>
+                <MaterialCommunityIcons name="account" size={18} color="#6B7280" />
+                <Text style={styles.infoLabel}>First Name</Text>
+              </View>
               <View style={styles.infoEdit}>
                 {edit === 'firstname' && (
                   <>
-                    <TextInput value={localFirstname} onChangeText={setLocalFirstname} style={styles.input} />
+                    <TextInput
+                      value={localFirstname}
+                      onChangeText={setLocalFirstname}
+                      style={styles.input}
+                      placeholder="Enter first name"
+                      placeholderTextColor="#9CA3AF"
+                    />
 
                     {localFirstname !== '' && (
                       <>
                         <TouchableOpacity onPress={() => handleRestoreInfo('firstname')} disabled={buttonDisable}>
-                          <Entypo name="cross" size={20} color="#780606" />
+                          <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                         </TouchableOpacity>
 
                         <TouchableOpacity
                           onPress={() => handleUpdateUserInfo('firstname', null)}
                           disabled={buttonDisable}
                         >
-                          <FontAwesome5 name="check" size={16} color="#22bb33" />
+                          <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                         </TouchableOpacity>
                       </>
                     )}
 
                     {localFirstname === '' && (
                       <TouchableOpacity onPress={() => handleRestoreInfo('firstname')} disabled={buttonDisable}>
-                        <Entypo name="cross" size={20} color="#780606" />
+                        <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                       </TouchableOpacity>
                     )}
                   </>
@@ -691,8 +740,12 @@ const EditProfile = () => {
                 {edit !== 'firstname' && (
                   <>
                     <Text style={styles.infoText}>{localFirstname}</Text>
-                    <TouchableOpacity onPress={() => setEdit('firstname')} disabled={buttonDisable}>
-                      <MaterialIcons name="edit" size={16} color="#555" />
+                    <TouchableOpacity
+                      onPress={() => setEdit('firstname')}
+                      disabled={buttonDisable}
+                      style={styles.editIconButton}
+                    >
+                      <MaterialCommunityIcons name="pencil" size={18} color="#000B58" />
                     </TouchableOpacity>
                   </>
                 )}
@@ -700,30 +753,39 @@ const EditProfile = () => {
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.infoLabel}>Last Name:</Text>
+              <View style={styles.labelContainer}>
+                <MaterialCommunityIcons name="account" size={18} color="#6B7280" />
+                <Text style={styles.infoLabel}>Last Name</Text>
+              </View>
               <View style={styles.infoEdit}>
                 {edit === 'lastname' && (
                   <>
-                    <TextInput value={localLastname} onChangeText={setLocalLastname} style={styles.input} />
+                    <TextInput
+                      value={localLastname}
+                      onChangeText={setLocalLastname}
+                      style={styles.input}
+                      placeholder="Enter last name"
+                      placeholderTextColor="#9CA3AF"
+                    />
 
                     {localLastname !== '' && (
                       <>
                         <TouchableOpacity onPress={() => handleRestoreInfo('lastname')} disabled={buttonDisable}>
-                          <Entypo name="cross" size={20} color="#780606" />
+                          <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                         </TouchableOpacity>
 
                         <TouchableOpacity
                           onPress={() => handleUpdateUserInfo('lastname', null)}
                           disabled={buttonDisable}
                         >
-                          <FontAwesome5 name="check" size={16} color="#22bb33" />
+                          <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                         </TouchableOpacity>
                       </>
                     )}
 
                     {localLastname === '' && (
                       <TouchableOpacity onPress={() => handleRestoreInfo('lastname')} disabled={buttonDisable}>
-                        <Entypo name="cross" size={20} color="#780606" />
+                        <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                       </TouchableOpacity>
                     )}
                   </>
@@ -732,8 +794,12 @@ const EditProfile = () => {
                 {edit !== 'lastname' && (
                   <>
                     <Text style={styles.infoText}>{localLastname}</Text>
-                    <TouchableOpacity onPress={() => setEdit('lastname')} disabled={buttonDisable}>
-                      <MaterialIcons name="edit" size={16} color="#555" />
+                    <TouchableOpacity
+                      onPress={() => setEdit('lastname')}
+                      disabled={buttonDisable}
+                      style={styles.editIconButton}
+                    >
+                      <MaterialCommunityIcons name="pencil" size={18} color="#000B58" />
                     </TouchableOpacity>
                   </>
                 )}
@@ -741,7 +807,10 @@ const EditProfile = () => {
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.infoLabel}>Gender:</Text>
+              <View style={styles.labelContainer}>
+                <MaterialCommunityIcons name="gender-male-female" size={18} color="#6B7280" />
+                <Text style={styles.infoLabel}>Gender</Text>
+              </View>
               <View style={styles.infoEdit}>
                 {edit === 'gender' && (
                   <>
@@ -763,7 +832,7 @@ const EditProfile = () => {
                         <View
                           style={{
                             ...styles.dropdownItemStyle,
-                            ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                            ...(isSelected && { backgroundColor: '#E0E7FF' }),
                           }}
                         >
                           <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
@@ -774,11 +843,11 @@ const EditProfile = () => {
                       disabled={buttonDisable}
                     />
                     <TouchableOpacity onPress={() => handleRestoreInfo('gender')} disabled={buttonDisable}>
-                      <Entypo name="cross" size={20} color="#780606" />
+                      <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => handleUpdateUserInfo('gender', null)} disabled={buttonDisable}>
-                      <FontAwesome5 name="check" size={16} color="#22bb33" />
+                      <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                     </TouchableOpacity>
                   </>
                 )}
@@ -786,8 +855,12 @@ const EditProfile = () => {
                 {edit !== 'gender' && (
                   <>
                     <Text style={styles.infoText}>{localGender}</Text>
-                    <TouchableOpacity onPress={() => setEdit('gender')} disabled={buttonDisable}>
-                      <MaterialIcons name="edit" size={16} color="#555" />
+                    <TouchableOpacity
+                      onPress={() => setEdit('gender')}
+                      disabled={buttonDisable}
+                      style={styles.editIconButton}
+                    >
+                      <MaterialCommunityIcons name="pencil" size={18} color="#000B58" />
                     </TouchableOpacity>
                   </>
                 )}
@@ -795,7 +868,10 @@ const EditProfile = () => {
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.infoLabel}>Number:</Text>
+              <View style={styles.labelContainer}>
+                <MaterialCommunityIcons name="phone" size={18} color="#6B7280" />
+                <Text style={styles.infoLabel}>Mobile</Text>
+              </View>
               <View style={styles.infoEdit}>
                 {edit === 'mobile-num' && (
                   <>
@@ -805,17 +881,19 @@ const EditProfile = () => {
                       style={styles.input}
                       keyboardType="number-pad"
                       maxLength={11}
+                      placeholder="09XXXXXXXXX"
+                      placeholderTextColor="#9CA3AF"
                     />
 
                     {localMobileNum !== '' && (
                       <>
                         <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')} disabled={buttonDisable}>
-                          <Entypo name="cross" size={20} color="#780606" />
+                          <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                         </TouchableOpacity>
 
                         {localMobileNum.length === 11 && (
                           <TouchableOpacity onPress={() => handleSendCode()} disabled={buttonDisable}>
-                            <FontAwesome5 name="check" size={16} color="#22bb33" />
+                            <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                           </TouchableOpacity>
                         )}
                       </>
@@ -823,7 +901,7 @@ const EditProfile = () => {
 
                     {localMobileNum === '' && (
                       <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')} disabled={buttonDisable}>
-                        <Entypo name="cross" size={20} color="#780606" />
+                        <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                       </TouchableOpacity>
                     )}
                   </>
@@ -832,8 +910,12 @@ const EditProfile = () => {
                 {edit !== 'mobile-num' && (
                   <>
                     <Text style={styles.infoText}>{localMobileNum}</Text>
-                    <TouchableOpacity onPress={() => setEdit('mobile-num')} disabled={buttonDisable}>
-                      <MaterialIcons name="edit" size={16} color="#555" />
+                    <TouchableOpacity
+                      onPress={() => setEdit('mobile-num')}
+                      disabled={buttonDisable}
+                      style={styles.editIconButton}
+                    >
+                      <MaterialCommunityIcons name="pencil" size={18} color="#000B58" />
                     </TouchableOpacity>
                   </>
                 )}
@@ -841,7 +923,10 @@ const EditProfile = () => {
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.infoLabel}>Email:</Text>
+              <View style={styles.labelContainer}>
+                <MaterialCommunityIcons name="email" size={18} color="#6B7280" />
+                <Text style={styles.infoLabel}>Email</Text>
+              </View>
               {localEmail === null && (
                 <TouchableOpacity
                   style={styles.editButton}
@@ -851,6 +936,7 @@ const EditProfile = () => {
                   }}
                   disabled={buttonDisable}
                 >
+                  <MaterialCommunityIcons name="plus-circle" size={18} color="#000B58" />
                   <Text style={styles.editButtonText}>Add Email</Text>
                 </TouchableOpacity>
               )}
@@ -859,14 +945,22 @@ const EditProfile = () => {
                 <View style={styles.infoEdit}>
                   {edit === 'email' && (
                     <>
-                      <TextInput value={localEmail} onChangeText={setLocalEmail} style={styles.input} />
+                      <TextInput
+                        value={localEmail}
+                        onChangeText={setLocalEmail}
+                        style={styles.input}
+                        placeholder="email@example.com"
+                        placeholderTextColor="#9CA3AF"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                      />
 
                       <TouchableOpacity onPress={() => handleRestoreInfo('email')} disabled={buttonDisable}>
-                        <Entypo name="cross" size={20} color="#780606" />
+                        <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                       </TouchableOpacity>
 
                       <TouchableOpacity onPress={() => handleSendCode()} disabled={buttonDisable}>
-                        <FontAwesome5 name="check" size={16} color="#22bb33" />
+                        <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                       </TouchableOpacity>
                     </>
                   )}
@@ -874,8 +968,12 @@ const EditProfile = () => {
                   {edit !== 'email' && (
                     <>
                       <Text style={styles.infoText}>{localEmail}</Text>
-                      <TouchableOpacity onPress={() => setEdit('email')} disabled={buttonDisable}>
-                        <MaterialIcons name="edit" size={16} color="#555" />
+                      <TouchableOpacity
+                        onPress={() => setEdit('email')}
+                        disabled={buttonDisable}
+                        style={styles.editIconButton}
+                      >
+                        <MaterialCommunityIcons name="pencil" size={18} color="#000B58" />
                       </TouchableOpacity>
                     </>
                   )}
@@ -886,7 +984,7 @@ const EditProfile = () => {
 
           <Modal
             animationType="fade"
-            backdropColor={'rgba(0, 0, 0, 0.5)'}
+            transparent={true}
             visible={verificationModalVisible}
             onRequestClose={() => {
               setVerificationModalVisible(false);
@@ -898,67 +996,111 @@ const EditProfile = () => {
               setTimer(45);
             }}
           >
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setVerificationModalVisible(false);
-                clearTimer();
-                setIsTimerActivate(false);
-                setConfirm(null);
-                setError('');
-                setOtp(Array(6).fill(''));
-                setTimer(45);
-              }}
-            >
-              <View style={styles.centeredView}>
-                <Pressable style={styles.verificationModalView} onPress={() => {}}>
-                  <Text style={styles.modalHeader}>Verification</Text>
-                  <Text style={styles.modalText}>
-                    We have sent the verification code to your {edit === 'mobile-num' ? 'number.' : 'email address.'}
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setVerificationModalVisible(false);
+                  clearTimer();
+                  setIsTimerActivate(false);
+                  setConfirm(null);
+                  setError('');
+                  setOtp(Array(6).fill(''));
+                  setTimer(45);
+                }}
+              >
+                <View style={styles.modalBackground} />
+              </TouchableWithoutFeedback>
+
+              <View style={styles.verificationModalView}>
+                <View style={styles.modalIconContainer}>
+                  <MaterialCommunityIcons
+                    name={edit === 'mobile-num' ? 'cellphone-message' : 'email-check'}
+                    size={48}
+                    color="#000B58"
+                  />
+                </View>
+
+                <Text style={styles.modalHeader}>Verification Required</Text>
+                <Text style={styles.modalText}>
+                  We have sent a 6-digit verification code to your{' '}
+                  {edit === 'mobile-num' ? 'phone number' : 'email address'}
+                </Text>
+
+                <View style={styles.codeInputContainer}>
+                  {otp.map((digit, index) => (
+                    <TextInput
+                      key={index}
+                      style={[
+                        styles.otpInput,
+                        digit && styles.otpInputFilled,
+                        !isTimerActivate && styles.otpInputDisabled,
+                      ]}
+                      value={digit}
+                      onChangeText={(text) => {
+                        // Only allow single digit
+                        const cleanText = text.replace(/[^0-9]/g, '').slice(-1);
+                        handleOtpInputChange(cleanText, index);
+                      }}
+                      onKeyPress={(e) => handleKeyPress(e, index)}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      readOnly={!isTimerActivate}
+                      selectTextOnFocus={true}
+                      ref={(ref) => {
+                        inputs.current[index] = ref;
+                      }}
+                    />
+                  ))}
+                </View>
+
+                <View style={styles.timerInfoContainer}>
+                  <MaterialCommunityIcons
+                    name={isTimerActivate ? 'timer-sand' : 'check-circle'}
+                    size={18}
+                    color={isTimerActivate ? '#000B58' : '#10B981'}
+                  />
+                  <Text style={[styles.timerInfoText, !isTimerActivate && styles.timerInfoTextReady]}>
+                    {isTimerActivate ? `Resend available in ${timer}s` : 'Ready to resend code'}
                   </Text>
-                  <View style={styles.codeInputContainer}>
-                    {otp.map((digit, index) => (
-                      <TextInput
-                        key={index}
-                        style={styles.otpInput}
-                        value={digit}
-                        onChangeText={(text) => handleOtpInputChange(text.replace(/[^0-9]/g, ''), index)}
-                        onKeyPress={(e) => handleKeyPress(e, index)}
-                        keyboardType="number-pad"
-                        maxLength={1}
-                        readOnly={isTimerActivate ? false : true}
-                        ref={(ref) => {
-                          inputs.current[index] = ref;
-                        }}
-                      />
-                    ))}
+                </View>
+
+                {error.length > 0 && (
+                  <View style={styles.errorContainer}>
+                    <MaterialCommunityIcons name="alert-circle" size={18} color="#DC2626" />
+                    <Text style={styles.errorMessage}>{error}</Text>
                   </View>
-                  <Text style={[styles.modalText, { fontSize: 12 }]}>
-                    {isTimerActivate ? `Resend code in ${timer}s` : 'You can resend the code now'}
-                  </Text>
-                  {error.length > 0 && (
-                    <View style={styles.errorContainer}>
-                      <Text style={styles.errorMessage}>{error}</Text>
-                    </View>
-                  )}
+                )}
 
-                  {confirmCodeLoading && (
-                    <ActivityIndicator style={{ marginBottom: 10 }} size="small" color="#000B58" />
-                  )}
+                {confirmCodeLoading && (
+                  <View style={styles.modalLoadingContainer}>
+                    <ActivityIndicator size="small" color="#000B58" />
+                    <Text style={styles.modalLoadingText}>Verifying...</Text>
+                  </View>
+                )}
 
-                  {!isTimerActivate && (
-                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => handleResendCode()}>
-                      <Text style={styles.sendButtonText}>Resend Code</Text>
+                <View style={styles.modalButtonContainer}>
+                  {!isTimerActivate ? (
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalButtonPrimary]}
+                      onPress={() => handleResendCode()}
+                      disabled={confirmCodeLoading}
+                    >
+                      <MaterialCommunityIcons name="refresh" size={20} color="#FFF" />
+                      <Text style={styles.modalButtonText}>Resend Code</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalButtonPrimary]}
+                      onPress={() => verifyCode()}
+                      disabled={confirmCodeLoading}
+                    >
+                      <MaterialCommunityIcons name="check-circle-outline" size={20} color="#FFF" />
+                      <Text style={styles.modalButtonText}>Verify Code</Text>
                     </TouchableOpacity>
                   )}
-
-                  {isTimerActivate && (
-                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => verifyCode()}>
-                      <Text style={styles.sendButtonText}>Verify Code</Text>
-                    </TouchableOpacity>
-                  )}
-                </Pressable>
+                </View>
               </View>
-            </TouchableWithoutFeedback>
+            </View>
           </Modal>
         </View>
       </KeyboardAwareScrollView>
@@ -982,10 +1124,15 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 80,
   },
+  profileHeaderContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
   editPicContainer: {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 16,
   },
   profilePicWrapper: {
     width: 120,
@@ -995,15 +1142,33 @@ const styles = StyleSheet.create({
     borderRadius: 120,
     position: 'absolute',
     zIndex: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   editPicWrapper: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(0, 11, 88, 0.7)',
     width: 120,
     height: 120,
     borderRadius: 120,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 2,
+  },
+  editIconContainer: {
+    backgroundColor: '#000B58',
+    borderRadius: 25,
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFF',
   },
   userInitials: {
     fontFamily: 'HeaderBold',
@@ -1017,110 +1182,188 @@ const styles = StyleSheet.create({
     fontSize: 30,
     color: '#000B58',
   },
+  profileActions: {
+    alignItems: 'center',
+  },
+  profileActionText: {
+    fontFamily: 'BodyBold',
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 4,
+  },
+  profileActionHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  profileActionHintText: {
+    fontFamily: 'BodyRegular',
+    fontSize: 12,
+    color: '#6B7280',
+  },
   editInfoContainer: {
-    marginTop: 30,
-    borderTopWidth: 1,
-    borderColor: '#EAEAEA',
-    paddingTop: 10,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   profileButtonContainer: {
     flexDirection: 'row',
     alignSelf: 'center',
-    marginTop: 10,
-    gap: 10,
+    marginBottom: 16,
+    gap: 12,
   },
   profileButton: {
-    width: 100,
-    padding: 5,
-    borderRadius: 10,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 6,
+    minWidth: 140,
+  },
+  removeButton: {
+    backgroundColor: '#DC2626',
+  },
+  cancelButton: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#F9FAFB',
+  },
+  saveButton: {
+    backgroundColor: '#000B58',
   },
   profileButtonText: {
-    fontFamily: 'BodyRegular',
+    fontFamily: 'BodyBold',
     color: '#FFF',
+    fontSize: 14,
+  },
+  subHeaderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#E5E7EB',
   },
   subHeader: {
     fontFamily: 'BodyBold',
     fontSize: 18,
     color: '#333',
-    marginBottom: 10,
-    textAlign: 'center',
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 16,
     width: '100%',
+    paddingVertical: 8,
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '35%',
+    gap: 8,
   },
   infoLabel: {
     fontFamily: 'HeaderBold',
-    width: '30%',
-    color: '#555',
+    color: '#374151',
+    fontSize: 14,
   },
   infoEdit: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '70%',
+    width: '65%',
     gap: 10,
+    paddingLeft: 10,
   },
   infoText: {
     fontFamily: 'BodyRegular',
     color: '#555',
-    maxWidth: '85%',
+    flex: 1,
+    fontSize: 15,
   },
   editButton: {
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#E0E7FF',
+    borderRadius: 8,
   },
   editButtonText: {
-    fontFamily: 'BodyRegular',
+    fontFamily: 'BodyBold',
     color: '#000B58',
+    fontSize: 14,
+  },
+  editIconButton: {
+    padding: 6,
+    backgroundColor: '#E0E7FF',
+    borderRadius: 8,
   },
   input: {
     fontFamily: 'BodyRegular',
     color: '#555',
-    padding: 0,
-    borderBottomWidth: 1,
-    borderColor: '#555',
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    backgroundColor: '#F9FAFB',
     minWidth: 30,
-    maxWidth: '75%',
+    flex: 1,
+    fontSize: 15,
   },
   dropdownButtonStyle: {
-    width: '50%',
-    padding: 0,
-    backgroundColor: '#EAEAEA',
-    borderRadius: 5,
+    flex: 1,
+    padding: 8,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 5,
+    paddingHorizontal: 12,
   },
   dropdownButtonTxtStyle: {
     flex: 1,
     color: '#555',
     fontFamily: 'BodyRegular',
+    fontSize: 15,
   },
   dropdownButtonArrowStyle: {
-    fontSize: 24,
-    color: '#555',
+    fontSize: 20,
+    color: '#6B7280',
   },
   dropdownMenuStyle: {
-    backgroundColor: '#EAEAEA',
-    borderRadius: 5,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   dropdownItemStyle: {
     width: '100%',
     flexDirection: 'row',
-    paddingHorizontal: 5,
+    paddingHorizontal: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12,
   },
   dropdownItemTxtStyle: {
     flex: 1,
     color: '#555',
     fontFamily: 'BodyRegular',
+    fontSize: 15,
   },
   updateLoadingContainer: {
     flex: 1,
@@ -1134,75 +1377,154 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 10,
   },
-  sendButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000B58',
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 20,
-  },
-  sendButtonText: {
-    fontFamily: 'BodyRegular',
-    color: '#fff',
-  },
-  centeredView: {
+  modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   verificationModalView: {
     backgroundColor: '#FFF',
-    width: '85%',
-    borderRadius: 10,
-    padding: 20,
+    width: '90%',
+    borderRadius: 16,
+    padding: 24,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalIconContainer: {
+    backgroundColor: '#E0E7FF',
+    borderRadius: 60,
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   modalHeader: {
-    fontSize: 20,
+    fontSize: 22,
     fontFamily: 'HeaderBold',
     color: '#333',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   modalText: {
     fontFamily: 'BodyRegular',
-    color: '#333',
-    marginBottom: 10,
+    color: '#555',
+    marginBottom: 16,
+    textAlign: 'center',
+    fontSize: 15,
+    lineHeight: 22,
   },
   codeInputContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
+    marginBottom: 16,
   },
   otpInput: {
-    width: 30,
-    height: 45,
-    borderRadius: 10,
+    width: 45,
+    height: 55,
+    borderRadius: 12,
     padding: 10,
     color: '#333',
-    fontFamily: 'BodyRegular',
+    fontFamily: 'HeaderBold',
+    fontSize: 20,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    textAlign: 'center',
+  },
+  otpInputFilled: {
+    backgroundColor: '#E0E7FF',
+    borderColor: '#000B58',
+  },
+  otpInputDisabled: {
+    backgroundColor: '#F3F4F6',
+    borderColor: '#D1D5DB',
+    opacity: 0.6,
+  },
+  timerInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 20,
-    backgroundColor: '#EAEAEA',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  timerInfoText: {
+    fontFamily: 'BodyRegular',
+    fontSize: 13,
+    color: '#000B58',
+  },
+  timerInfoTextReady: {
+    color: '#10B981',
+  },
+  modalLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+    paddingVertical: 12,
+  },
+  modalLoadingText: {
+    fontFamily: 'BodyRegular',
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  modalButtonContainer: {
+    width: '100%',
+    gap: 10,
+  },
+  modalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    gap: 8,
+  },
+  modalButtonPrimary: {
+    backgroundColor: '#000B58',
+  },
+  modalButtonText: {
+    fontFamily: 'BodyBold',
+    color: '#FFF',
+    fontSize: 15,
   },
   errorContainer: {
-    backgroundColor: '#EAEAEA',
-    borderRadius: 5,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DC2626',
     width: '100%',
-    padding: 10,
-    marginBottom: 10,
+    padding: 12,
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   errorMessage: {
     fontFamily: 'BodyRegular',
-    color: 'red',
-    textAlign: 'center',
-    fontSize: 12,
+    color: '#DC2626',
+    fontSize: 13,
+    flex: 1,
   },
 });
 

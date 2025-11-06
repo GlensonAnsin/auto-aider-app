@@ -6,7 +6,8 @@ import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { memo, useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
+import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import TabBarItem from './TabBarItem';
@@ -18,9 +19,15 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const [unreadChats, setUnreadChats] = useState<number | null>(null);
 
   const icons = {
-    '(tabs)/index': (color: string) => <Entypo name="home" size={22} color={color} />,
-    '(tabs)/inbox': (color: string) => <Entypo name="chat" size={22} color={color} />,
-    '(tabs)/notifications': (color: string) => <Ionicons name="notifications" size={22} color={color} />,
+    '(tabs)/index': (color: string, isFocused: boolean) => (
+      <Entypo name="home" size={isFocused ? 24 : 22} color={color} />
+    ),
+    '(tabs)/inbox': (color: string, isFocused: boolean) => (
+      <Entypo name="chat" size={isFocused ? 24 : 22} color={color} />
+    ),
+    '(tabs)/notifications': (color: string, isFocused: boolean) => (
+      <Ionicons name="notifications" size={isFocused ? 24 : 22} color={color} />
+    ),
   };
 
   const userID = useSelector((state: RootState) => state.role.ID);
@@ -71,7 +78,11 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   return (
     <>
       {tabVisible && (
-        <View style={[styles.tabBar, { marginBottom: insets.bottom + 10 }]}>
+        <Animated.View
+          entering={FadeInDown.duration(300).springify()}
+          exiting={FadeOutDown.duration(300).springify()}
+          style={[styles.tabBar, { paddingBottom: insets.bottom }]}
+        >
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
             const label = options.tabBarLabel ?? options.title ?? route.name;
@@ -114,12 +125,12 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
                 isFocused={isFocused}
                 onPress={onPress}
                 onLongPress={onLongPress}
-                icon={icons[route.name as keyof typeof icons](isFocused ? '#FFF' : '#FFF')}
+                icon={icons[route.name as keyof typeof icons](isFocused ? '#000B58' : '#9CA3AF', isFocused)}
                 badgeCount={badgeCount}
               />
             );
           })}
-        </View>
+        </Animated.View>
       )}
     </>
   );
@@ -129,19 +140,21 @@ const styles = StyleSheet.create({
   tabBar: {
     position: 'absolute',
     bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#000B58',
-    marginHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 25,
-    borderCurve: 'continuous',
+    backgroundColor: '#FFFFFF',
+    paddingTop: 8,
+    paddingHorizontal: 16,
+    borderTopWidth: 0.5,
+    borderTopColor: '#E5E7EB',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: -1 },
+    shadowOpacity: 0.05,
     shadowRadius: 4,
-    elevation: 5,
+    elevation: 4,
   },
 });
 

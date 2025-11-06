@@ -114,7 +114,7 @@ const Offline = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#f2f4f7',
   },
   content: {
     flex: 1,

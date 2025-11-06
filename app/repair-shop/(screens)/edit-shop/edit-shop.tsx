@@ -5,21 +5,20 @@ import { generateOtp, getRepairShopInfo, getRepairShops, updateRepairShopInfo } 
 import socket from '@/services/socket';
 import { AutoRepairShop, UpdateRepairShopInfo } from '@/types/autoRepairShop';
 import Entypo from '@expo/vector-icons/Entypo';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { Checkbox } from 'expo-checkbox';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   AppState,
+  Dimensions,
   Image,
   Modal,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -35,7 +34,37 @@ import SelectDropdown from 'react-native-select-dropdown';
 import { useSelector } from 'react-redux';
 
 const EditShop = () => {
+  const router = useRouter();
   const mapRef = useRef<MapView>(null);
+
+  // Helper function to calculate display dimensions while maintaining aspect ratio
+  const calculateImageDisplaySize = (
+    originalWidth: number,
+    originalHeight: number
+  ): { width: number; height: number } => {
+    const screenWidth = Dimensions.get('window').width;
+    const maxWidth = screenWidth;
+    const maxHeight = 500; // Maximum height for the image container
+
+    const aspectRatio = originalWidth / originalHeight;
+
+    let displayWidth = originalWidth;
+    let displayHeight = originalHeight;
+
+    // Scale down if image is larger than max dimensions
+    if (displayWidth > maxWidth) {
+      displayWidth = maxWidth;
+      displayHeight = displayWidth / aspectRatio;
+    }
+
+    if (displayHeight > maxHeight) {
+      displayHeight = maxHeight;
+      displayWidth = displayHeight * aspectRatio;
+    }
+
+    return { width: displayWidth, height: displayHeight };
+  };
+
   const [repShopID, setRepShopID] = useState<number>(0);
   const [repShopName, setRepShopName] = useState<string>('');
   const [ownerFirstname, setOwnerFirstname] = useState<string>('');
@@ -57,7 +86,11 @@ const EditShop = () => {
   const [mapModalVisible, setMapModalVisible] = useState<boolean>(false);
   const [imageModalVisible, setImageModalVisible] = useState<boolean>(false);
   const [imageSource, setImageSource] = useState<string>('');
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [passwordError, setPasswordError] = useState<string>('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState<boolean>(false);
+  const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [profileBG, setProfileBG] = useState<string>('');
   const [pickedImage, setPickedImage] = useState<boolean>(false);
   const [updateLoading, setUpdateLoading] = useState<boolean>(false);
@@ -194,8 +227,17 @@ const EditShop = () => {
             longitudeDelta: 0.001,
           });
           setLocalProfilePic(res.profile_pic);
-        } catch (e) {
-          console.error('Error: ', e);
+        } catch {
+          showMessage({
+            message: 'Something went wrong. Please try again.',
+            type: 'danger',
+            floating: true,
+            color: '#FFF',
+            icon: 'danger',
+          });
+          setTimeout(() => {
+            router.push('/error/server-error');
+          }, 2000);
         } finally {
           if (isActive) setIsLoading(false);
         }
@@ -207,7 +249,7 @@ const EditShop = () => {
         isActive = false;
         setEdit('');
       };
-    }, [])
+    }, [router])
   );
 
   useEffect(() => {
@@ -353,6 +395,9 @@ const EditShop = () => {
     setNewPassword('');
     setConfirmPassword('');
     setPasswordError('');
+    setShowCurrentPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
     setModalVisible(!modalVisible);
   };
 
@@ -460,7 +505,7 @@ const EditShop = () => {
           }
         case 'change-password':
           if (!currentPassword || !newPassword || !confirmPassword) {
-            setPasswordError('Please fill in all fields.');
+            setPasswordError('Please fill out all fields.');
             return;
           }
 
@@ -534,8 +579,7 @@ const EditShop = () => {
         color: '#FFF',
         icon: 'success',
       });
-    } catch (e) {
-      console.error('Error:', e);
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -543,6 +587,9 @@ const EditShop = () => {
         color: '#FFF',
         icon: 'danger',
       });
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     } finally {
       setUpdateLoading(false);
     }
@@ -619,8 +666,7 @@ const EditShop = () => {
       const uploadedUrl = uploadRes.data.secure_url;
       setPickedImage(false);
       handleUpdateRepShopInfo('profile', uploadedUrl, null, null);
-    } catch (e) {
-      console.error('Upload Error: ', e);
+    } catch {
       Alert.alert('Upload failed', 'An error occured during upload.');
     }
   };
@@ -659,8 +705,7 @@ const EditShop = () => {
         uploadedUrls.push(uploadRes.data.secure_url);
       }
       handleUpdateRepShopInfo('shop-images', null, uploadedUrls, 'add');
-    } catch (e) {
-      console.error('Upload Error: ', e);
+    } catch {
       Alert.alert('Upload failed', 'An error occured during upload.');
     }
   };
@@ -701,14 +746,33 @@ const EditShop = () => {
     newOtp[index] = text;
     setOtp(newOtp);
 
+    // Move to next field if text is entered and not the last field
     if (text && index < 5) {
       inputs.current[index + 1]?.focus();
+    }
+    // Move to previous field if text is deleted and not the first field
+    else if (!text && index > 0) {
+      inputs.current[index - 1]?.focus();
     }
   };
 
   const handleKeyPress = (e: any, index: number) => {
+    // Handle backspace when current field is empty
     if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
       inputs.current[index - 1]?.focus();
+    }
+    // Handle backspace when current field has a digit - clear it and move to previous
+    else if (e.nativeEvent.key === 'Backspace' && otp[index] && index > 0) {
+      let newOtp = [...otp];
+      newOtp[index] = '';
+      setOtp(newOtp);
+      inputs.current[index - 1]?.focus();
+    }
+    // Handle backspace on first field - just clear it
+    else if (e.nativeEvent.key === 'Backspace' && otp[index] && index === 0) {
+      let newOtp = [...otp];
+      newOtp[index] = '';
+      setOtp(newOtp);
     }
   };
 
@@ -809,12 +873,15 @@ const EditShop = () => {
       }, 2000);
     } catch {
       showMessage({
-        message: 'Failed to send verification.',
+        message: 'Something went wrong. Please try again.',
         type: 'danger',
         floating: true,
         color: '#FFF',
         icon: 'danger',
       });
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     } finally {
       setUpdateLoading(false);
     }
@@ -903,7 +970,7 @@ const EditShop = () => {
       <Header headerTitle="Edit Shop" />
       <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <View style={styles.lowerBox}>
-          <View style={styles.picRepNameContainer}>
+          <View style={styles.profileHeaderContainer}>
             <View style={styles.editPicContainer}>
               {localProfilePic === null && (
                 <View style={[styles.profilePicWrapper, { backgroundColor: profileBG }]}>
@@ -922,130 +989,141 @@ const EditShop = () => {
                 onPress={() => pickProfileImage()}
                 disabled={buttonDisable}
               >
-                <MaterialCommunityIcons name="pencil" style={styles.editIcon} />
+                <View style={styles.editIconContainer}>
+                  <MaterialCommunityIcons name="camera-plus" size={28} color="#FFF" />
+                </View>
               </TouchableOpacity>
             </View>
 
-            {localProfilePic !== null && !pickedImage && (
-              <View style={styles.profileButtonContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.profileButton,
-                    {
-                      backgroundColor: '#780606',
-                      flexDirection: 'row',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      gap: 5,
-                    },
-                  ]}
-                  onPress={() => {
-                    deleteImage('profile', null);
-                    handleUpdateRepShopInfo('profile', null, null, null);
-                  }}
-                  disabled={buttonDisable}
-                >
-                  <MaterialCommunityIcons name="image-remove" size={20} color="#FFF" />
-                  <Text style={styles.profileButtonText}>Remove</Text>
-                </TouchableOpacity>
+            <View style={styles.profileActions}>
+              <Text style={styles.profileActionText}>Tap to change profile picture</Text>
+              <View style={styles.profileActionHint}>
+                <MaterialCommunityIcons name="information-outline" size={14} color="#6B7280" />
+                <Text style={styles.profileActionHintText}>Square images work best</Text>
               </View>
-            )}
-
-            {localProfilePic !== null && pickedImage && (
-              <View style={styles.profileButtonContainer}>
-                <TouchableOpacity
-                  style={[styles.profileButton, { borderWidth: 1, borderColor: '#555' }]}
-                  onPress={() => handleRestoreInfo('profile')}
-                  disabled={buttonDisable}
-                >
-                  <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.profileButton, { backgroundColor: '#000B58' }]}
-                  onPress={() => {
-                    if (profilePic !== null) {
-                      deleteImage('profile', null);
-                    }
-                    uploadProfileImage();
-                  }}
-                  disabled={buttonDisable}
-                >
-                  <Text style={styles.profileButtonText}>Save</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            <View style={styles.infoEdit1}>
-              {edit === 'rep-shop-name' && (
-                <>
-                  <TextInput style={styles.input1} value={localRepShopName} onChangeText={setLocalRepShopName} />
-
-                  {localRepShopName !== '' && (
-                    <>
-                      <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')} disabled={buttonDisable}>
-                        <Entypo name="cross" size={26} color="#780606" />
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={() => handleUpdateRepShopInfo('rep-shop-name', null, null, null)}
-                        disabled={buttonDisable}
-                      >
-                        <FontAwesome5 name="check" size={22} color="#22bb33" />
-                      </TouchableOpacity>
-                    </>
-                  )}
-
-                  {localRepShopName === '' && (
-                    <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')} disabled={buttonDisable}>
-                      <Entypo name="cross" size={26} color="#780606" />
-                    </TouchableOpacity>
-                  )}
-                </>
-              )}
-
-              {edit !== 'rep-shop-name' && (
-                <>
-                  <Text style={styles.repShopName}>{localRepShopName}</Text>
-                  <TouchableOpacity onPress={() => setEdit('rep-shop-name')} disabled={buttonDisable}>
-                    <MaterialIcons name="edit" size={22} color="#333" />
-                  </TouchableOpacity>
-                </>
-              )}
             </View>
           </View>
 
-          <View style={styles.shopInfo}>
-            <Text style={styles.subHeader}>Owner Details</Text>
+          {localProfilePic !== null && !pickedImage && (
+            <View style={styles.profileButtonContainer}>
+              <TouchableOpacity
+                style={[styles.profileButton, styles.removeButton]}
+                onPress={() => {
+                  deleteImage('profile', null);
+                  handleUpdateRepShopInfo('profile', null, null, null);
+                }}
+                disabled={buttonDisable}
+              >
+                <MaterialCommunityIcons name="image-remove" size={18} color="#FFF" />
+                <Text style={styles.profileButtonText}>Remove Photo</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {localProfilePic !== null && pickedImage && (
+            <View style={styles.profileButtonContainer}>
+              <TouchableOpacity
+                style={[styles.profileButton, styles.cancelButton]}
+                onPress={() => handleRestoreInfo('profile')}
+                disabled={buttonDisable}
+              >
+                <MaterialCommunityIcons name="close" size={18} color="#555" />
+                <Text style={[styles.profileButtonText, { color: '#555' }]}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.profileButton, styles.saveButton]}
+                onPress={() => {
+                  if (profilePic !== null) {
+                    deleteImage('profile', null);
+                  }
+                  uploadProfileImage();
+                }}
+                disabled={buttonDisable}
+              >
+                <MaterialCommunityIcons name="check" size={18} color="#FFF" />
+                <Text style={styles.profileButtonText}>Save Photo</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={styles.infoEdit1}>
+            {edit === 'rep-shop-name' && (
+              <>
+                <TextInput style={styles.input1} value={localRepShopName} onChangeText={setLocalRepShopName} />
+
+                {localRepShopName !== '' && (
+                  <>
+                    <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')} disabled={buttonDisable}>
+                      <MaterialCommunityIcons name="close-circle" size={26} color="#DC2626" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => handleUpdateRepShopInfo('rep-shop-name', null, null, null)}
+                      disabled={buttonDisable}
+                    >
+                      <MaterialCommunityIcons name="check-circle" size={26} color="#10B981" />
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                {localRepShopName === '' && (
+                  <TouchableOpacity onPress={() => handleRestoreInfo('rep-shop-name')} disabled={buttonDisable}>
+                    <MaterialCommunityIcons name="close-circle" size={26} color="#DC2626" />
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
+
+            {edit !== 'rep-shop-name' && (
+              <>
+                <Text style={styles.repShopName}>{localRepShopName}</Text>
+                <TouchableOpacity onPress={() => setEdit('rep-shop-name')} disabled={buttonDisable}>
+                  <MaterialCommunityIcons name="pencil" size={22} color="#333" />
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+
+          <View style={styles.editInfoContainer}>
+            <View style={styles.subHeaderContainer}>
+              <MaterialCommunityIcons name="account-details" size={24} color="#000B58" />
+              <Text style={styles.subHeader}>Owner Details</Text>
+            </View>
             <View style={styles.row}>
-              <Text style={styles.infoLabel}>First Name:</Text>
-              <View style={styles.infoEdit2}>
+              <View style={styles.labelContainer}>
+                <MaterialCommunityIcons name="account" size={18} color="#6B7280" />
+                <Text style={styles.infoLabel}>First Name</Text>
+              </View>
+              <View style={styles.infoEdit}>
                 {edit === 'firstname' && (
                   <>
                     <TextInput
-                      style={styles.input2}
+                      style={styles.input}
                       value={localOwnerFirstname}
                       onChangeText={setLocalOwnerFirstname}
+                      placeholder="Enter first name"
+                      placeholderTextColor="#9CA3AF"
                     />
 
                     {localOwnerFirstname !== '' && (
                       <>
                         <TouchableOpacity onPress={() => handleRestoreInfo('firstname')} disabled={buttonDisable}>
-                          <Entypo name="cross" size={20} color="#780606" />
+                          <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                         </TouchableOpacity>
 
                         <TouchableOpacity
                           onPress={() => handleUpdateRepShopInfo('firstname', null, null, null)}
                           disabled={buttonDisable}
                         >
-                          <FontAwesome5 name="check" size={16} color="#22bb33" />
+                          <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                         </TouchableOpacity>
                       </>
                     )}
 
                     {localOwnerFirstname === '' && (
                       <TouchableOpacity onPress={() => handleRestoreInfo('firstname')} disabled={buttonDisable}>
-                        <Entypo name="cross" size={20} color="#780606" />
+                        <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                       </TouchableOpacity>
                     )}
                   </>
@@ -1054,8 +1132,12 @@ const EditShop = () => {
                 {edit !== 'firstname' && (
                   <>
                     <Text style={styles.infoText}>{localOwnerFirstname}</Text>
-                    <TouchableOpacity onPress={() => setEdit('firstname')} disabled={buttonDisable}>
-                      <MaterialIcons name="edit" size={16} color="#555" />
+                    <TouchableOpacity
+                      onPress={() => setEdit('firstname')}
+                      disabled={buttonDisable}
+                      style={styles.editIconButton}
+                    >
+                      <MaterialCommunityIcons name="pencil" size={18} color="#000B58" />
                     </TouchableOpacity>
                   </>
                 )}
@@ -1063,30 +1145,39 @@ const EditShop = () => {
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.infoLabel}>Last Name:</Text>
-              <View style={styles.infoEdit2}>
+              <View style={styles.labelContainer}>
+                <MaterialCommunityIcons name="account" size={18} color="#6B7280" />
+                <Text style={styles.infoLabel}>Last Name</Text>
+              </View>
+              <View style={styles.infoEdit}>
                 {edit === 'lastname' && (
                   <>
-                    <TextInput style={styles.input2} value={localOwnerLastname} onChangeText={setLocalOwnerLastname} />
+                    <TextInput
+                      style={styles.input}
+                      value={localOwnerLastname}
+                      onChangeText={setLocalOwnerLastname}
+                      placeholder="Enter last name"
+                      placeholderTextColor="#9CA3AF"
+                    />
 
                     {localOwnerLastname !== '' && (
                       <>
                         <TouchableOpacity onPress={() => handleRestoreInfo('lastname')} disabled={buttonDisable}>
-                          <Entypo name="cross" size={20} color="#780606" />
+                          <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                         </TouchableOpacity>
 
                         <TouchableOpacity
                           onPress={() => handleUpdateRepShopInfo('lastname', null, null, null)}
                           disabled={buttonDisable}
                         >
-                          <FontAwesome5 name="check" size={16} color="#22bb33" />
+                          <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                         </TouchableOpacity>
                       </>
                     )}
 
                     {localOwnerLastname === '' && (
                       <TouchableOpacity onPress={() => handleRestoreInfo('lastname')} disabled={buttonDisable}>
-                        <Entypo name="cross" size={20} color="#780606" />
+                        <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                       </TouchableOpacity>
                     )}
                   </>
@@ -1095,8 +1186,12 @@ const EditShop = () => {
                 {edit !== 'lastname' && (
                   <>
                     <Text style={styles.infoText}>{localOwnerLastname}</Text>
-                    <TouchableOpacity onPress={() => setEdit('lastname')} disabled={buttonDisable}>
-                      <MaterialIcons name="edit" size={16} color="#555" />
+                    <TouchableOpacity
+                      onPress={() => setEdit('lastname')}
+                      disabled={buttonDisable}
+                      style={styles.editIconButton}
+                    >
+                      <MaterialCommunityIcons name="pencil" size={18} color="#000B58" />
                     </TouchableOpacity>
                   </>
                 )}
@@ -1104,13 +1199,17 @@ const EditShop = () => {
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.infoLabel}>Gender:</Text>
-              <View style={styles.infoEdit2}>
+              <View style={styles.labelContainer}>
+                <MaterialCommunityIcons name="gender-male-female" size={18} color="#6B7280" />
+                <Text style={styles.infoLabel}>Gender</Text>
+              </View>
+              <View style={styles.infoEdit}>
                 {edit === 'gender' && (
                   <>
                     <SelectDropdown
                       data={genders}
                       defaultValue={localGender}
+                      statusBarTranslucent={true}
                       onSelect={(selectedItem) => setLocalGender(selectedItem)}
                       renderButton={(selectedItem, isOpen) => (
                         <View style={styles.dropdownButtonStyle}>
@@ -1125,7 +1224,7 @@ const EditShop = () => {
                         <View
                           style={{
                             ...styles.dropdownItemStyle,
-                            ...(isSelected && { backgroundColor: '#D2D9DF' }),
+                            ...(isSelected && { backgroundColor: '#E0E7FF' }),
                           }}
                         >
                           <Text style={styles.dropdownItemTxtStyle}>{item}</Text>
@@ -1137,14 +1236,14 @@ const EditShop = () => {
                     />
 
                     <TouchableOpacity onPress={() => handleRestoreInfo('gender')} disabled={buttonDisable}>
-                      <Entypo name="cross" size={20} color="#780606" />
+                      <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       onPress={() => handleUpdateRepShopInfo('gender', null, null, null)}
                       disabled={buttonDisable}
                     >
-                      <FontAwesome5 name="check" size={16} color="#22bb33" />
+                      <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                     </TouchableOpacity>
                   </>
                 )}
@@ -1152,8 +1251,12 @@ const EditShop = () => {
                 {edit !== 'gender' && (
                   <>
                     <Text style={styles.infoText}>{localGender}</Text>
-                    <TouchableOpacity onPress={() => setEdit('gender')} disabled={buttonDisable}>
-                      <MaterialIcons name="edit" size={16} color="#555" />
+                    <TouchableOpacity
+                      onPress={() => setEdit('gender')}
+                      disabled={buttonDisable}
+                      style={styles.editIconButton}
+                    >
+                      <MaterialCommunityIcons name="pencil" size={18} color="#000B58" />
                     </TouchableOpacity>
                   </>
                 )}
@@ -1161,27 +1264,32 @@ const EditShop = () => {
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.infoLabel}>Number:</Text>
-              <View style={styles.infoEdit2}>
+              <View style={styles.labelContainer}>
+                <MaterialCommunityIcons name="phone" size={18} color="#6B7280" />
+                <Text style={styles.infoLabel}>Mobile</Text>
+              </View>
+              <View style={styles.infoEdit}>
                 {edit === 'mobile-num' && (
                   <>
                     <TextInput
-                      style={styles.input2}
+                      style={styles.input}
                       value={localMobileNum}
                       onChangeText={handlePhoneNumInputChange}
                       keyboardType="number-pad"
                       maxLength={11}
+                      placeholder="09XXXXXXXXX"
+                      placeholderTextColor="#9CA3AF"
                     />
 
                     {localMobileNum !== '' && (
                       <>
                         <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')} disabled={buttonDisable}>
-                          <Entypo name="cross" size={20} color="#780606" />
+                          <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                         </TouchableOpacity>
 
                         {localMobileNum.length === 11 && (
                           <TouchableOpacity onPress={() => handleSendCode()} disabled={buttonDisable}>
-                            <FontAwesome5 name="check" size={16} color="#22bb33" />
+                            <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                           </TouchableOpacity>
                         )}
                       </>
@@ -1189,7 +1297,7 @@ const EditShop = () => {
 
                     {localMobileNum === '' && (
                       <TouchableOpacity onPress={() => handleRestoreInfo('mobile-num')} disabled={buttonDisable}>
-                        <Entypo name="cross" size={20} color="#780606" />
+                        <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                       </TouchableOpacity>
                     )}
                   </>
@@ -1198,8 +1306,12 @@ const EditShop = () => {
                 {edit !== 'mobile-num' && (
                   <>
                     <Text style={styles.infoText}>{localMobileNum}</Text>
-                    <TouchableOpacity onPress={() => setEdit('mobile-num')} disabled={buttonDisable}>
-                      <MaterialIcons name="edit" size={16} color="#555" />
+                    <TouchableOpacity
+                      onPress={() => setEdit('mobile-num')}
+                      disabled={buttonDisable}
+                      style={styles.editIconButton}
+                    >
+                      <MaterialCommunityIcons name="pencil" size={18} color="#000B58" />
                     </TouchableOpacity>
                   </>
                 )}
@@ -1207,7 +1319,10 @@ const EditShop = () => {
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.infoLabel}>Email:</Text>
+              <View style={styles.labelContainer}>
+                <MaterialCommunityIcons name="email" size={18} color="#6B7280" />
+                <Text style={styles.infoLabel}>Email</Text>
+              </View>
               {localEmail === null && (
                 <TouchableOpacity
                   style={styles.editButton}
@@ -1217,22 +1332,31 @@ const EditShop = () => {
                   }}
                   disabled={buttonDisable}
                 >
+                  <MaterialCommunityIcons name="plus-circle" size={18} color="#000B58" />
                   <Text style={styles.editButtonText}>Add Email</Text>
                 </TouchableOpacity>
               )}
 
               {localEmail !== null && (
-                <View style={styles.infoEdit2}>
+                <View style={styles.infoEdit}>
                   {edit === 'email' && (
                     <>
-                      <TextInput style={styles.input2} value={localEmail} onChangeText={setLocalEmail} />
+                      <TextInput
+                        style={styles.input}
+                        value={localEmail}
+                        onChangeText={setLocalEmail}
+                        placeholder="email@example.com"
+                        placeholderTextColor="#9CA3AF"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                      />
 
                       <TouchableOpacity onPress={() => handleRestoreInfo('email')} disabled={buttonDisable}>
-                        <Entypo name="cross" size={20} color="#780606" />
+                        <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                       </TouchableOpacity>
 
                       <TouchableOpacity onPress={() => handleSendCode()} disabled={buttonDisable}>
-                        <FontAwesome5 name="check" size={16} color="#22bb33" />
+                        <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                       </TouchableOpacity>
                     </>
                   )}
@@ -1240,8 +1364,12 @@ const EditShop = () => {
                   {edit !== 'email' && (
                     <>
                       <Text style={styles.infoText}>{localEmail}</Text>
-                      <TouchableOpacity onPress={() => setEdit('email')} disabled={buttonDisable}>
-                        <MaterialIcons name="edit" size={16} color="#555" />
+                      <TouchableOpacity
+                        onPress={() => setEdit('email')}
+                        disabled={buttonDisable}
+                        style={styles.editIconButton}
+                      >
+                        <MaterialCommunityIcons name="pencil" size={18} color="#000B58" />
                       </TouchableOpacity>
                     </>
                   )}
@@ -1250,21 +1378,28 @@ const EditShop = () => {
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.infoLabel}>Password:</Text>
-              <View style={styles.infoEdit2}>
+              <View style={styles.labelContainer}>
+                <MaterialCommunityIcons name="lock" size={18} color="#6B7280" />
+                <Text style={styles.infoLabel}>Password</Text>
+              </View>
+              <View style={styles.infoEdit}>
                 <TouchableOpacity
                   style={styles.editButton}
                   onPress={() => setModalVisible(true)}
                   disabled={buttonDisable}
                 >
+                  <MaterialCommunityIcons name="key-variant" size={18} color="#000B58" />
                   <Text style={styles.editButtonText}>Change Password</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </View>
 
-          <View style={styles.servicesOffered}>
-            <Text style={styles.subHeader}>Services Offered</Text>
+          <View style={styles.editInfoContainer}>
+            <View style={styles.subHeaderContainer}>
+              <MaterialCommunityIcons name="wrench" size={24} color="#000B58" />
+              <Text style={styles.subHeader}>Services Offered</Text>
+            </View>
             {services.map((item) => (
               <View key={item.id} style={styles.checkboxContainer}>
                 <Checkbox
@@ -1278,38 +1413,43 @@ const EditShop = () => {
             ))}
 
             {isEditServices && (
-              <View style={styles.cancelSaveContainer}>
+              <View style={styles.profileButtonContainer}>
                 <TouchableOpacity
-                  style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
+                  style={[styles.profileButton, styles.cancelButton]}
                   onPress={() => {
                     handleRestoreInfo('services-offered');
                     setIsEditServices(false);
                   }}
                   disabled={buttonDisable}
                 >
-                  <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                  <MaterialCommunityIcons name="close" size={18} color="#6B7280" />
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.modalButton, { backgroundColor: '#000B58' }]}
+                  style={[styles.profileButton, styles.saveButton]}
                   onPress={() => {
                     handleUpdateRepShopInfo('services-offered', null, null, null);
                     setIsEditServices(false);
                   }}
                   disabled={buttonDisable}
                 >
-                  <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
+                  <MaterialCommunityIcons name="check" size={18} color="#FFF" />
+                  <Text style={styles.profileButtonText}>Save</Text>
                 </TouchableOpacity>
               </View>
             )}
           </View>
 
-          <View style={styles.shopImages}>
-            <Text style={styles.subHeader}>Shop Images</Text>
+          <View style={styles.editInfoContainer}>
+            <View style={styles.subHeaderContainer}>
+              <MaterialCommunityIcons name="image-multiple" size={24} color="#000B58" />
+              <Text style={styles.subHeader}>Shop Images</Text>
+            </View>
             {shopImages.length === 0 && (
-              <TouchableOpacity style={styles.editButton2} onPress={() => pickShopImages()} disabled={buttonDisable}>
-                <MaterialCommunityIcons name="image-plus" size={16} color="#555" />
-                <Text style={[styles.editButtonText, { color: '#555' }]}>Upload Image</Text>
+              <TouchableOpacity style={styles.editButton} onPress={() => pickShopImages()} disabled={buttonDisable}>
+                <MaterialCommunityIcons name="image-plus" size={18} color="#000B58" />
+                <Text style={styles.editButtonText}>Upload Image</Text>
               </TouchableOpacity>
             )}
 
@@ -1319,13 +1459,27 @@ const EditShop = () => {
                   {shopImages.map((item) => (
                     <TouchableOpacity
                       key={item}
+                      style={styles.imageWrapper}
                       onPress={() => {
                         setImageSource(item);
-                        setImageModalVisible(true);
+                        // Get the original image dimensions
+                        Image.getSize(
+                          item,
+                          (width, height) => {
+                            setImageDimensions({ width, height });
+                            setImageModalVisible(true);
+                          },
+                          (error) => {
+                            console.error('Failed to get image size:', error);
+                            // Fallback to default dimensions
+                            setImageDimensions({ width: 400, height: 300 });
+                            setImageModalVisible(true);
+                          }
+                        );
                       }}
                       disabled={buttonDisable}
                     >
-                      <Image key={item} style={styles.image} source={{ uri: item }} width={100} height={100} />
+                      <Image style={styles.image} source={{ uri: item }} resizeMode="cover" />
                     </TouchableOpacity>
                   ))}
                   <TouchableOpacity
@@ -1333,15 +1487,18 @@ const EditShop = () => {
                     onPress={() => pickShopImages()}
                     disabled={buttonDisable}
                   >
-                    <MaterialCommunityIcons name="image-plus" size={30} color="#555" />
+                    <MaterialCommunityIcons name="image-plus" size={30} color="#000B58" />
                   </TouchableOpacity>
                 </View>
               </>
             )}
           </View>
 
-          <View style={styles.shopLocation}>
-            <Text style={styles.subHeader}>Shop Location</Text>
+          <View style={styles.editInfoContainer}>
+            <View style={styles.subHeaderContainer}>
+              <MaterialCommunityIcons name="map-marker" size={24} color="#000B58" />
+              <Text style={styles.subHeader}>Shop Location</Text>
+            </View>
             <View style={styles.mapButtonContainer}>
               <View style={styles.mapView2}>
                 <MapView
@@ -1385,93 +1542,190 @@ const EditShop = () => {
 
           <Modal
             animationType="fade"
-            backdropColor={'rgba(0, 0, 0, 0.5)'}
+            transparent={true}
             visible={modalVisible}
             onRequestClose={() => {
               setModalVisible(false);
               setCurrentPassword('');
               setNewPassword('');
               setConfirmPassword('');
+              setPasswordError('');
+              setShowCurrentPassword(false);
+              setShowNewPassword(false);
+              setShowConfirmPassword(false);
             }}
           >
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setModalVisible(false);
-                setCurrentPassword('');
-                setNewPassword('');
-                setConfirmPassword('');
-              }}
-            >
-              <View style={styles.centeredView}>
-                <Pressable style={styles.modalView} onPress={() => {}}>
-                  <Text style={styles.modalHeader}>Change Password</Text>
-                  <View style={styles.modalInputContainer}>
-                    <Text style={styles.modalInputLabel}>Current Password</Text>
-                    <TextInput
-                      value={currentPassword}
-                      onChangeText={setCurrentPassword}
-                      style={styles.modalInput}
-                      secureTextEntry
-                    />
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setModalVisible(false);
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                  setPasswordError('');
+                  setShowCurrentPassword(false);
+                  setShowNewPassword(false);
+                  setShowConfirmPassword(false);
+                }}
+              >
+                <View style={styles.modalBackground} />
+              </TouchableWithoutFeedback>
+
+              <View style={styles.passwordModalContent}>
+                <View style={styles.passwordModalHeader}>
+                  <MaterialCommunityIcons name="lock-reset" size={24} color="#000B58" />
+                  <Text style={styles.passwordModalTitle}>Change Password</Text>
+                  <TouchableOpacity style={styles.modalCloseButton} onPress={() => handleCancelChangePass()}>
+                    <MaterialCommunityIcons name="close" size={24} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.passwordModalBody}>
+                  <View style={styles.passwordInputGroup}>
+                    <Text style={styles.passwordInputLabel}>Current Password</Text>
+                    <View style={styles.passwordInputWrapper}>
+                      <TextInput
+                        value={currentPassword}
+                        onChangeText={setCurrentPassword}
+                        style={styles.passwordInput}
+                        placeholder="Enter current password"
+                        placeholderTextColor="#9CA3AF"
+                        secureTextEntry={!showCurrentPassword}
+                        autoCapitalize="none"
+                      />
+                      <TouchableOpacity
+                        style={styles.passwordToggleButton}
+                        onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                      >
+                        <MaterialCommunityIcons
+                          name={showCurrentPassword ? 'eye-off' : 'eye'}
+                          size={20}
+                          color="#6B7280"
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
 
-                  <View style={styles.modalInputContainer}>
-                    <Text style={styles.modalInputLabel}>New Password</Text>
-                    <TextInput
-                      value={newPassword}
-                      onChangeText={setNewPassword}
-                      style={styles.modalInput}
-                      secureTextEntry
-                    />
+                  <View style={styles.passwordInputGroup}>
+                    <Text style={styles.passwordInputLabel}>New Password</Text>
+                    <View style={styles.passwordInputWrapper}>
+                      <TextInput
+                        value={newPassword}
+                        onChangeText={setNewPassword}
+                        style={styles.passwordInput}
+                        placeholder="Enter new password"
+                        placeholderTextColor="#9CA3AF"
+                        secureTextEntry={!showNewPassword}
+                        autoCapitalize="none"
+                      />
+                      <TouchableOpacity
+                        style={styles.passwordToggleButton}
+                        onPress={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        <MaterialCommunityIcons name={showNewPassword ? 'eye-off' : 'eye'} size={20} color="#6B7280" />
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={styles.passwordHint}>
+                      <MaterialCommunityIcons name="information-outline" size={12} color="#6B7280" /> Password must be
+                      at least 8 characters
+                    </Text>
                   </View>
 
-                  <View style={styles.modalInputContainer}>
-                    <Text style={styles.modalInputLabel}>Confirm New Password</Text>
-                    <TextInput
-                      value={confirmPassword}
-                      onChangeText={setConfirmPassword}
-                      style={styles.modalInput}
-                      secureTextEntry
-                    />
+                  <View style={styles.passwordInputGroup}>
+                    <Text style={styles.passwordInputLabel}>Confirm New Password</Text>
+                    <View style={styles.passwordInputWrapper}>
+                      <TextInput
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        style={styles.passwordInput}
+                        placeholder="Re-enter new password"
+                        placeholderTextColor="#9CA3AF"
+                        secureTextEntry={!showConfirmPassword}
+                        autoCapitalize="none"
+                      />
+                      <TouchableOpacity
+                        style={styles.passwordToggleButton}
+                        onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        <MaterialCommunityIcons
+                          name={showConfirmPassword ? 'eye-off' : 'eye'}
+                          size={20}
+                          color="#6B7280"
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
 
                   {passwordError.length > 0 && (
-                    <View style={styles.errorContainer}>
+                    <View style={[styles.errorContainer, { marginBottom: 0 }]}>
+                      <MaterialCommunityIcons name="alert-circle" size={16} color="#DC2626" />
                       <Text style={styles.errorMessage}>{passwordError}</Text>
                     </View>
                   )}
+                </View>
 
-                  <View style={styles.cancelSaveContainer}>
-                    <TouchableOpacity
-                      style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                      onPress={() => handleCancelChangePass()}
-                    >
-                      <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                    </TouchableOpacity>
+                <View style={styles.passwordModalActions}>
+                  <TouchableOpacity
+                    style={[styles.profileButton, styles.cancelButton]}
+                    onPress={() => handleCancelChangePass()}
+                  >
+                    <MaterialCommunityIcons name="close" size={18} color="#6B7280" />
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
 
-                    <TouchableOpacity
-                      style={[styles.modalButton, { backgroundColor: '#000B58' }]}
-                      onPress={() => handleUpdateRepShopInfo('change-password', null, null, null)}
-                    >
-                      <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
-                    </TouchableOpacity>
-                  </View>
-                </Pressable>
+                  <TouchableOpacity
+                    style={[styles.profileButton, styles.saveButton]}
+                    onPress={() => handleUpdateRepShopInfo('change-password', null, null, null)}
+                  >
+                    <MaterialCommunityIcons name="check" size={18} color="#FFF" />
+                    <Text style={styles.profileButtonText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </TouchableWithoutFeedback>
+            </View>
           </Modal>
 
           <Modal
             animationType="fade"
-            backdropColor={'rgba(0, 0, 0, 0.5)'}
+            transparent={true}
             visible={mapModalVisible}
             onRequestClose={() => {
               setMapModalVisible(false);
               handleRestoreInfo('region');
             }}
           >
-            <View style={styles.centeredView}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setMapModalVisible(false);
+                  handleRestoreInfo('region');
+                }}
+              >
+                <View style={styles.modalBackground} />
+              </TouchableWithoutFeedback>
+
               <View style={styles.mapView}>
+                <View style={styles.mapModalHeader}>
+                  <MaterialCommunityIcons name="map-marker-radius" size={24} color="#000B58" />
+                  <Text style={styles.mapModalTitle}>Edit Shop Location</Text>
+                  <TouchableOpacity
+                    style={styles.mapModalCloseButton}
+                    onPress={() => {
+                      setMapModalVisible(false);
+                      handleRestoreInfo('region');
+                    }}
+                  >
+                    <MaterialCommunityIcons name="close" size={24} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.mapInstructionsContainer}>
+                  <MaterialCommunityIcons name="information-outline" size={20} color="#000B58" />
+                  <Text style={styles.mapInstructionsText}>
+                    Drag the marker or pan the map to set your shop&apos;s exact location
+                  </Text>
+                </View>
+
                 <MapView
                   style={styles.map}
                   ref={mapRef}
@@ -1492,24 +1746,39 @@ const EditShop = () => {
                   )}
                 </MapView>
 
+                <View style={styles.mapCoordinatesContainer}>
+                  <View style={styles.mapCoordinateItem}>
+                    <MaterialCommunityIcons name="latitude" size={16} color="#6B7280" />
+                    <Text style={styles.mapCoordinateLabel}>Latitude:</Text>
+                    <Text style={styles.mapCoordinateValue}>{localRegion?.latitude.toFixed(6) ?? '0.000000'}</Text>
+                  </View>
+                  <View style={styles.mapCoordinateItem}>
+                    <MaterialCommunityIcons name="longitude" size={16} color="#6B7280" />
+                    <Text style={styles.mapCoordinateLabel}>Longitude:</Text>
+                    <Text style={styles.mapCoordinateValue}>{localRegion?.longitude.toFixed(6) ?? '0.000000'}</Text>
+                  </View>
+                </View>
+
                 <View style={styles.cancelSaveContainer}>
                   <TouchableOpacity
-                    style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
+                    style={[styles.modalButton, styles.modalButtonSecondary]}
                     onPress={() => {
                       setMapModalVisible(false);
                       handleRestoreInfo('region');
                     }}
                   >
-                    <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
+                    <MaterialCommunityIcons name="close" size={20} color="#6B7280" />
+                    <Text style={[styles.modalButtonText, { color: '#6B7280' }]}>Cancel</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={[styles.modalButton, { backgroundColor: '#000B58' }]}
+                    style={[styles.modalButton, styles.modalButtonPrimary]}
                     onPress={() => {
                       handleUpdateRepShopInfo('region', null, null, null);
                       setMapModalVisible(false);
                     }}
                   >
+                    <MaterialCommunityIcons name="check-circle" size={20} color="#FFF" />
                     <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
                   </TouchableOpacity>
                 </View>
@@ -1519,54 +1788,88 @@ const EditShop = () => {
 
           <Modal
             animationType="fade"
-            backdropColor={'rgba(0, 0, 0, 0.5)'}
+            transparent={true}
             visible={imageModalVisible}
             onRequestClose={() => {
               setImageModalVisible(false);
               setImageSource('');
+              setImageDimensions({ width: 0, height: 0 });
             }}
           >
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setImageModalVisible(false);
-                setImageSource('');
-              }}
-            >
-              <View style={styles.centeredView}>
-                <Pressable style={styles.imageView} onPress={() => {}}>
-                  <Image width={500} height={300} style={styles.viewImage} source={{ uri: imageSource }} />
+            <View style={styles.imageModalOverlay}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setImageModalVisible(false);
+                  setImageSource('');
+                  setImageDimensions({ width: 0, height: 0 });
+                }}
+              >
+                <View style={styles.imageModalBackground} />
+              </TouchableWithoutFeedback>
 
-                  <View style={styles.cancelSaveContainer}>
-                    <TouchableOpacity
-                      style={[styles.modalButton, { borderWidth: 1, borderColor: '#555' }]}
-                      onPress={() => {
-                        setImageModalVisible(false);
-                        setImageSource('');
-                      }}
-                    >
-                      <Text style={[styles.modalButtonText, { color: '#555' }]}>Cancel</Text>
-                    </TouchableOpacity>
+              <View style={styles.imageModalContent}>
+                <View style={styles.imageModalHeader}>
+                  <Text style={styles.imageModalTitle}>Shop Image</Text>
+                  <TouchableOpacity
+                    style={styles.imageModalCloseButton}
+                    onPress={() => {
+                      setImageModalVisible(false);
+                      setImageSource('');
+                      setImageDimensions({ width: 0, height: 0 });
+                    }}
+                  >
+                    <MaterialCommunityIcons name="close" size={24} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
 
-                    <TouchableOpacity
-                      style={[styles.modalButton, { backgroundColor: '#780606' }]}
-                      onPress={() => {
-                        deleteImage('shop-image', imageSource);
-                        const updatedLinks = shopImages.filter((item) => item !== imageSource);
-                        setImageModalVisible(false);
-                        handleUpdateRepShopInfo('shop-images', null, updatedLinks, 'delete');
-                      }}
-                    >
-                      <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Delete</Text>
-                    </TouchableOpacity>
-                  </View>
-                </Pressable>
+                <View style={styles.imageModalImageContainer}>
+                  <Image
+                    style={[
+                      styles.imageModalImage,
+                      imageDimensions.width > 0 && {
+                        width: calculateImageDisplaySize(imageDimensions.width, imageDimensions.height).width,
+                        height: calculateImageDisplaySize(imageDimensions.width, imageDimensions.height).height,
+                      },
+                    ]}
+                    source={{ uri: imageSource }}
+                    resizeMode="cover"
+                  />
+                </View>
+
+                <View style={styles.imageModalActions}>
+                  <TouchableOpacity
+                    style={[styles.profileButton, styles.cancelButton]}
+                    onPress={() => {
+                      setImageModalVisible(false);
+                      setImageSource('');
+                      setImageDimensions({ width: 0, height: 0 });
+                    }}
+                  >
+                    <MaterialCommunityIcons name="close" size={18} color="#6B7280" />
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.profileButton, styles.removeButton]}
+                    onPress={() => {
+                      deleteImage('shop-image', imageSource);
+                      const updatedLinks = shopImages.filter((item) => item !== imageSource);
+                      setImageModalVisible(false);
+                      setImageDimensions({ width: 0, height: 0 });
+                      handleUpdateRepShopInfo('shop-images', null, updatedLinks, 'delete');
+                    }}
+                  >
+                    <MaterialCommunityIcons name="delete" size={18} color="#FFF" />
+                    <Text style={styles.profileButtonText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </TouchableWithoutFeedback>
+            </View>
           </Modal>
 
           <Modal
             animationType="fade"
-            backdropColor={'rgba(0, 0, 0, 0.5)'}
+            transparent={true}
             visible={verificationModalVisible}
             onRequestClose={() => {
               setVerificationModalVisible(false);
@@ -1578,67 +1881,111 @@ const EditShop = () => {
               setTimer(45);
             }}
           >
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setVerificationModalVisible(false);
-                clearTimer();
-                setIsTimerActivate(false);
-                setConfirm(null);
-                setError('');
-                setOtp(Array(6).fill(''));
-                setTimer(45);
-              }}
-            >
-              <View style={styles.centeredView}>
-                <Pressable style={styles.verificationModalView} onPress={() => {}}>
-                  <Text style={[styles.modalHeader, { marginBottom: 10 }]}>Verification</Text>
-                  <Text style={styles.modalText}>
-                    We have sent the verification code to your {edit === 'mobile-num' ? 'number.' : 'email address.'}
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setVerificationModalVisible(false);
+                  clearTimer();
+                  setIsTimerActivate(false);
+                  setConfirm(null);
+                  setError('');
+                  setOtp(Array(6).fill(''));
+                  setTimer(45);
+                }}
+              >
+                <View style={styles.modalBackground} />
+              </TouchableWithoutFeedback>
+
+              <View style={styles.verificationModalView}>
+                <View style={styles.modalIconContainer}>
+                  <MaterialCommunityIcons
+                    name={edit === 'mobile-num' ? 'cellphone-message' : 'email-check'}
+                    size={48}
+                    color="#000B58"
+                  />
+                </View>
+
+                <Text style={styles.modalHeader}>Verification Required</Text>
+                <Text style={styles.modalText}>
+                  We have sent a 6-digit verification code to your{' '}
+                  {edit === 'mobile-num' ? 'phone number' : 'email address'}
+                </Text>
+
+                <View style={styles.codeInputContainer}>
+                  {otp.map((digit, index) => (
+                    <TextInput
+                      key={index}
+                      style={[
+                        styles.otpInput,
+                        digit && styles.otpInputFilled,
+                        !isTimerActivate && styles.otpInputDisabled,
+                      ]}
+                      value={digit}
+                      onChangeText={(text) => {
+                        // Only allow single digit
+                        const cleanText = text.replace(/[^0-9]/g, '').slice(-1);
+                        handleOtpInputChange(cleanText, index);
+                      }}
+                      onKeyPress={(e) => handleKeyPress(e, index)}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      readOnly={!isTimerActivate}
+                      selectTextOnFocus={true}
+                      ref={(ref) => {
+                        inputs.current[index] = ref;
+                      }}
+                    />
+                  ))}
+                </View>
+
+                <View style={styles.timerInfoContainer}>
+                  <MaterialCommunityIcons
+                    name={isTimerActivate ? 'timer-sand' : 'check-circle'}
+                    size={18}
+                    color={isTimerActivate ? '#000B58' : '#10B981'}
+                  />
+                  <Text style={[styles.timerInfoText, !isTimerActivate && styles.timerInfoTextReady]}>
+                    {isTimerActivate ? `Resend available in ${timer}s` : 'Ready to resend code'}
                   </Text>
-                  <View style={styles.codeInputContainer}>
-                    {otp.map((digit, index) => (
-                      <TextInput
-                        key={index}
-                        style={styles.otpInput}
-                        value={digit}
-                        onChangeText={(text) => handleOtpInputChange(text.replace(/[^0-9]/g, ''), index)}
-                        onKeyPress={(e) => handleKeyPress(e, index)}
-                        keyboardType="number-pad"
-                        maxLength={1}
-                        readOnly={isTimerActivate ? false : true}
-                        ref={(ref) => {
-                          inputs.current[index] = ref;
-                        }}
-                      />
-                    ))}
+                </View>
+
+                {error.length > 0 && (
+                  <View style={styles.errorContainer}>
+                    <MaterialCommunityIcons name="alert-circle" size={18} color="#DC2626" />
+                    <Text style={styles.errorMessage}>{error}</Text>
                   </View>
-                  <Text style={[styles.modalText, { fontSize: 12 }]}>
-                    {isTimerActivate ? `Resend code in ${timer}s` : 'You can resend the code now'}
-                  </Text>
-                  {error.length > 0 && (
-                    <View style={[styles.errorContainer, { marginTop: 0, marginBottom: 10 }]}>
-                      <Text style={styles.errorMessage}>{error}</Text>
-                    </View>
-                  )}
+                )}
 
-                  {confirmCodeLoading && (
-                    <ActivityIndicator style={{ marginBottom: 10 }} size="small" color="#000B58" />
-                  )}
+                {confirmCodeLoading && (
+                  <View style={styles.modalLoadingContainer}>
+                    <ActivityIndicator size="small" color="#000B58" />
+                    <Text style={styles.modalLoadingText}>Verifying...</Text>
+                  </View>
+                )}
 
-                  {!isTimerActivate && (
-                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => handleResendCode()}>
-                      <Text style={styles.sendButtonText}>Resend Code</Text>
+                <View style={styles.modalButtonContainer}>
+                  {!isTimerActivate ? (
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalButtonPrimary]}
+                      onPress={() => handleResendCode()}
+                      disabled={confirmCodeLoading}
+                    >
+                      <MaterialCommunityIcons name="refresh" size={20} color="#FFF" />
+                      <Text style={styles.modalButtonText}>Resend Code</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalButtonPrimary]}
+                      onPress={() => verifyCode()}
+                      disabled={confirmCodeLoading}
+                    >
+                      <MaterialCommunityIcons name="check-circle-outline" size={20} color="#FFF" />
+                      <Text style={styles.modalButtonText}>Verify Code</Text>
                     </TouchableOpacity>
                   )}
-
-                  {isTimerActivate && (
-                    <TouchableOpacity style={[styles.sendButton, { marginTop: 0 }]} onPress={() => verifyCode()}>
-                      <Text style={styles.sendButtonText}>Verify Code</Text>
-                    </TouchableOpacity>
-                  )}
-                </Pressable>
+                </View>
               </View>
-            </TouchableWithoutFeedback>
+            </View>
           </Modal>
         </View>
       </KeyboardAwareScrollView>
@@ -1662,13 +2009,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 80,
   },
-  picRepNameContainer: {
+  profileHeaderContainer: {
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     width: '100%',
-    borderBottomWidth: 1,
-    borderColor: '#EAEAEA',
-    paddingBottom: 20,
+    marginBottom: 16,
   },
   editPicContainer: {
     position: 'relative',
@@ -1683,12 +2028,20 @@ const styles = StyleSheet.create({
     borderRadius: 120,
     position: 'absolute',
     zIndex: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   profilePic: {
     borderRadius: 120,
   },
   editPicWrapper: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(0, 11, 88, 0.7)',
     width: 120,
     height: 120,
     borderRadius: 120,
@@ -1696,35 +2049,100 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 2,
   },
-  editIcon: {
-    fontSize: 30,
-    color: '#000B58',
+  editIconContainer: {
+    backgroundColor: '#000B58',
+    borderRadius: 25,
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFF',
+  },
+  profileActions: {
+    alignItems: 'center',
+  },
+  profileActionText: {
+    fontFamily: 'BodyBold',
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 4,
+  },
+  profileActionHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  profileActionHintText: {
+    fontFamily: 'BodyRegular',
+    fontSize: 12,
+    color: '#6B7280',
   },
   profileButtonContainer: {
     flexDirection: 'row',
-    gap: 10,
+    alignSelf: 'center',
+    marginBottom: 16,
+    gap: 12,
   },
   profileButton: {
-    width: 100,
-    padding: 5,
-    borderRadius: 10,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 6,
+    minWidth: 140,
+  },
+  removeButton: {
+    backgroundColor: '#DC2626',
+  },
+  cancelButton: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#F9FAFB',
+  },
+  saveButton: {
+    backgroundColor: '#000B58',
   },
   profileButtonText: {
-    fontFamily: 'BodyRegular',
+    fontFamily: 'BodyBold',
     color: '#FFF',
+    fontSize: 14,
+  },
+  cancelButtonText: {
+    fontFamily: 'BodyBold',
+    color: '#6B7280',
+    fontSize: 14,
+  },
+  editInfoContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginTop: 16,
+  },
+  subHeaderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#E5E7EB',
   },
   infoEdit1: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     maxWidth: '100%',
-    gap: 10,
-  },
-  infoEdit2: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '70%',
     gap: 10,
   },
   repShopName: {
@@ -1733,47 +2151,73 @@ const styles = StyleSheet.create({
     color: '#333',
     maxWidth: '90%',
   },
-  shopInfo: {
-    marginTop: 10,
-    borderBottomWidth: 1,
-    borderColor: '#EAEAEA',
-    paddingBottom: 10,
-  },
   subHeader: {
     fontFamily: 'BodyBold',
     fontSize: 18,
     color: '#333',
-    marginBottom: 10,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 16,
     width: '100%',
+    paddingVertical: 8,
   },
-  editButton: {
-    justifyContent: 'center',
+  labelContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  editButtonText: {
-    fontFamily: 'BodyRegular',
-    color: '#000B58',
+    width: '35%',
+    gap: 8,
   },
   infoLabel: {
-    fontFamily: 'BodyBold',
-    width: '30%',
-    color: '#555',
+    fontFamily: 'HeaderBold',
+    color: '#374151',
+    fontSize: 14,
+  },
+  infoEdit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '65%',
+    gap: 10,
+    paddingLeft: 10,
   },
   infoText: {
     fontFamily: 'BodyRegular',
     color: '#555',
-    maxWidth: '85%',
+    flex: 1,
+    fontSize: 15,
   },
-  servicesOffered: {
-    marginTop: 10,
-    borderBottomWidth: 1,
-    borderColor: '#EAEAEA',
-    paddingBottom: 10,
+  input: {
+    fontFamily: 'BodyRegular',
+    color: '#555',
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    backgroundColor: '#F9FAFB',
+    minWidth: 30,
+    flex: 1,
+    fontSize: 15,
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#E0E7FF',
+    borderRadius: 8,
+  },
+  editButtonText: {
+    fontFamily: 'BodyBold',
+    color: '#000B58',
+    fontSize: 14,
+  },
+  editIconButton: {
+    padding: 6,
+    backgroundColor: '#E0E7FF',
+    borderRadius: 8,
   },
   checkboxContainer: {
     flexDirection: 'row',
@@ -1786,58 +2230,45 @@ const styles = StyleSheet.create({
     fontFamily: 'BodyRegular',
     color: '#555',
   },
-  shopImages: {
-    marginTop: 10,
-    borderBottomWidth: 1,
-    borderColor: '#EAEAEA',
-    paddingBottom: 20,
-  },
-  editButton2: {
-    backgroundColor: '#D9D9D9',
-    minHeight: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-    flexDirection: 'row',
-    gap: 5,
-  },
   imagesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     width: '100%',
-    gap: 5,
+    gap: 8,
+  },
+  imageWrapper: {
+    width: '30%',
+    aspectRatio: 1,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   image: {
-    borderRadius: 5,
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
   },
   addImageButton: {
-    width: 100,
-    height: 100,
-    borderRadius: 5,
-    backgroundColor: '#D9D9D9',
+    width: '30%',
+    aspectRatio: 1,
+    borderRadius: 8,
+    backgroundColor: '#E0E7FF',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  shopLocation: {
-    marginTop: 10,
-    paddingBottom: 20,
+    borderWidth: 2,
+    borderColor: '#000B58',
+    borderStyle: 'dashed',
   },
   cancelSaveContainer: {
-    marginTop: 10,
     flexDirection: 'row',
-    justifyContent: 'center',
-    width: '100%',
-    gap: 10,
-  },
-  endingButton: {
-    width: '30%',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 10,
-    borderRadius: 5,
-  },
-  endingButtonText: {
-    fontFamily: 'BodyBold',
+    width: '100%',
+    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: '#FFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
   },
   input1: {
     fontFamily: 'BodyBold',
@@ -1848,15 +2279,6 @@ const styles = StyleSheet.create({
     borderColor: '#555',
     minWidth: 50,
     maxWidth: '79%',
-  },
-  input2: {
-    fontFamily: 'BodyRegular',
-    color: '#555',
-    padding: 0,
-    borderBottomWidth: 1,
-    borderColor: '#555',
-    minWidth: 30,
-    maxWidth: '75%',
   },
   dropdownButtonStyle: {
     width: '50%',
@@ -1894,91 +2316,189 @@ const styles = StyleSheet.create({
     color: '#555',
     fontFamily: 'BodyRegular',
   },
-  centeredView: {
+  modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  modalView: {
-    backgroundColor: '#f2f4f7',
-    width: '85%',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
+  modalBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  passwordModalContent: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    width: '90%',
+    maxWidth: 450,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    overflow: 'hidden',
   },
-  modalHeader: {
-    fontSize: 20,
-    fontFamily: 'HeaderBold',
-    color: '#333',
-  },
-  modalInputContainer: {
-    gap: 10,
-    marginTop: 10,
-    width: '100%',
-  },
-  modalInputLabel: {
-    fontFamily: 'BodyRegular',
-    color: '#333',
-  },
-  modalInput: {
-    backgroundColor: '#fff',
-    width: '100%',
-    height: 45,
-    borderRadius: 10,
-    padding: 10,
-    color: '#333',
-    fontFamily: 'BodyRegular',
-  },
-  modalButton: {
-    width: '30%',
-    height: 45,
-    justifyContent: 'center',
+  passwordModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    borderRadius: 10,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+    gap: 12,
   },
-  modalButtonText: {
+  passwordModalTitle: {
+    fontFamily: 'HeadingBold',
+    fontSize: 18,
+    color: '#000B58',
+    flex: 1,
+  },
+  modalCloseButton: {
+    padding: 4,
+    borderRadius: 8,
+  },
+  passwordModalBody: {
+    padding: 20,
+    gap: 16,
+  },
+  passwordInputGroup: {
+    gap: 8,
+  },
+  passwordInputLabel: {
     fontFamily: 'HeaderBold',
+    fontSize: 14,
+    color: '#374151',
   },
-  errorContainer: {
-    backgroundColor: '#EAEAEA',
-    borderRadius: 5,
-    width: '100%',
-    padding: 10,
-    marginTop: 20,
+  passwordInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    backgroundColor: '#F9FAFB',
+    paddingRight: 8,
   },
-  errorMessage: {
+  passwordInput: {
+    flex: 1,
     fontFamily: 'BodyRegular',
-    color: 'red',
-    textAlign: 'center',
+    fontSize: 15,
+    color: '#333',
+    padding: 12,
+  },
+  passwordToggleButton: {
+    padding: 8,
+  },
+  passwordHint: {
+    fontFamily: 'BodyRegular',
     fontSize: 12,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  passwordModalActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
   },
   mapView: {
     backgroundColor: '#FFF',
     width: '95%',
-    borderRadius: 10,
-    paddingBottom: 20,
+    maxWidth: 700,
+    maxHeight: '90%',
+    borderRadius: 16,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 8,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
     overflow: 'hidden',
+  },
+  mapModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+  },
+  mapModalTitle: {
+    fontSize: 18,
+    fontFamily: 'HeaderBold',
+    color: '#000B58',
+    flex: 1,
+    marginLeft: 12,
+  },
+  mapModalCloseButton: {
+    padding: 4,
+    borderRadius: 8,
+    backgroundColor: 'transparent',
+  },
+  mapInstructionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#EEF2FF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+  },
+  mapInstructionsText: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: 'BodyRegular',
+    color: '#374151',
+    lineHeight: 18,
   },
   map: {
     width: '100%',
-    height: 500,
+    height: 300,
+    marginTop: 16,
+  },
+  mapCoordinatesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#F9FAFB',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  mapCoordinateItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  mapCoordinateLabel: {
+    fontSize: 12,
+    fontFamily: 'BodyBold',
+    color: '#6B7280',
+  },
+  mapCoordinateValue: {
+    fontSize: 13,
+    fontFamily: 'BodyBold',
+    color: '#000B58',
   },
   mapButtonContainer: {
     width: '100%',
@@ -2011,24 +2531,68 @@ const styles = StyleSheet.create({
     gap: 5,
     zIndex: 2,
   },
-  imageView: {
-    backgroundColor: '#FFF',
-    width: '85%',
-    borderRadius: 10,
-    paddingBottom: 20,
+  imageModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  imageModalBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  imageModalContent: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    width: '90%',
+    maxWidth: 500,
+    maxHeight: '85%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
     overflow: 'hidden',
   },
-  viewImage: {
+  imageModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+  },
+  imageModalTitle: {
+    fontFamily: 'HeadingBold',
+    fontSize: 18,
+    color: '#000B58',
+  },
+  imageModalCloseButton: {
+    padding: 4,
+    borderRadius: 8,
+  },
+  imageModalImageContainer: {
+    backgroundColor: '#F3F4F6',
     width: '100%',
+    maxHeight: 500,
+  },
+  imageModalImage: {
+    maxWidth: '100%',
+    maxHeight: 500,
+  },
+  imageModalActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    padding: 16,
+    backgroundColor: '#FFF',
   },
   updateLoadingContainer: {
     flex: 1,
@@ -2044,49 +2608,153 @@ const styles = StyleSheet.create({
   },
   verificationModalView: {
     backgroundColor: '#FFF',
-    width: '85%',
-    borderRadius: 10,
-    padding: 20,
+    width: '90%',
+    borderRadius: 16,
+    padding: 24,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalIconContainer: {
+    backgroundColor: '#E0E7FF',
+    borderRadius: 60,
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalHeader: {
+    fontSize: 22,
+    fontFamily: 'HeaderBold',
+    color: '#333',
+    marginBottom: 12,
   },
   modalText: {
     fontFamily: 'BodyRegular',
-    color: '#333',
-    marginBottom: 10,
+    color: '#555',
+    marginBottom: 16,
+    textAlign: 'center',
+    fontSize: 15,
+    lineHeight: 22,
   },
   codeInputContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
+    marginBottom: 16,
   },
   otpInput: {
-    width: 30,
-    height: 45,
-    borderRadius: 10,
+    width: 45,
+    height: 55,
+    borderRadius: 12,
     padding: 10,
     color: '#333',
-    fontFamily: 'BodyRegular',
-    marginBottom: 20,
-    backgroundColor: '#EAEAEA',
+    fontFamily: 'HeaderBold',
+    fontSize: 20,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    textAlign: 'center',
   },
-  sendButton: {
-    justifyContent: 'center',
+  otpInputFilled: {
+    backgroundColor: '#E0E7FF',
+    borderColor: '#000B58',
+  },
+  otpInputDisabled: {
+    backgroundColor: '#F3F4F6',
+    borderColor: '#D1D5DB',
+    opacity: 0.6,
+  },
+  timerInfoContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#000B58',
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 20,
+    gap: 8,
+    marginBottom: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  sendButtonText: {
+  timerInfoText: {
     fontFamily: 'BodyRegular',
-    color: '#fff',
+    fontSize: 13,
+    color: '#000B58',
+  },
+  timerInfoTextReady: {
+    color: '#10B981',
+  },
+  modalLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+    paddingVertical: 12,
+  },
+  modalLoadingText: {
+    fontFamily: 'BodyRegular',
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  modalButtonContainer: {
+    width: '100%',
+    gap: 10,
+  },
+  modalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    gap: 8,
+    flex: 1,
+  },
+  modalButtonPrimary: {
+    backgroundColor: '#000B58',
+    shadowColor: '#000B58',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  modalButtonSecondary: {
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+  modalButtonText: {
+    fontFamily: 'BodyBold',
+    color: '#FFF',
+    fontSize: 15,
+  },
+  errorContainer: {
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DC2626',
+    width: '100%',
+    padding: 12,
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  errorMessage: {
+    fontFamily: 'BodyRegular',
+    color: '#DC2626',
+    fontSize: 13,
+    flex: 1,
   },
 });
 

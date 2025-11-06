@@ -12,9 +12,7 @@ import { getRepairShopInfo, updateAvailability } from '@/services/backendApi';
 import { registerForPushNotificationsAsync } from '@/services/notifications';
 import socket from '@/services/socket';
 import { clearRole, clearTokens, storeRole } from '@/services/tokenStorage';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Fontisto from '@expo/vector-icons/Fontisto';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import axios from 'axios';
@@ -102,13 +100,22 @@ export default function Home() {
             pushNotif: res.settings_push_notif,
           })
         );
-      } catch (e) {
-        console.log('Error: ', e);
+      } catch {
+        showMessage({
+          message: 'Something went wrong. Please try again.',
+          type: 'danger',
+          floating: true,
+          color: '#FFF',
+          icon: 'danger',
+        });
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [dispatch, shopID]);
+  }, [dispatch, router, shopID]);
 
   useEffect(() => {
     if (!socket) return;
@@ -181,7 +188,7 @@ export default function Home() {
       dispatch(clearVehicleDiagIDArrState());
       dispatch(clearVehicleDiagIDState());
       router.replace('/auth/login');
-    } catch (e: any) {
+    } catch {
       showMessage({
         message: 'Something went wrong. Please try again.',
         type: 'danger',
@@ -189,7 +196,9 @@ export default function Home() {
         color: '#FFF',
         icon: 'danger',
       });
-      console.log('Logout error:', e.message);
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     }
   };
 
@@ -206,6 +215,9 @@ export default function Home() {
         color: '#FFF',
         icon: 'danger',
       });
+      setTimeout(() => {
+        router.push('/error/server-error');
+      }, 2000);
     }
   };
 
@@ -259,6 +271,9 @@ export default function Home() {
               <>
                 <TouchableOpacity style={styles.profilePicWrapper} onPress={() => setImageModalVisible(true)}>
                   <Image style={styles.profilePic} source={{ uri: profilePic }} width={100} height={100} />
+                  <View style={styles.profileBadge}>
+                    <MaterialCommunityIcons name="check-decagram" size={24} color="#000B58" />
+                  </View>
                 </TouchableOpacity>
 
                 <Modal
@@ -281,29 +296,41 @@ export default function Home() {
             <View style={styles.repShopNameContainer}>
               <Text style={styles.repShopName}>{repShopName}</Text>
               <View style={styles.genderNameContainer}>
-                {gender === 'Male' && <Fontisto name="male" size={16} color="#555" />}
+                {gender === 'Male' && <Fontisto name="male" size={16} color="#6B7280" />}
 
-                {gender === 'Female' && <Fontisto name="female" size={16} color="#555" />}
+                {gender === 'Female' && <Fontisto name="female" size={16} color="#6B7280" />}
                 <Text style={styles.contactText}>{`${ownerFirstname} ${ownerLastname}`}</Text>
               </View>
 
-              <Text style={styles.contactText}>{mobileNum}</Text>
+              <View style={styles.contactRow}>
+                <MaterialCommunityIcons name="phone" size={14} color="#6B7280" />
+                <Text style={styles.contactText}>{mobileNum}</Text>
+              </View>
 
-              {email !== null && <Text style={styles.contactText}>{email}</Text>}
-
-              <View style={styles.ratingSwitchContainer}>
-                <View style={styles.ratingContainer}>
-                  <Fontisto name="persons" size={16} color="#555" />
-                  <Text style={styles.rating}>{ratingsNum}</Text>
-                  <MaterialIcons name="star-rate" size={16} color="#FDCC0D" />
-                  <Text style={styles.rating}>{averageRating}</Text>
+              {email !== null && (
+                <View style={styles.contactRow}>
+                  <MaterialCommunityIcons name="email" size={14} color="#6B7280" />
+                  <Text style={styles.contactText}>{email}</Text>
                 </View>
+              )}
 
+              <View style={styles.ratingReviewsRow}>
+                <MaterialCommunityIcons name="account-group" size={16} color="#6B7280" />
+                <Text style={styles.rating}>{ratingsNum}</Text>
+                <View style={styles.ratingBadge}>
+                  <MaterialIcons name="star" size={14} color="#FDCC0D" />
+                  <Text style={styles.ratingBadgeText}>{averageRating}</Text>
+                </View>
                 <View style={styles.availabilityContainer}>
-                  <Text style={styles.availabilityText}>Availability</Text>
+                  <View style={styles.statusLabelContainer}>
+                    <View style={[styles.statusDot, isAvailable ? styles.statusDotOpen : styles.statusDotClosed]} />
+                    <Text style={[styles.statusText, isAvailable ? styles.statusTextOpen : styles.statusTextClosed]}>
+                      {isAvailable ? 'Open' : 'Closed'}
+                    </Text>
+                  </View>
                   <Switch
-                    trackColor={{ false: '#767577', true: '#000B58' }}
-                    thumbColor={isAvailable ? '#EEE' : '#DDD'}
+                    trackColor={{ false: '#D1D5DB', true: '#000B58' }}
+                    thumbColor={isAvailable ? '#FFF' : '#F3F4F6'}
                     ios_backgroundColor="#3e3e3e"
                     onValueChange={toggleSwitch}
                     value={isAvailable}
@@ -321,7 +348,9 @@ export default function Home() {
                 router.replace('./edit-shop/edit-shop');
               }}
             >
-              <FontAwesome6 name="edit" size={10} color="#FFF" />
+              <View style={styles.buttonIconWrapper}>
+                <MaterialCommunityIcons name="store-edit" size={20} color="#000B58" />
+              </View>
               <Text style={styles.buttonText}>Edit Shop</Text>
             </TouchableOpacity>
 
@@ -332,7 +361,9 @@ export default function Home() {
                 router.replace('./repair-requests/repair-requests');
               }}
             >
-              <FontAwesome6 name="screwdriver-wrench" size={10} color="#FFF" />
+              <View style={styles.buttonIconWrapper}>
+                <MaterialCommunityIcons name="wrench-clock" size={20} color="#000B58" />
+              </View>
               <Text style={styles.buttonText}>Requests</Text>
             </TouchableOpacity>
 
@@ -343,7 +374,9 @@ export default function Home() {
                 router.replace('./settings/settings');
               }}
             >
-              <Ionicons name="settings-outline" size={15} color="#FFF" />
+              <View style={styles.buttonIconWrapper}>
+                <MaterialCommunityIcons name="cog" size={20} color="#000B58" />
+              </View>
               <Text style={styles.buttonText}>Settings</Text>
             </TouchableOpacity>
           </View>
@@ -380,12 +413,14 @@ export default function Home() {
 
           <View style={styles.servicesOffered}>
             <Text style={styles.subHeader}>Services Offered</Text>
-            {servicesOffered.map((item) => (
-              <View key={item} style={styles.services}>
-                <Text style={styles.bullet}>{'\u2022'}</Text>
-                <Text style={styles.servicesText}>{item}</Text>
-              </View>
-            ))}
+            <View style={styles.servicesGrid}>
+              {servicesOffered.map((item) => (
+                <View key={item} style={styles.services}>
+                  <MaterialCommunityIcons name="check-circle" size={16} color="#000B58" />
+                  <Text style={styles.servicesText}>{item}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -445,49 +480,113 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 100,
+    borderWidth: 3,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    position: 'relative',
   },
   profilePic: {
     borderRadius: 100,
   },
+  profileBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    padding: 2,
+  },
   repShopNameContainer: {
-    width: '63%',
+    flex: 1,
   },
   repShopName: {
     fontFamily: 'BodyBold',
     color: '#333',
     fontSize: 20,
+    marginBottom: 4,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    gap: 2,
+    flexShrink: 0,
+  },
+  ratingBadgeText: {
+    fontFamily: 'BodyBold',
+    color: '#92400E',
+    fontSize: 12,
   },
   genderNameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 6,
+    marginBottom: 2,
   },
   contactText: {
     fontFamily: 'BodyRegular',
-    color: '#555',
+    color: '#6B7280',
+    fontSize: 14,
   },
-  ratingSwitchContainer: {
+  contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 6,
+    marginBottom: 2,
   },
-  ratingContainer: {
+  ratingReviewsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 6,
+    marginBottom: 8,
+    flexWrap: 'wrap',
   },
   rating: {
     fontFamily: 'BodyRegular',
-    color: '#555',
+    color: '#6B7280',
+    fontSize: 13,
   },
   availabilityContainer: {
+    marginLeft: 10,
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  availabilityText: {
-    fontFamily: 'BodyRegular',
-    color: '#555',
+  statusLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusDotOpen: {
+    backgroundColor: '#10B981',
+  },
+  statusDotClosed: {
+    backgroundColor: '#EF4444',
+  },
+  statusText: {
+    fontFamily: 'BodyBold',
+    fontSize: 13,
+  },
+  statusTextOpen: {
+    color: '#10B981',
+  },
+  statusTextClosed: {
+    color: '#EF4444',
   },
   buttonContainer: {
     justifyContent: 'space-evenly',
@@ -496,23 +595,42 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     borderBottomWidth: 1,
     borderColor: '#EAEAEA',
-    marginTop: 10,
+    marginTop: 20,
     paddingBottom: 20,
+    gap: 12,
   },
   button: {
-    backgroundColor: '#000B58',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row',
-    gap: 3,
-    width: 90,
-    padding: 5,
-    borderRadius: 5,
+    flexDirection: 'column',
+    gap: 8,
+    width: 100,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  buttonIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonText: {
-    fontFamily: 'BodyRegular',
+    fontFamily: 'BodyBold',
     fontSize: 12,
-    color: '#FFF',
+    color: '#374151',
   },
   shopImages: {
     width: '100%',
@@ -545,19 +663,26 @@ const styles = StyleSheet.create({
   servicesOffered: {
     width: '100%',
   },
+  servicesGrid: {
+    gap: 8,
+  },
   services: {
     width: '100%',
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
     paddingLeft: 5,
-  },
-  bullet: {
-    fontFamily: 'BodyRegular',
-    color: '#333',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#000B58',
   },
   servicesText: {
     fontFamily: 'BodyRegular',
-    color: '#333',
+    color: '#374151',
+    fontSize: 14,
+    flex: 1,
   },
   centeredView: {
     flex: 1,

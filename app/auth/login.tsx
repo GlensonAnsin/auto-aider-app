@@ -16,6 +16,7 @@ export default function Login() {
   const [password, setPassword] = useState<string>('');
   const [role, setRole] = useState<string>('');
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const roles = [
     { title: 'Car Owner', icon: 'car-outline' },
@@ -154,7 +155,17 @@ export default function Login() {
 
           <View style={styles.textInputContainer}>
             <Text style={styles.textInputLbl}>Password</Text>
-            <TextInput value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                style={styles.passwordInput}
+              />
+              <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
+                <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color="#555" />
+              </TouchableOpacity>
+            </View>
           </View>
 
           <View style={styles.textInputContainer}>
@@ -263,6 +274,23 @@ const styles = StyleSheet.create({
     padding: 10,
     color: '#333',
     fontFamily: 'BodyRegular',
+  },
+  passwordInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EAEAEA',
+    borderRadius: 10,
+    width: '100%',
+    height: 45,
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 10,
+    color: '#333',
+    fontFamily: 'BodyRegular',
+  },
+  eyeIcon: {
+    padding: 10,
   },
   dropdownButtonStyle: {
     width: '100%',

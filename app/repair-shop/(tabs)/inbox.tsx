@@ -90,11 +90,14 @@ export default function ChatsTab() {
           color: '#FFF',
           icon: 'danger',
         });
+        setTimeout(() => {
+          router.push('/error/server-error');
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!socket) return;
@@ -116,6 +119,7 @@ export default function ChatsTab() {
     const messageMonth = messageDate.month() + 1;
     const messageYear = messageDate.year();
 
+    // Same day
     if (
       messageDay === currentDay &&
       messageWeek === currentWeek &&
@@ -125,17 +129,23 @@ export default function ChatsTab() {
       return messageTime;
     }
 
+    // Same week, same month, same year
     if (messageWeek === currentWeek && messageMonth === currentMonth && messageYear === currentYear) {
       return messageDate.format('ddd');
     }
 
+    // Different year
+    if (messageYear !== currentYear) {
+      return messageDate.format('DD/MM/YY');
+    }
+
+    // Different month, same year
     if (messageMonth !== currentMonth && messageYear === currentYear) {
       return messageDate.format('DD/MM');
     }
 
-    if (messageYear !== currentYear) {
-      return messageDate.format('DD/MM/YY');
-    }
+    // Default case: different day, same month, same year
+    return messageDate.format('DD/MM');
   };
 
   if (isLoading) {
@@ -156,8 +166,9 @@ export default function ChatsTab() {
       <View style={styles.lowerBox}>
         {chatInfo.length === 0 && (
           <View style={styles.noHistoryContainer}>
-            <MaterialCommunityIcons name="file-document-outline" size={150} color="#EAEAEA" />
-            <Text style={styles.emptyText}>Empty</Text>
+            <MaterialCommunityIcons name="chat-outline" size={120} color="#D1D5DB" />
+            <Text style={styles.emptyText}>No Messages Yet</Text>
+            <Text style={styles.emptySubText}>Your conversations will appear here</Text>
           </View>
         )}
         <FlatList
@@ -177,67 +188,69 @@ export default function ChatsTab() {
                 router.replace('/chat-room/chat-room');
               }}
             >
-              {item.profilePic === null && (
-                <View style={[styles.profilePicWrapper, { backgroundColor: item.profileBG }]}>
-                  <Text style={styles.userInitials}>{`${item.customerFirstname[0]}${item.customerLastname[0]}`}</Text>
-                </View>
-              )}
+              <View style={styles.profileSection}>
+                {item.profilePic === null && (
+                  <View style={[styles.profilePicWrapper, { backgroundColor: item.profileBG }]}>
+                    <Text style={styles.userInitials}>{`${item.customerFirstname[0]}${item.customerLastname[0]}`}</Text>
+                  </View>
+                )}
 
-              {item.profilePic !== null && (
-                <View style={styles.profilePicWrapper}>
-                  <Image style={styles.profilePic} source={{ uri: item.profilePic }} width={65} height={65} />
-                </View>
-              )}
+                {item.profilePic !== null && (
+                  <View style={styles.profilePicWrapper}>
+                    <Image style={styles.profilePic} source={{ uri: item.profilePic }} width={65} height={65} />
+                  </View>
+                )}
+
+                {!item.fromYou && item.status !== 'seen' && <View style={styles.unreadBadge} />}
+              </View>
 
               <View style={styles.nameMessageContainer}>
-                {item.fromYou && (
-                  <>
-                    <Text
-                      numberOfLines={1}
-                      style={[styles.nameText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
-                    >
-                      {`${item.customerFirstname} ${item.customerLastname}`}
-                    </Text>
-                    <View style={styles.messageDateContainer}>
-                      <Text
-                        numberOfLines={1}
-                        style={[styles.messageText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}
-                      >
-                        {item.message}
-                      </Text>
-                      <Text style={[styles.dateText, { fontFamily: item.fromYou ? 'BodyRegular' : 'BodyBold' }]}>
-                        {transformDate(item.messageDate)}
-                      </Text>
-                    </View>
-                  </>
-                )}
+                <View style={styles.nameRow}>
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.nameText,
+                      {
+                        fontFamily: item.fromYou || item.status === 'seen' ? 'BodyRegular' : 'BodyBold',
+                      },
+                    ]}
+                  >
+                    {`${item.customerFirstname} ${item.customerLastname}`}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.dateText,
+                      {
+                        fontFamily: item.fromYou || item.status === 'seen' ? 'BodyRegular' : 'BodyBold',
+                      },
+                    ]}
+                  >
+                    {transformDate(item.messageDate)}
+                  </Text>
+                </View>
 
-                {!item.fromYou && (
-                  <>
-                    <Text
-                      numberOfLines={1}
-                      style={[styles.nameText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
-                    >
-                      {`${item.customerFirstname} ${item.customerLastname}`}
-                    </Text>
-                    <View style={styles.messageDateContainer}>
-                      <Text
-                        numberOfLines={1}
-                        style={[
-                          styles.messageText,
-                          { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' },
-                        ]}
-                      >
-                        {item.message}
-                      </Text>
-                      <Text
-                        style={[styles.dateText, { fontFamily: item.status === 'seen' ? 'BodyRegular' : 'BodyBold' }]}
-                      >
-                        {transformDate(item.messageDate)}
-                      </Text>
-                    </View>
-                  </>
-                )}
+                <View style={styles.messageDateContainer}>
+                  {item.fromYou && (
+                    <MaterialCommunityIcons
+                      name={item.status === 'seen' ? 'check-all' : 'check'}
+                      size={16}
+                      color={item.status === 'seen' ? '#10B981' : '#9CA3AF'}
+                      style={styles.checkIcon}
+                    />
+                  )}
+                  <Text
+                    numberOfLines={2}
+                    style={[
+                      styles.messageText,
+                      {
+                        fontFamily: item.fromYou || item.status === 'seen' ? 'BodyRegular' : 'BodyBold',
+                        color: item.fromYou || item.status === 'seen' ? '#6B7280' : '#111827',
+                      },
+                    ]}
+                  >
+                    {item.message}
+                  </Text>
+                </View>
               </View>
             </TouchableOpacity>
           )}
@@ -258,6 +271,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     height: 63,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 4,
   },
   arrowHeaderContainer: {
     flexDirection: 'row',
@@ -268,11 +289,14 @@ const styles = StyleSheet.create({
   arrowWrapper: {
     justifyContent: 'center',
     alignItems: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   headerText: {
     color: '#FFF',
     fontFamily: 'HeaderBold',
-    fontSize: 18,
+    fontSize: 20,
   },
   lowerBox: {
     flex: 1,
@@ -282,17 +306,42 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 40,
   },
   emptyText: {
+    fontFamily: 'BodyBold',
+    color: '#9CA3AF',
+    fontSize: 22,
+    textAlign: 'center',
+  },
+  emptySubText: {
     fontFamily: 'BodyRegular',
-    color: '#EAEAEA',
-    fontSize: 30,
+    color: '#D1D5DB',
+    fontSize: 14,
+    textAlign: 'center',
   },
   conversationButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 10,
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 10,
+    marginVertical: 4,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  profileSection: {
+    position: 'relative',
   },
   profilePicWrapper: {
     width: 65,
@@ -300,6 +349,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 65,
+    borderWidth: 2,
+    borderColor: '#F3F4F6',
   },
   userInitials: {
     fontFamily: 'HeaderBold',
@@ -309,28 +360,48 @@ const styles = StyleSheet.create({
   profilePic: {
     borderRadius: 65,
   },
+  unreadBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#EF4444',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
   nameMessageContainer: {
-    width: '74%',
-    borderBottomWidth: 1,
-    borderColor: '#EAEAEA',
-    paddingVertical: 20,
+    flex: 1,
+    gap: 4,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   nameText: {
-    width: '100%',
-    color: '#333',
+    flex: 1,
+    color: '#111827',
     fontSize: 16,
+    marginRight: 8,
   },
   messageDateContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  checkIcon: {
+    marginRight: 2,
   },
   messageText: {
-    width: '75%',
-    color: '#555',
-    fontSize: 15,
+    flex: 1,
+    color: '#6B7280',
+    fontSize: 14,
+    lineHeight: 20,
   },
   dateText: {
-    width: '25%',
-    textAlign: 'right',
-    color: '#555',
+    color: '#9CA3AF',
+    fontSize: 12,
   },
 });
