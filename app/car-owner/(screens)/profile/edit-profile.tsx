@@ -41,6 +41,7 @@ const EditProfile = () => {
   const [updateLoading, setUpdateLoading] = useState<boolean>(false);
   const [pickedImage, setPickedImage] = useState<boolean>(false);
   const [edit, setEdit] = useState<string>('');
+  const [authType, setAuthType] = useState<string>('');
 
   const [localFirstname, setLocalFirstname] = useState<string>('');
   const [localLastname, setLocalLastname] = useState<string>('');
@@ -130,13 +131,21 @@ const EditProfile = () => {
 
   useEffect(() => {
     if (edit === 'mobile-num') {
-      setTimer(45);
+      setAuthType('sms');
     } else if (edit === 'email') {
-      setTimer(300);
+      setAuthType('email');
     } else {
       return;
     }
   }, [edit]);
+
+  useEffect(() => {
+    if (authType === 'sms') {
+      setTimer(45);
+    } else {
+      setTimer(300);
+    }
+  }, [authType]);
 
   const startTimer = (seconds = timer) => {
     endRef.current = Date.now() + seconds * 1000;
@@ -482,17 +491,6 @@ const EditProfile = () => {
         });
         return;
       }
-    }
-
-    if (!emailPattern.test(localEmail ?? '')) {
-      showMessage({
-        message: 'Invalid email format.',
-        type: 'warning',
-        color: '#FFF',
-        floating: true,
-        icon: 'warning',
-      });
-      return;
     }
 
     try {

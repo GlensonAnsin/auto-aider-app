@@ -94,6 +94,7 @@ const EditShop = () => {
   const [profileBG, setProfileBG] = useState<string>('');
   const [pickedImage, setPickedImage] = useState<boolean>(false);
   const [updateLoading, setUpdateLoading] = useState<boolean>(false);
+  const [authType, setAuthType] = useState<string>('');
 
   const [localRepShopName, setLocalRepShopName] = useState<string>('');
   const [localOwnerFirstname, setLocalOwnerFirstname] = useState<string>('');
@@ -295,13 +296,21 @@ const EditShop = () => {
 
   useEffect(() => {
     if (edit === 'mobile-num') {
-      setTimer(45);
+      setAuthType('sms');
     } else if (edit === 'email') {
-      setTimer(300);
+      setAuthType('email');
     } else {
       return;
     }
   }, [edit]);
+
+  useEffect(() => {
+    if (authType === 'sms') {
+      setTimer(45);
+    } else {
+      setTimer(300);
+    }
+  }, [authType]);
 
   const startTimer = (seconds = timer) => {
     endRef.current = Date.now() + seconds * 1000;
@@ -1761,7 +1770,7 @@ const EditShop = () => {
 
                 <View style={styles.cancelSaveContainer}>
                   <TouchableOpacity
-                    style={[styles.modalButton, styles.modalButtonSecondary]}
+                    style={[styles.modalButton, styles.modalButtonSecondary, { flex: 1 }]}
                     onPress={() => {
                       setMapModalVisible(false);
                       handleRestoreInfo('region');
@@ -1772,7 +1781,7 @@ const EditShop = () => {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={[styles.modalButton, styles.modalButtonPrimary]}
+                    style={[styles.modalButton, styles.modalButtonPrimary, { flex: 1 }]}
                     onPress={() => {
                       handleUpdateRepShopInfo('region', null, null, null);
                       setMapModalVisible(false);
@@ -2715,18 +2724,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 12,
     gap: 8,
-    flex: 1,
   },
   modalButtonPrimary: {
     backgroundColor: '#000B58',
-    shadowColor: '#000B58',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
   modalButtonSecondary: {
     backgroundColor: '#F9FAFB',

@@ -50,6 +50,7 @@ const RepairShops = () => {
   const mapRef = useRef<MapView | null>(null);
   const bottomSheetRef = useRef<BottomSheet | null>(null);
   const zoomLevelRef = useRef<{ latitudeDelta: number; longitudeDelta: number } | null>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
   const { width: screenWidth } = Dimensions.get('window');
   const [regions, setRegions] = useState<
     | {
@@ -323,6 +324,7 @@ const RepairShops = () => {
 
   const handleSubmitRequest = async (repairShopID: number, vehicleDiagID: number | null, type: string) => {
     if (!serviceType) {
+      scrollRef.current?.scrollToEnd({ animated: true });
       setError('Please fill out all fields.');
       return;
     }
@@ -475,11 +477,13 @@ const RepairShops = () => {
   const handleSubmitRequestWithoutOBD2 = async (repairShopID: number) => {
     if (requestType === 'Vehicle Repair') {
       if (!selectedVehicle || !requestType || !serviceType || !vehicleIssue) {
+        scrollRef.current?.scrollToEnd({ animated: true });
         setError('Please fill out all fields.');
         return;
       }
     } else {
       if (!selectedVehicle || !requestType || !serviceType) {
+        scrollRef.current?.scrollToEnd({ animated: true });
         setError('Please fill out all fields.');
         return;
       }
@@ -825,7 +829,7 @@ const RepairShops = () => {
                               </View>
 
                               <View style={styles.modalBody}>
-                                <ScrollView>
+                                <ScrollView ref={scrollRef}>
                                   <View style={styles.profileNameContainer}>
                                     {nearbyRepShop[selectedRepShop].profilePic === null && (
                                       <View
@@ -1315,7 +1319,7 @@ const RepairShops = () => {
                               </View>
 
                               <View style={styles.modalBody}>
-                                <ScrollView>
+                                <ScrollView ref={scrollRef}>
                                   <View style={styles.profileNameContainer}>
                                     {regions[selectedRepShop].profilePic === null && (
                                       <View
@@ -1809,7 +1813,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   modalBody: {
-    maxHeight: '85%',
+    maxHeight: '90%',
   },
   profileNameContainer: {
     justifyContent: 'center',
