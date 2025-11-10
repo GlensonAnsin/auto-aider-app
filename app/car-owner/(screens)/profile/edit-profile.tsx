@@ -129,25 +129,7 @@ const EditProfile = () => {
     };
   }, [userID]);
 
-  useEffect(() => {
-    if (edit === 'mobile-num') {
-      setAuthType('sms');
-    } else if (edit === 'email') {
-      setAuthType('email');
-    } else {
-      return;
-    }
-  }, [edit]);
-
-  useEffect(() => {
-    if (authType === 'sms') {
-      setTimer(45);
-    } else {
-      setTimer(300);
-    }
-  }, [authType]);
-
-  const startTimer = (seconds = timer) => {
+  const startTimer = (seconds: number) => {
     endRef.current = Date.now() + seconds * 1000;
     setIsTimerActivate(true);
     setTimer(seconds);
@@ -423,7 +405,7 @@ const EditProfile = () => {
     }
   };
 
-  const handleSendCode = async () => {
+  const handleSendCode = async (seconds: number) => {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const fetchedUsers: UserWithID[] = await getUsers();
     const userExcluded = fetchedUsers.filter((user) => user.user_id !== userID);
@@ -515,7 +497,7 @@ const EditProfile = () => {
 
       setTimeout(() => {
         setVerificationModalVisible(true);
-        startTimer();
+        startTimer(seconds);
         setButtonDisable(false);
       }, 2000);
     } catch {
@@ -534,7 +516,7 @@ const EditProfile = () => {
     }
   };
 
-  const handleResendCode = async () => {
+  const handleResendCode = async (seconds: number) => {
     try {
       setConfirmCodeLoading(true);
 
@@ -546,7 +528,7 @@ const EditProfile = () => {
         setConfirm(res);
       }
 
-      startTimer();
+      startTimer(seconds);
     } catch {
       setError('Failed to send verification.');
     } finally {
@@ -890,7 +872,13 @@ const EditProfile = () => {
                         </TouchableOpacity>
 
                         {localMobileNum.length === 11 && (
-                          <TouchableOpacity onPress={() => handleSendCode()} disabled={buttonDisable}>
+                          <TouchableOpacity
+                            onPress={() => {
+                              setAuthType('sms');
+                              handleSendCode(45);
+                            }}
+                            disabled={buttonDisable}
+                          >
                             <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                           </TouchableOpacity>
                         )}
@@ -957,7 +945,13 @@ const EditProfile = () => {
                         <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                       </TouchableOpacity>
 
-                      <TouchableOpacity onPress={() => handleSendCode()} disabled={buttonDisable}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setAuthType('email');
+                          handleSendCode(300);
+                        }}
+                        disabled={buttonDisable}
+                      >
                         <MaterialCommunityIcons name="check-circle" size={22} color="#10B981" />
                       </TouchableOpacity>
                     </>
@@ -1080,7 +1074,7 @@ const EditProfile = () => {
                   {!isTimerActivate ? (
                     <TouchableOpacity
                       style={[styles.modalButton, styles.modalButtonPrimary]}
-                      onPress={() => handleResendCode()}
+                      onPress={() => handleResendCode(authType === 'sms' ? 45 : 300)}
                       disabled={confirmCodeLoading}
                     >
                       <MaterialCommunityIcons name="refresh" size={20} color="#FFF" />
