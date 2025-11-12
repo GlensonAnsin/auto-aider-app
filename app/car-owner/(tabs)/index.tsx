@@ -122,16 +122,7 @@ export default function Home() {
           setIsVehicles(true);
         }
       } catch {
-        showMessage({
-          message: 'Something went wrong. Please try again.',
-          type: 'danger',
-          floating: true,
-          color: '#FFF',
-          icon: 'danger',
-        });
-        setTimeout(() => {
-          router.push('/error/server-error');
-        }, 2000);
+        router.push('/error/server-error');
       } finally {
         setIsLoading(false);
       }

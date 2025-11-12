@@ -44,7 +44,7 @@ const ForgotPass = () => {
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState<boolean>(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [timer, setTimer] = useState<number>(45);
+  const [timer, setTimer] = useState<number>(60);
   const endRef = useRef<number>(Date.now() + timer * 1000);
   const [isTimerActivate, setIsTimerActivate] = useState<boolean>(false);
   const prefix = '09';
@@ -56,7 +56,7 @@ const ForgotPass = () => {
 
   useEffect(() => {
     if (selectedAuthType === 'sms') {
-      setTimer(45);
+      setTimer(60);
     } else {
       setTimer(300);
     }
@@ -88,7 +88,7 @@ const ForgotPass = () => {
       setConfirm(null);
       setError('');
       setOtp(Array(6).fill(''));
-      setTimer(45);
+      setTimer(60);
       return;
     }
 
@@ -335,7 +335,7 @@ const ForgotPass = () => {
       setConfirm(null);
       setError('');
       setOtp(Array(6).fill(''));
-      setTimer(45);
+      setTimer(60);
 
       showMessage({
         message: 'Verified!',
@@ -588,7 +588,7 @@ const ForgotPass = () => {
                 setConfirm(null);
                 setError('');
                 setOtp(Array(6).fill(''));
-                setTimer(45);
+                setTimer(60);
               }}
             >
               <View style={styles.modalOverlay}>
@@ -600,7 +600,7 @@ const ForgotPass = () => {
                     setConfirm(null);
                     setError('');
                     setOtp(Array(6).fill(''));
-                    setTimer(45);
+                    setTimer(60);
                   }}
                 >
                   <View style={styles.modalBackground} />

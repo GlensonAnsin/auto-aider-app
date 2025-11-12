@@ -9,17 +9,6 @@ const ServerError = () => {
   const router = useRouter();
 
   const handleRetry = () => {
-    setIsRetrying(true);
-
-    // Simulate retry delay
-    setTimeout(() => {
-      setIsRetrying(false);
-      // Navigate back to let the user retry the action
-      router.back();
-    }, 1500);
-  };
-
-  const handleGoHome = () => {
     router.replace('/');
   };
 
@@ -56,11 +45,6 @@ const ServerError = () => {
               <MaterialCommunityIcons name="refresh" size={20} color="#FFF" />
             )}
             <Text style={styles.retryButtonText}>{isRetrying ? 'Retrying...' : 'Try Again'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.homeButton} onPress={handleGoHome}>
-            <MaterialCommunityIcons name="home" size={20} color="#000B58" />
-            <Text style={styles.homeButtonText}>Go to Home</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -145,7 +129,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '100%',
     maxWidth: 280,
-    gap: 12,
   },
   retryButton: {
     backgroundColor: '#000B58',

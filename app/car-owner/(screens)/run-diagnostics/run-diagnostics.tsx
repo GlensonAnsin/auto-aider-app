@@ -53,7 +53,7 @@ const RunDiagnostics = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [log, setLog] = useState<string[]>([]);
-  const [scannedDevicesVisibile, setScannedDevicesVisible] = useState<boolean>(true);
+  const [scannedDevicesVisible, setScannedDevicesVisible] = useState<boolean>(true);
   const [discoveringDevices, setDiscoveringDevices] = useState<boolean>(false);
   const userID = useSelector((state: RootState) => state.role.ID);
 
@@ -710,7 +710,7 @@ const RunDiagnostics = () => {
                   </Text>
                 </TouchableOpacity>
 
-                {scannedDevicesVisibile && (
+                {scannedDevicesVisible && (
                   <View style={styles.devicesListWrapper}>
                     <Text style={styles.devicesListLabel}>Available Devices</Text>
                     <FlatList

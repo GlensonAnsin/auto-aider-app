@@ -51,7 +51,7 @@ const Signup = () => {
   const [repairShopModalVisible, isRepairShopModalVisible] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [timer, setTimer] = useState<number>(45);
+  const [timer, setTimer] = useState<number>(60);
   const endRef = useRef<number>(Date.now() + timer * 1000);
   const [isTimerActivate, setIsTimerActivate] = useState<boolean>(false);
   const [confirm, setConfirm] = useState<any>(null);
@@ -200,7 +200,7 @@ const Signup = () => {
       setConfirm(null);
       setError('');
       setOtp(Array(6).fill(''));
-      setTimer(45);
+      setTimer(60);
       return;
     }
 
@@ -538,7 +538,7 @@ const Signup = () => {
       setConfirm(null);
       setError('');
       setOtp(Array(6).fill(''));
-      setTimer(45);
+      setTimer(60);
 
       try {
         if (role === 'Car Owner') {
@@ -1352,7 +1352,7 @@ const Signup = () => {
               setConfirm(null);
               setError('');
               setOtp(Array(6).fill(''));
-              setTimer(45);
+              setTimer(60);
             }}
           >
             <View style={styles.modalOverlay}>
@@ -1364,7 +1364,7 @@ const Signup = () => {
                   setConfirm(null);
                   setError('');
                   setOtp(Array(6).fill(''));
-                  setTimer(45);
+                  setTimer(60);
                 }}
               >
                 <View style={styles.modalBackground} />

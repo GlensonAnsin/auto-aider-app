@@ -108,7 +108,7 @@ const EditShop = () => {
 
   const [error, setError] = useState<string>('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [timer, setTimer] = useState<number>(45);
+  const [timer, setTimer] = useState<number>(60);
   const endRef = useRef<number>(Date.now() + timer * 1000);
   const [isTimerActivate, setIsTimerActivate] = useState<boolean>(false);
   const [confirm, setConfirm] = useState<any>(null);
@@ -320,7 +320,7 @@ const EditShop = () => {
       setConfirm(null);
       setError('');
       setOtp(Array(6).fill(''));
-      setTimer(45);
+      setTimer(60);
       return;
     }
 
@@ -926,7 +926,7 @@ const EditShop = () => {
       setConfirm(null);
       setError('');
       setOtp(Array(6).fill(''));
-      setTimer(45);
+      setTimer(60);
 
       showMessage({
         message: 'Verified!',
@@ -1282,7 +1282,7 @@ const EditShop = () => {
                           <TouchableOpacity
                             onPress={() => {
                               setAuthType('sms');
-                              handleSendCode(45);
+                              handleSendCode(60);
                             }}
                             disabled={buttonDisable}
                           >
@@ -1881,7 +1881,7 @@ const EditShop = () => {
               setConfirm(null);
               setError('');
               setOtp(Array(6).fill(''));
-              setTimer(45);
+              setTimer(60);
             }}
           >
             <View style={styles.modalOverlay}>
@@ -1893,7 +1893,7 @@ const EditShop = () => {
                   setConfirm(null);
                   setError('');
                   setOtp(Array(6).fill(''));
-                  setTimer(45);
+                  setTimer(60);
                 }}
               >
                 <View style={styles.modalBackground} />
@@ -1970,7 +1970,7 @@ const EditShop = () => {
                   {!isTimerActivate ? (
                     <TouchableOpacity
                       style={[styles.modalButton, styles.modalButtonPrimary]}
-                      onPress={() => handleResendCode(authType === 'sms' ? 45 : 300)}
+                      onPress={() => handleResendCode(authType === 'sms' ? 60 : 300)}
                       disabled={confirmCodeLoading}
                     >
                       <MaterialCommunityIcons name="refresh" size={20} color="#FFF" />
