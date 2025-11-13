@@ -21,6 +21,7 @@ import {
   ActivityIndicator,
   FlatList,
   LogBox,
+  PermissionsAndroid,
   ScrollView,
   StyleSheet,
   Text,
@@ -139,6 +140,27 @@ const RunDiagnostics = () => {
     };
   }, []);
 
+  async function requestBluetoothPermissions() {
+    const granted = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+    ]);
+
+    const allGranted = Object.values(granted).every((v) => v === PermissionsAndroid.RESULTS.GRANTED);
+    if (!allGranted) {
+      showMessage({
+        message: 'Bluetooth and Location permissions are required.',
+        type: 'danger',
+        floating: true,
+        color: '#FFF',
+        icon: 'danger',
+      });
+      return false;
+    }
+    return true;
+  }
+
   const handleCodeTechnicalDescription = async (code: string) => {
     try {
       const res = await codeTechnicalDescription(code, selectedCar);
@@ -255,6 +277,9 @@ const RunDiagnostics = () => {
     const foundDevicesMap = new Map<string, Device>();
 
     // Setup scan callback
+    const canScan = await requestBluetoothPermissions();
+    if (!canScan) return;
+
     manager.startDeviceScan(null, { allowDuplicates: false }, (error, device) => {
       if (error) {
         setConnectLoading(false);
@@ -295,7 +320,7 @@ const RunDiagnostics = () => {
       }
       setScannedDevicesVisible(true);
       setDiscoveringDevices(false);
-    }, 8000);
+    }, 15000);
   };
 
   // Utility: find a writable & notifiable characteristic pair
@@ -498,10 +523,7 @@ const RunDiagnostics = () => {
     setScanLoading(true);
 
     try {
-      await sendCommand('03', 3000); // Request stored DTCs
-      // Wait a short while and then read rxBuffer content (sendCommand already consumed buffer but in case)
-      // As fallback, try to call sendCommand('03') and inspect reply returned
-      const res = await sendCommand('03', 3000);
+      const res = await sendCommand('03', 7000);
       if (res) {
         console.log(`Raw: ${res}`);
         const converted = res.toString();

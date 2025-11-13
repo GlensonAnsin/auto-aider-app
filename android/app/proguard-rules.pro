@@ -12,3 +12,9 @@
 -keep class com.facebook.react.turbomodule.** { *; }
 
 # Add any project specific keep options here:
+-keep class com.polidea.** { *; }
+-dontwarn com.polidea.**
+
+-keepclassmembers class * {
+    @com.facebook.proguard.annotations.DoNotStrip *;
+}
