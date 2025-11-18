@@ -523,7 +523,10 @@ const RunDiagnostics = () => {
     setScanLoading(true);
 
     try {
-      const res = await sendCommand('03', 7000);
+      await sendCommand('03', 15000); // Request stored DTCs
+      // Wait a short while and then read rxBuffer content (sendCommand already consumed buffer but in case)
+      // As fallback, try to call sendCommand('03') and inspect reply returned
+      const res = await sendCommand('03', 15000);
       if (res) {
         console.log(`Raw: ${res}`);
         const converted = res.toString();
