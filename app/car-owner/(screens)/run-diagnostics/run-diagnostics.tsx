@@ -320,7 +320,7 @@ const RunDiagnostics = () => {
       }
       setScannedDevicesVisible(true);
       setDiscoveringDevices(false);
-    }, 15000);
+    }, 20000);
   };
 
   // Utility: find a writable & notifiable characteristic pair
@@ -411,11 +411,12 @@ const RunDiagnostics = () => {
         }
       );
 
-      // Initialize ELM-like adapter
-      await sendCommand('ATZ');
-      await sendCommand('ATE0');
-      await sendCommand('ATS0');
-      await sendCommand('ATH0');
+      // Initialize ELM-like adapter with proper timeouts
+      await sendCommand('ATZ', 3000); // Reset - needs more time
+      await new Promise((r) => setTimeout(r, 500)); // Allow adapter to reset
+      await sendCommand('ATE0', 2000); // Echo off
+      await sendCommand('ATS0', 2000); // Spaces off
+      await sendCommand('ATH0', 2000); // Headers off
 
       setLog((p) => [...p, 'Connected!']);
     } catch (e) {
@@ -435,12 +436,12 @@ const RunDiagnostics = () => {
 
   // Send ASCII command and wait for a response that contains '>' prompt or newline.
   // It will use the first writable characteristic it finds for the connected device.
-  const sendCommand = async (cmd: string, timeout = 2000): Promise<string | null> => {
+  const sendCommand = async (cmd: string, timeout = 5000): Promise<string | null> => {
     if (!connectedDevice) return null;
 
     // Simple lock to avoid overlapping commands
     while (commandLockRef.current) {
-      await new Promise((r) => setTimeout(r, 20));
+      await new Promise((r) => setTimeout(r, 100));
     }
     commandLockRef.current = true;
 
@@ -477,7 +478,7 @@ const RunDiagnostics = () => {
           connectedDevice.rxBuffer = '';
           return result;
         }
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 200));
       }
 
       // timed out: return whatever we have (may be empty)
@@ -523,10 +524,8 @@ const RunDiagnostics = () => {
     setScanLoading(true);
 
     try {
-      await sendCommand('03', 15000); // Request stored DTCs
-      // Wait a short while and then read rxBuffer content (sendCommand already consumed buffer but in case)
-      // As fallback, try to call sendCommand('03') and inspect reply returned
-      const res = await sendCommand('03', 15000);
+      // Request stored DTCs - send once with 10 second timeout
+      const res = await sendCommand('03', 10000);
       if (res) {
         console.log(`Raw: ${res}`);
         const converted = res.toString();
