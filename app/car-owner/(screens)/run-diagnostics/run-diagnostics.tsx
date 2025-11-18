@@ -278,7 +278,12 @@ const RunDiagnostics = () => {
 
     // Setup scan callback
     const canScan = await requestBluetoothPermissions();
-    if (!canScan) return;
+    if (!canScan) {
+      setConnectLoading(false);
+      setDiscoveringDevices(false);
+      setScannedDevicesVisible(true);
+      return;
+    }
 
     manager.startDeviceScan(null, { allowDuplicates: false }, (error, device) => {
       if (error) {
