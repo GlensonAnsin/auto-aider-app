@@ -562,28 +562,70 @@ const RunDiagnostics = () => {
   };
 
   const parseDTCResponse = async (raw: string): Promise<string[]> => {
-    const clean = raw.replace(/\s|\r|\n|>/g, '');
+    console.log(`Raw response: "${raw}"`);
 
-    if (clean.includes('NODATA')) {
+    // Remove all whitespace, newlines, carriage returns, and prompt characters
+    let clean = raw.replace(/\s|\r|\n|>|\\r|\\n/g, '').toUpperCase();
+
+    console.log(`After cleanup: "${clean}"`);
+
+    // Check for no data response
+    if (clean.includes('NODATA') || clean.includes('NO DATA') || clean === '') {
       console.log('No DTCs available.');
-      return []; // Return an empty array to indicate no data
+      return [];
     }
 
-    const clean2 = clean.slice(2);
+    // Remove echo of command '03' if present at the start
+    if (clean.startsWith('03')) {
+      clean = clean.slice(2);
+      console.log(`After removing echo: "${clean}"`);
+    }
 
-    console.log(`Clean: ${clean2}`);
+    // Response should start with '43' (mode 03 response) or the number of codes
+    if (!clean.startsWith('43')) {
+      console.log(`Response doesn't start with 43, starts with: "${clean.slice(0, 2)}"`);
+      return [];
+    }
 
-    if (!clean2.startsWith('43')) return [];
+    // Remove the '43' response header
+    const afterHeader = clean.slice(2);
 
-    const dtcBytes = clean2.slice(2);
+    // The first byte after '43' is the number of DTCs (in hex, each DTC = 2 bytes)
+    // Some adapters include it, some don't
+    // Format: "43 02 01 23 45 67" means 2 codes: 0123 and 4567
+    console.log(`Data after header: "${afterHeader}"`);
+
+    // Extract DTC bytes (skip the count byte if present)
+    let dtcBytes = afterHeader;
+
+    // If first 2 chars represent count, and it matches the remaining data length, skip it
+    const possibleCount = parseInt(afterHeader.slice(0, 2), 16);
+    const remainingBytes = afterHeader.slice(2);
+    if (possibleCount * 4 === remainingBytes.length) {
+      console.log(`Detected count byte: ${possibleCount} codes`);
+      dtcBytes = remainingBytes;
+    }
+
+    console.log(`DTC bytes to parse: "${dtcBytes}"`);
 
     const dtcs: string[] = [];
     for (let i = 0; i < dtcBytes.length; i += 4) {
       const chunk = dtcBytes.slice(i, i + 4);
-      if (chunk.length < 4 || chunk === '0000') continue;
-      console.log(`Chunk: ${chunk}`);
-      dtcs.push(decodeDTC(chunk));
+      if (chunk.length < 4) {
+        console.log(`Incomplete chunk: "${chunk}", skipping`);
+        continue;
+      }
+      if (chunk === '0000') {
+        console.log('Padding chunk 0000, skipping');
+        continue;
+      }
+      console.log(`Processing chunk: "${chunk}"`);
+      const dtc = decodeDTC(chunk);
+      console.log(`Decoded DTC: ${dtc}`);
+      dtcs.push(dtc);
     }
+
+    console.log(`Total DTCs found: ${dtcs.length}`, dtcs);
     return dtcs;
   };
 
