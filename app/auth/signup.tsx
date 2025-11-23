@@ -174,7 +174,7 @@ const Signup = () => {
     })();
   }, [page]);
 
-  const startTimer = (seconds = timer) => {
+  const startTimer = (seconds: number) => {
     endRef.current = Date.now() + seconds * 1000;
     setIsTimerActivate(true);
     setTimer(seconds);
@@ -349,7 +349,7 @@ const Signup = () => {
         setSignupLoading(false);
         return;
       }
-      handleSendCode();
+      handleSendCode(60);
     } catch {
       setSignupLoading(false);
       showMessage({
@@ -448,11 +448,11 @@ const Signup = () => {
         });
         return;
       }
-      handleSendCode();
+      handleSendCode(60);
     }
   };
 
-  const handleSendCode = async () => {
+  const handleSendCode = async (seconds: number) => {
     if (mobileNum.length < 11) {
       showMessage({
         message: 'Invalid number.',
@@ -479,7 +479,7 @@ const Signup = () => {
 
       setTimeout(() => {
         setVerificationModalVisible(true);
-        startTimer();
+        startTimer(seconds);
       }, 2000);
     } catch {
       showMessage({
@@ -498,12 +498,12 @@ const Signup = () => {
     }
   };
 
-  const handleResendCode = async () => {
+  const handleResendCode = async (seconds: number) => {
     try {
       setConfirmCodeLoading(true);
       const res = await generateOtp(mobileNum.trim(), '', 'sms', role, 'sms-verification');
       setConfirm(res);
-      startTimer();
+      startTimer(seconds);
     } catch {
       setError('Failed to send verification.');
     } finally {
@@ -1434,7 +1434,7 @@ const Signup = () => {
                   {!isTimerActivate ? (
                     <TouchableOpacity
                       style={[styles.modalButton, styles.modalButtonPrimary]}
-                      onPress={() => handleResendCode()}
+                      onPress={() => handleResendCode(60)}
                       disabled={confirmCodeLoading}
                     >
                       <MaterialCommunityIcons name="refresh" size={20} color="#FFF" />

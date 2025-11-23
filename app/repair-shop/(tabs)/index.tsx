@@ -212,6 +212,13 @@ export default function Home() {
     }
   };
 
+  const formatToK = (num: number) => {
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    }
+    return num.toString();
+  };
+
   if (isLoading) {
     return <Loading />;
   }
@@ -230,59 +237,77 @@ export default function Home() {
       <ScrollView>
         <View style={styles.lowerBox}>
           <View style={styles.repShopUpperContainer}>
-            {profilePic === null && (
-              <>
-                <TouchableOpacity
-                  style={[styles.profilePicWrapper, { backgroundColor: profileBG }]}
-                  onPress={() => setImageModalVisible(true)}
-                >
-                  <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
-                </TouchableOpacity>
+            <View style={styles.profileSwitchContainer}>
+              {profilePic === null && (
+                <>
+                  <TouchableOpacity
+                    style={[styles.profilePicWrapper, { backgroundColor: profileBG }]}
+                    onPress={() => setImageModalVisible(true)}
+                  >
+                    <MaterialCommunityIcons name="car-wrench" size={50} color="#FFF" />
+                  </TouchableOpacity>
 
-                <Modal
-                  animationType="fade"
-                  backdropColor={'rgba(0, 0, 0, 0.5)'}
-                  visible={imageModalVisible}
-                  onRequestClose={() => setImageModalVisible(false)}
-                >
-                  <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
-                    <View style={styles.centeredView}>
-                      <Pressable style={styles.imageView} onPress={() => {}}>
-                        <View style={[styles.modalProfilePicWrapper, { backgroundColor: profileBG }]}>
-                          <MaterialCommunityIcons name="car-wrench" size={100} color="#FFF" />
-                        </View>
-                      </Pressable>
+                  <Modal
+                    animationType="fade"
+                    backdropColor={'rgba(0, 0, 0, 0.5)'}
+                    visible={imageModalVisible}
+                    onRequestClose={() => setImageModalVisible(false)}
+                  >
+                    <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
+                      <View style={styles.centeredView}>
+                        <Pressable style={styles.imageView} onPress={() => {}}>
+                          <View style={[styles.modalProfilePicWrapper, { backgroundColor: profileBG }]}>
+                            <MaterialCommunityIcons name="car-wrench" size={100} color="#FFF" />
+                          </View>
+                        </Pressable>
+                      </View>
+                    </TouchableWithoutFeedback>
+                  </Modal>
+                </>
+              )}
+
+              {profilePic !== null && (
+                <>
+                  <TouchableOpacity style={styles.profilePicWrapper} onPress={() => setImageModalVisible(true)}>
+                    <Image style={styles.profilePic} source={{ uri: profilePic }} width={100} height={100} />
+                    <View style={styles.profileBadge}>
+                      <MaterialCommunityIcons name="check-decagram" size={24} color="#000B58" />
                     </View>
-                  </TouchableWithoutFeedback>
-                </Modal>
-              </>
-            )}
+                  </TouchableOpacity>
 
-            {profilePic !== null && (
-              <>
-                <TouchableOpacity style={styles.profilePicWrapper} onPress={() => setImageModalVisible(true)}>
-                  <Image style={styles.profilePic} source={{ uri: profilePic }} width={100} height={100} />
-                  <View style={styles.profileBadge}>
-                    <MaterialCommunityIcons name="check-decagram" size={24} color="#000B58" />
-                  </View>
-                </TouchableOpacity>
+                  <Modal
+                    animationType="fade"
+                    backdropColor={'rgba(0, 0, 0, 0.5)'}
+                    visible={imageModalVisible}
+                    onRequestClose={() => setImageModalVisible(false)}
+                  >
+                    <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
+                      <View style={styles.centeredView}>
+                        <Pressable style={styles.imageView}>
+                          <Image width={500} height={300} style={styles.viewImage} source={{ uri: profilePic }} />
+                        </Pressable>
+                      </View>
+                    </TouchableWithoutFeedback>
+                  </Modal>
+                </>
+              )}
 
-                <Modal
-                  animationType="fade"
-                  backdropColor={'rgba(0, 0, 0, 0.5)'}
-                  visible={imageModalVisible}
-                  onRequestClose={() => setImageModalVisible(false)}
-                >
-                  <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
-                    <View style={styles.centeredView}>
-                      <Pressable style={styles.imageView}>
-                        <Image width={500} height={300} style={styles.viewImage} source={{ uri: profilePic }} />
-                      </Pressable>
-                    </View>
-                  </TouchableWithoutFeedback>
-                </Modal>
-              </>
-            )}
+              <View style={styles.availabilityContainer}>
+                <Switch
+                  trackColor={{ false: '#D1D5DB', true: '#000B58' }}
+                  thumbColor={isAvailable ? '#FFF' : '#F3F4F6'}
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={toggleSwitch}
+                  value={isAvailable}
+                />
+                <View style={styles.statusLabelContainer}>
+                  <View style={[styles.statusDot, isAvailable ? styles.statusDotOpen : styles.statusDotClosed]} />
+                  <Text style={[styles.statusText, isAvailable ? styles.statusTextOpen : styles.statusTextClosed]}>
+                    {isAvailable ? 'Open' : 'Closed'}
+                  </Text>
+                </View>
+              </View>
+            </View>
 
             <View style={styles.repShopNameContainer}>
               <Text style={styles.repShopName}>{repShopName}</Text>
@@ -307,25 +332,10 @@ export default function Home() {
 
               <View style={styles.ratingReviewsRow}>
                 <MaterialCommunityIcons name="account-group" size={16} color="#6B7280" />
-                <Text style={styles.rating}>{ratingsNum}</Text>
+                <Text style={styles.rating}>{formatToK(ratingsNum)}</Text>
                 <View style={styles.ratingBadge}>
                   <MaterialIcons name="star" size={14} color="#FDCC0D" />
-                  <Text style={styles.ratingBadgeText}>{averageRating}</Text>
-                </View>
-                <View style={styles.availabilityContainer}>
-                  <View style={styles.statusLabelContainer}>
-                    <View style={[styles.statusDot, isAvailable ? styles.statusDotOpen : styles.statusDotClosed]} />
-                    <Text style={[styles.statusText, isAvailable ? styles.statusTextOpen : styles.statusTextClosed]}>
-                      {isAvailable ? 'Open' : 'Closed'}
-                    </Text>
-                  </View>
-                  <Switch
-                    trackColor={{ false: '#D1D5DB', true: '#000B58' }}
-                    thumbColor={isAvailable ? '#FFF' : '#F3F4F6'}
-                    ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleSwitch}
-                    value={isAvailable}
-                  />
+                  <Text style={styles.ratingBadgeText}>{Number(averageRating).toFixed(2)}</Text>
                 </View>
               </View>
             </View>
@@ -465,6 +475,11 @@ const styles = StyleSheet.create({
     gap: 20,
     width: '100%',
   },
+  profileSwitchContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 5,
+  },
   profilePicWrapper: {
     width: 100,
     height: 100,
@@ -548,7 +563,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   availabilityContainer: {
-    marginLeft: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

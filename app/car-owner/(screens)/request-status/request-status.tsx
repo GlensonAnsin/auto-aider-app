@@ -643,8 +643,9 @@ const styles = StyleSheet.create({
   lowerBox: {
     alignSelf: 'center',
     marginTop: 20,
-    marginBottom: 80,
+    paddingBottom: 60,
     width: '100%',
+    flex: 1,
   },
   dropdownButtonStyle: {
     width: 150,

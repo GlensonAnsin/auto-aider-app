@@ -429,8 +429,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     alignSelf: 'center',
-    flex: 1,
-    marginBottom: 80,
+    paddingBottom: 180,
     gap: 10,
   },
   clearHistoryContainer: {

@@ -149,7 +149,13 @@ const ManageVehicles = () => {
               data={vehicles.sort((a, b) => b.vehicleID - a.vehicleID)}
               style={{ width: '100%' }}
               renderItem={({ item, index }) => (
-                <View style={[styles.vehicleContainer, index === 0 && styles.firstChild]}>
+                <View
+                  style={[
+                    styles.vehicleContainer,
+                    index === 0 && styles.firstChild,
+                    index === vehicles.length - 1 && styles.lastChild,
+                  ]}
+                >
                   <View style={styles.vehicleHeader}>
                     <View style={styles.vehicleIconWrapper}>
                       <MaterialCommunityIcons name="car" size={24} color="#000B58" />
@@ -200,7 +206,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 10,
     flex: 1,
-    marginBottom: 80,
+    paddingBottom: 60,
   },
   noHistoryContainer: {
     height: '100%',
@@ -266,6 +272,9 @@ const styles = StyleSheet.create({
   },
   firstChild: {
     marginTop: 10,
+  },
+  lastChild: {
+    marginBottom: 10,
   },
   vehicleHeader: {
     flexDirection: 'row',

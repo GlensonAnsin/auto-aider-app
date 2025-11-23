@@ -316,7 +316,7 @@ export default function Home() {
                 router.replace('./profile/profile');
               }}
             >
-              <Image style={styles.profilePic} source={{ uri: profilePic }} width={100} height={100} />
+              <Image style={styles.profilePic} source={{ uri: profilePic }} width={80} height={80} />
             </TouchableOpacity>
           )}
         </View>
@@ -337,7 +337,7 @@ export default function Home() {
               }}
             >
               <View style={styles.featureIconWrapper}>
-                <MaterialIcons name="history" size={35} color="#FFF" />
+                <MaterialIcons name="history" size={25} color="#FFF" />
               </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Diagnostic History</Text>
@@ -363,7 +363,7 @@ export default function Home() {
               }}
             >
               <View style={styles.featureIconWrapper}>
-                <Ionicons name="scan" size={35} color="#FFF" />
+                <Ionicons name="scan" size={25} color="#FFF" />
               </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Scan Car</Text>
@@ -379,7 +379,7 @@ export default function Home() {
               }}
             >
               <View style={styles.featureIconWrapper}>
-                <Entypo name="location" size={35} color="#FFF" />
+                <Entypo name="location" size={25} color="#FFF" />
               </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Repair Shops</Text>
@@ -391,7 +391,7 @@ export default function Home() {
           <View style={styles.column}>
             <TouchableOpacity style={styles.feature} onPress={() => isAddVehicleModalVisible(true)}>
               <View style={styles.featureIconWrapper}>
-                <Ionicons name="add-circle" size={35} color="#FFF" />
+                <Ionicons name="add-circle" size={25} color="#FFF" />
               </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Add Vehicle</Text>
@@ -407,7 +407,7 @@ export default function Home() {
               }}
             >
               <View style={styles.featureIconWrapper}>
-                <MaterialCommunityIcons name="account" size={35} color="#FFF" />
+                <MaterialCommunityIcons name="account" size={25} color="#FFF" />
               </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>My Profile</Text>
@@ -423,7 +423,7 @@ export default function Home() {
               }}
             >
               <View style={styles.featureIconWrapper}>
-                <MaterialCommunityIcons name="clipboard-edit" size={35} color="#FFF" />
+                <MaterialCommunityIcons name="clipboard-edit" size={25} color="#FFF" />
               </View>
               <View style={styles.featureTxtWrapper}>
                 <Text style={styles.featureHeader}>Request Status</Text>
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
     borderLeftColor: '#000B58',
     width: '90%',
     borderRadius: 12,
-    padding: 16,
+    padding: 10,
     marginTop: 20,
     alignSelf: 'center',
     shadowColor: '#000',
@@ -730,9 +730,9 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   featureIconWrapper: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 46,
+    height: 46,
+    borderRadius: 46,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',

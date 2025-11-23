@@ -575,11 +575,9 @@ const RunDiagnostics = () => {
       return [];
     }
 
-    // Remove echo of command '03' if present at the start
-    if (clean.startsWith('03')) {
-      clean = clean.slice(2);
-      console.log(`After removing echo: "${clean}"`);
-    }
+    // Remove number of codes indicator
+    clean = clean.slice(2);
+    console.log(`After removing echo: "${clean}"`);
 
     // Response should start with '43' (mode 03 response) or the number of codes
     if (!clean.startsWith('43')) {

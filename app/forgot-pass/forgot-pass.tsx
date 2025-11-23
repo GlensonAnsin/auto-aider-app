@@ -54,15 +54,7 @@ const ForgotPass = () => {
     { title: 'Repair Shop', icon: 'tools' },
   ];
 
-  useEffect(() => {
-    if (selectedAuthType === 'sms') {
-      setTimer(60);
-    } else {
-      setTimer(300);
-    }
-  }, [selectedAuthType]);
-
-  const startTimer = (seconds = timer) => {
+  const startTimer = (seconds: number) => {
     endRef.current = Date.now() + seconds * 1000;
     setIsTimerActivate(true);
     setTimer(seconds);
@@ -159,7 +151,7 @@ const ForgotPass = () => {
     }
   };
 
-  const handleSendCode = async () => {
+  const handleSendCode = async (seconds: number) => {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (phoneNum === '09' && !email) {
@@ -212,7 +204,7 @@ const ForgotPass = () => {
           });
           setTimeout(() => {
             setVerificationModalVisible(true);
-            startTimer();
+            startTimer(seconds);
           }, 2000);
           return;
         }
@@ -239,7 +231,7 @@ const ForgotPass = () => {
           });
           setTimeout(() => {
             setVerificationModalVisible(true);
-            startTimer();
+            startTimer(seconds);
           }, 2000);
           return;
         }
@@ -257,7 +249,7 @@ const ForgotPass = () => {
 
       setTimeout(() => {
         setVerificationModalVisible(true);
-        startTimer();
+        startTimer(seconds);
       }, 2000);
     } catch {
       showMessage({
@@ -275,14 +267,14 @@ const ForgotPass = () => {
     }
   };
 
-  const handleResendCode = async () => {
+  const handleResendCode = async (seconds: number) => {
     try {
       setConfirmCodeLoading(true);
       if (selectedRole === 'Car Owner') {
         const res1 = await checkNumOrEmailCO(phoneNum.trim(), email.trim(), selectedAuthType);
 
         if (!res1.isExist) {
-          startTimer();
+          startTimer(seconds);
           return;
         }
 
@@ -292,7 +284,7 @@ const ForgotPass = () => {
         const res1 = await checkNumOrEmailRS(phoneNum.trim(), email.trim(), selectedAuthType);
 
         if (!res1.isExist) {
-          startTimer();
+          startTimer(seconds);
           return;
         }
 
@@ -300,7 +292,7 @@ const ForgotPass = () => {
         setConfirm(res2);
       }
 
-      startTimer();
+      startTimer(seconds);
     } catch {
       setError('Failed to send verification.');
     } finally {
@@ -559,7 +551,7 @@ const ForgotPass = () => {
 
             <TouchableOpacity
               style={[styles.enhancedSendButton, sendCodeLoading && styles.sendButtonDisabled]}
-              onPress={() => handleSendCode()}
+              onPress={() => handleSendCode(selectedAuthType === 'sms' ? 60 : 300)}
               disabled={sendCodeLoading}
             >
               <View style={styles.buttonContent}>
@@ -675,7 +667,7 @@ const ForgotPass = () => {
                     {!isTimerActivate ? (
                       <TouchableOpacity
                         style={[styles.modalButton, styles.modalButtonPrimary]}
-                        onPress={() => handleResendCode()}
+                        onPress={() => handleResendCode(selectedAuthType === 'sms' ? 60 : 300)}
                         disabled={confirmCodeLoading}
                       >
                         <MaterialCommunityIcons name="refresh" size={20} color="#FFF" />

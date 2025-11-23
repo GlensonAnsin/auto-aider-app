@@ -1546,6 +1546,7 @@ const styles = StyleSheet.create({
     fontFamily: 'BodyBold',
     color: '#333',
     fontSize: 20,
+    textAlign: 'center',
   },
   statusVehicleContainer: {
     width: '100%',

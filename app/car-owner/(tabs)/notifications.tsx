@@ -229,9 +229,14 @@ export default function NotificationsTab() {
         )}
         <FlatList
           data={notification.sort((a, b) => b.notificationID - a.notificationID)}
-          renderItem={({ item }) => (
+          style={{ width: '100%' }}
+          renderItem={({ item, index }) => (
             <TouchableOpacity
-              style={[styles.notifButton, { backgroundColor: item.isRead ? '#FFFFFF' : '#EEF2FF' }]}
+              style={[
+                styles.notifButton,
+                index === notification.length - 1 && styles.lastChild,
+                { backgroundColor: item.isRead ? '#FFFFFF' : '#EEF2FF' },
+              ]}
               onPress={() => handleNotificationPress(item.title, item.notificationID)}
               onLongPress={() => deleteNotifAlert(item.notificationID)}
             >
@@ -298,7 +303,7 @@ const styles = StyleSheet.create({
   },
   lowerBox: {
     flex: 1,
-    marginBottom: 80,
+    paddingBottom: 62,
   },
   noHistoryContainer: {
     height: '100%',
@@ -332,6 +337,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
+  },
+  lastChild: {
+    marginBottom: 10,
   },
   notifContent: {
     paddingVertical: 14,

@@ -503,6 +503,13 @@ const RepairShops = () => {
     bottomSheetRef.current?.close();
   };
 
+  const formatToK = (num: number) => {
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    }
+    return num.toString();
+  };
+
   if (isLoading) {
     return <Loading />;
   }
@@ -666,11 +673,15 @@ const RepairShops = () => {
                               <View style={styles.ratingContainer}>
                                 <View style={styles.ratingItem}>
                                   <Fontisto name="persons" size={14} color="#555" />
-                                  <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].ratingsNum}</Text>
+                                  <Text style={styles.rating}>
+                                    {formatToK(nearbyRepShop[selectedRepShop].ratingsNum)}
+                                  </Text>
                                 </View>
                                 <View style={styles.ratingItem}>
                                   <MaterialIcons name="star-rate" size={16} color="#FDCC0D" />
-                                  <Text style={styles.rating}>{nearbyRepShop[selectedRepShop].averageRating}</Text>
+                                  <Text style={styles.rating}>
+                                    {Number(nearbyRepShop[selectedRepShop].averageRating).toFixed(2)}
+                                  </Text>
                                 </View>
                                 <View
                                   style={[

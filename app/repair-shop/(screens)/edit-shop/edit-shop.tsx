@@ -2153,6 +2153,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#333',
     maxWidth: '90%',
+    textAlign: 'center',
   },
   subHeader: {
     fontFamily: 'BodyBold',

@@ -173,9 +173,9 @@ export default function ChatsTab() {
         )}
         <FlatList
           data={chatInfo.sort((a, b) => b.chatID - a.chatID)}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <TouchableOpacity
-              style={styles.conversationButton}
+              style={[styles.conversationButton, index === chatInfo.length - 1 && styles.lastChild]}
               onPress={() => {
                 backRoute();
                 dispatch(
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   },
   lowerBox: {
     flex: 1,
-    marginBottom: 80,
+    paddingBottom: 62,
   },
   noHistoryContainer: {
     height: '100%',
@@ -339,6 +339,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
+  },
+  lastChild: {
+    marginBottom: 10,
   },
   profileSection: {
     position: 'relative',
