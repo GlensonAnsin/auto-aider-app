@@ -3,29 +3,25 @@ import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setScanState } from '@/redux/slices/scanSlice';
 import { RootState } from '@/redux/store';
-import { deleteAllVehicleDiagnostics, getVehicleDiagnostics } from '@/services/backendApi';
-import socket from '@/services/socket';
-import Entypo from '@expo/vector-icons/Entypo';
+import { getRecentScansRS } from '@/services/backendApi';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
-const DiagnosticHistory = () => {
-  dayjs.extend(utc);
+const RecentScans = () => {
   const router = useRouter();
+  const backRoute = useBackRoute('/repair-shop/repair-requests/recent-scans');
   const dispatch = useDispatch();
-  const backRoute = useBackRoute('/car-owner/(screens)/diagnostic-history/diagnostic-history');
-  const [history, setHistory] = useState<
+  dayjs.extend(utc);
+  const [recentScan, setRecentScan] = useState<
     {
       vehicleDiagID: number;
-      vehicleID: number;
-      vehicle: string;
       dtc: string | null;
       noCodes: string | null;
       date: string;
@@ -33,7 +29,8 @@ const DiagnosticHistory = () => {
     }[]
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const userID = useSelector((state: RootState) => state.role.ID);
+  const vehicleID = useSelector((state: RootState) => state.vehicleID.vehicleID);
+  const vehicleName = useSelector((state: RootState) => state.vehicleID.vehicleName);
 
   // Helper function to calculate DTC weight based on code type
   const getDTCWeight = (dtcCode: string) => {
@@ -117,12 +114,10 @@ const DiagnosticHistory = () => {
     (async () => {
       try {
         setIsLoading(true);
-        const res = await getVehicleDiagnostics();
+        const res = await getRecentScansRS(vehicleID ?? 0);
 
-        const historyData: {
+        const recentScanData: {
           vehicleDiagID: number;
-          vehicleID: number;
-          vehicle: string;
           dtc: string | null;
           noCodes: string | null;
           date: string;
@@ -131,10 +126,8 @@ const DiagnosticHistory = () => {
 
         res?.forEach((item: any) => {
           const scanDate = dayjs(item.date).utc(true);
-          historyData.push({
+          recentScanData.push({
             vehicleDiagID: item.vehicle_diagnostic_id,
-            vehicleID: item.vehicle_id,
-            vehicle: `${item.year} ${item.make} ${item.model}`,
             dtc: item.dtc,
             noCodes: item.vehicle_issue_description,
             date: scanDate.format('ddd MMM DD YYYY'),
@@ -142,7 +135,7 @@ const DiagnosticHistory = () => {
           });
         });
 
-        setHistory(historyData);
+        setRecentScan(recentScanData);
       } catch {
         showMessage({
           message: 'Something went wrong. Please try again.',
@@ -158,35 +151,16 @@ const DiagnosticHistory = () => {
         setIsLoading(false);
       }
     })();
-  }, [router]);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on(`vehicleDiagnosticDeleted-CO-${userID}`, ({ deletedVehicleDiag }) => {
-      setHistory((prev) => prev.filter((v) => !deletedVehicleDiag.includes(v.scanReference)));
-    });
-
-    socket.on(`allVehicleDiagnosticDeleted-CO-${userID}`, ({ allDeletedVehicleDiag }) => {
-      setHistory((prev) => prev.filter((v) => !allDeletedVehicleDiag.includes(v.scanReference)));
-    });
-
-    return () => {
-      socket.off(`vehicleDiagnosticDeleted-CO-${userID}`);
-      socket.off(`allVehicleDiagnosticDeleted-CO-${userID}`);
-    };
-  }, [userID]);
+  }, []);
 
   const grouped = Object.values(
-    history.reduce(
+    recentScan.reduce(
       (acc, item) => {
         const ref = item.scanReference;
 
         if (!acc[ref]) {
           acc[ref] = {
             vehicleDiagID: item.vehicleDiagID,
-            vehicleID: item.vehicleID,
-            vehicle: item.vehicle,
             scanReference: ref,
             date: item.date,
             dtc: item.dtc ? [item.dtc] : [],
@@ -204,8 +178,6 @@ const DiagnosticHistory = () => {
         string,
         {
           vehicleDiagID: number;
-          vehicleID: number;
-          vehicle: string;
           scanReference: string;
           date: string;
           dtc: string[];
@@ -215,58 +187,16 @@ const DiagnosticHistory = () => {
     )
   );
 
-  const deleteAllVehicleDiagAlert = () => {
-    if (grouped.length === 0) {
-      return;
-    }
-
-    Alert.alert('Clear History', 'Are you sure you want to clear your history?', [
-      {
-        text: 'Cancel',
-        onPress: () => {},
-        style: 'cancel',
-      },
-      {
-        text: 'Yes',
-        onPress: () => handleDeleteAll(),
-      },
-    ]);
-  };
-
-  const handleDeleteAll = async () => {
-    try {
-      await deleteAllVehicleDiagnostics();
-      showMessage({
-        message: 'History cleared!',
-        type: 'success',
-        floating: true,
-        color: '#fff',
-        icon: 'success',
-      });
-    } catch {
-      showMessage({
-        message: 'Something went wrong. Please try again.',
-        type: 'danger',
-        floating: true,
-        color: '#fff',
-        icon: 'danger',
-      });
-    }
-  };
-
   if (isLoading) {
     return <Loading />;
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header headerTitle="History" />
+      <Header headerTitle="Recent Scans" />
       <View style={styles.lowerBox}>
-        <View style={styles.clearHistoryContainer}>
-          <Text style={styles.header2}>Scanned Cars</Text>
-          <TouchableOpacity style={styles.button} onPress={() => deleteAllVehicleDiagAlert()}>
-            <Text style={styles.buttonTxt}>Clear history</Text>
-          </TouchableOpacity>
+        <View style={styles.headerInfoContainer}>
+          <Text style={styles.headerInfoText}>{vehicleName}</Text>
         </View>
 
         {grouped.length === 0 && (
@@ -277,15 +207,8 @@ const DiagnosticHistory = () => {
                 <MaterialCommunityIcons name="file-document-outline" size={40} color="#818CF8" />
               </View>
             </View>
-            <Text style={styles.emptyText}>No Diagnostic History</Text>
-            <Text style={styles.emptySubtext}>
-              Your vehicle scan history will appear here{'\n'}
-              Start by scanning your car to see diagnostic reports
-            </Text>
-            <TouchableOpacity style={styles.emptyStateButton} onPress={() => router.back()}>
-              <MaterialCommunityIcons name="arrow-left" size={20} color="#000B58" />
-              <Text style={styles.emptyStateButtonText}>Go Back to Scan</Text>
-            </TouchableOpacity>
+            <Text style={styles.emptyText}>No Recent Scans</Text>
+            <Text style={styles.emptySubtext}>Your vehicle's recent scans will appear here</Text>
           </View>
         )}
 
@@ -304,13 +227,7 @@ const DiagnosticHistory = () => {
                 return (
                   <View style={[styles.historyContainer, index === 0 && styles.firstChild]}>
                     <View style={styles.cardHeader}>
-                      <View style={styles.vehicleInfo}>
-                        <MaterialCommunityIcons name="car" size={24} color="#000B58" style={styles.carIcon} />
-                        <View style={styles.vehicleDetails}>
-                          <Text style={styles.carDetails}>{item.vehicle}</Text>
-                          <Text style={styles.date}>{formattedDate}</Text>
-                        </View>
-                      </View>
+                      <Text style={styles.date}>{formattedDate}</Text>
                       <View style={[styles.severityBadge, { backgroundColor: severityInfo?.bgColor }]}>
                         <MaterialCommunityIcons
                           name={severityInfo?.icon as any}
@@ -345,22 +262,16 @@ const DiagnosticHistory = () => {
                     onPress={() => {
                       dispatch(
                         setScanState({
-                          vehicleID: parseInt(String(item.vehicleID)),
+                          vehicleID: parseInt(String(vehicleID)),
                           scanReference: item.scanReference,
                         })
                       );
                       backRoute();
-                      router.replace('./history-detailed-report');
+                      router.replace('/repair-shop/(screens)/repair-requests/scan-detailed-report');
                     }}
                   >
                     <View style={styles.cardHeader}>
-                      <View style={styles.vehicleInfo}>
-                        <MaterialCommunityIcons name="car" size={24} color="#000B58" style={styles.carIcon} />
-                        <View style={styles.vehicleDetails}>
-                          <Text style={styles.carDetails}>{item.vehicle}</Text>
-                          <Text style={styles.date}>{formattedDate}</Text>
-                        </View>
-                      </View>
+                      <Text style={styles.date}>{formattedDate}</Text>
                       <View style={[styles.severityBadge, { backgroundColor: severityInfo?.bgColor }]}>
                         <MaterialCommunityIcons
                           name={severityInfo?.icon as any}
@@ -387,39 +298,22 @@ const DiagnosticHistory = () => {
                       <Text style={styles.severityDescription}>{severityInfo?.description}</Text>
                     </View>
 
-                    <View style={styles.codeButtonContainer}>
+                    <View>
                       <TouchableOpacity
                         style={styles.detailsButton}
                         onPress={() => {
                           dispatch(
                             setScanState({
-                              vehicleID: parseInt(String(item.vehicleID)),
+                              vehicleID: parseInt(String(vehicleID)),
                               scanReference: item.scanReference,
                             })
                           );
                           backRoute();
-                          router.replace('./history-detailed-report');
+                          router.replace('/repair-shop/(screens)/repair-requests/scan-detailed-report');
                         }}
                       >
                         <MaterialCommunityIcons name="file-document-outline" size={16} color="#000B58" />
                         <Text style={styles.detailsButtonText}>View Details</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={styles.historyButton}
-                        onPress={() => {
-                          dispatch(
-                            setScanState({
-                              vehicleID: parseInt(String(item.vehicleID)),
-                              scanReference: item.scanReference,
-                            })
-                          );
-                          backRoute();
-                          router.replace('/car-owner/(screens)/repair-shops/repair-shops');
-                        }}
-                      >
-                        <Entypo name="location" size={16} color="#FFF" />
-                        <Text style={styles.historyButtonText}>Find Repair</Text>
                       </TouchableOpacity>
                     </View>
                   </TouchableOpacity>
@@ -447,25 +341,21 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
     gap: 10,
   },
-  clearHistoryContainer: {
+  headerInfoContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '90%',
-    marginTop: 20,
-  },
-  header2: {
-    fontFamily: 'HeaderBold',
-    fontSize: 18,
-    color: '#333',
-  },
-  button: {
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#E0E7FF',
+    borderRadius: 10,
+    marginVertical: 12,
+    alignSelf: 'center',
   },
-  buttonTxt: {
-    fontFamily: 'HeaderRegular',
+  headerInfoText: {
+    fontFamily: 'BodyBold',
+    fontSize: 14,
     color: '#000B58',
-    fontSize: 16,
   },
   noHistoryContainer: {
     height: '100%',
@@ -508,21 +398,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 32,
   },
-  emptyStateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E0E7FF',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-    gap: 8,
-  },
-  emptyStateButtonText: {
-    fontFamily: 'HeaderRegular',
-    color: '#000B58',
-    fontSize: 16,
-  },
   historyContainer: {
     width: '90%',
     marginBottom: 12,
@@ -549,23 +424,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 12,
-  },
-  vehicleInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  carIcon: {
-    marginRight: 12,
-  },
-  vehicleDetails: {
-    flex: 1,
-  },
-  carDetails: {
-    fontFamily: 'BodyBold',
-    color: '#333',
-    fontSize: 16,
-    marginBottom: 4,
   },
   date: {
     fontFamily: 'BodyRegular',
@@ -625,11 +483,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  codeButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
   detailsButton: {
     flex: 1,
     flexDirection: 'row',
@@ -646,26 +499,6 @@ const styles = StyleSheet.create({
     color: '#000B58',
     fontSize: 14,
   },
-  historyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#000B58',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    gap: 6,
-    minWidth: 120,
-  },
-  historyButtonText: {
-    fontFamily: 'HeaderRegular',
-    color: '#FFF',
-    fontSize: 14,
-  },
-  noHistoriesText: {
-    fontFamily: 'BodyRegular',
-    color: '#555',
-  },
 });
 
-export default DiagnosticHistory;
+export default RecentScans;

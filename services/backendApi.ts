@@ -397,12 +397,12 @@ export const getVehicleDiagnostics = async () => {
   }
 };
 
-// GET ONGOING VEHICLE DIAGNOSTIC
-export const getOnVehicleDiagnostic = async (vehicleID: number, scanReference: string): Promise<[] | null> => {
+// GET ONGOING VEHICLE DIAGNOSTIC (CAR OWNER)
+export const getOnVehicleDiagnosticCO = async (vehicleID: number, scanReference: string): Promise<[] | null> => {
   try {
     const token = await getAccessToken();
     const res = await axios.get(
-      `${apiURL}/vehicle_diagnostic/get-on-vehicle-diagnostic/${vehicleID}/${scanReference}`,
+      `${apiURL}/vehicle_diagnostic/get-on-vehicle-diagnostic-co/${vehicleID}/${scanReference}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -413,6 +413,55 @@ export const getOnVehicleDiagnostic = async (vehicleID: number, scanReference: s
   } catch (e) {
     console.error('Get Ongoing Vehicle Diagnostic Error: ', e);
     return null;
+  }
+};
+
+// GET ONGOING VEHICLE DIAGNOSTIC (REPAIR SHOP)
+export const getOnVehicleDiagnosticRS = async (vehicleID: number, scanReference: string): Promise<[] | null> => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(
+      `${apiURL}/vehicle_diagnostic/get-on-vehicle-diagnostic-rs/${vehicleID}/${scanReference}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return res.data;
+  } catch (e) {
+    console.error('Get Ongoing Vehicle Diagnostic Error: ', e);
+    return null;
+  }
+};
+
+// GET RECENT SCANS (CAR OWNER)
+export const getRecentScansCO = async (vehicleID: number) => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/vehicle_diagnostic/get-recent-scans-co/${vehicleID}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+    });
+    return res.data;
+  } catch (e) {
+    console.error('Get Recent Scans Error: ', e);
+  }
+};
+
+// GET RECENT SCANS (REPAIR SHOP)
+export const getRecentScansRS = async (vehicleID: number) => {
+  try {
+    const token = await getAccessToken();
+    const res = await axios.get(`${apiURL}/vehicle_diagnostic/get-recent-scans-rs/${vehicleID}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+    });
+    return res.data;
+  } catch (e) {
+    console.error('Get Recent Scans Error: ', e);
   }
 };
 

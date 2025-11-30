@@ -242,8 +242,8 @@ const Profile = () => {
                 <MaterialCommunityIcons name="car-outline" style={styles.icon} />
               </View>
               <View style={styles.tabContent}>
-                <Text style={styles.tabName}>Manage Vehicles</Text>
-                <Text style={styles.tabDescription}>View registered vehicles</Text>
+                <Text style={styles.tabName}>Registered Vehicles</Text>
+                <Text style={styles.tabDescription}>View registered vehicles and recent scans</Text>
               </View>
               <MaterialIcons name="keyboard-arrow-right" style={styles.forwardIcon} />
             </TouchableOpacity>

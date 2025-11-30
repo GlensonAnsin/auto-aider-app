@@ -2,7 +2,7 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { clearScanState } from '@/redux/slices/scanSlice';
 import { RootState } from '@/redux/store';
-import { getOnVehicleDiagnosticCO } from '@/services/backendApi';
+import { getOnVehicleDiagnosticRS } from '@/services/backendApi';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
@@ -12,7 +12,7 @@ import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
-const HistoryDetailedReport = () => {
+const ScanDetailedReport = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -112,7 +112,7 @@ const HistoryDetailedReport = () => {
       const fetchData = async () => {
         try {
           setIsLoading(true);
-          const res = await getOnVehicleDiagnosticCO(vehicleID ?? 0, scanReference ?? '');
+          const res = await getOnVehicleDiagnosticRS(vehicleID ?? 0, scanReference ?? '');
 
           if (!isActive) return;
 
@@ -411,4 +411,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HistoryDetailedReport;
+export default ScanDetailedReport;

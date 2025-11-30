@@ -2,6 +2,7 @@ import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
 import { useBackRoute } from '@/hooks/useBackRoute';
 import { setSenderReceiverState } from '@/redux/slices/senderReceiverSlice';
+import { setVehicleIDState } from '@/redux/slices/vehicleIDSlice';
 import { RootState } from '@/redux/store';
 import {
   acceptRequest,
@@ -823,6 +824,23 @@ const RepairRequestDetails = () => {
                     </View>
                   </View>
                 )}
+
+                <TouchableOpacity
+                  style={styles.infoCardButton}
+                  onPress={() => {
+                    dispatch(
+                      setVehicleIDState({
+                        vehicleID: item.vehicleID,
+                        vehicleName: `${item.year} ${item.make} ${item.model}`,
+                      })
+                    );
+                    router.replace('/repair-shop/repair-requests/recent-scans');
+                    backRoute();
+                  }}
+                >
+                  <MaterialCommunityIcons name="line-scan" size={18} color="#FFF" />
+                  <Text style={styles.infoCardButtonTxt}>Vehicle's Recent Scans</Text>
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -1879,6 +1897,22 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#E5E7EB',
     marginVertical: 8,
+  },
+  infoCardButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 6,
+    width: '100%',
+    backgroundColor: '#000B58',
+  },
+  infoCardButtonTxt: {
+    fontFamily: 'BodyBold',
+    color: '#fff',
+    fontSize: 14,
   },
   // Section header styles
   sectionHeader: {

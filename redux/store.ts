@@ -9,6 +9,7 @@ import settingsReducer from './slices/settingsSlice';
 import tabReducer from './slices/tabBarSlice';
 import vehicleDiagIDArrReducer from './slices/vehicleDiagIDArrSlice';
 import vehicleDiagIDReducer from './slices/vehicleDiagIDSlice';
+import vehicleIDReducer from './slices/vehicleIDSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     role: roleReducer,
     device: deviceReducer,
     settings: settingsReducer,
+    vehicleID: vehicleIDReducer,
   },
   middleware: (getDefaultMiddleware) => {
     return getDefaultMiddleware({

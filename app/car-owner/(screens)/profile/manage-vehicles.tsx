@@ -1,5 +1,7 @@
 import { Header } from '@/components/Header';
 import { Loading } from '@/components/Loading';
+import { useBackRoute } from '@/hooks/useBackRoute';
+import { setVehicleIDState } from '@/redux/slices/vehicleIDSlice';
 import { RootState } from '@/redux/store';
 import { deleteVehicle, getVehicle } from '@/services/backendApi';
 import socket from '@/services/socket';
@@ -11,9 +13,11 @@ import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const ManageVehicles = () => {
+  const dispatch = useDispatch();
+  const backRoute = useBackRoute('/car-owner/profile/manage-vehicles');
   const router = useRouter();
   dayjs.extend(utc);
   const [vehicles, setVehicles] = useState<
@@ -177,6 +181,23 @@ const ManageVehicles = () => {
 
                   <View style={styles.actionContainer}>
                     <TouchableOpacity
+                      style={[styles.button, { backgroundColor: '#000B58' }]}
+                      onPress={() => {
+                        dispatch(
+                          setVehicleIDState({
+                            vehicleID: item.vehicleID,
+                            vehicleName: `${item.year} ${item.make} ${item.model}`,
+                          })
+                        );
+                        router.replace('/car-owner/profile/recent-scans');
+                        backRoute();
+                      }}
+                    >
+                      <MaterialCommunityIcons name="line-scan" size={18} color="#FFF" />
+                      <Text style={styles.buttonTxt}>Recent Scans</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
                       style={[styles.button, { backgroundColor: '#DC2626' }]}
                       onPress={() => deleteVehicleAlert(item.vehicleID)}
                     >
@@ -327,6 +348,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
+    gap: 5,
   },
   button: {
     flexDirection: 'row',

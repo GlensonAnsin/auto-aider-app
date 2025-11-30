@@ -8,6 +8,7 @@ export default function RootLayout() {
       <Stack.Screen name="profile/profile" />
       <Stack.Screen name="profile/edit-profile" />
       <Stack.Screen name="profile/manage-vehicles" />
+      <Stack.Screen name="profile/recent-scans" />
       <Stack.Screen name="run-diagnostics/run-diagnostics" />
       <Stack.Screen name="run-diagnostics/diagnosis" />
       <Stack.Screen name="run-diagnostics/detailed-report" />

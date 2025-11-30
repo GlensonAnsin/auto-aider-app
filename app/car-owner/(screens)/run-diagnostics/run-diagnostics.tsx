@@ -538,12 +538,42 @@ const RunDiagnostics = () => {
         const parsed = await parseDTCResponse(converted);
         console.log(`Parsed: ${parsed}`);
         if (parsed?.length === 0) {
+          const vehicleDiagnosticData = {
+            vehicle_diagnostic_id: null,
+            vehicle_id: selectedCarID ?? 0,
+            dtc: null,
+            technical_description: null,
+            meaning: null,
+            possible_causes: null,
+            recommended_repair: null,
+            date: dayjs().format(),
+            scan_reference: generateReference(),
+            vehicle_issue_description: 'No Codes Detected',
+            is_deleted: false,
+          };
+
+          await addVehicleDiagnostic(vehicleDiagnosticData);
           setScanLoading(false);
           setIsNoCodeDetected(true);
         } else {
           await handleCodeInterpretation(parsed);
         }
       } else {
+        const vehicleDiagnosticData = {
+          vehicle_diagnostic_id: null,
+          vehicle_id: selectedCarID ?? 0,
+          dtc: null,
+          technical_description: null,
+          meaning: null,
+          possible_causes: null,
+          recommended_repair: null,
+          date: dayjs().format(),
+          scan_reference: generateReference(),
+          vehicle_issue_description: 'No Codes Detected',
+          is_deleted: false,
+        };
+
+        await addVehicleDiagnostic(vehicleDiagnosticData);
         setScanLoading(false);
         setIsNoCodeDetected(true);
       }

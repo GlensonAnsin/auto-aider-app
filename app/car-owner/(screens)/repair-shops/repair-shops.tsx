@@ -7,7 +7,7 @@ import { RootState } from '@/redux/store';
 import {
   addRequest,
   addVehicleDiagnostic,
-  getOnVehicleDiagnostic,
+  getOnVehicleDiagnosticCO,
   getRepairShops,
   getVehicle,
 } from '@/services/backendApi';
@@ -134,7 +134,7 @@ const RepairShops = () => {
           const res2 = await getVehicle();
 
           if (vehicleID && scanReference) {
-            const res3 = await getOnVehicleDiagnostic(vehicleID ?? 0, scanReference ?? '');
+            const res3 = await getOnVehicleDiagnosticCO(vehicleID ?? 0, scanReference ?? '');
 
             if (res3) {
               setCodeInterpretation(
@@ -454,7 +454,7 @@ const RepairShops = () => {
 
   const getVehicleDiagnostic = async () => {
     try {
-      const res = await getOnVehicleDiagnostic(selectedVehicle !== undefined ? selectedVehicle : 0, scanReference2);
+      const res = await getOnVehicleDiagnosticCO(selectedVehicle !== undefined ? selectedVehicle : 0, scanReference2);
       if (res) {
         const id = res.map((item: any) => item.vehicle_diagnostic_id);
         return id[0];
